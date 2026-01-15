@@ -665,20 +665,23 @@ setup_config() {
 
         # Create backup
         create_backup "$CONFIG_FILE"
+    else
+        # Config doesn't exist, prompt to copy
+        if ! prompt_yes_no "Copy config.json to ${CONFIG_DIR}/?" "y"; then
+            log_info "Skipping config.json copy"
+            SKIP_CONFIG_COPY=true
+            return 0
+        fi
     fi
 
     # Copy config.json
     if [ "$SKIP_CONFIG_COPY" != true ]; then
-        if prompt_yes_no "Copy config.json to ${CONFIG_DIR}/?" "y"; then
-            if [ -f "${SCRIPT_DIR}/config.json" ]; then
-                run_cmd "cp ${SCRIPT_DIR}/config.json ${CONFIG_FILE}/"
-                log_success "config.json copied successfully"
-            else
-                log_error "config.json not found in ${SCRIPT_DIR}"
-                return 1
-            fi
+        if [ -f "${SCRIPT_DIR}/config.json" ]; then
+            run_cmd "cp ${SCRIPT_DIR}/config.json ${CONFIG_FILE}/"
+            log_success "config.json copied successfully"
         else
-            log_info "Skipping config.json copy"
+            log_error "config.json not found in ${SCRIPT_DIR}"
+            return 1
         fi
     fi
 
