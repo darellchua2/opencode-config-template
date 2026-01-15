@@ -677,7 +677,7 @@ setup_config() {
     # Copy config.json
     if [ "$SKIP_CONFIG_COPY" != true ]; then
         if [ -f "${SCRIPT_DIR}/config.json" ]; then
-            run_cmd "cp ${SCRIPT_DIR}/config.json ${CONFIG_FILE}/"
+            run_cmd "cp ${SCRIPT_DIR}/config.json ${CONFIG_FILE}"
             log_success "config.json copied successfully"
         else
             log_error "config.json not found in ${SCRIPT_DIR}"
