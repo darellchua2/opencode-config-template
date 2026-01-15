@@ -25,6 +25,16 @@ To verify changes:
 - **Schema**: Follows OpenCode config schema at https://opencode.ai/config.json
 - **Environment Variables**: Use `${VAR_NAME}` syntax for sensitive values (never hardcode API keys)
 - **MCP Servers**: Define all MCP servers under `mcp` section with proper type (local/remote)
+  - **GitHub MCP Server**: Use remote type with OAuth for authentication
+    ```json
+    "github": {
+      "type": "remote",
+      "url": "https://api.githubcopilot.com/mcp/",
+      "oauth": {}
+    }
+    ```
+    Authenticate with: `opencode mcp auth github`
+  - Alternatively, use GitHub PAT with `oauth: false` and `headers` for Authorization
 - **Agent Configuration**: Each agent under `agent` section must include:
   - `description`: Clear agent purpose in the agentic workflow
   - `mode`: "subagent" for specialized agents that can be called by others
@@ -45,6 +55,7 @@ To verify changes:
 - **State Awareness**: Agents should understand their role in the larger workflow
 - **Idempotency**: Agent operations should be safe to retry
 - **Tool Minimization**: Grant only necessary tools to reduce risk
+- **GitHub Integration**: Use GitHub MCP tools for repository operations, issue management, PR reviews, Actions workflows. Note: GitHub MCP can add significant context overhead
 
 ### Shell Scripts (setup.sh)
 
