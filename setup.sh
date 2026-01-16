@@ -14,6 +14,7 @@
 #   -d, --dry-run       Show what would be done without making changes
 #   -y, --yes           Auto-accept all prompts (use with caution)
 #   -v, --verbose       Enable verbose output
+#   -u, --update        Update OpenCode CLI only
 #
 ################################################################################
 
@@ -40,6 +41,7 @@ DRY_RUN=false
 AUTO_ACCEPT=false
 VERBOSE=false
 SKIP_CONFIG_COPY=false
+UPDATE_ONLY=false
 
 # API Keys (initialize to empty to avoid unbound variable errors)
 # Capture from environment if they exist
@@ -160,12 +162,14 @@ OPTIONS:
     -d, --dry-run       Show what would be done without making changes
     -y, --yes           Auto-accept all prompts (use with caution)
     -v, --verbose       Enable verbose output
+    -u, --update        Update OpenCode CLI only
 
 EXAMPLES:
     ./setup.sh              # Interactive full setup
     ./setup.sh --quick      # Quick setup (config only)
     ./setup.sh --dry-run    # Preview changes
     ./setup.sh -y -q        # Quick setup with auto-accept
+    ./setup.sh --update     # Update OpenCode CLI only
 
 For more information, visit: https://opencode.ai
 
@@ -195,6 +199,10 @@ parse_arguments() {
                 ;;
             -v|--verbose)
                 VERBOSE=true
+                shift
+                ;;
+            -u|--update)
+                UPDATE_ONLY=true
                 shift
                 ;;
             *)
@@ -643,6 +651,110 @@ setup_opencode() {
     return 0
 }
 
+# Update OpenCode CLI only
+update_opencode_cli() {
+    echo ""
+    echo "=== Updating OpenCode CLI ==="
+    echo ""
+
+    # Ensure npm/node is available
+    if ! command_exists npm; then
+        log_error "npm is not available. Cannot update opencode-ai."
+        log_info "Please install Node.js first: https://nodejs.org/"
+        return 1
+    fi
+
+    # Check if opencode is installed
+    if ! command_exists opencode; then
+        log_warn "opencode-ai is not installed."
+        if prompt_yes_no "Would you like to install opencode-ai now?" "y"; then
+            log_info "Installing opencode-ai..."
+            run_cmd "npm install -g opencode-ai"
+            
+            if command_exists opencode; then
+                log_success "opencode-ai installed successfully (v$(opencode --version 2>/dev/null))"
+                return 0
+            else
+                log_error "opencode-ai installation failed"
+                return 1
+            fi
+        else
+            log_info "Skipping opencode-ai installation"
+            return 0
+        fi
+    fi
+
+    # Get current version
+    local current_version
+    current_version=$(opencode --version 2>/dev/null || echo "unknown")
+    log_info "Current version: v${current_version}"
+
+    # Get latest version
+    local latest_version
+    log_info "Checking for updates..."
+    latest_version=$(npm view opencode-ai version 2>/dev/null || echo "unknown")
+    
+    if [ "$latest_version" = "unknown" ]; then
+        log_error "Could not fetch latest version from npm registry"
+        log_info "Check your internet connection and try again"
+        return 1
+    fi
+
+    log_info "Latest version: v${latest_version}"
+
+    # Compare versions
+    if [ "$current_version" = "$latest_version" ]; then
+        log_success "opencode-ai is already up to date!"
+        echo ""
+        
+        if prompt_yes_no "Force reinstall anyway?" "n"; then
+            log_info "Reinstalling opencode-ai..."
+            run_cmd "npm install -g opencode-ai@${latest_version}"
+            log_success "opencode-ai reinstalled successfully"
+        fi
+        
+        return 0
+    fi
+
+    echo ""
+    log_info "Update available: v${current_version} → v${latest_version}"
+    
+    # Check if auto-update is enabled
+    if [ "$AUTO_ACCEPT" = true ]; then
+        log_info "Auto-updating to latest version..."
+        run_cmd "npm install -g opencode-ai@latest"
+        
+        local new_version
+        new_version=$(opencode --version 2>/dev/null || echo "unknown")
+        
+        if [ "$new_version" = "$latest_version" ]; then
+            log_success "opencode-ai updated successfully to v${new_version}"
+        else
+            log_error "Update failed. Current version: v${new_version}"
+            return 1
+        fi
+    else
+        if prompt_yes_no "Update opencode-ai to v${latest_version}?" "y"; then
+            log_info "Updating opencode-ai..."
+            run_cmd "npm install -g opencode-ai@latest"
+            
+            local new_version
+            new_version=$(opencode --version 2>/dev/null || echo "unknown")
+            
+            if [ "$new_version" = "$latest_version" ]; then
+                log_success "opencode-ai updated successfully to v${new_version}"
+            else
+                log_error "Update failed. Current version: v${new_version}"
+                return 1
+            fi
+        else
+            log_info "Update cancelled by user"
+        fi
+    fi
+
+    return 0
+}
+
 # Setup configuration file
 setup_config() {
     echo ""
@@ -796,6 +908,10 @@ print_next_steps() {
     echo "3. Verify installation: opencode --version"
     echo "4. Test configuration: opencode --help"
     echo ""
+    echo "Update OpenCode CLI:"
+    echo "  - Run: ./setup.sh --update"
+    echo "  - Or: opencode --help (if update command is available)"
+    echo ""
     echo "GitHub Authentication:"
     echo "  - If you set a GITHUB_PAT, update config.json to use it (see README.md)"
     echo "  - Or use OAuth: opencode mcp auth github"
@@ -815,11 +931,24 @@ main() {
     parse_arguments "$@"
 
     # Display header
-    echo "=== OpenCode Configuration Setup v${SCRIPT_VERSION} ==="
-    echo ""
+    if [ "$UPDATE_ONLY" = false ]; then
+        echo "=== OpenCode Configuration Setup v${SCRIPT_VERSION} ==="
+        echo ""
+    else
+        echo "=== OpenCode CLI Updater v${SCRIPT_VERSION} ==="
+        echo ""
+    fi
 
     # Initialize logging
     init_logging
+
+    # Handle update-only mode
+    if [ "$UPDATE_ONLY" = true ]; then
+        update_opencode_cli
+        echo ""
+        echo "Update complete!"
+        exit 0
+    fi
 
     # Check dependencies
     if ! check_dependencies; then
@@ -842,6 +971,7 @@ main() {
         echo "Select an option:"
         echo "1) Copy config.json only (quick setup)"
         echo "2) Run full setup (API keys, Node.js, OpenCode, config)"
+        echo "3) Update OpenCode CLI only"
         echo ""
 
         local setup_option
@@ -855,6 +985,14 @@ main() {
                 ;;
             2)
                 log_info "Running full setup..."
+                ;;
+            3)
+                echo ""
+                log_info "Update OpenCode CLI only"
+                update_opencode_cli
+                echo ""
+                echo "Update complete!"
+                exit 0
                 ;;
             *)
                 log_warn "Invalid option. Running full setup..."
