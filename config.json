@@ -106,12 +106,8 @@
       }
     },
     "drawio": {
-      "type": "local",
-      "command": [
-        "npx",
-        "-y",
-        "drawio-mcp-server"
-      ],
+      "type": "remote",
+      "url": "http://localhost:41033/mcp",
       "enabled": true
     }
   }
