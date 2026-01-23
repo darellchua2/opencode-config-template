@@ -1063,7 +1063,21 @@ main() {
             2)
                 echo ""
                 log_info "Skills-Only Setup: Copy skills folder only"
-                SKILLS_ONLY=true
+                
+                # Validate OpenCode installation
+                if command_exists opencode; then
+                    log_success "OpenCode is installed ($(opencode --version 2>/dev/null))"
+                else
+                    log_error "OpenCode CLI is not installed globally"
+                    log_info "Please install OpenCode first: npm install -g opencode-ai"
+                    exit 1
+                fi
+                
+                setup_config || true
+                print_summary
+                echo ""
+                echo "Skills deployment complete!"
+                exit 0
                 ;;
             3)
                 log_info "Running full setup..."
@@ -1084,12 +1098,16 @@ main() {
     fi
 
     # Execute setup steps
-    if [ "$QUICK_SETUP" = false ]; then
+    if [ "$QUICK_SETUP" = false ] && [ "$SKILLS_ONLY" = false ]; then
         setup_github_pat || true
         setup_zai_api_key || true
         setup_nvm || true
         setup_nodejs || true
         setup_opencode || true
+    else
+        if [ "$QUICK_SETUP" = true ]; then
+            log_info "Running quick setup: config.json and skills deployment only"
+        fi
     fi
 
     setup_config || true
