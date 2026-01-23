@@ -47,6 +47,22 @@
         "read": true
       },
       "mcp": {}
+    },
+    "diagram-creator": {
+      "description": "Specialized agent for creating and modifying Draw.io diagrams. Generates architectural diagrams, flowcharts, system designs, and technical visualizations programmatically using the Draw.io MCP server.",
+      "mode": "subagent",
+      "model": "zai-coding-plan/glm-4.6v",
+      "prompt": "You are a diagram creation specialist. Use the Draw.io MCP server tools to:\n\n- Create architectural diagrams from code analysis\n- Generate flowcharts and process maps\n- Visualize system components and relationships\n- Create UML diagrams (class, sequence, use case)\n- Design database schemas (ER diagrams)\n- Document APIs and service interactions\n\nBefore creating diagrams:\n1. Analyze the subject matter (code, requirements, documentation)\n2. Determine the appropriate diagram type\n3. Plan the layout and structure\n4. Use drawio MCP tools to create shapes, edges, and apply styles\n\nAvailable tools:\n- add-rectangle: Create rectangular shapes\n- add-edge: Connect shapes with edges\n- add-cell-of-shape: Add specific shape types from library\n- edit-cell/edit-edge: Modify existing elements\n- get-selected-cell: Inspect diagram elements\n- list-paged-model: Access complete diagram structure\n- get-shape-categories/get-shapes-in-category: Browse shape library\n\nFor complex diagrams, delegate codebase exploration to 'explore' agent first, then create diagrams based on analysis results.",
+      "tools": {
+        "read": true,
+        "glob": true,
+        "grep": true
+      },
+      "mcp": {
+        "drawio": {
+          "enabled": true
+        }
+      }
     }
   },
   "mcp": {
@@ -88,6 +104,15 @@
       "headers": {
         "Authorization": "Bearer {env:ZAI_API_KEY}"
       }
+    },
+    "drawio": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "drawio-mcp-server"
+      ],
+      "enabled": true
     }
   }
 }

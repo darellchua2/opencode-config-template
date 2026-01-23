@@ -5,8 +5,10 @@ This repository contains a pre-configured OpenCode configuration file with suppo
 ## Prerequisites
 
 - **Node.js v24** and **npm** installed (required for MCP servers)
+  - Node.js v20+ is minimum requirement (setup script installs v24)
 - **LM Studio** running locally on port 1234 (for local LLM)
 - **Z.AI API Key** (required for Z.AI MCP services)
+- **Draw.io Browser Extension** (optional, for diagram creation - see Draw.io Integration section)
 
 ### Install Node.js using nvm
 
@@ -136,6 +138,9 @@ ls -la ~/.config/opencode/skills/
 - **explore** - Fast agent for codebase exploration
   - Find files by patterns, search code for keywords
   - Answer questions about codebase structure
+- **diagram-creator** - Specialized agent for creating Draw.io diagrams
+  - Generates architectural diagrams, flowcharts, and system designs
+  - Uses Draw.io MCP server for programmatic diagram creation
 
 ### Skills
 The repository includes reusable workflow skills:
@@ -150,6 +155,113 @@ Skills are deployed to `~/.config/opencode/skills/` during setup.
 - **web-search-prime** - Web search via Z.AI
 - **zai-mcp-server** - Local Z.AI MCP server
 - **zread** - Additional reading capabilities via Z.AI
+- **drawio** - Draw.io diagram creation and modification
+
+## Draw.io Integration
+
+### Overview
+
+The Draw.io MCP server enables AI agents to programmatically create, modify, and analyze Draw.io diagrams. This allows you to:
+
+- Generate architectural diagrams from code analysis
+- Create flowcharts and process maps
+- Visualize complex relationships in codebases
+- Annotate technical documentation with diagrams
+
+### Prerequisites
+
+- **Node.js v20+** (the setup script installs Node.js v24)
+- **Draw.io web version**: https://app.diagrams.net/
+- **Draw.io MCP Browser Extension** (Chrome/Firefox)
+
+### Setup Instructions
+
+#### 1. Install Draw.io Browser Extension
+
+**Chrome/Edge:**
+1. Visit [Chrome Web Store](https://chrome.google.com/webstore/detail/drawio-mcp-extension/okdbbjbbccdhhfaefmcmekalmmdjjide)
+2. Click "Add to Chrome" or "Add to Edge"
+
+**Firefox:**
+1. Visit [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/drawio-mcp-extension/)
+2. Click "Add to Firefox"
+
+#### 2. Verify Configuration
+
+The Draw.io MCP server is already configured in `config.json`:
+
+```json
+{
+  "mcp": {
+    "drawio": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "drawio-mcp-server"
+      ],
+      "enabled": true
+    }
+  }
+}
+```
+
+#### 3. Test Draw.io Integration
+
+1. Open Draw.io: https://app.diagrams.net/
+2. Verify the browser extension shows a green indicator (connected)
+3. Test using the diagram-creator agent
+
+### Using the Diagram Creator Agent
+
+The `diagram-creator` agent is specialized for creating diagrams:
+
+```bash
+# Create an architecture diagram
+opencode --agent diagram-creator "Create an architecture diagram showing the main components of this project"
+
+# Create a flowchart
+opencode --agent diagram-creator "Create a flowchart showing the authentication process"
+
+# Visualize code relationships
+opencode --agent diagram-creator "Create a diagram showing how these modules interact"
+```
+
+### Available Diagram Types
+
+- **Architecture Diagrams**: System components and their relationships
+- **Flowcharts**: Process flows and decision trees
+- **UML Diagrams**: Class, sequence, and use case diagrams
+- **ER Diagrams**: Database schemas and relationships
+- **Network Diagrams**: Infrastructure topology
+- **Mind Maps**: Hierarchical information structures
+
+### Platform-Specific Notes
+
+**Linux/macOS:**
+- Uses `npx` command (works with Node.js installed)
+- Browser extension available for Firefox/Chrome
+- No special permissions required
+
+**Windows:**
+- Use `npx.cmd` instead of `npx` in config.json if needed
+- Browser extensions available for Chrome/Edge/Firefox
+- Windows Defender may need to allow Node.js network access
+
+### Troubleshooting
+
+**Extension Not Connecting:**
+- Ensure MCP server is running: `npx -y drawio-mcp-server --help`
+- Check port 3333 is available: `netstat -tuln | grep 3333`
+- Refresh Draw.io page and recheck extension status
+
+**Port Already in Use:**
+- Use custom port in config.json by adding `--extension-port 8080` to command array
+- Update browser extension settings to match custom port
+
+**Node.js Version Issues:**
+- Verify Node.js version: `node --version` (should be v20+)
+- Update if needed: `nvm install 20 && nvm use 20`
 
 ## Important Notes
 

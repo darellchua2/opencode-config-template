@@ -597,12 +597,14 @@ setup_nodejs() {
 
         if command_exists node; then
             log_success "Node.js $(node --version) installed and active"
+            log_info "Node.js v20+ is required for Draw.io MCP server integration"
         else
             log_error "Node.js installation failed"
             return 1
         fi
     else
         log_info "Skipping Node.js v24 installation"
+        log_warn "Node.js v20+ is recommended for Draw.io MCP server integration"
     fi
 
     return 0
