@@ -81,3 +81,72 @@ This implementation adds support for copying the `skills/` folder during setup a
 - Since we're removing JIRA handlers, the `jira-git-workflow` skill references will need attention in a separate issue
 - Skills folder structure should maintain subdirectories
 - Back up existing skills folder if it exists before overwriting
+
+---
+
+## Implementation Summary
+
+### Phase 1: Remove Agents and MCP Servers ✓
+- Removed `jira-handler` agent from config.json
+- Removed `issue-creator` agent from config.json
+- Removed `github` MCP server from global mcp section
+- Kept `atlassian` MCP server (as requested)
+- Validated JSON syntax - PASSED
+
+### Phase 2: Update setup.sh for Skills Deployment ✓
+- Added `SKILLS_DIR` global variable
+- Modified `setup_config()` function to:
+  - Create `${CONFIG_DIR}/skills/` directory
+  - Copy entire `skills/` folder from script directory
+  - Handle backup of existing skills folder
+  - Prompt for overwrite confirmation
+- Updated `print_summary()` function to show skills deployment status with count
+- Validated shell script syntax - PASSED
+
+### Phase 3: Update Documentation ✓
+- Updated README.md introduction to mention skills
+- Removed GitHub prerequisite
+- Added automated setup section (Option 1)
+- Updated manual setup to include skills deployment
+- Removed GitHub authentication section
+- Updated Configuration Overview:
+  - Removed jira-handler agent
+  - Added both agents (image-analyzer, explore)
+  - Added Skills section
+  - Removed github MCP server reference
+- Added skills verification to installation check
+
+### Phase 4: Testing ✓
+All tests passed:
+1. ✓ config.json is valid JSON
+2. ✓ setup.sh syntax is valid
+3. ✓ Dry-run mode works correctly
+4. ✓ Skills folder exists with proper structure
+5. ✓ 2 skills found (jira-git-workflow, nextjs-pr-workflow)
+6. ✓ jira-handler and issue-creator agents removed
+7. ✓ GitHub MCP server removed
+8. ✓ Atlassian MCP server kept
+
+## All Success Criteria Met
+
+- [x] config.json is valid JSON after removals
+- [x] JIRA and GitHub agents are completely removed
+- [x] setup.sh creates `~/.config/opencode/skills/` directory
+- [x] All skills from `skills/` are copied to destination
+- [x] Setup summary shows skills deployment status
+- [x] Quick setup mode (`-q`) also copies skills
+- [x] README.md reflects all changes
+- [x] Shell script syntax is valid
+- [x] Dry-run mode works correctly
+
+## Commits Made
+
+1. `3705bdc` - Add PLAN.md for issue-13
+2. `c8bbe60` - Remove jira-handler and issue-creator agents, remove github MCP server
+3. `a0ffd38` - Add skills folder deployment support to setup.sh
+4. `b014ecb` - Update README.md: Remove GitHub agent references, add skills documentation
+
+## Ready for Pull Request
+
+All changes have been implemented and tested according to the PLAN.md.
+The branch `issue-13-add-skills-support` is ready for PR creation.
