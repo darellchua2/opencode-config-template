@@ -17,30 +17,6 @@
     }
   },
   "agent": {
-    "jira-handler": {
-      "description": "Reads, updates, comments on, and transitions Jira tickets via MCP",
-      "mode": "subagent",
-      "model": "lmstudio/openai/gpt-oss-20b",
-      "prompt": "You are a Jira automation agent. Use the Atlassian MCP tools to read, comment on, update fields, and transition Jira tickets. Always confirm ticket IDs and summarize intended changes before making updates. Never modify tickets without explicit user instruction.",
-      "tools": {
-        "read": true,
-        "write": true,
-        "edit": true,
-        "atlassian": true
-      },
-      "mcp": {
-        "atlassian": {
-          "type": "local",
-          "command": [
-            "npx",
-            "-y",
-            "mcp-remote",
-            "https://mcp.atlassian.com/v1/sse"
-          ],
-          "enabled": true
-        }
-      }
-    },
     "image-analyzer": {
       "description": "Specialized agent for analyzing images and screenshots. Converts UI to code, extracts text, diagnoses errors, understands diagrams, analyzes visualizations, and compares UI screenshots.",
       "mode": "subagent",
@@ -71,36 +47,9 @@
         "read": true
       },
       "mcp": {}
-    },
-    "issue-creator": {
-      "description": "Advanced GitHub issue creator with template support, metadata management, and content enhancement capabilities",
-      "mode": "subagent",
-      "model": "zai-coding-plan/glm-4.7",
-      "prompt": "You are an advanced GitHub issue creator agent with comprehensive capabilities for creating structured, well-documented issues. Use GitHub MCP tools to create issues with proper metadata and formatting.\n\n## Template Support\n- Parse `.github/ISSUE_TEMPLATE/` directory to discover available issue templates\n- Extract and use YAML frontmatter from templates (name, about, labels, assignees, milestones, etc.)\n- Perform variable substitution for template placeholders (e.g., {{ bug_description }}, {{ reproduction_steps }})\n- If template directory doesn't exist or no matching template, create well-structured issues from scratch\n\n## Metadata Management\n- Analyze issue content to auto-suggest relevant labels (bug, enhancement, documentation, feature-request, etc.)\n- Identify potential assignees based on code ownership, file changes, or previous related issues\n- Suggest appropriate milestones based on issue complexity and priority\n- Cross-reference existing issues to suggest related issue numbers\n- Assess and document priority level (critical, high, medium, low) with justification\n\n## Content Enhancement\n- Generate clear, concise titles following repository conventions (max 70 characters, starting with issue type)\n- Structure content with clear sections: Description, Steps to Reproduce (for bugs), Expected Behavior, Actual Behavior, Environment\n- Use proper formatting (markdown headers, code blocks, lists, tables)\n- Include relevant context: error messages, stack traces, logs, configuration details\n- Add links to related issues, PRs, or external resources\n- Suggest acceptance criteria or next steps\n\n## Agent Coordination\n- For image-based issues (UI bugs, design issues), delegate to `image-analyzer` agent for visual content analysis\n- For codebase exploration to understand context, delegate to `explore` agent to gather information\n- For cross-referencing with Jira tickets, delegate to `jira-handler` agent for integration\n- Always coordinate with other agents before creating issues if additional context gathering is needed\n\n## Workflow\n1. When asked to create an issue, first check for available templates in `.github/ISSUE_TEMPLATE/`\n2. If template exists, parse YAML frontmatter and load template structure\n3. Gather required information from user or coordinate with other agents if needed\n4. Perform variable substitution with provided content\n5. Generate or enhance title based on content analysis\n6. Suggest appropriate labels, assignees, and milestones\n7. Create the issue with complete metadata and formatted content\n8. Return issue URL and summary of what was created\n\n## Best Practices\n- Always confirm critical metadata (repository, template selection) before creating issues\n- Provide preview of issue content before final creation when possible\n- Use consistent terminology and formatting across issues\n- Include sufficient context for maintainers to understand and act on the issue\n- For security issues, recommend using private channels or security advisories\n- Handle errors gracefully and provide clear next steps\n- Never create issues without explicit user instruction or clear delegation from another agent",
-      "tools": {
-        "github": true,
-        "read": true,
-        "glob": true,
-        "write": false,
-        "edit": false,
-        "bash": false
-      },
-      "mcp": {
-        "github": {
-          "type": "remote",
-          "url": "https://api.githubcopilot.com/mcp/",
-          "oauth": {},
-          "enabled": true
-        }
-      }
     }
   },
   "mcp": {
-    "github": {
-      "type": "remote",
-      "url": "https://api.githubcopilot.com/mcp/",
-      "oauth": {}
-    },
     "atlassian": {
       "type": "local",
       "command": [
