@@ -32,6 +32,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOG_FILE="${HOME}/.opencode-setup.log"
 CONFIG_DIR="${HOME}/.config/opencode"
 CONFIG_FILE="${CONFIG_DIR}/config.json"
+SKILLS_DIR="${CONFIG_DIR}/skills"
 BASHRC_FILE="${HOME}/.bashrc"
 BACKUP_DIR="${HOME}/.opencode-backup-$(date +%Y%m%d_%H%M%S)"
 
@@ -797,6 +798,39 @@ setup_config() {
         fi
     fi
 
+    # Setup skills directory
+    echo ""
+    log_info "Setting up skills directory..."
+    
+    # Create skills directory
+    run_cmd "mkdir -p ${SKILLS_DIR}"
+    log_info "Created ${SKILLS_DIR} directory"
+    
+    # Check if skills folder exists in script directory
+    if [ -d "${SCRIPT_DIR}/skills" ]; then
+        # Check if skills directory already has content
+        if [ -d "${SKILLS_DIR}" ] && [ "$(ls -A ${SKILLS_DIR} 2>/dev/null)" ]; then
+            log_warn "Skills directory already contains files"
+            
+            if prompt_yes_no "Do you want to overwrite existing skills?" "n"; then
+                # Backup existing skills
+                if [ -d "${BACKUP_DIR}" ]; then
+                    run_cmd "cp -r ${SKILLS_DIR} ${BACKUP_DIR}/skills-backup"
+                    log_info "Backed up existing skills to ${BACKUP_DIR}/skills-backup"
+                fi
+            else
+                log_info "Skipping skills deployment. Existing skills preserved."
+                return 0
+            fi
+        fi
+        
+        # Copy skills folder
+        run_cmd "cp -r ${SCRIPT_DIR}/skills/* ${SKILLS_DIR}/"
+        log_success "Skills copied successfully to ${SKILLS_DIR}"
+    else
+        log_warn "skills/ folder not found in ${SCRIPT_DIR}"
+    fi
+
     return 0
 }
 
@@ -874,6 +908,14 @@ print_summary() {
         echo "✓ config.json: Copied to ${CONFIG_DIR}/"
     else
         echo "✗ config.json: Not copied"
+    fi
+
+    # skills directory status
+    if [ -d "$SKILLS_DIR" ] && [ "$(ls -A ${SKILLS_DIR} 2>/dev/null)" ]; then
+        local skill_count=$(find ${SKILLS_DIR} -name "SKILL.md" 2>/dev/null | wc -l)
+        echo "✓ skills: Deployed to ${SKILLS_DIR}/ (${skill_count} skill(s) found)"
+    else
+        echo "✗ skills: Not deployed"
     fi
 
     # ZAI_API_KEY status
