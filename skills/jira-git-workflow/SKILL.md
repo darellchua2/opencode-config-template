@@ -1,7 +1,7 @@
 ---
 name: jira-git-workflow
 description: Standard practice for JIRA ticket creation, branching, and PLAN.md commit workflow
-license: MIT
+license: Apache-2.0
 compatibility: opencode
 metadata:
   audience: developers

@@ -176,3 +176,38 @@ Skills are deployed to `~/.config/opencode/skills/` during setup.
 ### Config not loading
 - Verify file path: `ls -la ~/.config/opencode/config.json`
 - Check JSON syntax: `jq . ~/.config/opencode/config.json` (requires `jq`)
+
+
+## License
+
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+
+### Attribution
+
+Copyright 2026 OpenCode Configuration Template Contributors
+
+When using or modifying this configuration template, please provide attribution by:
+1. Retaining the LICENSE file in your distribution
+2. Including a notice in your documentation that references this project
+3. Not using the project name or contributors' names for endorsement without permission
+
+### What You Can Do
+
+✅ **Commercial Use** - Use this template in commercial projects
+✅ **Modification** - Modify and customize the configuration
+✅ **Distribution** - Share your modified versions
+✅ **Patent Use** - Explicit patent grant included
+✅ **Private Use** - Use privately without sharing
+
+### What You Must Do
+
+📋 **Include License** - Include a copy of the Apache 2.0 license
+📋 **State Changes** - Document modifications you make
+📋 **Include Notice** - Include copyright and attribution notices
+
+### What You Cannot Do
+
+❌ **Trademark Use** - Cannot use project trademarks without permission
+❌ **Hold Liable** - No warranty provided, use at your own risk
+
+For the full license text, see the [LICENSE](LICENSE) file.

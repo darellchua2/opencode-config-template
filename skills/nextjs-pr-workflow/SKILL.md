@@ -1,7 +1,7 @@
 ---
 name: nextjs-pr-workflow
 description: Complete Next.js PR workflow with linting, building, and JIRA/git issue integration for PLAN.md completion
-license: MIT
+license: Apache-2.0
 compatibility: opencode
 metadata:
   audience: developers
