@@ -3,6 +3,22 @@
 ################################################################################
 # OpenCode Configuration Setup Script
 #
+# Copyright 2026 OpenCode Configuration Template Contributors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+#
 # Description: Automated setup for OpenCode configuration with proper error
 #              handling, logging, and user experience enhancements.
 #
@@ -10,7 +26,8 @@
 #
 # Options:
 #   -h, --help          Show this help message
-#   -q, --quick         Quick setup (copy config.json only)
+#   -q, --quick         Quick setup (copy config.json and skills only)
+#   -s, --skills-only    Skills-only setup (copy skills folder only, validate OpenCode installed)
 #   -d, --dry-run       Show what would be done without making changes
 #   -y, --yes           Auto-accept all prompts (use with caution)
 #   -v, --verbose       Enable verbose output
@@ -32,11 +49,13 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOG_FILE="${HOME}/.opencode-setup.log"
 CONFIG_DIR="${HOME}/.config/opencode"
 CONFIG_FILE="${CONFIG_DIR}/config.json"
+SKILLS_DIR="${CONFIG_DIR}/skills"
 BASHRC_FILE="${HOME}/.bashrc"
 BACKUP_DIR="${HOME}/.opencode-backup-$(date +%Y%m%d_%H%M%S)"
 
 # Flags
 QUICK_SETUP=false
+SKILLS_ONLY=false
 DRY_RUN=false
 AUTO_ACCEPT=false
 VERBOSE=false
@@ -156,9 +175,10 @@ OpenCode Configuration Setup Script v${SCRIPT_VERSION}
 USAGE:
     ./setup.sh [OPTIONS]
 
-OPTIONS:
+ OPTIONS:
     -h, --help          Show this help message
-    -q, --quick         Quick setup (copy config.json only)
+    -q, --quick         Quick setup (copy config.json and skills only)
+    -s, --skills-only    Skills-only setup (copy skills folder only, validate OpenCode installed)
     -d, --dry-run       Show what would be done without making changes
     -y, --yes           Auto-accept all prompts (use with caution)
     -v, --verbose       Enable verbose output
@@ -166,7 +186,8 @@ OPTIONS:
 
 EXAMPLES:
     ./setup.sh              # Interactive full setup
-    ./setup.sh --quick      # Quick setup (config only)
+    ./setup.sh --quick      # Quick setup (config and skills only)
+    ./setup.sh --skills-only # Skills-only setup (copy skills only)
     ./setup.sh --dry-run    # Preview changes
     ./setup.sh -y -q        # Quick setup with auto-accept
     ./setup.sh --update     # Update OpenCode CLI only
@@ -186,6 +207,10 @@ parse_arguments() {
                 ;;
             -q|--quick)
                 QUICK_SETUP=true
+                shift
+                ;;
+            -s|--skills-only)
+                SKILLS_ONLY=true
                 shift
                 ;;
             -d|--dry-run)
@@ -797,6 +822,39 @@ setup_config() {
         fi
     fi
 
+    # Setup skills directory
+    echo ""
+    log_info "Setting up skills directory..."
+    
+    # Create skills directory
+    run_cmd "mkdir -p ${SKILLS_DIR}"
+    log_info "Created ${SKILLS_DIR} directory"
+    
+    # Check if skills folder exists in script directory
+    if [ -d "${SCRIPT_DIR}/skills" ]; then
+        # Check if skills directory already has content
+        if [ -d "${SKILLS_DIR}" ] && [ "$(ls -A ${SKILLS_DIR} 2>/dev/null)" ]; then
+            log_warn "Skills directory already contains files"
+            
+            if prompt_yes_no "Do you want to overwrite existing skills?" "n"; then
+                # Backup existing skills
+                if [ -d "${BACKUP_DIR}" ]; then
+                    run_cmd "cp -r ${SKILLS_DIR} ${BACKUP_DIR}/skills-backup"
+                    log_info "Backed up existing skills to ${BACKUP_DIR}/skills-backup"
+                fi
+            else
+                log_info "Skipping skills deployment. Existing skills preserved."
+                return 0
+            fi
+        fi
+        
+        # Copy skills folder
+        run_cmd "cp -r ${SCRIPT_DIR}/skills/* ${SKILLS_DIR}/"
+        log_success "Skills copied successfully to ${SKILLS_DIR}"
+    else
+        log_warn "skills/ folder not found in ${SCRIPT_DIR}"
+    fi
+
     return 0
 }
 
@@ -876,6 +934,14 @@ print_summary() {
         echo "✗ config.json: Not copied"
     fi
 
+    # skills directory status
+    if [ -d "$SKILLS_DIR" ] && [ "$(ls -A ${SKILLS_DIR} 2>/dev/null)" ]; then
+        local skill_count=$(find ${SKILLS_DIR} -name "SKILL.md" 2>/dev/null | wc -l)
+        echo "✓ skills: Deployed to ${SKILLS_DIR}/ (${skill_count} skill(s) found)"
+    else
+        echo "✗ skills: Not deployed"
+    fi
+
     # ZAI_API_KEY status
     if grep -q "ZAI_API_KEY" "$BASHRC_FILE" 2>/dev/null; then
         echo "✓ ZAI_API_KEY: Added to ${BASHRC_FILE}"
@@ -931,8 +997,11 @@ main() {
     parse_arguments "$@"
 
     # Display header
-    if [ "$UPDATE_ONLY" = false ]; then
+    if [ "$UPDATE_ONLY" = false ] && [ "$SKILLS_ONLY" = false ]; then
         echo "=== OpenCode Configuration Setup v${SCRIPT_VERSION} ==="
+        echo ""
+    elif [ "$SKILLS_ONLY" = true ]; then
+        echo "=== OpenCode Skills Deployment v${SCRIPT_VERSION} ==="
         echo ""
     else
         echo "=== OpenCode CLI Updater v${SCRIPT_VERSION} ==="
@@ -947,6 +1016,29 @@ main() {
         update_opencode_cli
         echo ""
         echo "Update complete!"
+        exit 0
+    fi
+
+    # Handle skills-only mode
+    if [ "$SKILLS_ONLY" = true ]; then
+        log_info "Validating OpenCode installation..."
+        if command_exists opencode; then
+            log_success "OpenCode is installed ($(opencode --version 2>/dev/null))"
+        else
+            log_error "OpenCode CLI is not installed globally"
+            log_info "Please install OpenCode first: npm install -g opencode-ai"
+            exit 1
+        fi
+
+        if ! check_dependencies; then
+            log_error "Dependency check failed. Please install missing dependencies."
+            exit 1
+        fi
+
+        setup_config || true
+        print_summary
+        echo ""
+        echo "Skills deployment complete!"
         exit 0
     fi
 
@@ -966,12 +1058,13 @@ main() {
         fi
     fi
 
-    # Main menu (if not quick setup)
-    if [ "$QUICK_SETUP" = false ] && [ "$AUTO_ACCEPT" = false ]; then
+    # Main menu (if not quick setup or skills-only)
+    if [ "$QUICK_SETUP" = false ] && [ "$SKILLS_ONLY" = false ] && [ "$AUTO_ACCEPT" = false ]; then
         echo "Select an option:"
-        echo "1) Copy config.json only (quick setup)"
-        echo "2) Run full setup (API keys, Node.js, OpenCode, config)"
-        echo "3) Update OpenCode CLI only"
+        echo "1) Copy config.json and skills only (quick setup)"
+        echo "2) Copy skills only (skills-only setup)"
+        echo "3) Run full setup (API keys, Node.js, OpenCode, config)"
+        echo "4) Update OpenCode CLI only"
         echo ""
 
         local setup_option
@@ -980,13 +1073,32 @@ main() {
         case "$setup_option" in
             1)
                 echo ""
-                log_info "Quick Setup: Copy config.json only"
+                log_info "Quick Setup: Copy config.json and skills only"
                 QUICK_SETUP=true
                 ;;
             2)
-                log_info "Running full setup..."
+                echo ""
+                log_info "Skills-Only Setup: Copy skills folder only"
+                
+                # Validate OpenCode installation
+                if command_exists opencode; then
+                    log_success "OpenCode is installed ($(opencode --version 2>/dev/null))"
+                else
+                    log_error "OpenCode CLI is not installed globally"
+                    log_info "Please install OpenCode first: npm install -g opencode-ai"
+                    exit 1
+                fi
+                
+                setup_config || true
+                print_summary
+                echo ""
+                echo "Skills deployment complete!"
+                exit 0
                 ;;
             3)
+                log_info "Running full setup..."
+                ;;
+            4)
                 echo ""
                 log_info "Update OpenCode CLI only"
                 update_opencode_cli
@@ -1002,12 +1114,16 @@ main() {
     fi
 
     # Execute setup steps
-    if [ "$QUICK_SETUP" = false ]; then
+    if [ "$QUICK_SETUP" = false ] && [ "$SKILLS_ONLY" = false ]; then
         setup_github_pat || true
         setup_zai_api_key || true
         setup_nvm || true
         setup_nodejs || true
         setup_opencode || true
+    else
+        if [ "$QUICK_SETUP" = true ]; then
+            log_info "Running quick setup: config.json and skills deployment only"
+        fi
     fi
 
     setup_config || true

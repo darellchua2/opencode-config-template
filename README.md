@@ -1,13 +1,12 @@
 # OpenCode Configuration Template
 
-This repository contains a pre-configured OpenCode configuration file with support for local LM Studio, GitHub integration via GitHub MCP server, Jira/Confluence integration via Atlassian MCP, and Z.AI services.
+This repository contains a pre-configured OpenCode configuration file with support for local LM Studio, Jira/Confluence integration via Atlassian MCP, and Z.AI services. It also includes reusable workflow skills for common development tasks.
 
 ## Prerequisites
 
 - **Node.js v24** and **npm** installed (required for MCP servers)
 - **LM Studio** running locally on port 1234 (for local LLM)
 - **Z.AI API Key** (required for Z.AI MCP services)
-- **GitHub account** (required for GitHub MCP server)
 
 ### Install Node.js using nvm
 
@@ -35,16 +34,49 @@ npm install -g opencode-ai
 
 ## Setup Instructions
 
+### Option 1: Automated Setup (Recommended)
+
+Run the automated setup script for quick installation:
+
+```bash
+# Clone this repository
+git clone https://github.com/yourusername/opencode-config-template.git
+cd opencode-config-template
+
+# Run setup script
+./setup.sh
+```
+
+The setup script will:
+- Install/update nvm and Node.js v24
+- Install/update opencode-ai
+- Copy config.json to `~/.config/opencode/`
+- Copy skills to `~/.config/opencode/skills/`
+- Set up environment variables (ZAI_API_KEY)
+
+**Setup script options:**
+- `./setup.sh` - Interactive full setup
+- `./setup.sh --quick` - Quick setup (copy config and skills only)
+- `./setup.sh --update` - Update OpenCode CLI only
+- `./setup.sh --help` - Show all available options
+
+### Option 2: Manual Setup
+
 ### 1. Create Configuration Directory
 
 ```bash
 mkdir -p ~/.config/opencode
 ```
 
-### 2. Copy Configuration File
+### 2. Copy Configuration Files
 
 ```bash
+# Copy configuration
 cp config.json ~/.config/opencode/
+
+# Copy skills folder
+mkdir -p ~/.config/opencode/skills/
+cp -r skills/* ~/.config/opencode/skills/
 ```
 
 ### 3. Set ZAI_API_KEY Environment Variable
@@ -61,29 +93,11 @@ Then reload your shell configuration:
 source ~/.bashrc
 ```
 
-### 4. Authenticate with GitHub MCP Server
+### 4. Verify Installation
 
-The GitHub MCP server uses OAuth authentication. Run the following command to authenticate:
-
-```bash
-opencode mcp auth github
-```
-
-This will open your browser to complete the OAuth flow and connect OpenCode to your GitHub account.
-
-Alternatively, you can use a GitHub Personal Access Token (PAT):
-
-1. Create a GitHub PAT at https://github.com/settings/personal-access-tokens/new
-2. Set the `GITHUB_PAT` environment variable:
+Check that the configuration and skills have been deployed:
 
 ```bash
-echo 'export GITHUB_PAT="your-github-pat-here"' >> ~/.bashrc
-source ~/.bashrc
-```
-
-Then update `config.json` to use the PAT instead of OAuth:
-
-```json
 "github": {
   "type": "remote",
   "url": "https://api.githubcopilot.com/mcp/",
@@ -99,8 +113,14 @@ Then update `config.json` to use the PAT instead of OAuth:
 Confirm the configuration is in place:
 
 ```bash
+# Check configuration
 cat ~/.config/opencode/config.json
+
+# Check environment variable
 echo $ZAI_API_KEY
+
+# Check skills deployment
+ls -la ~/.config/opencode/skills/
 ```
 
 ## Configuration Overview
@@ -109,13 +129,22 @@ echo $ZAI_API_KEY
 - **LM Studio (local)** - Running at `http://127.0.0.1:1234/v1`
   - Model: `openai/gpt-oss-20b` (GPT-OSS 20B)
 
-### Agent
-- **jira-handler** - Automated Jira ticket management agent
-  - Can read, comment, update, and transition Jira tickets
-  - Uses Atlassian MCP tools
+### Agents
+- **image-analyzer** - Specialized agent for analyzing images and screenshots
+  - Converts UI to code, extracts text, diagnoses errors
+  - Understands diagrams and analyzes visualizations
+- **explore** - Fast agent for codebase exploration
+  - Find files by patterns, search code for keywords
+  - Answer questions about codebase structure
+
+### Skills
+The repository includes reusable workflow skills:
+- **jira-git-workflow** - Standard practice for JIRA ticket creation, branching, and PLAN.md workflow
+- **nextjs-pr-workflow** - Complete Next.js PR workflow with linting, building, and issue integration
+
+Skills are deployed to `~/.config/opencode/skills/` during setup.
 
 ### MCP Servers
-- **github** - GitHub integration for repositories, issues, PRs, Actions, and more
 - **atlassian** - Jira and Confluence integration
 - **web-reader** - Web content reading via Z.AI
 - **web-search-prime** - Web search via Z.AI
@@ -147,3 +176,38 @@ echo $ZAI_API_KEY
 ### Config not loading
 - Verify file path: `ls -la ~/.config/opencode/config.json`
 - Check JSON syntax: `jq . ~/.config/opencode/config.json` (requires `jq`)
+
+
+## License
+
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+
+### Attribution
+
+Copyright 2026 OpenCode Configuration Template Contributors
+
+When using or modifying this configuration template, please provide attribution by:
+1. Retaining the LICENSE file in your distribution
+2. Including a notice in your documentation that references this project
+3. Not using the project name or contributors' names for endorsement without permission
+
+### What You Can Do
+
+✅ **Commercial Use** - Use this template in commercial projects
+✅ **Modification** - Modify and customize the configuration
+✅ **Distribution** - Share your modified versions
+✅ **Patent Use** - Explicit patent grant included
+✅ **Private Use** - Use privately without sharing
+
+### What You Must Do
+
+📋 **Include License** - Include a copy of the Apache 2.0 license
+📋 **State Changes** - Document modifications you make
+📋 **Include Notice** - Include copyright and attribution notices
+
+### What You Cannot Do
+
+❌ **Trademark Use** - Cannot use project trademarks without permission
+❌ **Hold Liable** - No warranty provided, use at your own risk
+
+For the full license text, see the [LICENSE](LICENSE) file.
