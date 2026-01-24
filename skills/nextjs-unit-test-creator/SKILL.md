@@ -922,8 +922,9 @@ npm run test:coverage
 1. Review generated test files
 2. Update test data and expected values
 3. Run tests to verify they pass
-4. Add any missing scenarios
-5. Update snapshot tests if needed
+4. Update coverage badge in README.md using `coverage-readme-workflow`
+5. Add any missing scenarios
+6. Update snapshot tests if needed
 ```
 
 ## Scenario Generation Rules
@@ -1274,5 +1275,6 @@ npm run typecheck
 
 - `test-generator-framework`: Core test generation framework
 - `nextjs-pr-workflow`: For creating PRs after completing tests
+- `coverage-readme-workflow`: For updating README with coverage badges
 - `git-issue-creator`: For creating issues and branches for new features
 - `linting-workflow`: For ensuring code quality before testing

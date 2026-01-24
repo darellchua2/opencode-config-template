@@ -111,6 +111,27 @@ npm run test -- --coverage
 - No skipped tests (unless documented)
 - Coverage threshold (if configured) must be met
 
+### Step 3.6: Update Coverage Badge in README
+
+Use `coverage-readme-workflow` to update README with latest coverage:
+- Run tests with coverage
+- Extract coverage percentage
+- Update coverage badge in README.md
+- Ensure badge color reflects coverage level
+
+This ensures PR includes updated coverage documentation.
+
+**Coverage Update Command:**
+```bash
+# Run coverage workflow (delegated to coverage-readme-workflow)
+opencode --agent coverage-readme-workflow "update coverage badge"
+```
+
+**Behavior**:
+- If coverage badge exists: Update with new percentage
+- If coverage badge doesn't exist: Add new badge and section
+- Badge color reflects coverage level (>=80% green, 60-79% yellow, 40-59% orange, <40% red)
+
 ### Step 4: Identify Tracking System
 
 Read PLAN.md for JIRA ticket references:
@@ -207,6 +228,7 @@ Before creating PR:
 - [ ] `npm run test` passes with no failures (**BLOCKING**)
 - [ ] All tests pass (unit, integration, e2e)
 - [ ] No skipped tests (unless documented)
+- [ ] Coverage badge updated in README.md
 - [ ] All changes are committed and staged
 - [ ] Target branch is identified (main, develop, staging, etc. - not necessarily `dev`)
 - [ ] Branch is up to date with target branch
@@ -217,3 +239,5 @@ Before creating PR:
 ## Related Skills
 
 - `jira-git-workflow`: For creating JIRA tickets and initial PLAN.md setup
+- `coverage-readme-workflow`: For updating README with coverage badges before PR creation
+
