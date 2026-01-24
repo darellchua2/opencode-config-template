@@ -26,20 +26,6 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install dependencies
-        run: |
-          npx --yes @semantic-release/commit-analyzer
-          npx --yes @semantic-release/release-notes-generator
-          npx --yes @semantic-release/changelog
-          npx --yes @semantic-release/git
-          npx --yes @semantic-release/github
-          echo "✅ Dependencies installed"
-
       - name: Lint validation
         run: |
           echo "🔍 Validating config.json..."
@@ -104,10 +90,6 @@ jobs:
       - name: Create Release with CHANGELOG
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GIT_AUTHOR_NAME: github-actions[bot]
-          GIT_AUTHOR_EMAIL: github-actions[bot]@users.noreply.github.com
-          GIT_COMMITTER_NAME: github-actions[bot]
-          GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com
         run: |
           echo "🚀 Running semantic-release..."
           echo "📝 This will:"
@@ -117,7 +99,7 @@ jobs:
           echo "   4. Create GitHub release"
           echo "   5. Attach project files to release"
           echo ""
-          npx semantic-release
+          npx --yes semantic-release
 
       - name: Upload CHANGELOG as workflow artifact
         if: always()
