@@ -21,10 +21,11 @@ Create 4 specific OpenTofu/Terraform provider skills based on requested provider
   - Status: ✅ COMPLETED
   - Commit: 0aaf4a3
 
-- [ ] **opentofu-neon-explorer**
+- [x] **opentofu-neon-explorer**
   - URL: https://github.com/kislerdm/terraform-provider-neon
   - Latest version: v0.13.0
-  - Status: ⏳ PENDING
+  - Status: ✅ COMPLETED
+  - Commit: 99e6788
 
 - [ ] **opentofu-kubernetes-explorer**
   - URL: https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs
