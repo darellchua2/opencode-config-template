@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/darellchua2/opencode-config-template/compare/v1.2.0...v1.3.0) (2026-01-24)
+
+
+### Features
+
+* integrate coverage-readme-workflow with existing skills ([f7f9b6d](https://github.com/darellchua2/opencode-config-template/commit/f7f9b6d2a914f18a3dd8a2c716fb0cb4a1cec4f6)), closes [#30](https://github.com/darellchua2/opencode-config-template/issues/30)
+
 # [1.2.0](https://github.com/darellchua2/opencode-config-template/compare/v1.1.0...v1.2.0) (2026-01-24)
 
 
