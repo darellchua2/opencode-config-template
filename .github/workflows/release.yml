@@ -33,7 +33,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm ci
+          npm install
           echo "✅ Dependencies installed"
 
       - name: Lint validation
