@@ -53,6 +53,8 @@ else
     SCRIPT_VERSION="2.0.0"
     log_warn "VERSION file not found, using default: ${SCRIPT_VERSION}"
 fi
+
+# This is a configuration template repository (no package.json required)
 LOG_FILE="${HOME}/.opencode-setup.log"
 CONFIG_DIR="${HOME}/.config/opencode"
 CONFIG_FILE="${CONFIG_DIR}/config.json"

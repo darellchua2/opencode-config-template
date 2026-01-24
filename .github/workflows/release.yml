@@ -33,7 +33,11 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm install
+          npx --yes @semantic-release/commit-analyzer
+          npx --yes @semantic-release/release-notes-generator
+          npx --yes @semantic-release/changelog
+          npx --yes @semantic-release/git
+          npx --yes @semantic-release/github
           echo "✅ Dependencies installed"
 
       - name: Lint validation
@@ -47,27 +51,55 @@ jobs:
           echo "✅ setup.sh syntax is valid"
         continue-on-error: false
 
-      - name: Synchronize VERSION file
+      - name: Bump VERSION file
         run: |
-          VERSION=$(node -p "require('./package.json').version")
-          CURRENT_VERSION=$(cat VERSION 2>/dev/null || echo "")
+          # Read current version from VERSION
+          CURRENT_VERSION=$(cat VERSION | tr -d '[:space:]')
+          echo "📄 Current version: $CURRENT_VERSION"
 
-          echo "📦 package.json version: $VERSION"
-          echo "📄 Current VERSION file: $CURRENT_VERSION"
+          # Parse version components
+          MAJOR=$(echo $CURRENT_VERSION | cut -d. -f1)
+          MINOR=$(echo $CURRENT_VERSION | cut -d. -f2)
+          PATCH=$(echo $CURRENT_VERSION | cut -d. -f3)
 
-          # Only update if different
-          if [ "$VERSION" != "$CURRENT_VERSION" ]; then
-            echo "$VERSION" > VERSION
-            echo "✅ VERSION file updated to: $VERSION"
+          echo "📊 Version components: MAJOR=$MAJOR, MINOR=$MINOR, PATCH=$PATCH"
 
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add VERSION
-            git commit -m "chore(release): update VERSION file to ${VERSION} [skip ci]" || echo "No changes to VERSION file"
-            git push
+          # Analyze last commit to determine version bump
+          LAST_COMMIT_MSG=$(git log -1 --pretty=%B)
+          echo "📝 Last commit: $LAST_COMMIT_MSG"
+
+          NEW_VERSION=$CURRENT_VERSION
+
+          # Check for conventional commit types
+          if echo "$LAST_COMMIT_MSG" | grep -qi "BREAKING CHANGE"; then
+            echo "🚨 Breaking change detected - bumping MAJOR version"
+            MAJOR=$((MAJOR + 1))
+            MINOR=0
+            PATCH=0
+          elif echo "$LAST_COMMIT_MSG" | grep -qi "^feat:"; then
+            echo "✨ Feature detected - bumping MINOR version"
+            MINOR=$((MINOR + 1))
+            PATCH=0
+          elif echo "$LAST_COMMIT_MSG" | grep -qi "^fix:"; then
+            echo "🐛 Fix detected - bumping PATCH version"
+            PATCH=$((PATCH + 1))
           else
-            echo "✅ VERSION file already up to date"
+            echo "ℹ️ No version bump required"
+            echo "🎯 VERSION file will be used as-is"
+            exit 0
           fi
+
+          # Construct new version
+          NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+          echo "$NEW_VERSION" > VERSION
+          echo "✅ VERSION updated from $CURRENT_VERSION to $NEW_VERSION"
+
+          # Commit VERSION file update
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add VERSION
+          git commit -m "chore(release): bump VERSION to ${NEW_VERSION} [skip ci]"
+          git push
 
       - name: Create Release with CHANGELOG
         env:
@@ -79,7 +111,7 @@ jobs:
         run: |
           echo "🚀 Running semantic-release..."
           echo "📝 This will:"
-          echo "   1. Analyze commits for version bump"
+          echo "   1. Read VERSION file for version"
           echo "   2. Update CHANGELOG.md with release notes"
           echo "   3. Create git tag (vX.Y.Z)"
           echo "   4. Create GitHub release"
