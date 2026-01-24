@@ -12,13 +12,14 @@ metadata:
 
 I implement a complete Next.js PR creation workflow when finishing implementation of PLAN.md or new code:
 
-1. **Run Linting**: Execute `npm run lint` and resolve all linting errors
-2. **Verify Build**: Execute `npm run build` to ensure all builds complete successfully
-3. **Identify Tracking**: Check PLAN.md for JIRA references or git issue associations
-4. **Create Pull Request**: Create a PR linked to JIRA space or git issue
-5. **Update Documentation**: Ensure all PR documentation is complete
-6. **Add JIRA Comments**: If JIRA ticket exists, add appropriate comments
-7. **Merge Prompt**: Ask user which branch to merge into
+1. **Identify Target Branch**: Determine which branch the PR should merge into (not necessarily `dev`)
+2. **Run Linting**: Execute `npm run lint` and resolve all linting errors
+3. **Verify Build**: Execute `npm run build` to ensure all builds complete successfully
+4. **Identify Tracking**: Check PLAN.md for JIRA references or git issue associations
+5. **Create Pull Request**: Create a PR linked to JIRA space or git issue, targeting the specified branch
+6. **Update Documentation**: Ensure all PR documentation is complete
+7. **Add JIRA Comments**: If JIRA ticket exists, add appropriate comments
+8. **Merge Confirmation**: Ask user to confirm merge target before proceeding
 
 ## When to use me
 
@@ -39,12 +40,18 @@ Use this workflow when:
 
 ## Steps
 
-### Step 1: Check Project Structure
+ ### Step 1: Check Project Structure
 - Verify this is a Next.js project (check `package.json`)
 - Ensure `npm run lint` and `npm run build` scripts exist
 - Confirm you're on a feature branch (not main/master)
 
-### Step 2: Run Linting
+### Step 2: Identify Target Branch
+- Ask the user which branch the PR should merge into (e.g., `main`, `develop`, `staging`, `dev`, `production`)
+- This is not necessarily `dev` - different projects use different base branches
+- Detect the default branch if possible: `git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@'`
+- Store the target branch for use in git diff and PR creation commands
+
+### Step 3: Run Linting
 - Execute: `npm run lint`
 - Review any linting errors
 - Fix all linting errors iteratively:
@@ -53,7 +60,7 @@ Use this workflow when:
   - Re-run linting until all errors are resolved
 - Commit linting fixes if needed: `git commit -m "Fix linting errors"`
 
-### Step 3: Verify Build
+### Step 4: Verify Build
 - Execute: `npm run build`
 - Monitor build output for errors or warnings
 - If build fails:
@@ -63,7 +70,7 @@ Use this workflow when:
   - Re-run build until it succeeds
 - Commit build fixes if needed: `git commit -m "Fix build errors"`
 
-### Step 4: Identify Tracking System
+### Step 5: Identify Tracking System
 - Read the PLAN.md file to find tracking references:
   - Search for JIRA ticket format (e.g., `IBIS-123`, `PROJECT-456`)
   - Look for git issue references or PR descriptions
@@ -73,26 +80,26 @@ Use this workflow when:
   - **Git Issue** if a git issue number is referenced
   - **Standalone PR** if neither is present
 
-### Step 5: Check Git Status
+### Step 6: Check Git Status
 - Run: `git status` to see all changes
 - Run: `git diff --staged` to review staged changes
 - Ensure all relevant changes are staged: `git add .`
 - Verify the branch name aligns with the ticket (if applicable)
 
-### Step 6: Create Pull Request
+### Step 7: Create Pull Request
 
 #### If using JIRA:
 1. **Get JIRA Details**:
    - Use `atlassian_getAccessibleAtlassianResources` to get cloud ID
    - Note the JIRA ticket key from PLAN.md (e.g., `IBIS-123`)
 
-2. **Get Branch Diff Summary**:
-   - Run: `git diff <base-branch>...HEAD` to see full changes
-   - Run: `git log <base-branch>...HEAD --oneline` for commit history
+ 2. **Get Branch Diff Summary**:
+    - Run: `git diff <target-branch>...HEAD` to see full changes
+    - Run: `git log <target-branch>...HEAD --oneline` for commit history
 
-3. **Create PR via Git**:
-   ```bash
-   gh pr create --title "[<TICKET-KEY>] <Summary>" --body "$(cat <<'EOF'
+ 3. **Create PR via Git**:
+    ```bash
+    gh pr create --base <target-branch> --title "[<TICKET-KEY>] <Summary>" --body "$(cat <<'EOF'
    ## Summary
    <Bullet points describing the changes>
 
@@ -193,7 +200,7 @@ EOF
 )"
 ```
 
-### Step 7: Update PR Documentation
+### Step 8: Update PR Documentation
 - Ensure the PR body is complete:
   - Clear summary of changes
   - References to JIRA/git issues
@@ -203,7 +210,7 @@ EOF
 - Add any necessary screenshots or diagrams
 - Include links to related documentation
 
-### Step 8: Prompt for Merge Target
+### Step 9: Confirm Merge Target
 After successful PR creation, ask the user:
 
 > PR created successfully! 🎉
@@ -214,7 +221,7 @@ After successful PR creation, ask the user:
 > - Branch: <current-branch>
 > - URL: <pr-url>
 >
-> **Would you like to proceed with merging this PR? If yes, please specify the target branch to merge into** (e.g., `main`, `develop`, `staging`).
+> **Would you like to proceed with merging this PR? If yes, please specify the target branch to merge into** (e.g., `main`, `develop`, `staging`, `production`, etc. - not necessarily `dev`).
 
 Wait for user response before proceeding with any merge operations.
 
@@ -259,7 +266,8 @@ This skill will:
 - **Ticket Not Found**: Verify the ticket key exists and is accessible
 
 ### Git Issues
-- **Branch Diverged**: Rebase with `git rebase <base-branch>` before PR creation
+- **Branch Diverged**: Rebase with `git rebase <target-branch>` before PR creation
+- **Wrong Target Branch**: Verify you're creating the PR against the correct branch (not always `dev`)
 - **Unstaged Changes**: Ensure all changes are committed before PR
 - **No gh CLI**: Install GitHub CLI: `https://cli.github.com/`
 
@@ -281,6 +289,7 @@ Before creating PR:
 - [ ] `npm run lint` passes with no errors
 - [ ] `npm run build` completes successfully
 - [ ] All changes are committed and staged
+- [ ] Target branch is identified (main, develop, staging, etc. - not necessarily `dev`)
 - [ ] Branch is up to date with target branch
 - [ ] PLAN.md is updated if implementation changed
 - [ ] JIRA ticket or git issue reference is identified
