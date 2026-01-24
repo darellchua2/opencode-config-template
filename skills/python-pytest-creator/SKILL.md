@@ -397,7 +397,8 @@ pytest --cov=<module_name> tests/
 1. Review generated test files
 2. Adjust test data and expected values
 3. Run tests to verify they pass
-4. Add any missing scenarios
+4. Update coverage badge in README.md using `coverage-readme-workflow`
+5. Add any missing scenarios
 ```
 
 ## Python-Specific Scenario Generation
@@ -506,6 +507,7 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 ## Related Skills
 
 - `test-generator-framework`: Core test generation framework
+- `coverage-readme-workflow`: For updating README with coverage badges
 - `python-ruff-linter`: Python code quality before testing
 - `linting-workflow`: Generic linting workflow
 
