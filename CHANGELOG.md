@@ -1,3 +1,16 @@
+# [1.1.0](https://github.com/darellchua2/opencode-config-template/compare/v1.0.2...v1.1.0) (2026-01-24)
+
+
+### Bug Fixes
+
+* add mandatory test validation to nextjs-pr-workflow ([313b2d9](https://github.com/darellchua2/opencode-config-template/commit/313b2d98af3c8f28d3300743cf0f55c57b5e645f))
+
+
+### Features
+
+* implement Next.js 16 Unit Test Creator skill with mandatory test validation ([3ad6450](https://github.com/darellchua2/opencode-config-template/commit/3ad64502345c56f37bb53c24fffd4c1aab3b9a02)), closes [#24](https://github.com/darellchua2/opencode-config-template/issues/24)
+* update nextjs unit test creator skill for nextjs 16 ([9ec98a5](https://github.com/darellchua2/opencode-config-template/commit/9ec98a5cc10325a404db9d0e535a6ae05597f896))
+
 ## [1.0.2](https://github.com/darellchua2/opencode-config-template/compare/v1.0.1...v1.0.2) (2026-01-24)
 
 
