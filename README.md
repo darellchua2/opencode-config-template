@@ -142,10 +142,114 @@ ls -la ~/.config/opencode/skills/
   - Generates architectural diagrams, flowcharts, and system designs
   - Uses Draw.io MCP server for programmatic diagram creation
 
-### Skills
-The repository includes reusable workflow skills:
-- **jira-git-workflow** - Standard practice for JIRA ticket creation, branching, and PLAN.md workflow
-- **nextjs-pr-workflow** - Complete Next.js PR workflow with linting, building, and issue integration
+### Skills Architecture
+
+The repository follows a **framework-based skills architecture** to eliminate duplication and improve maintainability:
+
+#### Framework Skills (Reusable Base Components)
+
+Framework skills provide reusable workflows that multiple specialized skills can reference:
+
+- **`test-generator-framework`** - Generic test generation supporting multiple languages
+  - Framework detection (Jest, Vitest, Pytest, etc.)
+  - Scenario generation patterns
+  - User confirmation workflow
+  - Test file template system
+  - Executability verification
+
+- **`jira-git-integration`** - JIRA + Git workflow utilities
+  - JIRA resource detection (cloud ID, projects, issues)
+  - Branch naming conventions
+  - JIRA comment creation
+  - Image upload to JIRA
+  - Ticket retrieval and updates
+
+- **`pr-creation-workflow`** - Generic pull request creation
+  - Configurable base branch selection
+  - Pluggable quality checks (lint, build, test)
+  - Multi-platform integration (JIRA, GitHub issues)
+  - Image attachment support
+  - Merge confirmation flow
+
+- **`ticket-branch-workflow`** - Generic ticket-to-branch workflow
+  - Multi-platform ticket creation (GitHub, JIRA)
+  - PLAN.md generation and commit
+  - Branch creation and auto-checkout
+  - Branch push to remote
+  - Platform-specific tagging/labeling
+
+- **`linting-workflow`** - Generic linting for multiple languages
+  - Language detection (TypeScript/JavaScript vs Python)
+  - Linter detection (ESLint vs Ruff)
+  - Auto-fix application
+  - Error resolution guidance
+  - Fix commit workflow
+
+#### Specialized Skills
+
+Specialized skills use framework skills for core logic and add platform/language-specific functionality:
+
+**Test Generation Skills:**
+- **`nextjs-unit-test-creator`** - Next.js unit and E2E tests (uses `test-generator-framework`)
+- **`python-pytest-creator`** - Python pytest tests (uses `test-generator-framework`)
+
+**Pull Request Skills:**
+- **`git-pr-creator`** - GitHub pull requests with JIRA integration (uses `pr-creation-workflow`, `jira-git-integration`)
+- **`nextjs-pr-workflow`** - Complete Next.js PR workflow with JIRA (uses `pr-creation-workflow`, `linting-workflow`, `jira-git-integration`)
+
+**Ticket/Issue Skills:**
+- **`git-issue-creator`** - GitHub issues with tag detection (uses `ticket-branch-workflow`)
+- **`jira-git-workflow`** - JIRA ticket creation and branching (uses `ticket-branch-workflow`, `jira-git-integration`)
+
+**Linting Skills:**
+- **`python-ruff-linter`** - Python linting with Ruff (uses `linting-workflow`)
+
+**Standalone Skills (No Framework):**
+- **`ascii-diagram-creator`** - Create ASCII diagrams from workflow definitions
+- **`opencode-agent-creation`** - Create OpenCode agents following best practices
+- **`opencode-skill-creation`** - Create OpenCode skills following documentation standards
+- **`typescript-dry-principle`** - Apply DRY principle to eliminate code duplication
+
+#### How Frameworks and Skills Interact
+
+```
+User Request → Specialized Skill → Framework Skills → Implementation
+                 ↓                           ↓
+            Adds           →  Provides Core Workflow  → Completes Task
+            Platform/Language    Logic & Patterns
+            Specific Logic
+```
+
+**Example:** Creating a GitHub issue with `git-issue-creator`
+1. User requests: "Create a GitHub issue for this feature"
+2. Specialized skill (`git-issue-creator`) handles:
+   - GitHub-specific issue creation with `gh` CLI
+   - Intelligent tag detection (feature, bug, enhancement, etc.)
+3. Framework skill (`ticket-branch-workflow`) provides:
+   - PLAN.md generation with standard template
+   - Branch creation and checkout
+   - Commit PLAN.md
+   - Push to remote
+4. Result: Complete issue → branch → PLAN.md workflow
+
+**Example:** Creating Next.js tests with `nextjs-unit-test-creator`
+1. User requests: "Generate tests for this Next.js project"
+2. Specialized skill (`nextjs-unit-test-creator`) handles:
+   - Next.js-specific detection (package.json, Jest/Vitest)
+   - Component, utility, and hook test scenarios
+3. Framework skill (`test-generator-framework`) provides:
+   - User confirmation workflow
+   - Test file template creation
+   - Executability verification
+4. Result: Complete test generation workflow
+
+#### Benefits
+
+- **Reduced Duplication**: Common workflows defined once in frameworks
+- **Easier Updates**: Fix bugs in framework, all dependent skills benefit
+- **Better Discoverability**: Skills reference relevant frameworks
+- **Consistent UX**: Same patterns across similar workflows
+- **Modular Architecture**: Easy to add new language/framework support
 
 Skills are deployed to `~/.config/opencode/skills/` during setup.
 
