@@ -1,152 +1,119 @@
-# Plan: Add skills folder support and remove JIRA/GitHub agents
+# Plan: Add git-issue-creator skill with industry-standard GitHub issue management
 
 ## Overview
 
-This implementation adds support for copying the `skills/` folder during setup and removes JIRA-related agents from the configuration. The skills folder will be deployed to `~/.config/opencode/skills/` alongside `config.json`, enabling users to have reusable workflow definitions.
+Implement a new OpenCode skill called `git-issue-creator` that provides a complete GitHub issue and branch creation workflow. This skill will streamline the development process by automating issue creation, branch management, and planning documentation.
 
-## GitHub Issue Reference
-- Issue: #13
-- Link: https://github.com/darellchua2/opencode-config-template/issues/13
+## Issue Reference
+
+- Issue: #18
+- URL: https://github.com/darellchua2/opencode-config-template/issues/18
+- Labels: enhancement
 
 ## Files to Modify
 
-1. `setup.sh` (lines 758-801)
-   - Update `setup_config()` function to handle skills folder
-   - Add skills directory creation
-   - Add skills folder copy logic
-   - Update summary function to show skills status
-
-2. `config.json`
-   - Remove `jira-handler` agent (lines 20-43)
-   - Remove `issue-creator` agent (lines 75-96)
-   - Remove `atlassian` MCP server from global config (lines 104-113)
-   - Remove `github` MCP server from global config (lines 99-103)
-
-3. `README.md`
-   - Update documentation to reflect skills folder deployment
-   - Remove JIRA/GitHub agent references
+1. `skills/git-issue-creator/SKILL.md` - Create new skill documentation file
+2. `README.md` - Add documentation about the new skill (optional)
 
 ## Approach
 
-### Phase 1: Remove Agents and MCP Servers from config.json
-1. Remove the `jira-handler` agent definition
-2. Remove the `issue-creator` agent definition
-3. Remove the `atlassian` MCP server from the global `mcp` section
-4. Remove the `github` MCP server from the global `mcp` section
-5. Validate JSON syntax after changes
+### Step 1: Analyze Existing Skills
+- Review existing skill files (e.g., `opencode-skill-creation/SKILL.md`, `nextjs-pr-workflow/SKILL.md`)
+- Understand the standard YAML frontmatter format
+- Follow the established structure: "What I do", "When to use me", "Prerequisites", "Steps", "Best Practices", "Common Issues"
 
-### Phase 2: Update setup.sh for Skills Deployment
-1. Add `SKILLS_DIR` global variable (after `CONFIG_FILE`)
-2. Modify `setup_config()` function:
-   - Create `${CONFIG_DIR}/skills/` directory
-   - Copy entire `skills/` folder from script directory
-   - Handle backup of existing skills folder
-3. Update `print_summary()` function to show skills deployment status
+### Step 2: Create SKILL.md
+Generate `skills/git-issue-creator/SKILL.md` with:
 
-### Phase 3: Update Documentation
-1. Update README.md to mention skills folder deployment
-2. Remove references to JIRA/GitHub agents
-3. Update installation steps if needed
+**YAML Frontmatter:**
+```yaml
+---
+name: git-issue-creator
+description: Automate GitHub issue creation with intelligent tag detection, branch creation, PLAN.md setup, auto-checkout, and push to remote
+license: Apache-2.0
+compatibility: opencode
+metadata:
+  audience: developers
+  workflow: github-issue-branch
+---
+```
 
-### Phase 4: Testing
-1. Run `bash -n setup.sh` to validate syntax
-2. Run `jq . config.json` to validate JSON
-3. Test setup script in dry-run mode
-4. Verify skills folder is created and copied correctly
+**Content Sections:**
+- What I do
+- When to use me
+- Prerequisites (gh CLI, git repo, write access)
+- Steps (8 detailed steps from request analysis to push)
+- Tag Detection Logic
+- Examples (4 use cases)
+- PLAN.md Template Structure
+- Best Practices
+- Common Issues (with solutions)
+- Troubleshooting Checklist
+- Related Commands
+- Related Skills
 
-## Order of Implementation
+### Step 3: Implement Tag Detection Logic
+Define keyword matching for:
+- Bug: fix, error, doesn't work, broken, crash, fails
+- Feature: add, implement, create, new, support
+- Enhancement: improve, optimize, refactor, update, enhance
+- Documentation: document, readme, docs, guide, explain
+- Task: setup, configure, deploy, clean, organize
 
-1. **First**: Modify config.json (removing agents and MCP servers)
-2. **Second**: Update setup.sh (add skills deployment)
-3. **Third**: Update README.md (documentation)
-4. **Fourth**: Validate and test all changes
+### Step 4: Document Git Workflow
+Include commands for:
+- GitHub issue creation: `gh issue create --title "..." --body "..." --label "..." --assignee @me`
+- Branch creation: `git checkout -b issue-<number>` or `git checkout -b feature/<number>-<title>`
+- PLAN.md generation with template
+- Commit: `git commit -m "Add PLAN.md for #<issue-number>: <title>"`
+- Push: `git push -u origin <branch-name>`
+
+### Step 5: Add Error Handling
+Document solutions for:
+- GitHub CLI not authenticated
+- Repository not initialized
+- Branch already exists
+- PLAN.md already exists
+- No tags detected
+
+### Step 6: Provide Examples
+Create 4 detailed examples:
+1. Bug Fix
+2. New Feature
+3. Documentation
+4. Multiple Tags
+
+Each showing user input, detected tags, issue created, PLAN.md created, and branch pushed.
+
+### Step 7: Add Troubleshooting Checklists
+Pre-creation checklist (5 items)
+Post-creation checklist (8 items)
+
+### Step 8: Related Commands and Skills
+List useful GitHub CLI and git commands
+Reference `nextjs-pr-workflow` and `jira-git-workflow` as related skills
 
 ## Success Criteria
 
-- [ ] config.json is valid JSON after removals
-- [ ] JIRA and GitHub agents are completely removed
-- [ ] setup.sh creates `~/.config/opencode/skills/` directory
-- [ ] All skills from `skills/` are copied to destination
-- [ ] Setup summary shows skills deployment status
-- [ ] Quick setup mode (`-q`) also copies skills
-- [ ] README.md reflects all changes
-- [ ] Shell script syntax is valid
-- [ ] Dry-run mode works correctly
+- [ ] SKILL.md file created with proper YAML frontmatter
+- [ ] Skill follows OpenCode skill documentation standards
+- [ ] All core functionality documented (issue creation, branch management, PLAN.md, git ops)
+- [ ] Tag detection logic documented for all 5 issue types
+- [ ] Error handling documented for common scenarios
+- [ ] Troubleshooting checklist provided (pre and post creation)
+- [ ] 4 detailed example use cases included
+- [ ] Related skills section references `nextjs-pr-workflow` and `jira-git-workflow`
+- [ ] Best practices section included
+- [ ] Related commands documented
+- [ ] Code blocks use proper bash language specifier
+- [ ] All links are valid (absolute for external, relative for internal)
 
 ## Notes
 
-- The `skills/` folder currently contains:
-  - `jira-git-workflow/SKILL.md` - May need follow-up task to remove/update
-  - `nextjs-pr-workflow/SKILL.md` - Can be kept as example workflow
-- Since we're removing JIRA handlers, the `jira-git-workflow` skill references will need attention in a separate issue
-- Skills folder structure should maintain subdirectories
-- Back up existing skills folder if it exists before overwriting
-
----
-
-## Implementation Summary
-
-### Phase 1: Remove Agents and MCP Servers ✓
-- Removed `jira-handler` agent from config.json
-- Removed `issue-creator` agent from config.json
-- Removed `github` MCP server from global mcp section
-- Kept `atlassian` MCP server (as requested)
-- Validated JSON syntax - PASSED
-
-### Phase 2: Update setup.sh for Skills Deployment ✓
-- Added `SKILLS_DIR` global variable
-- Modified `setup_config()` function to:
-  - Create `${CONFIG_DIR}/skills/` directory
-  - Copy entire `skills/` folder from script directory
-  - Handle backup of existing skills folder
-  - Prompt for overwrite confirmation
-- Updated `print_summary()` function to show skills deployment status with count
-- Validated shell script syntax - PASSED
-
-### Phase 3: Update Documentation ✓
-- Updated README.md introduction to mention skills
-- Removed GitHub prerequisite
-- Added automated setup section (Option 1)
-- Updated manual setup to include skills deployment
-- Removed GitHub authentication section
-- Updated Configuration Overview:
-  - Removed jira-handler agent
-  - Added both agents (image-analyzer, explore)
-  - Added Skills section
-  - Removed github MCP server reference
-- Added skills verification to installation check
-
-### Phase 4: Testing ✓
-All tests passed:
-1. ✓ config.json is valid JSON
-2. ✓ setup.sh syntax is valid
-3. ✓ Dry-run mode works correctly
-4. ✓ Skills folder exists with proper structure
-5. ✓ 2 skills found (jira-git-workflow, nextjs-pr-workflow)
-6. ✓ jira-handler and issue-creator agents removed
-7. ✓ GitHub MCP server removed
-8. ✓ Atlassian MCP server kept
-
-## All Success Criteria Met
-
-- [x] config.json is valid JSON after removals
-- [x] JIRA and GitHub agents are completely removed
-- [x] setup.sh creates `~/.config/opencode/skills/` directory
-- [x] All skills from `skills/` are copied to destination
-- [x] Setup summary shows skills deployment status
-- [x] Quick setup mode (`-q`) also copies skills
-- [x] README.md reflects all changes
-- [x] Shell script syntax is valid
-- [x] Dry-run mode works correctly
-
-## Commits Made
-
-1. `3705bdc` - Add PLAN.md for issue-13
-2. `c8bbe60` - Remove jira-handler and issue-creator agents, remove github MCP server
-3. `a0ffd38` - Add skills folder deployment support to setup.sh
-4. `b014ecb` - Update README.md: Remove GitHub agent references, add skills documentation
-
-## Ready for Pull Request
-
-All changes have been implemented and tested according to the PLAN.md.
-The branch `issue-13-add-skills-support` is ready for PR creation.
+- The skill description should be concise (1-1024 characters) and specific enough for agents to choose correctly
+- Skill name follows naming convention: lowercase alphanumeric with single hyphens (git-issue-creator)
+- License should match repository standard (Apache-2.0)
+- All bash commands should include language specifier: ```bash
+- Industry-standard issue format includes: Description, Type, Labels, Context, Acceptance Criteria
+- Default tag should be "enhancement" if no keywords match
+- Branch naming should support both simple (issue-123) and semantic (feature/123-add-dark-mode) formats
