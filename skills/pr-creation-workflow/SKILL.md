@@ -104,13 +104,101 @@ if [ "$RUN_BUILD" = "true" ]; then
   fi
 fi
 
+#### Virtual Environment Detection for Python
+
+**Purpose**: Ensure Python tests and type checks run in isolated virtual environment to prevent system library pollution
+
+**Detection Patterns** (checked in priority order):
+- `.venv` - Poetry default
+- `venv` - Python standard
+- `myvenv` - Custom
+- `env` - Alternative
+- `virtualenv` - Legacy
+
+**Shell Detection and Activation**:
+```bash
+# Function to detect and activate virtual environment
+activate_venv() {
+  # Check for virtual environments in priority order
+  for venv_dir in ".venv" "venv" "myvenv" "env" "virtualenv"; do
+    if [ -d "$venv_dir" ]; then
+      # Check shell type and activate accordingly
+      if [ -n "${ZSH_VERSION:-}" ] || [ -n "${BASH_VERSION:-}" ]; then
+        if [ -f "$venv_dir/bin/activate" ]; then
+          source "$venv_dir/bin/activate"
+          echo "✅ Using virtual environment: $venv_dir"
+          return 0
+        fi
+      elif [ -n "${FISH_VERSION:-}" ]; then
+        if [ -f "$venv_dir/bin/activate.fish" ]; then
+          source "$venv_dir/bin/activate.fish"
+          echo "✅ Using virtual environment: $venv_dir (fish)"
+          return 0
+        fi
+      fi
+    fi
+  done
+
+  # No virtual environment found
+  return 1
+}
+```
+
+**PowerShell Activation** (for Windows):
+```powershell
+if (Test-Path ".venv") {
+  .\.venv\Scripts\Activate.ps1
+  Write-Host "✅ Using virtual environment: .venv"
+} elseif (Test-Path "venv") {
+  .\venv\Scripts\Activate.ps1
+  Write-Host "✅ Using virtual environment: venv"
+}
+```
+
+**Handling Missing Virtual Environments**:
+```bash
+# Before running Python tests or type checks
+if command -v poetry &>/dev/null; then
+  if ! activate_venv; then
+    echo "⚠️  No virtual environment found"
+    if [ -f pyproject.toml ]; then
+      read -p "Create virtual environment with 'poetry install'? (y/n): " CREATE_VENV
+      if [ "$CREATE_VENV" = "y" ]; then
+        echo "Creating virtual environment..."
+        poetry install
+        source .venv/bin/activate
+        echo "✅ Created and activated virtual environment"
+      else
+        echo "⚠️  Warning: Tests may affect system Python libraries"
+      fi
+    else
+      read -p "Create virtual environment with 'python -m venv .venv'? (y/n): " CREATE_VENV
+      if [ "$CREATE_VENV" = "y" ]; then
+        echo "Creating virtual environment..."
+        python -m venv .venv
+        source .venv/bin/activate
+        echo "✅ Created and activated virtual environment"
+      else
+        echo "⚠️  Warning: Tests may affect system Python libraries"
+      fi
+    fi
+  fi
+fi
+```
+
 # Test check (if enabled)
 if [ "$RUN_TESTS" = "true" ]; then
   echo "Running tests..."
   if command -v npm &>/dev/null; then
     npm run test
   elif command -v poetry &>/dev/null; then
+    # Ensure virtual environment is active
+    activate_venv || true  # Will prompt to create if missing
     poetry run pytest
+  elif command -v python &>/dev/null; then
+    # Direct Python project without Poetry
+    activate_venv || true
+    pytest 2>/dev/null || python -m pytest
   fi
 fi
 
@@ -120,7 +208,12 @@ if [ "$RUN_TYPECHECK" = "true" ]; then
   if command -v npm &>/dev/null; then
     npm run typecheck
   elif command -v poetry &>/dev/null; then
-    mypy .
+    # Ensure virtual environment is active
+    activate_venv || true
+    poetry run mypy . 2>/dev/null || mypy .
+  elif command -v python &>/dev/null; then
+    activate_venv || true
+    mypy . 2>/dev/null || echo "⚠️  mypy not installed, skipping type check"
   fi
 fi
 
@@ -485,6 +578,8 @@ fi
 - **Commit Quality**: Use clear, descriptive commit messages
 - **PR Size**: Keep PRs focused and small (< 400 lines changed ideal)
 - **Review Checklist**: Include self-review checklist in every PR
+- **Virtual Environments**: Always activate Python virtual environments before running tests or type checks to prevent system library pollution
+- **Environment Isolation**: Use Poetry's `.venv` or standard `venv` for Python projects, never run tests in system Python
 
 ## Common Issues
 
@@ -560,6 +655,116 @@ git push -u origin $(git branch --show-current)
 - Upload to JIRA if JIRA ticket exists
 - Ask user to handle manually
 
+### Virtual Environment Not Detected
+
+**Issue**: Virtual environment check fails or doesn't detect existing venv
+
+**Solution**:
+```bash
+# Manually specify virtual environment directory
+VENV_DIR=".venv"  # or "venv", "myvenv", etc.
+
+if [ -d "$VENV_DIR" ]; then
+  source "$VENV_DIR/bin/activate"
+  echo "✅ Manually activated: $VENV_DIR"
+else
+  echo "❌ Virtual environment not found: $VENV_DIR"
+  echo "Available options:"
+  ls -la | grep -E 'venv|env' || echo "  No virtual environments found"
+fi
+```
+
+**Common detection issues**:
+- Custom venv location not in standard paths
+- venv created with different tool (conda, virtualenvwrapper)
+- Shell-specific activation scripts missing
+- Permission issues accessing venv directory
+
+### Virtual Environment Activation Fails
+
+**Issue**: `activate_venv` function fails to activate virtual environment
+
+**Solution**:
+```bash
+# Check virtual environment structure
+ls -la .venv/bin/ | grep activate
+
+# Try manual activation
+source .venv/bin/activate
+
+# Verify activation
+echo $VIRTUAL_ENV  # Should show venv path
+which python      # Should show venv python, not system python
+```
+
+**If activation still fails**:
+```bash
+# Recreate virtual environment (Poetry)
+rm -rf .venv
+poetry install
+
+# Recreate virtual environment (pip)
+rm -rf .venv
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+### Poetry Install Fails
+
+**Issue**: `poetry install` command fails when creating virtual environment
+
+**Solution**:
+```bash
+# Check Poetry version
+poetry --version
+
+# Check pyproject.toml exists
+ls -la pyproject.toml
+
+# Try verbose install for debugging
+poetry install -vvv
+
+# Common fixes:
+# 1. Update Poetry
+pip install --upgrade poetry
+
+# 2. Clear Poetry cache
+poetry cache clear --all pypi
+
+# 3. Check Python version in pyproject.toml
+grep "python" pyproject.toml
+
+# 4. Use explicit Python version
+poetry env use $(which python3.11)
+```
+
+### Tests Run in System Python
+
+**Issue**: Tests execute in system Python despite virtual environment detection
+
+**Solution**:
+```bash
+# Verify virtual environment is active
+echo $VIRTUAL_ENV
+
+# Check which Python is being used
+which python
+which pytest
+
+# Force virtual environment activation before tests
+if [ -z "${VIRTUAL_ENV:-}" ]; then
+  echo "⚠️  Warning: No virtual environment active"
+  source .venv/bin/activate
+  echo "✅ Activated virtual environment: $VIRTUAL_ENV"
+fi
+
+# Now run tests
+poetry run pytest
+```
+
+**Prevention**: Always use `poetry run pytest` instead of direct `pytest` to ensure Poetry's environment is used.
+
 ## Troubleshooting Checklist
 
 Before creating PR:
@@ -570,6 +775,13 @@ Before creating PR:
 - [ ] Quality checks are configured correctly
 - [ ] Images are handled (uploaded or committed)
 - [ ] Tracking system reference is identified
+
+Before running Python quality checks:
+- [ ] Virtual environment detection is enabled for Python projects
+- [ ] Virtual environment directory exists (.venv, venv, myvenv, etc.)
+- [ ] Virtual environment activation scripts are present
+- [ ] Poetry is detected for Poetry projects
+- [ ] Shell type is correctly identified (bash/zsh/fish/PowerShell)
 
 After PR creation:
 - [ ] PR number is captured
@@ -611,6 +823,48 @@ gh pr merge <pr-number>
 
 # Close PR (without merge)
 gh pr close <pr-number>
+
+# Virtual Environment Commands
+
+# Detect if virtual environment is active
+echo $VIRTUAL_ENV
+
+# Check which Python is being used
+which python
+which pytest
+
+# Activate virtual environment (bash/zsh)
+source .venv/bin/activate
+
+# Activate virtual environment (fish)
+source .venv/bin/activate.fish
+
+# Activate virtual environment (PowerShell)
+.\.venv\Scripts\Activate.ps1
+
+# Create Poetry virtual environment
+poetry install
+
+# Create standard virtual environment
+python -m venv .venv
+
+# Run tests in virtual environment
+poetry run pytest
+
+# Run type checking in virtual environment
+poetry run mypy .
+
+# Run linting in virtual environment
+poetry run ruff check .
+
+# Deactivate virtual environment
+deactivate
+
+# List all virtual environment directories
+ls -la | grep -E 'venv|env'
+
+# Check Poetry environment info
+poetry env info
 ```
 
 ## Relevant Skills
