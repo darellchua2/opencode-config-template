@@ -13,10 +13,12 @@ metadata:
 I implement a complete Next.js PR creation workflow by extending framework skills:
 
 1. **Identify Target Branch**: Determine which branch PR should merge into (configurable, not hardcoded)
-2. **Run Next.js Quality Checks**: Execute `npm run lint` and `npm run build` using `linting-workflow` framework
+2. **Run Next.js Quality Checks**: Execute `npm run lint`, `npm run build`, and `npm run test` using `linting-workflow` framework
 3. **Identify Tracking**: Check for JIRA tickets or git issue references
 4. **Create Pull Request**: Use `pr-creation-workflow` framework for PR creation
 5. **Add JIRA Comments**: Use `jira-git-integration` framework for JIRA operations
+
+**Critical Requirement**: All tests MUST pass (`npm run test`) before PR creation. This is a blocking step.
 
 ## When to use me
 
@@ -25,7 +27,8 @@ Use this workflow when:
 - Finishing new feature implementation in Next.js apps
 - Ready to create a PR after development is complete
 - Need to ensure code quality before submitting changes
-- Following the standard practice of linting and building before PR
+- Following the standard practice of linting, building, and testing before PR
+- **All tests must pass** before PR can be created (blocking requirement)
 
 **Frameworks Used**:
 - `pr-creation-workflow`: For PR creation logic and quality checks
@@ -52,11 +55,12 @@ Use this workflow when:
 
 ## Prerequisites
 
-- Next.js project with `npm run lint` and `npm run build` scripts
+- Next.js project with `npm run lint`, `npm run build`, and `npm run test` scripts
 - Git repository initialized and on a feature branch
 - Active Atlassian/JIRA account (if using JIRA integration)
 - Write access to repository
 - PLAN.md file with implementation details
+- **All existing tests must pass** before using this workflow
 
 ## Steps
 
@@ -65,8 +69,10 @@ Use this workflow when:
 Verify this is a Next.js project and check for required scripts:
 ```bash
 # Verify package.json exists and has required scripts
-jq -r '.scripts.lint and .scripts.build' package.json
+jq -r '.scripts.lint and .scripts.build and .scripts.test' package.json
 ```
+
+**Required scripts**: `lint`, `build`, and `test`. If any script is missing, the workflow cannot proceed.
 
 ### Step 2: Identify Target Branch
 
@@ -83,6 +89,28 @@ Use `linting-workflow` framework with JavaScript/TypeScript language detection:
 - Apply auto-fix with `npm run lint -- --fix`
 - Handle errors with re-running
 
+### Step 3.5: Run Tests (BLOCKING STEP)
+
+Before proceeding to PR creation, **all tests must pass**:
+```bash
+# Run test suite
+npm run test
+
+# Or with coverage
+npm run test -- --coverage
+```
+
+**Behavior**:
+- If tests pass: Continue to PR creation
+- If tests fail: Do NOT create PR. User must fix failing tests first
+- Error message: "Tests failed. Please fix test failures before creating PR. Run: npm run test"
+
+**Test Requirements**:
+- All unit tests must pass
+- All integration tests must pass
+- No skipped tests (unless documented)
+- Coverage threshold (if configured) must be met
+
 ### Step 4: Identify Tracking System
 
 Read PLAN.md for JIRA ticket references:
@@ -94,10 +122,12 @@ PLAN_JIRA=$(grep -oE "[A-Z]+-[0-9]+" PLAN.md | head -1)
 ### Step 5: Create Pull Request via PR Workflow
 
 Use `pr-creation-workflow` framework with Next.js-specific configuration:
-- Quality checks: `npm run lint` and `npm run build`
+- Quality checks: `npm run lint`, `npm run build`, and `npm run test`
+- **Test validation is MANDATORY** - PR cannot be created if tests fail
 - Target branch: User-specified or detected
 - Tracking: JIRA ticket or git issue
 - Platform: GitHub PR (not GitLab)
+- PR body should include test results summary
 
 ### Step 6: Handle JIRA Integration via JIRA Workflow
 
@@ -158,13 +188,14 @@ This skill will:
 
 ## Best Practices
 
-- Always run linting and building before creating any PR
+- Always run linting, building, and testing before creating any PR
+- **Never create a PR with failing tests** - this is a blocking requirement
 - Keep PRs focused and small (ideally < 400 lines changed)
 - Write clear, descriptive PR titles that include ticket numbers
-- Include the quality check status in every PR (linting ✓, build ✓)
+- Include quality check status in every PR (linting ✓, build ✓, test ✓)
 - Add JIRA comments immediately after PR creation for traceability
-- Never skip the build step - it catches production-breaking issues
-- Commit linting and build fixes separately for clarity
+- Never skip the build or test steps - they catch production-breaking issues
+- Commit linting, build, and test fixes separately for clarity
 - Use semantic branch names (e.g., `feature/IBIS-456-add-component`)
 - Review your own changes before submitting PR
 
@@ -173,6 +204,9 @@ This skill will:
 Before creating PR:
 - [ ] `npm run lint` passes with no errors
 - [ ] `npm run build` completes successfully
+- [ ] `npm run test` passes with no failures (**BLOCKING**)
+- [ ] All tests pass (unit, integration, e2e)
+- [ ] No skipped tests (unless documented)
 - [ ] All changes are committed and staged
 - [ ] Target branch is identified (main, develop, staging, etc. - not necessarily `dev`)
 - [ ] Branch is up to date with target branch
