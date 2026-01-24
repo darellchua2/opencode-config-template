@@ -1,119 +1,84 @@
-# Plan: Add git-issue-creator skill with industry-standard GitHub issue management
+# Plan: Add semantic releases with GitHub Actions
 
 ## Overview
-
-Implement a new OpenCode skill called `git-issue-creator` that provides a complete GitHub issue and branch creation workflow. This skill will streamline the development process by automating issue creation, branch management, and planning documentation.
+Implement automated semantic releases for the repository using GitHub Actions. This will automatically package and publish releases when code is merged to the main branch, following semantic versioning conventions.
 
 ## Issue Reference
-
-- Issue: #18
-- URL: https://github.com/darellchua2/opencode-config-template/issues/18
+- Issue: #22
+- URL: https://github.com/darellchua2/opencode-config-template/issues/22
 - Labels: enhancement
 
 ## Files to Modify
+1. `.releaserc.json` - Semantic release configuration
+2. `.github/workflows/release.yml` - GitHub Actions workflow for automated releases
+3. `package.json` - Add semantic-release as dev dependency (if not exists)
+4. `CHANGELOG.md` - Auto-generated changelog (will be updated by semantic-release)
+5. `README.md` - Document the release process
 
-1. `skills/git-issue-creator/SKILL.md` - Create new skill documentation file
-2. `README.md` - Add documentation about the new skill (optional)
+## Files to Create
+1. `.releaserc.json` - Configuration for semantic release
+2. `.github/workflows/release.yml` - GitHub Actions workflow file
+3. `CHANGELOG.md` - Initial changelog file
 
 ## Approach
+Detailed steps or implementation methodology:
 
-### Step 1: Analyze Existing Skills
-- Review existing skill files (e.g., `opencode-skill-creation/SKILL.md`, `nextjs-pr-workflow/SKILL.md`)
-- Understand the standard YAML frontmatter format
-- Follow the established structure: "What I do", "When to use me", "Prerequisites", "Steps", "Best Practices", "Common Issues"
+1. **Step 1: Configure Semantic Release**
+   - Create `.releaserc.json` with appropriate configuration
+   - Configure branches to trigger on (main)
+   - Set up release rules for different commit types
+   - Configure changelog generation
 
-### Step 2: Create SKILL.md
-Generate `skills/git-issue-creator/SKILL.md` with:
+2. **Step 2: Create GitHub Actions Workflow**
+   - Create `.github/workflows/release.yml`
+   - Set up trigger for push to main branch
+   - Configure steps:
+     - Checkout code
+     - Setup Node.js
+     - Install dependencies
+     - Run semantic release
+   - Add permissions for creating releases
 
-**YAML Frontmatter:**
-```yaml
----
-name: git-issue-creator
-description: Automate GitHub issue creation with intelligent tag detection, branch creation, PLAN.md setup, auto-checkout, and push to remote
-license: Apache-2.0
-compatibility: opencode
-metadata:
-  audience: developers
-  workflow: github-issue-branch
----
-```
+3. **Step 3: Update Dependencies**
+   - Add semantic-release and plugins to package.json
+   - If package.json doesn't exist, create minimal package.json for config template
+   - Configure necessary plugins (changelog, git, etc.)
 
-**Content Sections:**
-- What I do
-- When to use me
-- Prerequisites (gh CLI, git repo, write access)
-- Steps (8 detailed steps from request analysis to push)
-- Tag Detection Logic
-- Examples (4 use cases)
-- PLAN.md Template Structure
-- Best Practices
-- Common Issues (with solutions)
-- Troubleshooting Checklist
-- Related Commands
-- Related Skills
+4. **Step 4: Configure Commit Conventions**
+   - Document conventional commit format in README
+   - Provide examples of commit messages
+   - Explain version bumping rules
 
-### Step 3: Implement Tag Detection Logic
-Define keyword matching for:
-- Bug: fix, error, doesn't work, broken, crash, fails
-- Feature: add, implement, create, new, support
-- Enhancement: improve, optimize, refactor, update, enhance
-- Documentation: document, readme, docs, guide, explain
-- Task: setup, configure, deploy, clean, organize
+5. **Step 5: Testing**
+   - Create a test commit with conventional format
+   - Merge to main and verify workflow runs
+   - Verify release is created with correct version
+   - Verify CHANGELOG.md is updated
 
-### Step 4: Document Git Workflow
-Include commands for:
-- GitHub issue creation: `gh issue create --title "..." --body "..." --label "..." --assignee @me`
-- Branch creation: `git checkout -b issue-<number>` or `git checkout -b feature/<number>-<title>`
-- PLAN.md generation with template
-- Commit: `git commit -m "Add PLAN.md for #<issue-number>: <title>"`
-- Push: `git push -u origin <branch-name>`
-
-### Step 5: Add Error Handling
-Document solutions for:
-- GitHub CLI not authenticated
-- Repository not initialized
-- Branch already exists
-- PLAN.md already exists
-- No tags detected
-
-### Step 6: Provide Examples
-Create 4 detailed examples:
-1. Bug Fix
-2. New Feature
-3. Documentation
-4. Multiple Tags
-
-Each showing user input, detected tags, issue created, PLAN.md created, and branch pushed.
-
-### Step 7: Add Troubleshooting Checklists
-Pre-creation checklist (5 items)
-Post-creation checklist (8 items)
-
-### Step 8: Related Commands and Skills
-List useful GitHub CLI and git commands
-Reference `nextjs-pr-workflow` and `jira-git-workflow` as related skills
+6. **Step 6: Documentation**
+   - Update README.md with release process documentation
+   - Include instructions for contributors
+   - Document how to create a release
 
 ## Success Criteria
-
-- [ ] SKILL.md file created with proper YAML frontmatter
-- [ ] Skill follows OpenCode skill documentation standards
-- [ ] All core functionality documented (issue creation, branch management, PLAN.md, git ops)
-- [ ] Tag detection logic documented for all 5 issue types
-- [ ] Error handling documented for common scenarios
-- [ ] Troubleshooting checklist provided (pre and post creation)
-- [ ] 4 detailed example use cases included
-- [ ] Related skills section references `nextjs-pr-workflow` and `jira-git-workflow`
-- [ ] Best practices section included
-- [ ] Related commands documented
-- [ ] Code blocks use proper bash language specifier
-- [ ] All links are valid (absolute for external, relative for internal)
+- [ ] Semantic release configuration file created (.releaserc.json)
+- [ ] GitHub Actions workflow file created (.github/workflows/release.yml)
+- [ ] Workflow triggers correctly on push to main
+- [ ] Release is created with correct semantic version
+- [ ] CHANGELOG.md is automatically generated and updated
+- [ ] Release notes include relevant commit messages
+- [ ] README.md documents the release process
+- [ ] Testing confirms workflow works end-to-end
 
 ## Notes
-
-- The skill description should be concise (1-1024 characters) and specific enough for agents to choose correctly
-- Skill name follows naming convention: lowercase alphanumeric with single hyphens (git-issue-creator)
-- License should match repository standard (Apache-2.0)
-- All bash commands should include language specifier: ```bash
-- Industry-standard issue format includes: Description, Type, Labels, Context, Acceptance Criteria
-- Default tag should be "enhancement" if no keywords match
-- Branch naming should support both simple (issue-123) and semantic (feature/123-add-dark-mode) formats
+- This is a configuration template repository, so package.json may not exist
+- If package.json is needed, create minimal version only for semantic-release
+- Ensure the workflow has proper permissions to create releases
+- Use conventional commits format: `feat:`, `fix:`, `chore:`, `docs:`, etc.
+- Version bumping rules:
+  - `feat:` triggers minor version bump (x.Y.z)
+  - `fix:` triggers patch version bump (x.y.Z)
+  - `BREAKING CHANGE:` triggers major version bump (X.y.z)
+  - Other types don't trigger releases
+- Consider adding `.github/CONTRIBUTING.md` with commit guidelines
+- The workflow should only run on main branch pushes, not PRs
