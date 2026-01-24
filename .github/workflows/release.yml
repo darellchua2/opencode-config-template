@@ -38,7 +38,16 @@ jobs:
         continue-on-error: false
 
       - name: Bump VERSION file
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # Configure git for GitHub authentication
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          echo "https://x-access-token:${GITHUB_TOKEN}@github.com" > ~/.git-credentials
+          git config --global credential.helper store
+          chmod 600 ~/.git-credentials
+
           # Read current version from VERSION
           CURRENT_VERSION=$(cat VERSION | tr -d '[:space:]')
           echo "📄 Current version: $CURRENT_VERSION"
@@ -80,9 +89,7 @@ jobs:
           echo "$NEW_VERSION" > VERSION
           echo "✅ VERSION updated from $CURRENT_VERSION to $NEW_VERSION"
 
-          # Commit VERSION file update
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Commit and push VERSION file update
           git add VERSION
           git commit -m "chore(release): bump VERSION to ${NEW_VERSION} [skip ci]"
           git push
