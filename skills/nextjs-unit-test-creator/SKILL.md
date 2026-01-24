@@ -1,26 +1,32 @@
 ---
 name: nextjs-unit-test-creator
-description: Generate comprehensive unit and E2E tests for Next.js using the test-generator-framework
+description: Generate comprehensive unit tests for Next.js 16 applications covering App Router, Server Components, Client Components, API routes, and Server Actions with industry best practices
 license: Apache-2.0
 compatibility: opencode
 metadata:
   audience: developers
-  workflow: nextjs-testing
+  workflow: test-generation
 ---
 
 ## What I do
 
-I implement a complete Next.js test generation workflow by extending the `test-generator-framework`:
+I implement a complete Next.js 16 test generation workflow by extending `test-generator-framework`:
 
-1. **Analyze Next.js Codebase**: Scan the Next.js application to identify components, hooks, and utilities using Next.js patterns
-2. **Detect Next.js Framework**: Identify specific Next.js testing setup (Jest, Vitest, Playwright) from `package.json`
-3. **Generate Next.js-Specific Scenarios**: Create comprehensive test scenarios covering:
-   - **Components**: Server components, client components, SSR/SSG behavior
+1. **Analyze Next.js Codebase**: Scan Next.js 16 application to identify components, hooks, and utilities using App Router patterns
+2. **Detect Next.js Framework**: Identify specific Next.js testing setup (Vitest recommended for Next.js 16, Jest, Playwright) from `package.json`
+3. **Generate Next.js-16-Specific Scenarios**: Create comprehensive test scenarios covering:
+   - **App Router Components**: Server components (`page.tsx`, `layout.tsx`, `loading.tsx`, `error.tsx`)
+   - **Client Components**: `"use client"` components with hooks and interactions
+   - **Server Actions**: `async` server action functions and mutations
+   - **API Routes**: App Router API handlers (`app/api/*/route.ts`)
    - **Hooks**: Custom hooks with React-specific patterns
-   - **Utility Functions**: Next.js utilities (e.g., routing, data fetching)
+   - **Utility Functions**: Next.js utilities (routing, data fetching, validation)
    - **E2E Tests**: Next.js routing, page navigation, API routes (if Playwright detected)
 4. **Delegate to Framework**: Use `test-generator-framework` for core test generation workflow
-5. **Ensure Executability**: Verify tests run with `npm run test` or framework-specific command
+5. **Ensure Executability**: Verify tests run with `npm run test` - **ALL TESTS MUST PASS**
+6. **Validate Next.js 16 Patterns**: Ensure tests handle Server Components, Suspense, and App Router correctly
+
+**Critical Requirement**: All generated tests must pass (`npm run test`) before PR creation. This integrates with `nextjs-pr-workflow` to enforce test validation.
 
 ## When to use me
 
@@ -42,6 +48,47 @@ Use this workflow when:
 - Appropriate file permissions to create test files
 
 Note: The skill automatically detects the test framework from `package.json` and uses appropriate commands. For E2E tests, Playwright must be installed and explicitly requested.
+
+## Next.js 16 Requirements
+
+Next.js 16 introduces several testing considerations:
+
+### App Router Architecture
+- **Server Components**: Default - cannot use hooks, useState, useEffect
+- **Client Components**: Requires `"use client"` directive
+- **Hybrid Components**: Mix Server and Client components
+- **Nested Layouts**: Test layout nesting and state sharing
+
+### Testing Frameworks
+- **Vitest**: Recommended for Next.js 16 (faster, ESM native)
+- **Jest**: Still supported but may require more configuration
+- **Playwright**: For E2E testing
+
+### Server Components Testing
+```typescript
+// Server components are async
+render(await ServerComponent())
+```
+
+### Client Components Testing
+```typescript
+// Client components can use hooks
+render(<ClientComponent />)
+await user.click(screen.getByRole('button'))
+```
+
+### Server Actions Testing
+```typescript
+// Server actions are async functions
+const result = await serverAction(formData)
+```
+
+### API Route Testing
+```typescript
+// API routes are Request/Response handlers
+const request = new Request('http://localhost', { method: 'POST' })
+const response = await POST(request)
+```
 
 ## Steps
 
