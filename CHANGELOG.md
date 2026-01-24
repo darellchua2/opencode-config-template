@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/darellchua2/opencode-config-template/compare/v1.0.0...v1.0.1) (2026-01-24)
+
+
+### Bug Fixes
+
+* simplify semantic-release config to fix repository undefined error ([7d5a0c3](https://github.com/darellchua2/opencode-config-template/commit/7d5a0c3ebc4543c14eec71266335a5151e209fa8))
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
