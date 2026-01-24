@@ -75,7 +75,7 @@
         "successComment": ":rocket: This ${issue.pull_request ? 'PR is included' : 'issue is resolved'} in ${nextRelease.version} :tada: https://github.com/${repository.name}/releases/tag/${nextRelease.gitTag}",
         "failComment": ":x: The automated release from this ${issue.pull_request ? 'PR' : 'issue'} has failed.\n\n${issue.pull_request ? 'See https://github.com/${repository.name}/pull/${issue.number}' : 'See https://github.com/${repository.name}/issues/${issue.number}'} for more details.",
         "labels": false,
-        "assignees": false,
+        "assignees": [],
         "releasedLabel": "released"
       }
     ]
