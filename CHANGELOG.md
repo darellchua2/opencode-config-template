@@ -1,3 +1,14 @@
+## [1.0.2](https://github.com/darellchua2/opencode-config-template/compare/v1.0.1...v1.0.2) (2026-01-24)
+
+
+### Bug Fixes
+
+* configure git authentication for VERSION bump step ([68f29b2](https://github.com/darellchua2/opencode-config-template/commit/68f29b2ba25095f8f392c600c1d596ca2e384814))
+* correct initial version to 1.0.1 for consistency ([29154c6](https://github.com/darellchua2/opencode-config-template/commit/29154c61d267bf57778be32d4861990b1a5b0e4b))
+* install semantic-release plugins before running release ([6b013d2](https://github.com/darellchua2/opencode-config-template/commit/6b013d2b79e2c4aa9e0444cc6ae44bfe472de3ca))
+* remove Node.js setup and use npx directly ([80e38b5](https://github.com/darellchua2/opencode-config-template/commit/80e38b5503a39fc01f2351a3595ded430565520d))
+* use semantic-release exec plugin to sync VERSION file ([d6d3e37](https://github.com/darellchua2/opencode-config-template/commit/d6d3e379c99a4842f7f0f6869e342c8fb89ecc70))
+
 ## [1.0.1](https://github.com/darellchua2/opencode-config-template/compare/v1.0.0...v1.0.1) (2026-01-24)
 
 
