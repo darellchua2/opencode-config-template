@@ -525,8 +525,8 @@ identify workflow.png
 
 ## Related Skills
 
+- `jira-git-integration`: For JIRA utilities, comments, and image uploads
+- `pr-creation-workflow`: For generic PR creation workflow
 - `ascii-diagram-creator`: For creating workflow diagrams
-- `diagram-creator`: For creating Draw.io diagrams
-- `jira-git-workflow`: For initial JIRA ticket creation workflow
 - `git-issue-creator`: For creating GitHub issues with branches
 - `nextjs-pr-workflow`: For Next.js-specific PR workflows
