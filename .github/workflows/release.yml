@@ -1,0 +1,96 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      create_release:
+        description: 'Create a release manually'
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          echo "✅ Dependencies installed"
+
+      - name: Lint validation
+        run: |
+          echo "🔍 Validating config.json..."
+          jq . config.json
+          echo "✅ config.json is valid"
+
+          echo "🔍 Validating setup.sh syntax..."
+          bash -n setup.sh
+          echo "✅ setup.sh syntax is valid"
+        continue-on-error: false
+
+      - name: Synchronize VERSION file
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          CURRENT_VERSION=$(cat VERSION 2>/dev/null || echo "")
+
+          echo "📦 package.json version: $VERSION"
+          echo "📄 Current VERSION file: $CURRENT_VERSION"
+
+          # Only update if different
+          if [ "$VERSION" != "$CURRENT_VERSION" ]; then
+            echo "$VERSION" > VERSION
+            echo "✅ VERSION file updated to: $VERSION"
+
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add VERSION
+            git commit -m "chore(release): update VERSION file to ${VERSION} [skip ci]" || echo "No changes to VERSION file"
+            git push
+          else
+            echo "✅ VERSION file already up to date"
+          fi
+
+      - name: Create Release with CHANGELOG
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com
+        run: |
+          echo "🚀 Running semantic-release..."
+          echo "📝 This will:"
+          echo "   1. Analyze commits for version bump"
+          echo "   2. Update CHANGELOG.md with release notes"
+          echo "   3. Create git tag (vX.Y.Z)"
+          echo "   4. Create GitHub release"
+          echo "   5. Attach project files to release"
+          echo ""
+          npx semantic-release
+
+      - name: Upload CHANGELOG as workflow artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: CHANGELOG
+          path: CHANGELOG.md
+          retention-days: 30

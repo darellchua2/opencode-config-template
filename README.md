@@ -367,12 +367,136 @@ opencode --agent diagram-creator "Create a diagram showing how these modules int
 - Verify Node.js version: `node --version` (should be v20+)
 - Update if needed: `nvm install 20 && nvm use 20`
 
+## Release Process
+
+This project uses automated semantic releases powered by GitHub Actions.
+
+### Version Management
+
+- **VERSION File**: Project version is stored in `VERSION` file (currently `2.0.0`)
+- **Setup Script**: Reads version from `VERSION` file and displays it
+- **GitHub Actions**: Creates releases automatically when code is pushed to `main`
+
+### Automatic Releases
+
+When you push code to `main` branch:
+
+1. **GitHub Actions Workflow** runs automatically
+2. **Reads VERSION** file for current version
+3. **Creates Git Tag**: `vX.Y.Z` (e.g., `v2.0.0`)
+4. **Creates GitHub Release** with:
+   - Version tag
+   - Release notes (auto-generated from commits)
+   - Project files as attachments
+
+### Version Bumping Rules
+
+Releases follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
+
+| Commit Type | Version Bump | Example |
+|-------------|---------------|----------|
+| `feat:` | Minor (X.Y.z) | `2.0.0` → `2.1.0` |
+| `fix:` | Patch (x.Y.Z) | `2.0.0` → `2.0.1` |
+| `BREAKING CHANGE:` | Major (X.y.z) | `2.0.0` → `3.0.0` |
+| Other types (`chore:`, `docs:`, etc.) | No release | N/A |
+
+### Conventional Commits Format
+
+Use conventional commits to trigger releases:
+
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+**Types:**
+- `feat`: New feature
+- `fix`: Bug fix
+- `chore`: Maintenance task
+- `docs`: Documentation changes
+- `style`: Code style changes
+- `refactor`: Code refactoring
+- `test`: Test additions/changes
+- `perf`: Performance improvements
+- `BREAKING CHANGE`: Breaking changes (major version bump)
+
+**Examples:**
+```bash
+git commit -m "feat: add semantic release workflow with GitHub Actions"
+git commit -m "fix: correct version reading from VERSION file"
+git commit -m "docs: update README with release documentation"
+git commit -m "chore: remove unused files"
+
+# For breaking changes
+git commit -m "feat: redesign skills architecture
+
+BREAKING CHANGE: All skills must now use framework skills"
+```
+
+### Creating a Release
+
+**Automatic (Recommended):**
+
+```bash
+# Update VERSION file
+echo "2.1.0" > VERSION
+
+# Commit with conventional message
+git add VERSION CHANGELOG.md
+git commit -m "feat: update version to 2.1.0 with new features"
+
+# Push to main (triggers GitHub Actions)
+git push origin main
+```
+
+GitHub Actions will:
+1. Read `VERSION` file
+2. Create git tag `v2.1.0`
+3. Create GitHub release
+4. Attach project files
+
+**Manual (if needed):**
+
+```bash
+# Update VERSION file
+echo "2.1.0" > VERSION
+
+# Create tag manually
+git tag -a v2.1.0 -m "Release v2.1.0"
+
+# Push tag
+git push origin v2.1.0
+```
+
+### Viewing Releases
+
+- **Latest Release**: https://github.com/yourusername/opencode-config-template/releases/latest
+- **All Releases**: https://github.com/yourusername/opencode-config-template/releases
+- **Changelog**: See `CHANGELOG.md` for detailed changes
+
+### CHANGELOG.md
+
+The `CHANGELOG.md` file is automatically updated with:
+- Release version and date
+- Added features
+- Changed items
+- Removed items
+- Fixed bugs
+- Breaking changes
+
+Contributors should update `CHANGELOG.md` when making significant changes.
+
 ## Important Notes
 
 - Replace `"your-actual-api-key-here"` with your actual Z.AI API key
 - LM Studio must be running locally on port 1234 before using OpenCode
 - The configuration uses `${ZAI_API_KEY}` environment variable syntax for security
 - Do not commit actual API keys to version control
+- Update `VERSION` file when making new releases
+- Use conventional commit format to trigger automatic releases
 
 ## Troubleshooting
 

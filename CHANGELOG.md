@@ -1,0 +1,96 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [2.0.0] - 2026-01-24
+
+### Added
+- Framework-based skills architecture with 5 reusable framework skills:
+  - `test-generator-framework` - Generic test generation for multiple languages
+  - `jira-git-integration` - JIRA + Git workflow utilities
+  - `pr-creation-workflow` - Generic pull request creation
+  - `ticket-branch-workflow` - Generic ticket-to-branch workflow
+  - `linting-workflow` - Generic linting for multiple languages
+
+- 11 Specialized skills that use frameworks:
+  - `ascii-diagram-creator` - Create ASCII diagrams
+  - `git-issue-creator` - GitHub issue creation with tag detection
+  - `git-pr-creator` - GitHub pull requests with JIRA integration
+  - `jira-git-workflow` - JIRA ticket creation and branching
+  - `nextjs-pr-workflow` - Next.js PR workflow with JIRA
+  - `nextjs-unit-test-creator` - Generate unit/E2E tests for Next.js
+  - `opencode-agent-creation` - Generate OpenCode agents
+  - `opencode-skill-creation` - Generate OpenCode skills
+  - `python-pytest-creator` - Generate pytest tests for Python
+  - `python-ruff-linter` - Python linting with Ruff
+  - `typescript-dry-principle` - Apply DRY to TypeScript
+
+- `build-with-skills` agent - Primary agent that identifies and uses appropriate skills
+- VERSION file for version management
+- GitHub Actions workflow for automated semantic releases
+- Comprehensive README documentation of framework-based architecture
+
+### Changed
+- Refactored skills to eliminate ~2,143 lines of duplication
+- Moved version from setup.sh to dedicated VERSION file
+- Updated setup.sh to read version from VERSION file
+- Improved documentation with interaction flows and examples
+
+### Removed
+- `SKILLS_AUDIT_REPORT.md` - No longer needed after refactoring
+
+### Fixed
+- Version display in setup.sh now reads from VERSION file
+- Improved error handling and logging in setup.sh
+
+## [1.0.0] - 2026-01-XX
+
+### Added
+- Initial release of OpenCode configuration template
+- Basic configuration for LM Studio, JIRA/Confluence integration, and Z.AI services
+- Initial set of workflow skills
+- Setup script for automated installation
+
+---
+
+### Version Bumping Rules
+
+- `feat:` - Triggers minor version bump (x.Y.z)
+- `fix:` - Triggers patch version bump (x.y.Z)
+- `BREAKING CHANGE:` - Triggers major version bump (X.y.z)
+- `chore:`, `docs:`, `style:`, `refactor:`, `test:` - No version bump
+
+### Conventional Commits Format
+
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+**Types:**
+- `feat`: New feature
+- `fix`: Bug fix
+- `chore`: Maintenance task
+- `docs`: Documentation changes
+- `style`: Code style changes
+- `refactor`: Code refactoring
+- `test`: Test additions/changes
+- `perf`: Performance improvements
+- `BREAKING CHANGE`: Breaking changes (major version bump)
+
+**Examples:**
+```
+feat: add semantic release workflow with GitHub Actions
+
+fix: correct version reading from VERSION file in setup.sh
+
+docs: update README with framework-based skills documentation
+
+chore: remove unused SKILLS_AUDIT_REPORT.md file
+```

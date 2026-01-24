@@ -1,0 +1,83 @@
+{
+  "branches": [
+    "main",
+    {
+      "name": "beta",
+      "prerelease": true
+    }
+  ],
+  "plugins": [
+    [
+      "@semantic-release/commit-analyzer",
+      {
+        "preset": "angular",
+        "releaseRules": [
+          {"type": "feat", "release": "minor"},
+          {"type": "fix", "release": "patch"},
+          {"type": "perf", "release": "patch"},
+          {"type": "BREAKING CHANGE", "release": "major"}
+        ]
+      }
+    ],
+    [
+      "@semantic-release/release-notes-generator",
+      {
+        "preset": "angular",
+        "writerOpts": {
+          "mainTemplate": "# {{version}} ({{date}})\n\n{{#each commits}}{{this.message}}{{#unless @last}}\n{{/unless}}{{/each}}\n\n",
+          "commitPartial": "- {{#if scope}}**{{scope}}:** {{/if}}{{subject}} {{#if hash}}({{hash}}){{/if}}",
+          "transform": {
+            "subject": "{{chomp}}"
+          }
+        }
+      }
+    ],
+    [
+      "@semantic-release/changelog",
+      {
+        "changelogFile": "CHANGELOG.md",
+        "changelogTitle": "# Changelog\n\nAll notable changes to this project will be documented in this file.\n\nThe format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),\nand this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).\n\n",
+        "types": [
+          {"type": "feat", "section": "Added"},
+          {"type": "fix", "section": "Fixed"},
+          {"type": "perf", "section": "Performance"},
+          {"type": "revert", "section": "Reverts"},
+          {"type": "docs", "section": "Documentation", "hidden": false},
+          {"type": "style", "section": "Styling", "hidden": false},
+          {"type": "chore", "section": "Maintenance", "hidden": false},
+          {"type": "refactor", "section": "Refactoring", "hidden": false},
+          {"type": "test", "section": "Tests", "hidden": false},
+          {"type": "build", "section": "Build System", "hidden": false},
+          {"type": "ci", "section": "Continuous Integration", "hidden": false}
+        ]
+      }
+    ],
+    [
+      "@semantic-release/git",
+      {
+        "assets": [
+          "config.json",
+          "setup.sh",
+          "README.md",
+          "AGENTS.md",
+          "LICENSE",
+          "VERSION",
+          "CHANGELOG.md",
+          "skills/**/*"
+        ],
+        "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}",
+        "tagFormat": "v${version}"
+      }
+    ],
+    [
+      "@semantic-release/github",
+      {
+        "successComment": ":rocket: This ${issue.pull_request ? 'PR is included' : 'issue is resolved'} in ${nextRelease.version} :tada: https://github.com/${repository.name}/releases/tag/${nextRelease.gitTag}",
+        "failComment": ":x: The automated release from this ${issue.pull_request ? 'PR' : 'issue'} has failed.\n\n${issue.pull_request ? 'See https://github.com/${repository.name}/pull/${issue.number}' : 'See https://github.com/${repository.name}/issues/${issue.number}'} for more details.",
+        "labels": false,
+        "assignees": false,
+        "releasedLabel": "released"
+      }
+    ]
+  ]
+}

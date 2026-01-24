@@ -44,8 +44,15 @@ set -o nounset   # Error on undefined variables
 # GLOBAL VARIABLES
 ################################################################################
 
-SCRIPT_VERSION="2.0.0"
+# Read version from VERSION file
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+VERSION_FILE="${SCRIPT_DIR}/VERSION"
+if [ -f "$VERSION_FILE" ]; then
+    SCRIPT_VERSION=$(cat "$VERSION_FILE" | tr -d '[:space:]')
+else
+    SCRIPT_VERSION="2.0.0"
+    log_warn "VERSION file not found, using default: ${SCRIPT_VERSION}"
+fi
 LOG_FILE="${HOME}/.opencode-setup.log"
 CONFIG_DIR="${HOME}/.config/opencode"
 CONFIG_FILE="${CONFIG_DIR}/config.json"
