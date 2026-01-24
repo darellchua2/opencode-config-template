@@ -1,6 +1,6 @@
 ---
 name: git-issue-creator
-description: Automate GitHub issue creation with intelligent tag detection, branch creation, PLAN.md setup, auto-checkout, and push to remote
+description: GitHub issue creation with intelligent tag detection, extending ticket-branch-workflow
 license: Apache-2.0
 compatibility: opencode
 metadata:
@@ -10,28 +10,22 @@ metadata:
 
 ## What I do
 
-I implement a complete GitHub issue and branch creation workflow:
+I implement GitHub issue creation with intelligent tag detection by extending `ticket-branch-workflow`:
 
-1. **Analyze Request**: Parse the user's statement to determine the appropriate issue type
+1. **Analyze Request**: Parse the user's statement to determine issue type
 2. **Detect Tags**: Automatically assign relevant tags (feature, bug, documentation, enhancement, task) based on content analysis
-3. **Create GitHub Issue**: Use `gh issue create` to create a new issue with:
-   - Title derived from the statement
-   - Detailed description
-   - Auto-detected labels/tags
-   - Assigned to the current authenticated GitHub user
-4. **Create Branch**: Create a new git branch named after the issue number
-5. **Auto Checkout**: Automatically checkout to the newly created branch (default behavior)
-6. **Create PLAN.md**: Generate a PLAN.md file with implementation structure
-7. **Commit PLAN.md**: Commit the PLAN.md to the new branch
-8. **Push Branch**: Push the branch to the remote repository
+3. **Create GitHub Issue**: Use `gh issue create` with title, description, auto-detected labels, and assignee
+4. **Delegate to Framework**: Use `ticket-branch-workflow` for branch creation, PLAN.md, commit, and push
+5. **Display Summary**: Show issue URL, branch name, and framework completion status
 
 ## When to use me
 
+**Framework**: This skill extends `ticket-branch-workflow` for core workflow (branch creation, PLAN.md, commit, push), adding GitHub-specific issue creation and intelligent tag detection.
+
 Use this workflow when:
-- You need to create a new GitHub issue for a feature, bug, or task
-- You want to automatically create a corresponding branch, commit PLAN.md, and push to remote
-- You prefer a streamlined workflow that handles issue creation, branching, planning, and syncing together
-- You need intelligent tag assignment based on the issue description
+- You need to create a GitHub issue with intelligent tag assignment
+- You want the complete workflow: issue → branch → PLAN.md → commit → push
+- You prefer GitHub CLI (`gh`) for issue creation over manual entry
 
 ## Prerequisites
 
@@ -66,7 +60,7 @@ Use this workflow when:
   ```bash
   gh api user --jq '.login'
   ```
-- Use `gh issue create` command with current user as assignee:
+- Use `gh issue create` command:
   ```bash
   gh issue create --title "<Issue Title>" --body "<Issue Description>" --label "<tag1>,<tag2>" --assignee @me
   ```
@@ -91,69 +85,20 @@ Use this workflow when:
   ```
 - Store the issue number, URL, and assignee for reference
 
-### Step 4: Create GitHub Branch
-- Create and checkout a new branch automatically:
-  ```bash
-  git checkout -b issue-<issue-number>
-  ```
-  OR use a more descriptive format:
-  ```bash
-  git checkout -b feature/<issue-number>-<short-title>
-  ```
-- Ensure the branch name is:
-  - Lowercase
-  - Uses hyphens instead of spaces
-  - Follows git branch naming conventions
+### Step 4: Execute Ticket-Branch-Workflow
+- Use `ticket-branch-workflow` for the following steps:
+  - Create GitHub branch: `git checkout -b issue-<issue-number>` or `feature/<issue-number>-<short-title>`
+  - Create PLAN.md with issue reference
+  - Commit PLAN.md: `git commit -m "Add PLAN.md for #<issue-number>: <issue-title>"`
+  - Push branch: `git push -u origin <branch-name>`
 
-### Step 5: Create PLAN.md
-- Generate a PLAN.md file with the following structure:
-  ```markdown
-  # Plan: <Issue Title>
-
-  ## Overview
-  Brief description of what this issue implements.
-
-  ## Issue Reference
-  - Issue: #<issue-number>
-  - URL: <issue-url>
-  - Labels: <tag1>, <tag2>
-
-  ## Files to Modify
-  1. `src/path/to/file1.ts` - Description
-  2. `src/path/to/file2.tsx` - Description
-
-  ## Approach
-  Detailed steps or methodology for implementation.
-
-  ## Success Criteria
-  - All files modified correctly
-  - No build errors
-  - Tests pass
-  ```
-
-### Step 6: Commit PLAN.md
-- Add the PLAN.md file: `git add PLAN.md`
-- Commit with a descriptive message:
-  ```bash
-  git commit -m "Add PLAN.md for #<issue-number>: <issue-title>"
-  ```
-- Verify commit: `git status`
-
-### Step 7: Push Branch
-- Push the new branch to the remote repository:
-  ```bash
-  git push -u origin <branch-name>
-  ```
-- Verify the push succeeded
-- Display the remote branch URL for reference
-
-### Step 8: Display Summary
-- Display issue and branch information:
+### Step 5: Display Summary
+- Display issue and framework completion status:
   ```
   ✅ GitHub Issue #<issue-number> created successfully!
   ✅ Branch created and checked out: <branch-name>
-  ✅ PLAN.md created and committed
-  ✅ Branch pushed to remote
+  ✅ PLAN.md created and committed (via ticket-branch-workflow)
+  ✅ Branch pushed to remote (via ticket-branch-workflow)
 
   **Issue Details**:
   - Title: <issue-title>
@@ -206,8 +151,7 @@ Keywords: `setup`, `configure`, `deploy`, `clean`, `organize`, `maintenance`, `c
 - Assignee: `<current-user>`
 - Branch: `issue-123`
 
-**PLAN.md Created**: Template with bug fix approach
-**Branch Pushed**: Yes
+**Framework Executes**: ticket-branch-workflow creates branch, PLAN.md, commits, and pushes
 
 ### Example 2: New Feature
 **User Input**: "Add support for dark mode in the dashboard"
@@ -220,8 +164,7 @@ Keywords: `setup`, `configure`, `deploy`, `clean`, `organize`, `maintenance`, `c
 - Assignee: `<current-user>`
 - Branch: `feature/124-add-dark-mode`
 
-**PLAN.md Created**: Template with feature implementation steps
-**Branch Pushed**: Yes
+**Framework Executes**: ticket-branch-workflow creates branch, PLAN.md, commits, and pushes
 
 ### Example 3: Documentation
 **User Input**: "Document the API endpoints for the authentication module"
@@ -234,8 +177,7 @@ Keywords: `setup`, `configure`, `deploy`, `clean`, `organize`, `maintenance`, `c
 - Assignee: `<current-user>`
 - Branch: `issue-125`
 
-**PLAN.md Created**: Template with documentation structure
-**Branch Pushed**: Yes
+**Framework Executes**: ticket-branch-workflow creates branch, PLAN.md, commits, and pushes
 
 ### Example 4: Multiple Tags
 **User Input**: "Improve performance of the search functionality and optimize database queries"
@@ -248,11 +190,11 @@ Keywords: `setup`, `configure`, `deploy`, `clean`, `organize`, `maintenance`, `c
 - Assignee: `<current-user>`
 - Branch: `issue-126`
 
-**PLAN.md Created**: Template with performance optimization steps
-**Branch Pushed**: Yes
+**Framework Executes**: ticket-branch-workflow creates branch, PLAN.md, commits, and pushes
 
 ## PLAN.md Template Structure
 
+The framework generates PLAN.md with this structure:
 ```markdown
 # Plan: <Issue Title>
 
@@ -294,9 +236,7 @@ Any additional notes, constraints, or considerations.
 - Assign multiple tags when applicable (up to 3 recommended)
 - Use semantic branch names that reference the issue number
 - Confirm the issue URL is accessible
-- Verify branch creation and checkout succeeded
-- Always create PLAN.md as the first commit on the new branch
-- Push branch to remote immediately after creating PLAN.md
+- The framework handles branch creation, PLAN.md, commit, and push automatically
 - Keep issue titles concise (under 72 characters preferred)
 - Update the issue with a comment linking to the PR when ready
 
@@ -315,7 +255,7 @@ Any additional notes, constraints, or considerations.
 ### Branch Already Exists
 **Issue**: Branch checkout fails due to existing branch
 
-**Solution**: Use `-B` flag to force branch creation: `git checkout -B <branch-name>`
+**Solution**: The framework handles this with `-B` flag to force branch creation
 
 ### No Tags Detected
 **Issue**: Issue created without labels
@@ -325,7 +265,7 @@ Any additional notes, constraints, or considerations.
 ### PLAN.md Already Exists
 **Issue**: PLAN.md file already exists in the branch
 
-**Solution**: Ask user if they want to overwrite or append to existing PLAN.md
+**Solution**: The framework handles this by asking if you want to overwrite or append
 
 ## Troubleshooting Checklist
 
@@ -341,10 +281,7 @@ After issue creation:
 - [ ] Issue URL is accessible
 - [ ] Labels are correctly applied
 - [ ] Issue is assigned to current user
-- [ ] Branch is created and checked out successfully
-- [ ] PLAN.md is created
-- [ ] PLAN.md is committed to the branch
-- [ ] Branch is pushed to remote successfully
+- [ ] Framework completes successfully: branch created, PLAN.md committed, branch pushed
 
 ## Related Commands
 
@@ -366,24 +303,11 @@ gh issue edit <issue-number> --add-assignee @me
 
 # Delete an issue
 gh issue delete <issue-number>
-
-# List branches
-git branch -a
-
-# Switch to a branch
-git checkout <branch-name>
-
-# Delete a branch
-git branch -d <branch-name>
-
-# View commit history
-git log --oneline
-
-# Push branch to remote
-git push -u origin <branch-name>
 ```
 
 ## Related Skills
 
+- **Framework**: `ticket-branch-workflow` - Provides core workflow (branch creation, PLAN.md, commit, push)
 - `nextjs-pr-workflow`: For creating PRs after completing the issue
-- `jira-git-workflow`: For JIRA-integrated workflows
+- `jira-git-workflow`: For JIRA-integrated workflows (uses same ticket-branch-workflow framework)
+- `jira-git-integration`: For JIRA-specific operations when working with JIRA tickets

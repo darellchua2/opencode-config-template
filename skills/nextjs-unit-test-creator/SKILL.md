@@ -1,6 +1,6 @@
 ---
 name: nextjs-unit-test-creator
-description: Generate comprehensive unit and E2E tests for Next.js with scenario validation, framework detection, and Playwright support
+description: Generate comprehensive unit and E2E tests for Next.js using the test-generator-framework
 license: Apache-2.0
 compatibility: opencode
 metadata:
@@ -10,19 +10,17 @@ metadata:
 
 ## What I do
 
-I implement a complete Next.js test generation workflow:
+I implement a complete Next.js test generation workflow by extending the `test-generator-framework`:
 
-1. **Analyze Next.js Codebase**: Scan the Next.js application to identify new components, utility functions, and modules that need testing
-2. **Detect Test Framework**: Read `package.json` to determine the testing framework (Jest, Vitest, Playwright) and related dependencies
-3. **Generate Test Scenarios**: Create comprehensive test scenarios covering:
-   - **Components**: Rendering, props, state, events, snapshots, accessibility
-   - **Utility Functions**: Happy paths, edge cases, error handling, type validation
-   - **Hooks**: Custom hook behavior, dependencies, state management
-   - **E2E Tests**: User workflows, navigation, form submissions, API interactions (if Playwright detected)
-4. **Prompt User Confirmation**: Display all generated scenarios and ask for user approval before proceeding
-5. **Create Test Files**: Generate unit test files with proper structure and assertions
-6. **Ensure Executability**: Verify tests run with `npm run test <test_files>` or appropriate command
-7. **Create E2E Tests**: Generate Playwright E2E tests if explicitly requested and Playwright is installed
+1. **Analyze Next.js Codebase**: Scan the Next.js application to identify components, hooks, and utilities using Next.js patterns
+2. **Detect Next.js Framework**: Identify specific Next.js testing setup (Jest, Vitest, Playwright) from `package.json`
+3. **Generate Next.js-Specific Scenarios**: Create comprehensive test scenarios covering:
+   - **Components**: Server components, client components, SSR/SSG behavior
+   - **Hooks**: Custom hooks with React-specific patterns
+   - **Utility Functions**: Next.js utilities (e.g., routing, data fetching)
+   - **E2E Tests**: Next.js routing, page navigation, API routes (if Playwright detected)
+4. **Delegate to Framework**: Use `test-generator-framework` for core test generation workflow
+5. **Ensure Executability**: Verify tests run with `npm run test` or framework-specific command
 
 ## When to use me
 
@@ -33,6 +31,8 @@ Use this workflow when:
 - You need E2E tests for Next.js applications (Playwright)
 - You prefer a systematic approach to test generation with user confirmation
 - You want to ensure tests run correctly with your project's test framework
+
+**Framework**: This skill extends `test-generator-framework` for core test generation workflow, adding Next.js-specific functionality.
 
 ## Prerequisites
 
@@ -49,14 +49,15 @@ Note: The skill automatically detects the test framework from `package.json` and
 - Use glob patterns to find TypeScript/JavaScript files: `**/*.{ts,tsx,js,jsx}`
 - Exclude test files: `**/*.test.{ts,tsx,js,jsx}`, `**/*.spec.{ts,tsx,js,jsx}`, `**/__tests__/**/*`
 - Identify new files or functions by:
-  - Checking git status for uncommitted/new files
-  - Reading each file to identify:
-    - Components: `function Component()`, `const Component = ()`, `class Component`
-    - Utility functions: `export function`, `export const`
-    - Custom hooks: `use*` functions returning state/effects
+   - Checking git status for uncommitted/new files
+   - Reading each file to identify:
+     - Server Components: `export default function ServerComponent()`
+     - Client Components: `'use client'` + `export function Component()`
+     - Utility functions: `export function`, `export const`
+     - Custom hooks: `use*` functions returning state/effects
 - Identify import statements to understand dependencies
 
-### Step 2: Detect Test Framework
+### Step 2: Detect Next.js Testing Framework
 - Check `package.json` for test dependencies:
   ```bash
   # Check for Jest
@@ -71,11 +72,11 @@ Note: The skill automatically detects the test framework from `package.json` and
   # Check test scripts
   grep -A 5 '"scripts"' package.json | grep test
   ```
-- Determine the test framework:
-  - **Jest**: If `jest` or `@testing-library/*` is in devDependencies
-  - **Vitest**: If `vitest` is in devDependencies
-  - **Playwright**: If `@playwright/test` is in devDependencies
-  - **Other**: Parse test scripts to identify the runner
+- Determine test framework:
+   - **Jest**: If `jest` or `@testing-library/*` is in devDependencies
+   - **Vitest**: If `vitest` is in devDependencies
+   - **Playwright**: If `@playwright/test` is in devDependencies
+   - **Other**: Parse test scripts to identify runner
 - Store appropriate test command:
   ```bash
   # Determine test command from package.json
@@ -99,25 +100,24 @@ Note: The skill automatically detects the test framework from `package.json` and
   fi
   ```
 - Check for related testing libraries:
-  - React Testing Library (`@testing-library/react`, `@testing-library/jest-dom`)
-  - Testing Library user-event (`@testing-library/user-event`)
-  - Next.js testing utilities (`@next/test-utils`)
-  - Playwright (`@playwright/test`) for E2E testing
+   - React Testing Library (`@testing-library/react`, `@testing-library/jest-dom`)
+   - Testing Library user-event (`@testing-library/user-event`)
+   - Next.js testing utilities (`@next/test-utils`)
+   - Playwright (`@playwright/test`) for E2E testing
 - Ask user if E2E tests are needed if Playwright is installed and user workflow suggests E2E testing
 
-### Step 3: Generate Test Scenarios
+### Step 3: Generate Next.js-Specific Test Scenarios
 
-#### Component Scenarios
-- **Rendering**: Component renders without crashing
-- **Props Display**: Correct display of passed props
-- **User Interactions**: Click events, form submissions, keyboard interactions
-- **State Changes**: State updates after user actions
-- **Conditional Rendering**: Elements show/hide based on conditions
-- **Accessibility**: ARIA labels, keyboard navigation, screen reader support
-- **Snapshots**: UI structure remains consistent
-- **Error Boundaries**: Graceful handling of errors
-- **Loading States**: Display during data fetching
-- **Empty States**: Display when no data is available
+#### Server Component Scenarios
+- **SSR Behavior**: Component renders correctly on server
+- **Props Passing**: Server props are passed correctly
+- **Data Fetching**: Server-side data fetching works
+- **Caching**: Next.js caching behavior
+
+#### Client Component Scenarios
+- **Use Client**: Component is marked with `'use client'`
+- **Interactivity**: Client-side interactions work
+- **State Management**: React state updates correctly
 
 #### Utility Function Scenarios
 - **Happy Path**: Valid inputs return expected outputs
@@ -153,32 +153,24 @@ Display formatted output:
 ```
 📋 Generated Test Scenarios for <file_name>
 
-**Type:** <Component | Utility Function | Custom Hook>
+**Type:** <Server Component | Client Component | Utility Function | Custom Hook>
 
 **Item to Test:** <ComponentName | functionName>
 
 **Scenarios:**
-1. Rendering Test
-   - Component renders without errors
-   - Correct elements are present in DOM
+1. Rendering/SSR Test
+   - Component renders on server correctly
+   - Props are passed correctly
 
-2. Props Test
-   - Props are displayed correctly
-   - Missing props use default values
-
-3. User Interaction Test
-   - Click event triggers callback
-   - Form submission works as expected
-
-4. State Test
+2. State/Interaction Test
    - State updates after interaction
    - Multiple state transitions work
 
-5. Edge Case Test
+3. Edge Case Test
    - Empty data handled gracefully
    - Null/undefined values don't break component
 
-6. Accessibility Test
+4. Accessibility Test
    - ARIA labels are present
    - Keyboard navigation works
 
@@ -204,7 +196,22 @@ Wait for user response:
 - **n**: Ask for modifications or cancel
 - **suggest**: Ask user to add/remove scenarios
 
-### Step 5: Create Test Files
+Wait for user response:
+- **y**: Proceed to create test files
+- **n**: Ask for modifications or cancel
+- **suggest**: Ask user to add/remove scenarios
+
+### Step 5: Delegate to Test Generator Framework
+
+**Note**: Core test generation workflow is provided by `test-generator-framework`. This skill focuses only on Next.js-specific aspects.
+
+Refer to `test-generator-framework` for:
+- Generic test file creation structure
+- Framework detection and command determination
+- User confirmation workflow
+- Executability verification
+
+Next.js-specific test file templates below extend the framework structure.
 
 #### For Components (Jest + React Testing Library)
 ```typescript
@@ -356,105 +363,6 @@ describe('<ComponentName>', () => {
 })
 ```
 
-#### For Utility Functions (Jest)
-```typescript
-/**
- * Test suite for <functionName>
- * Generated by nextjs-unit-test-creator skill
- */
-
-import { <functionName> } from './<fileName>'
-
-describe('<functionName>', () => {
-  it('returns correct result for valid inputs', () => {
-    const result = <functionName>(validInput)
-    expect(result).toBe(expectedOutput)
-  })
-
-  it('handles empty input', () => {
-    const result = <functionName>('')
-    expect(result).toBe(expectedValue)
-  })
-
-  it('handles null input', () => {
-    const result = <functionName>(null)
-    expect(result).toBe(expectedValue)
-  })
-
-  it('handles undefined input', () => {
-    const result = <functionName>(undefined)
-    expect(result).toBe(expectedValue)
-  })
-
-  it('throws error for invalid input', () => {
-    expect(() => <functionName>(invalidInput)).toThrow(Error)
-  })
-
-  it('handles edge cases', () => {
-    expect(<functionName>(0)).toBe(expectedValue)
-    expect(<functionName>(-1)).toBe(expectedValue)
-    expect(<functionName>(Number.MAX_SAFE_INTEGER)).toBe(expectedValue)
-  })
-
-  it('handles array input', () => {
-    const result = <functionName>([1, 2, 3])
-    expect(result).toEqual(expectedArray)
-  })
-
-  it('handles object input', () => {
-    const result = <functionName>({ key: 'value' })
-    expect(result).toMatchObject(expectedObject)
-  })
-})
-```
-
-#### For Utility Functions (Vitest)
-```typescript
-/**
- * Test suite for <functionName>
- * Generated by nextjs-unit-test-creator skill
- */
-
-import { describe, it, expect, beforeEach } from 'vitest'
-import { <functionName> } from './<fileName>'
-
-describe('<functionName>', () => {
-  beforeEach(() => {
-    // Reset any mocks or state
-  })
-
-  it('returns correct result for valid inputs', () => {
-    const result = <functionName>(validInput)
-    expect(result).toBe(expectedOutput)
-  })
-
-  it('handles empty input', () => {
-    const result = <functionName>('')
-    expect(result).toBe(expectedValue)
-  })
-
-  it('handles null input', () => {
-    const result = <functionName>(null)
-    expect(result).toBe(expectedValue)
-  })
-
-  it('handles undefined input', () => {
-    const result = <functionName>(undefined)
-    expect(result).toBe(expectedValue)
-  })
-
-  it('throws error for invalid input', () => {
-    expect(() => <functionName>(invalidInput)).toThrow(Error)
-  })
-
-  it('handles edge cases', () => {
-    expect(<functionName>(0)).toBe(expectedValue)
-    expect(<functionName>(-1)).toBe(expectedValue)
-    expect(<functionName>(Number.MAX_SAFE_INTEGER)).toBe(expectedValue)
-  })
-})
-```
-
 #### For Custom Hooks (Jest)
 ```typescript
 /**
@@ -565,136 +473,101 @@ describe('use<HookName>', () => {
 ```
 
 #### For E2E Tests (Playwright)
-```typescript
-/**
- * E2E test suite for <PageName>
- * Generated by nextjs-unit-test-creator skill
- */
 
+**Note**: Refer to `test-generator-framework` for core E2E testing structure.
+
+Next.js-specific E2E patterns to focus on:
+
+```typescript
 import { test, expect } from '@playwright/test'
 
-test.describe('<PageName>', () => {
-  test.beforeEach(async ({ page }) => {
-    // Navigate to page before each test
-    await page.goto('/<page-path>')
+test.describe('Next.js Routing', () => {
+  test('navigates between Next.js pages', async ({ page }) => {
+    await page.goto('/')
+    await page.click('text=About')
+    await expect(page).toHaveURL('/about')
   })
 
-  test('page loads successfully', async ({ page }) => {
-    // Check if page title is correct
-    await expect(page).toHaveTitle(/<page-title>/i)
+  test('handles Next.js router navigation', async ({ page }) => {
+    await page.goto('/dashboard')
+    await page.click('[data-testid="link-profile"]')
+    await expect(page).toHaveURL('/profile')
+  })
+})
 
-    // Check if main content is visible
-    await expect(page.locator('main')).toBeVisible()
+test.describe('Next.js API Routes', () => {
+  test('fetches data from API route', async ({ page }) => {
+    await page.goto('/users')
+
+    // Mock Next.js API route
+    await page.route('**/api/users', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([{ id: 1, name: 'User 1' }]),
+      })
+    })
+
+    await expect(page.locator('text=User 1')).toBeVisible()
   })
 
-  test('navigation works correctly', async ({ page }) => {
-    // Click on navigation link
-    await page.click('text=Home')
+  test('handles API route errors', async ({ page }) => {
+    await page.goto('/data')
 
-    // Verify navigation
-    await expect(page).toHaveURL('/')
-  })
+    await page.route('**/api/data', async (route) => {
+      await route.fulfill({ status: 500 })
+    })
 
-  test('form submission works', async ({ page }) => {
-    // Fill out form
-    await page.fill('input[name="email"]', 'test@example.com')
-    await page.fill('input[name="password"]', 'password123')
-
-    // Submit form
-    await page.click('button[type="submit"]')
-
-    // Wait for navigation or success message
-    await expect(page).toHaveURL(/dashboard|success/i)
-  })
-
-  test('displays data correctly', async ({ page }) => {
-    // Wait for data to load
-    await page.waitForSelector('[data-testid="data-container"]')
-
-    // Check if data is displayed
-    await expect(page.locator('[data-testid="data-item"]')).toHaveCount(5)
-  })
-
-  test('handles loading state', async ({ page }) => {
-    // Navigate to page that triggers loading
-    await page.goto('/<page-path>?slow=true')
-
-    // Check for loading indicator
-    await expect(page.locator('[data-testid="loading"]')).toBeVisible()
-
-    // Wait for loading to complete
-    await page.waitForSelector('[data-testid="data-container"]')
-
-    // Loading should be hidden
-    await expect(page.locator('[data-testid="loading"]')).not.toBeVisible()
-  })
-
-  test('handles error state', async ({ page }) => {
-    // Navigate to page that triggers error
-    await page.goto('/<page-path>?error=true')
-
-    // Check for error message
     await expect(page.locator('[data-testid="error"]')).toBeVisible()
-    await expect(page.locator('text=Something went wrong')).toBeVisible()
-  })
-
-  test('authentication workflow', async ({ page }) => {
-    // Navigate to login page
-    await page.goto('/login')
-
-    // Fill login form
-    await page.fill('input[name="email"]', 'test@example.com')
-    await page.fill('input[name="password"]', 'password123')
-
-    // Submit form
-    await page.click('button[type="submit"]')
-
-    // Wait for redirect to dashboard
-    await page.waitForURL('/dashboard')
-
-    // Verify user is logged in
-    await expect(page.locator('text=Welcome, Test')).toBeVisible()
-  })
-
-  test('responsive design works', async ({ page }) => {
-    // Test mobile view
-    await page.setViewportSize({ width: 375, height: 667 })
-    await expect(page.locator('nav')).toBeVisible()
-
-    // Test tablet view
-    await page.setViewportSize({ width: 768, height: 1024 })
-    await expect(page.locator('main')).toBeVisible()
-
-    // Test desktop view
-    await page.setViewportSize({ width: 1920, height: 1080 })
-    await expect(page.locator('aside')).toBeVisible()
-  })
-
-  test('keyboard navigation works', async ({ page }) => {
-    // Navigate to page
-    await page.goto('/<page-path>')
-
-    // Use keyboard to navigate
-    await page.keyboard.press('Tab')
-    await page.keyboard.press('Enter')
-
-    // Verify interaction
-    await expect(page.locator('[data-testid="modal"]')).toBeVisible()
-  })
-
-  test('page loads within acceptable time', async ({ page }) => {
-    const startTime = Date.now()
-
-    await page.goto('/<page-path>')
-    await page.waitForLoadState('networkidle')
-
-    const loadTime = Date.now() - startTime
-
-    // Page should load within 3 seconds
-    expect(loadTime).toBeLessThan(3000)
   })
 })
 ```
+
+### Step 6: Verify Executability
+
+Refer to `test-generator-framework` for core executability verification.
+
+### Step 7: Display Summary
+
+```
+✅ Next.js test files created successfully!
+
+**Test Files Created:**
+- <ComponentName>.test.tsx (<number> tests)
+- <useHookName>.test.tsx (<number> tests)
+
+**Total Tests Generated:** <number>
+**Test Framework:** <Jest | Vitest>
+
+**Next.js-Specific Categories:**
+- Server components: <number>
+- Client components: <number>
+- Next.js routing: <number>
+- API routes: <number>
+
+**To run tests:**
+```bash
+npm run test
+```
+
+## Next.js-Specific Scenario Rules
+
+### Server Components
+- **SSR Behavior**: Component renders correctly on server
+- **Props Passing**: Server props are passed correctly
+- **Data Fetching**: Server-side data fetching works
+- **Caching**: Next.js caching behavior
+
+### Client Components
+- **Use Client**: Component is marked with `'use client'`
+- **Interactivity**: Client-side interactions work
+- **State Management**: React state updates correctly
+
+### Next.js Utilities
+- **Routing**: Next.js App Router navigation
+- **API Routes**: API endpoint testing
+- **Image Optimization**: Next.js image handling
+- **Metadata**: Page metadata generation
 
 #### For E2E Tests with API Mocking (Playwright)
 ```typescript
@@ -1274,307 +1147,85 @@ describe('useCounter', () => {
 
 ## Best Practices
 
-- **Test Naming**: Use descriptive test names that describe what is being tested
-- **User Actions**: Use `@testing-library/user-event` instead of `fireEvent` for realistic user interactions
-- **Accessibility**: Test keyboard navigation and ARIA attributes
-- **Avoid Implementation Details**: Test behavior, not implementation
-- **One Assertion Per Test**: Prefer multiple focused tests over one complex test
-- **Arrange-Act-Assert**: Structure tests in AAA pattern
-- **Mock External Dependencies**: Mock API calls, databases, etc.
-- **Snapshot Tests**: Use sparingly and review changes carefully
-- **Coverage**: Aim for 80%+ code coverage
-- **Fast Tests**: Keep unit tests fast (< 1s each)
+Refer to `test-generator-framework` for general best practices.
+
+Next.js-specific best practices:
+- **SSR Testing**: Test server components render correctly on server
+- **Client Components**: Use `'use client'` directive appropriately
+- **Next.js Router**: Test page navigation and routing behavior
+- **API Routes**: Test Next.js API endpoints with proper mocking
+- **Image Optimization**: Consider Next.js Image component behavior
+- **Metadata**: Test page metadata and SEO-related aspects
 
 ## Common Issues
 
-### Test Framework Not Detected
-**Issue**: Unable to determine Jest or Vitest from `package.json`
+Refer to `test-generator-framework` for general issues.
 
-**Solution**: Check test scripts in `package.json`:
-```json
-{
-  "scripts": {
-    "test": "jest",
-    "test:watch": "jest --watch"
-  }
-}
-```
-or
-```json
-{
-  "scripts": {
-    "test": "vitest",
-    "test:watch": "vitest watch"
-  }
-}
-```
+Next.js-specific issues:
 
-### React Testing Library Not Found
-**Issue**: Cannot import from `@testing-library/react`
+### Next.js Page Not Found in Tests
+**Issue**: Tests fail to navigate to Next.js pages
 
-**Solution**: Install React Testing Library:
-```bash
-npm install --save-dev @testing-library/react @testing-library/jest-dom @testing-library/user-event
-```
-
-### Import Errors
-**Issue**: Cannot import component or function to test
-
-**Solution**: Ensure the component is exported correctly:
+**Solution**: Use proper Playwright navigation:
 ```typescript
-// Default export
-export default function Component() {}
-
-// Named export
-export function Component() {}
-export const Component = () => {}
+await page.goto('/about')  // Not page.go('/about')
+await expect(page).toHaveURL('/about')
 ```
 
-### Async Test Timeouts
-**Issue**: Async tests timeout or fail
+### Server Component Hydration Mismatch
+**Issue**: Hydration errors in server components
 
-**Solution**: Use proper async/await and waitFor:
+**Solution**: Test SSR behavior separately:
 ```typescript
-it('handles async operations', async () => {
-  render(<AsyncComponent />)
-  await waitFor(() => {
-    expect(screen.getByText('Loaded')).toBeInTheDocument()
-  })
+it('renders on server', () => {
+  render(<ServerComponent />)
+  // Verify server-rendered output
 })
 ```
 
-### Snapshot Tests Fail
-**Issue**: Snapshot tests fail after legitimate changes
+### API Route Not Mocked
+**Issue**: Tests calling Next.js API routes fail
 
-**Solution**: Update snapshots:
-```bash
-npm run test -- -u
-```
-
-### Missing Test Setup
-**Issue**: Tests fail due to missing Jest configuration
-
-**Solution**: Create or update `jest.config.js`:
-```javascript
-module.exports = {
-  testEnvironment: 'jsdom',
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
-}
-```
-
-### Vitest Not Recognized
-**Issue**: Vitest tests not running
-
-**Solution**: Update `vitest.config.ts`:
+**Solution**: Mock Next.js fetch:
 ```typescript
-import { defineConfig } from 'vitest/config'
-import react from '@vitejs/plugin-react'
-
-export default defineConfig({
-  plugins: [react()],
-  test: {
-    environment: 'jsdom',
-  },
-})
+jest.mock('next/navigation', () => ({
+  useRouter: jest.fn(),
+}))
 ```
 
 ## Troubleshooting Checklist
 
+Refer to `test-generator-framework` for general checklist.
+
+Next.js-specific additions:
 Before generating tests:
 - [ ] Next.js project structure is valid
-- [ ] `package.json` exists and is valid
-- [ ] Test framework is installed (Jest or Vitest)
-- [ ] React Testing Library is installed
-- [ ] Source files (components, utilities) exist
-- [ ] Files are properly exported
-
-After generating tests:
-- [ ] Test files are created in correct location
-- [ ] Test files follow `.test.tsx` or `.test.ts` naming convention
-- [ ] All imports resolve correctly
-- [ ] Test commands are appropriate for framework
-- [ ] Tests are discoverable: `npm run test -- --listTests`
-- [ ] Tests can be executed: `npm run test`
-- [ ] No syntax errors in test files
-- [ ] Test coverage is adequate
+- [ ] `package.json` contains Next.js dependencies
+- [ ] Server vs client components identified correctly
+- [ ] Next.js routing patterns are understood
 
 ## Related Commands
 
+Refer to `test-generator-framework` for general commands.
+
+Next.js-specific commands:
 ```bash
-# Install testing dependencies
-npm install --save-dev @testing-library/react @testing-library/jest-dom @testing-library/user-event jest-environment-jsdom
+# Build Next.js project
+npm run build
 
-# Run all tests
-npm run test
+# Run Next.js dev server
+npm run dev
 
-# Run specific test file
-npm run test -- Button.test.tsx
+# Run Next.js linting
+npm run lint
 
-# Run tests in watch mode
-npm run test:watch
-
-# Run tests with coverage
-npm run test:coverage
-
-# Run tests for specific pattern
-npm run test -- --testNamePattern="Button"
-
-# Update snapshots
-npm run test -- -u
-
-# Show test coverage report
-npm run test:coverage -- --coverage
-
-# Run only failed tests
-npm run test -- --onlyFailures
-
-# Run tests in verbose mode
-npm run test -- --verbose
-
-# Run tests in watch mode with coverage
-npm run test:watch -- --coverage
-```
-
-## Test File Template
-
-### Component Test Template
-```typescript
-/**
- * Test suite for <ComponentName>
- * Generated by nextjs-unit-test-creator skill
- */
-
-import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { <ComponentName> } from './<ComponentName>'
-
-describe('<ComponentName>', () => {
-  const defaultProps = {
-    // Define default props here
-  }
-
-  describe('Rendering', () => {
-    it('renders without crashing', () => {
-      render(<<ComponentName> {...defaultProps} />)
-      expect(screen.getByTestId('<component-name>')).toBeInTheDocument()
-    })
-
-    it('displays correct props', () => {
-      const customProps = { ...defaultProps, /* custom prop */ }
-      render(<<ComponentName> {...customProps} />)
-
-      expect(screen.getByText(/content/i)).toBeInTheDocument()
-    })
-  })
-
-  describe('User Interactions', () => {
-    it('handles click events', async () => {
-      const user = userEvent.setup()
-      const handleClick = jest.fn()
-      render(<<ComponentName> {...defaultProps} onClick={handleClick} />)
-
-      const button = screen.getByRole('button')
-      await user.click(button)
-
-      expect(handleClick).toHaveBeenCalledTimes(1)
-    })
-
-    it('handles form submissions', async () => {
-      const user = userEvent.setup()
-      const handleSubmit = jest.fn()
-      render(<<ComponentName> {...defaultProps} onSubmit={handleSubmit} />)
-
-      const form = screen.getByRole('form')
-      await user.click(screen.getByRole('button', { name: /submit/i }))
-
-      expect(handleSubmit).toHaveBeenCalled()
-    })
-  })
-
-  describe('State Management', () => {
-    it('updates state correctly', async () => {
-      const user = userEvent.setup()
-      render(<<ComponentName> {...defaultProps} />)
-
-      const input = screen.getByLabelText(/search/i)
-      await user.type(input, 'test')
-
-      expect(input).toHaveValue('test')
-    })
-  })
-
-  describe('Edge Cases', () => {
-    it('handles empty state', () => {
-      const emptyProps = { ...defaultProps, data: [] }
-      render(<<ComponentName> {...emptyProps} />)
-
-      expect(screen.getByText(/no data/i)).toBeInTheDocument()
-    })
-
-    it('handles loading state', () => {
-      const loadingProps = { ...defaultProps, isLoading: true }
-      render(<<ComponentName> {...loadingProps} />)
-
-      expect(screen.getByRole('progressbar')).toBeInTheDocument()
-    })
-  })
-})
-```
-
-### Utility Function Test Template
-```typescript
-/**
- * Test suite for <functionName>
- * Generated by nextjs-unit-test-creator skill
- */
-
-import { <functionName> } from './<fileName>'
-
-describe('<functionName>', () => {
-  describe('Happy Path', () => {
-    it('returns correct result for valid input', () => {
-      const result = <functionName>(validInput)
-      expect(result).toBe(expectedOutput)
-    })
-  })
-
-  describe('Edge Cases', () => {
-    it('handles empty input', () => {
-      const result = <functionName>('')
-      expect(result).toBe(expectedValue)
-    })
-
-    it('handles null input', () => {
-      const result = <functionName>(null)
-      expect(result).toBe(expectedValue)
-    })
-
-    it('handles undefined input', () => {
-      const result = <functionName>(undefined)
-      expect(result).toBe(expectedValue)
-    })
-
-    it('handles boundary values', () => {
-      expect(<functionName>(0)).toBe(expectedValue)
-      expect(<functionName>(-1)).toBe(expectedValue)
-      expect(<functionName>(Number.MAX_SAFE_INTEGER)).toBe(expectedValue)
-    })
-  })
-
-  describe('Error Handling', () => {
-    it('throws error for invalid type', () => {
-      expect(() => <functionName>(invalidInput as any)).toThrow()
-    })
-
-    it('throws error for out of range value', () => {
-      expect(() => <functionName>(9999)).toThrow()
-    })
-  })
-})
+# Run Next.js type checking
+npm run typecheck
 ```
 
 ## Related Skills
 
+- `test-generator-framework`: Core test generation framework
 - `nextjs-pr-workflow`: For creating PRs after completing tests
 - `git-issue-creator`: For creating issues and branches for new features
-- `python-ruff-linter`: For Python projects (for comparison)
+- `linting-workflow`: For ensuring code quality before testing

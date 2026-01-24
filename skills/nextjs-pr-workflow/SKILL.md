@@ -1,6 +1,6 @@
 ---
 name: nextjs-pr-workflow
-description: Complete Next.js PR workflow with linting, building, and JIRA/git issue integration for PLAN.md completion
+description: Complete Next.js PR workflow using pr-creation-workflow, jira-git-integration, and linting-workflow frameworks
 license: Apache-2.0
 compatibility: opencode
 metadata:
@@ -10,16 +10,36 @@ metadata:
 
 ## What I do
 
-I implement a complete Next.js PR creation workflow when finishing implementation of PLAN.md or new code:
+I implement a complete Next.js PR creation workflow by extending framework skills:
 
-1. **Identify Target Branch**: Determine which branch the PR should merge into (not necessarily `dev`)
-2. **Run Linting**: Execute `npm run lint` and resolve all linting errors
-3. **Verify Build**: Execute `npm run build` to ensure all builds complete successfully
-4. **Identify Tracking**: Check PLAN.md for JIRA references or git issue associations
-5. **Create Pull Request**: Create a PR linked to JIRA space or git issue, targeting the specified branch
-6. **Update Documentation**: Ensure all PR documentation is complete
-7. **Add JIRA Comments**: If JIRA ticket exists, add appropriate comments
-8. **Merge Confirmation**: Ask user to confirm merge target before proceeding
+1. **Identify Target Branch**: Determine which branch PR should merge into (configurable, not hardcoded)
+2. **Run Next.js Quality Checks**: Execute `npm run lint` and `npm run build` using `linting-workflow` framework
+3. **Identify Tracking**: Check for JIRA tickets or git issue references
+4. **Create Pull Request**: Use `pr-creation-workflow` framework for PR creation
+5. **Add JIRA Comments**: Use `jira-git-integration` framework for JIRA operations
+
+## When to use me
+
+Use this workflow when:
+- Completing implementation of a PLAN.md file
+- Finishing new feature implementation in Next.js apps
+- Ready to create a PR after development is complete
+- Need to ensure code quality before submitting changes
+- Following the standard practice of linting and building before PR
+
+**Frameworks Used**:
+- `pr-creation-workflow`: For PR creation logic and quality checks
+- `linting-workflow`: For Next.js linting (npm run lint)
+- `jira-git-integration`: For JIRA ticket management and comments
+
+## When to use me
+
+Use this workflow when:
+- Completing implementation of a PLAN.md file
+- Finishing new feature implementation in Next.js apps
+- Ready to create a PR after development is complete
+- Need to ensure code quality before submitting changes
+- Following the standard practice of linting and building before PR
 
 ## When to use me
 
@@ -35,195 +55,60 @@ Use this workflow when:
 - Next.js project with `npm run lint` and `npm run build` scripts
 - Git repository initialized and on a feature branch
 - Active Atlassian/JIRA account (if using JIRA integration)
-- Write access to the repository
+- Write access to repository
 - PLAN.md file with implementation details
 
 ## Steps
 
- ### Step 1: Check Project Structure
-- Verify this is a Next.js project (check `package.json`)
-- Ensure `npm run lint` and `npm run build` scripts exist
-- Confirm you're on a feature branch (not main/master)
+### Step 1: Check Project Structure
 
-### Step 2: Identify Target Branch
-- Ask the user which branch the PR should merge into (e.g., `main`, `develop`, `staging`, `dev`, `production`)
-- This is not necessarily `dev` - different projects use different base branches
-- Detect the default branch if possible: `git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@'`
-- Store the target branch for use in git diff and PR creation commands
-
-### Step 3: Run Linting
-- Execute: `npm run lint`
-- Review any linting errors
-- Fix all linting errors iteratively:
-  - Use `eslint` auto-fix where possible: `npm run lint -- --fix`
-  - Manually fix remaining issues
-  - Re-run linting until all errors are resolved
-- Commit linting fixes if needed: `git commit -m "Fix linting errors"`
-
-### Step 4: Verify Build
-- Execute: `npm run build`
-- Monitor build output for errors or warnings
-- If build fails:
-  - Identify the specific error(s)
-  - Read error logs carefully to understand the issue
-  - Fix the root cause (type errors, missing dependencies, import issues, etc.)
-  - Re-run build until it succeeds
-- Commit build fixes if needed: `git commit -m "Fix build errors"`
-
-### Step 5: Identify Tracking System
-- Read the PLAN.md file to find tracking references:
-  - Search for JIRA ticket format (e.g., `IBIS-123`, `PROJECT-456`)
-  - Look for git issue references or PR descriptions
-  - Check commit messages for issue references
-- Determine the tracking system to use:
-  - **JIRA** if a ticket ID is found in PLAN.md
-  - **Git Issue** if a git issue number is referenced
-  - **Standalone PR** if neither is present
-
-### Step 6: Check Git Status
-- Run: `git status` to see all changes
-- Run: `git diff --staged` to review staged changes
-- Ensure all relevant changes are staged: `git add .`
-- Verify the branch name aligns with the ticket (if applicable)
-
-### Step 7: Create Pull Request
-
-#### If using JIRA:
-1. **Get JIRA Details**:
-   - Use `atlassian_getAccessibleAtlassianResources` to get cloud ID
-   - Note the JIRA ticket key from PLAN.md (e.g., `IBIS-123`)
-
- 2. **Get Branch Diff Summary**:
-    - Run: `git diff <target-branch>...HEAD` to see full changes
-    - Run: `git log <target-branch>...HEAD --oneline` for commit history
-
- 3. **Create PR via Git**:
-    ```bash
-    gh pr create --base <target-branch> --title "[<TICKET-KEY>] <Summary>" --body "$(cat <<'EOF'
-   ## Summary
-   <Bullet points describing the changes>
-
-   ## JIRA Reference
-   - Ticket: <TICKET-KEY>
-   - Link: https://<jira-domain>.atlassian.net/browse/<TICKET-KEY>
-
-   ## Changes
-   - <Key change 1>
-   - <Key change 2>
-
-   ## Testing
-   - Linting: Passed (`npm run lint`)
-   - Build: Passed (`npm run build`)
-
-   ## Checklist
-   - [ ] Code follows project style guidelines
-   - [ ] All linting errors resolved
-   - [ ] Build passes without errors
-   - [ ] Documentation updated
-   - [ ] Self-reviewed
-   EOF
-   )"
-   ```
-
-4. **Add JIRA Comment**:
-   - Use `atlassian_addCommentToJiraIssue` with:
-     - `cloudId`: The Atlassian cloud ID
-     - `issueIdOrKey`: The ticket key (e.g., `IBIS-123`)
-     - `commentBody`: PR reference in Markdown format:
-       ```markdown
-       PR created for this ticket.
-
-       **PR Details**:
-       - Branch: <branch-name>
-       - Target: <target-branch>
-       - Status: Ready for review
-
-       **Quality Checks**:
-       - Linting: ✅ Passed
-       - Build: ✅ Passed
-       ```
-
-#### If using Git Issue:
-1. **Get Issue Details**:
-   - Note the issue number from PLAN.md or commits
-   - Fetch issue details: `gh issue view <issue-number>`
-
-2. **Create PR referencing the issue**:
-   ```bash
-   gh pr create --title "Fix #<issue-number>: <Summary>" --body "$(cat <<'EOF'
-   ## Summary
-   <Bullet points describing the changes>
-
-   ## Issue Reference
-   - Resolves #<issue-number>
-   - Link: <issue-url>
-
-   ## Changes
-   - <Key change 1>
-   - <Key change 2>
-
-   ## Testing
-   - Linting: Passed (`npm run lint`)
-   - Build: Passed (`npm run build`)
-
-   ## Checklist
-   - [ ] Code follows project style guidelines
-   - [ ] All linting errors resolved
-   - [ ] Build passes without errors
-   - [ ] Documentation updated
-   - [ ] Self-reviewed
-   EOF
-   )"
-   ```
-
-#### Standalone PR (no JIRA or git issue):
+Verify this is a Next.js project and check for required scripts:
 ```bash
-gh pr create --title "<Summary>" --body "$(cat <<'EOF'
-## Summary
-<Bullet points describing the changes>
-
-## Changes
-- <Key change 1>
-- <Key change 2>
-
-## Testing
-- Linting: Passed (`npm run lint`)
-- - Build: Passed (`npm run build`)
-
-## Checklist
-- [ ] Code follows project style guidelines
-- [ ] All linting errors resolved
-- [ ] Build passes without errors
-- [ ] Documentation updated
-- [ ] Self-reviewed
-EOF
-)"
+# Verify package.json exists and has required scripts
+jq -r '.scripts.lint and .scripts.build' package.json
 ```
 
-### Step 8: Update PR Documentation
-- Ensure the PR body is complete:
-  - Clear summary of changes
-  - References to JIRA/git issues
-  - List of files modified
-  - Testing methodology
-  - Quality checks (linting, build)
-- Add any necessary screenshots or diagrams
-- Include links to related documentation
+### Step 2: Identify Target Branch
 
-### Step 9: Confirm Merge Target
-After successful PR creation, ask the user:
+Ask user which branch PR should merge into. Note: This is not necessarily `dev` - different projects use different conventions.
 
-> PR created successfully! 🎉
->
-> **PR Details**:
-> - Number: #<pr-number>
-> - Title: <pr-title>
-> - Branch: <current-branch>
-> - URL: <pr-url>
->
-> **Would you like to proceed with merging this PR? If yes, please specify the target branch to merge into** (e.g., `main`, `develop`, `staging`, `production`, etc. - not necessarily `dev`).
+**Use**: Ask user or detect default from `git symbolic-ref`
 
-Wait for user response before proceeding with any merge operations.
+### Step 3: Run Quality Checks via Linting Workflow
+
+Use `linting-workflow` framework with JavaScript/TypeScript language detection:
+- Framework: ESLint
+- Package manager: npm/yarn/pnpm
+- Run `npm run lint` (or `yarn lint` / `pnpm lint`)
+- Apply auto-fix with `npm run lint -- --fix`
+- Handle errors with re-running
+
+### Step 4: Identify Tracking System
+
+Read PLAN.md for JIRA ticket references:
+```bash
+# Check for JIRA ticket
+PLAN_JIRA=$(grep -oE "[A-Z]+-[0-9]+" PLAN.md | head -1)
+```
+
+### Step 5: Create Pull Request via PR Workflow
+
+Use `pr-creation-workflow` framework with Next.js-specific configuration:
+- Quality checks: `npm run lint` and `npm run build`
+- Target branch: User-specified or detected
+- Tracking: JIRA ticket or git issue
+- Platform: GitHub PR (not GitLab)
+
+### Step 6: Handle JIRA Integration via JIRA Workflow
+
+Use `jira-git-integration` framework for:
+- JIRA resource detection (cloud ID, projects)
+- Adding comments with PR details
+- Uploading images (if applicable)
+
+### Step 7: Merge Confirmation
+
+After PR creation, ask user to confirm merge target before proceeding.
 
 ## Example PLAN.md Integration
 
