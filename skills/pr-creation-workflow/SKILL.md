@@ -76,12 +76,13 @@ fi
 
 **Configurable Checks**:
 
-| Check Type | JavaScript/TypeScript | Python | Other |
-|-----------|---------------------|--------|--------|
-| Linting | `npm run lint` | `poetry run ruff check` | Language-specific |
-| Building | `npm run build` | N/A (Python doesn't build) | Language-specific |
-| Testing | `npm run test` | `poetry run pytest` | Framework-specific |
-| Type Checking | `npm run typecheck` | `mypy .` | Language-specific |
+ | Check Type | JavaScript/TypeScript | Python | Java | C# | Other |
+|-----------|---------------------|--------|-----|-----|--------|
+| Linting | `npm run lint` | `poetry run ruff check` | `mvn checkstyle` | `dotnet format` | Language-specific |
+| Building | `npm run build` | N/A (Python doesn't build) | `mvn compile` | `dotnet build` | Language-specific |
+| Testing | `npm run test` | `poetry run pytest` | `mvn test` | `dotnet test` | Framework-specific |
+| Type Checking | `npm run typecheck` | `mypy .` | N/A | N/A | Language-specific |
+| Docstrings | `docstring-generator` | `docstring-generator` | `docstring-generator` | `docstring-generator` | Industry best practice |
 
 **Quality Check Execution**:
 ```bash
@@ -122,6 +123,30 @@ if [ "$RUN_TYPECHECK" = "true" ]; then
     mypy .
   fi
 fi
+
+# Docstring check (if enabled) - Industry Best Practice
+if [ "$RUN_DOCSTRINGS" = "true" ]; then
+  echo "Checking docstrings..."
+  if command -v opencode &>/dev/null; then
+    opencode --agent docstring-generator "Check for missing docstrings in changed files"
+  else
+    # Manual docstring check
+    UNDOC_COUNT=0
+    for file in $(git diff --name-only HEAD~1..HEAD); do
+      case "$file" in
+        *.py)    UNDOC=$(grep -c 'def ' "$file" - $(grep -c '"""' "$file")) ;;
+        *.java)   UNDOC=$(grep -c 'public.*(' "$file" - $(grep -c '/\*\*' "$file")) ;;
+        *.ts|tsx) UNDOC=$(grep -c 'function' "$file" - $(grep -c '/\*\*' "$file")) ;;
+        *.cs|csx) UNDOC=$(grep -c 'public.*(' "$file" - $(grep -c '///' "$file")) ;;
+      esac
+      UNDOC_COUNT=$((UNDOC_COUNT + UNDOC))
+    done
+
+    if [ "$UNDOC_COUNT" -gt 0 ]; then
+      echo "Found $UNDOC_COUNT undocumented items"
+    fi
+  fi
+fi
 ```
 
 **Quality Check Results**:
@@ -131,6 +156,7 @@ LINT_RESULT="✅ Passed" || "❌ Failed"
 BUILD_RESULT="✅ Passed" || "❌ Failed"
 TEST_RESULT="✅ Passed" || "❌ Failed"
 TYPECHECK_RESULT="✅ Passed" || "❌ Failed"
+DOCSTRING_RESULT="✅ Passed" || "❌ Failed (industry best practice)"
 ```
 
 **Error Handling**:

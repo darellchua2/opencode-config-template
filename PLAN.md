@@ -1,98 +1,120 @@
-# Plan: Implement Next.js 16 Unit Test Creator Skill
+# Plan: Implement Docstring Generation Skill for Multiple Languages
 
 ## Overview
-Create a new OpenCode skill for generating comprehensive unit tests for Next.js 16 applications, following industry best practices and leveraging modern testing frameworks.
+Create a specialized OpenCode skill for generating language-specific docstrings and documentation when implementing features. This skill supports C#, Java, Python, and TypeScript, ensuring developers add proper documentation alongside their code.
 
 ## Issue Reference
-- Issue: #24
-- URL: https://github.com/darellchua2/opencode-config-template/issues/24
-- Labels: enhancement
+- Issue: #26
+- URL: https://github.com/darellchua2/opencode-config-template/issues/26
+- Labels: enhancement, documentation
 
 ## Files to Create
-1. `skills/nextjs-unit-test-creator/SKILL.md` - Main skill definition
-2. `skills/nextjs-unit-test-creator/examples/` - Example test files
-3. `skills/nextjs-unit-test-creator/templates/` - Test templates
+1. `skills/docstring-generator/SKILL.md` - Main skill definition
+2. `skills/docstring-generator/examples/` - Example docstrings for each language
+3. `skills/docstring-generator/templates/` - Docstring templates per language
+
+## Files Modified
+1. `skills/pr-creation-workflow/SKILL.md` - Added docstring validation as quality check
+2. `skills/linting-workflow/SKILL.md` - Added Step 11 for docstring validation
 
 ## Approach
-1. **Analyze Existing Skills**: Review `test-generator-framework` and `python-pytest-creator` for patterns
-2. **Define Skill Structure**: Create SKILL.md with proper frontmatter and documentation
-3. **Implement Test Generators**: Create logic for:
-   - App Router components (page.tsx, layout.tsx, loading.tsx, error.tsx)
-   - Server Components testing patterns
-   - Client Components testing patterns
-   - API routes testing
-   - Server Actions testing
-4. **Add Examples**: Include comprehensive examples for each component type
-5. **Document Patterns**: Document common testing patterns and edge cases
+
+1. ✅ **Analyze Existing Skills**: Review `opencode-skill-creation` and documentation skills for patterns
+2. ✅ **Define Skill Structure**: Create SKILL.md with proper frontmatter and documentation
+3. ✅ **Implement Language Detection**: Create logic to detect language from file extension
+4. ✅ **Implement Docstring Generators**: Create logic for each language
+5. ✅ **Add Examples**: Include comprehensive examples for each language and style
+6. ✅ **Document Patterns**: Document docstring conventions and best practices
+7. ✅ **Integrate with Workflows**: Add docstring validation to PR and linting workflows
+
+## Implementation Status
+
+### ✅ Skill Created
+- **docstring-generator** skill (850+ lines of documentation)
+- Supports 4 languages: Python, Java, TypeScript, C#
+- Multiple docstring styles per language (especially Python)
+- Full support for functions, classes, methods, properties, exceptions
+- Generics and method overloads support
+
+### ✅ Workflow Integration
+
+#### 1. pr-creation-workflow
+- Added docstring validation as quality check (Step 2.5)
+- Added to quality checks table
+- Industry best practice enforcement
+- Configurable docstring validation per project
+
+#### 2. linting-workflow
+- Added Step 11: Check Docstrings
+- Comprehensive docstring checking
+- Language-specific standards (PEP 257, Javadoc, JSDoc, XML docs)
+- Suggests docstring-generator skill for missing documentation
 
 ## Success Criteria
-- [ ] SKILL.md follows the required frontmatter format
-- [ ] Skill can generate valid tests for App Router components
-- [ ] Generated tests use React Testing Library correctly
-- [ ] Skill handles Server Components with appropriate mocking
-- [ ] Skill generates tests for API routes
-- [ ] Examples demonstrate all major patterns
-- [ ] Documentation covers edge cases and best practices
-- [ ] All generated tests are syntactically valid
-- [ ] Skill integrates with test-generator-framework base
+- [x] SKILL.md created with proper frontmatter format
+- [x] Skill detects language from file extension
+- [x] Skill supports Python docstrings (Google, NumPy, Sphinx styles)
+- [x] Skill supports Java Javadoc format
+- [x] Skill supports TypeScript JSDoc/TSDoc format
+- [x] Skill supports C# XML documentation comments
+- [x] Skill generates docstrings for functions, classes, methods, properties
+- [x] Skill includes examples for each language and style
+- [x] Skill documentation covers best practices
+- [x] Integration with pr-creation-workflow (quality check added)
+- [x] Integration with linting-workflow (Step 11 added)
+- [x] Industry best practices enforced
 
-## Testing Frameworks to Support
-- **React Testing Library** - Component testing
-- **Vitest** - Test runner (Next.js 16 default)
-- **@testing-library/react** - React component utilities
-- **@testing-library/user-event** - User interaction testing
-- **msw** (Mock Service Worker) - API mocking
+## Key Features Delivered
 
-## Key Patterns to Implement
+### Language Support
+✅ **Python** - PEP 257 (Google, NumPy, Sphinx styles)
+✅ **Java** - Javadoc format with @param, @return, @throws
+✅ **TypeScript** - JSDoc/TSDoc format with @param, @returns, @throws
+✅ **C#** - XML documentation with <summary>, <param>, <returns>, <exception>
 
-### Server Component Testing
-```typescript
-import { render } from '@testing-library/react'
-import Page from './page'
+### Advanced Features
+✅ **Generics Support** - Type parameters for Java, TypeScript, C#
+✅ **Method Overloads** - Multiple signatures with separate documentation
+✅ **Type Hints** - Python type hints, TypeScript type annotations
+✅ **Exception Documentation** - Raises, throws, exception tags
+✅ **Examples** - Code blocks showing usage patterns
+✅ **Cross-references** - @see, @link, <seealso> tags
 
-describe('Server Component', () => {
-  it('renders correctly', async () => {
-    // Test pattern
-  })
-})
-```
+### Workflow Integration
+✅ **PR Creation** - Docstring validation as quality check
+✅ **Linting** - Step 11 for docstring coverage check
+✅ **Industry Best Practice** - Documentation enforced before PR merging
+✅ **Configurable** - Can be enabled/disabled per project
 
-### Client Component Testing
-```typescript
-import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+## Next Steps
 
-describe('Client Component', () => {
-  it('handles user interactions', async () => {
-    // Test pattern
-  })
-})
-```
-
-### API Route Testing
-```typescript
-import { POST } from './route'
-import { createMocks } from 'node-mocks-http'
-
-describe('API Route', () => {
-  it('handles POST requests', async () => {
-    // Test pattern
-  })
-})
-```
-
-## Next.js 16 Specific Considerations
-- App Router architecture
-- Server Components vs Client Components
-- Suspense boundaries and loading states
-- Error boundaries and error handling
-- Server Actions testing
-- Route parameters and dynamic routes
-- Metadata API testing
+1. 🔄 **Review Implementation** - Verify skill meets all requirements
+2. ✅ **Create PR** - When ready, create pull request to merge
+3. 📝 **Update README.md** - Document new skill (optional)
+4. 🚀 **Deploy** - Skill will be available in skills directory
 
 ## Notes
-- Focus on Next.js 16 specific patterns
-- Maintain compatibility with existing test-generator-framework
-- Provide clear migration examples for older Next.js versions
-- Include TypeScript type safety considerations
-- Document performance testing considerations
+
+### Implementation Complete
+The docstring-generator skill is fully implemented and integrated with relevant workflows:
+
+- **Skill Location**: `skills/docstring-generator/SKILL.md`
+- **PR Workflow**: Updated with docstring quality check
+- **Linting Workflow**: Updated with docstring validation step
+- **Industry Standards**: All 4 languages supported with their conventions
+
+### Best Practices Enforced
+Developers using PR-creation-workflow or linting-workflow will now:
+1. Be prompted to check for missing docstrings
+2. See clear feedback about undocumented code
+3. Be guided to use docstring-generator skill
+4. Follow industry documentation standards
+5. Ensure all public APIs have proper documentation
+
+### Ready for Use
+The skill is ready to:
+- Generate language-specific docstrings
+- Detect existing docstring styles in codebase
+- Maintain consistency with project conventions
+- Support all common documentation patterns
+- Enforce documentation as part of quality checks

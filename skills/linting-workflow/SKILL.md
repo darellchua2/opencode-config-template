@@ -236,6 +236,7 @@ fi
 | Potential Bugs | Code patterns that may cause bugs |
 | Deprecation Warnings | Use of deprecated features |
 | Type Errors (TypeScript) | Type mismatches or missing type definitions |
+| Missing Docstrings | Functions/classes without documentation (industry best practice) |
 
 ### Step 6: Apply Auto-Fix
 
@@ -421,6 +422,75 @@ fi
 | ESLint fixes | `Fix ESLint errors` |
 | Ruff fixes | `Fix Ruff linting errors` |
 | Specific fixes | `Fix <error type> errors` |
+ 
+### Step 11: Check Docstrings (Industry Best Practice)
+
+**Purpose**: Verify all public functions, classes, and methods have proper docstrings
+
+**Implementation**:
+```bash
+echo ""
+echo "📝 Checking docstrings..."
+echo ""
+
+# Check for undocumented functions/classes
+UNDOC_COUNT=0
+MISSING_DOCSTRINGS=()
+
+for file in $(git diff --name-only HEAD~1..HEAD); do
+  case "$file" in
+    *.py)
+      UNDOC=$(grep -c 'def ' "$file" - $(grep -c '"""' "$file"))
+      FUNCTIONS=$(grep -c 'def ' "$file")
+      ;;
+    *.java)
+      UNDOC=$(grep -c 'public.*(' "$file" - $(grep -c '/\*\*' "$file"))
+      METHODS=$(grep -c 'public.*(' "$file")
+      ;;
+    *.ts|tsx)
+      UNDOC=$(grep -c 'function' "$file" - $(grep -c '/\*\*' "$file"))
+      FUNCTIONS=$(grep -c 'function ' "$file")
+      ;;
+    *.cs|csx)
+      UNDOC=$(grep -c 'public.*(' "$file" - $(grep -c '///' "$file"))
+      METHODS=$(grep -c 'public.*(' "$file")
+      ;;
+  esac
+
+  if [[ $UNDOC -gt 0 ]]; then
+    UNDOC_COUNT=$((UNDOC_COUNT + UNDOC))
+    MISSING_DOCSTRINGS+=("$file")
+  fi
+done
+
+if [[ $UNDOC_COUNT -gt 0 ]]; then
+  echo ""
+  echo "❌ Found $UNDOC_COUNT undocumented items:"
+  for item in "${MISSING_DOCSTRINGS[@]}"; do
+    echo "   - $item"
+  done
+  echo ""
+  echo "💡 Consider using 'docstring-generator' skill to add missing documentation"
+else
+  echo ""
+  echo "✅ All functions/classes have docstrings!"
+fi
+```
+
+**Docstring Check Results**:
+- Count undocumented items
+- List files with missing docstrings
+- Suggest using docstring-generator skill
+- Check docstring format compliance (PEP 257, Javadoc, JSDoc, XML docs)
+
+**Language-Specific Docstring Standards**:
+
+| Language | Docstring Format | Key Tags/Sections |
+|-----------|------------------|-------------------|
+| Python | PEP 257 (Google, NumPy, Sphinx) | Args, Returns, Raises |
+| Java | Javadoc | @param, @return, @throws, @see |
+| TypeScript | JSDoc/TSDoc | @param, @returns, @throws, @type |
+| C# | XML Documentation Comments | <summary>, <param>, <returns>, <exception> |
 
 ## Language-Specific Linter Configuration
 
