@@ -1,3 +1,11 @@
+# [1.2.0](https://github.com/darellchua2/opencode-config-template/compare/v1.1.0...v1.2.0) (2026-01-24)
+
+
+### Features
+
+* implement docstring-generator skill and integrate with workflows ([d004927](https://github.com/darellchua2/opencode-config-template/commit/d0049275e8fbfa0460fec19f50335f83d099d67e))
+* implement docstring-generator skill for multiple languages with workflow integration ([a47d25e](https://github.com/darellchua2/opencode-config-template/commit/a47d25e77356eec28de83005bfc9a59c57534ee0)), closes [#26](https://github.com/darellchua2/opencode-config-template/issues/26)
+
 # [1.1.0](https://github.com/darellchua2/opencode-config-template/compare/v1.0.2...v1.1.0) (2026-01-24)
 
 
