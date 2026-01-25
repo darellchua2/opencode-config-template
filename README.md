@@ -127,6 +127,22 @@ ls -la ~/.config/opencode/skills/
 
 ## Configuration Overview
 
+### Agent Skill Discovery Approach
+
+Build-With-Skills and Plan-With-Skills agents use a **hardcoded skill list approach** for reliable, consistent skill discovery:
+
+- **Skill lists are embedded** in agent system prompts (not from SKILL_INDEX.json)
+- **27 pre-configured skills** organized into 9 logical categories
+- **Zero discovery latency** - no file reads needed to find skills
+- **Consistent behavior** - both agents always have identical skill lists
+- **Easy to maintain** - use `opencode-skills-maintainer` skill to update agents
+
+**When to update agents:**
+- After creating new skills (use `opencode-skill-creation` skill - auto-updates agents)
+- After removing skills from the repository
+- After updating skill descriptions or metadata
+- See "Skill Maintenance" section below for details
+
 ### Provider
 - **LM Studio (local)** - Running at `http://127.0.0.1:1234/v1`
   - Model: `openai/gpt-oss-20b` (GPT-OSS 20B)
@@ -203,12 +219,32 @@ Specialized skills use framework skills for core logic and add platform/language
 
 **Linting Skills:**
 - **`python-ruff-linter`** - Python linting with Ruff (uses `linting-workflow`)
+- **`javascript-eslint-linter`** - JavaScript/TypeScript linting with ESLint (uses `linting-workflow`)
+
+**Project Setup Skills:**
+- **`nextjs-standard-setup`** - Create standardized Next.js 16 demo applications with shadcn, Tailwind v4, and Tekk-prefixed components
+
+**OpenCode Meta Skills:**
+- **`opencode-agent-creation`** - Create OpenCode agents following best practices
+- **`opencode-skill-creation`** - Create OpenCode skills following documentation standards
+- **`opencode-skill-auditor`** - Audit existing skills to identify modularization opportunities and eliminate redundancy
+- **`opencode-skills-maintainer`** - Automatically update Build-With-Skills and Plan-With-Skills agents with new skills
+
+**Code Quality/Documentation Skills:**
+- **`docstring-generator`** - Generate language-specific docstrings for C#, Java, Python, and TypeScript
+- **`typescript-dry-principle`** - Apply DRY principle to eliminate code duplication in TypeScript projects
+- **`coverage-readme-workflow`** - Ensure test coverage percentage is displayed in README.md for Next.js and Python projects
+
+**OpenTofu/Infrastructure Skills:**
+- **`opentofu-provider-setup`** - Configure OpenTofu with cloud providers and authentication
+- **`opentofu-provisioning-workflow`** - Infrastructure as Code development patterns and resource lifecycle management
+- **`opentofu-aws-explorer`** - Explore and manage AWS cloud infrastructure resources
+- **`opentofu-kubernetes-explorer`** - Explore and manage Kubernetes clusters and resources
+- **`opentofu-neon-explorer`** - Explore and manage Neon Postgres serverless database resources
+- **`opentofu-keycloak-explorer`** - Explore and manage Keycloak identity and access management resources
 
 **Standalone Skills (No Framework):**
 - **`ascii-diagram-creator`** - Create ASCII diagrams from workflow definitions
-- **`opencode-agent-creation`** - Create OpenCode agents following best practices
-- **`opencode-skill-creation`** - Create OpenCode skills following documentation standards
-- **`typescript-dry-principle`** - Apply DRY principle to eliminate code duplication
 
 #### How Frameworks and Skills Interact
 
@@ -250,8 +286,87 @@ User Request → Specialized Skill → Framework Skills → Implementation
 - **Better Discoverability**: Skills reference relevant frameworks
 - **Consistent UX**: Same patterns across similar workflows
 - **Modular Architecture**: Easy to add new language/framework support
+- **Reliable Discovery**: Hardcoded skill lists eliminate discovery failures
+- **Zero Latency**: No file reads needed to find available skills
+- **Auto-Update**: `opencode-skills-maintainer` keeps agents synchronized
+- **Always Available**: Skills always listed in agent system prompts
 
 Skills are deployed to `~/.config/opencode/skills/` during setup.
+
+### Skill Maintenance
+
+The `opencode-skills-maintainer` skill automatically keeps Build-With-Skills and Plan-With-Skills agents synchronized with available skills.
+
+#### When to Run opencode-skills-maintainer
+
+Run this skill when:
+- You've added new skills to `skills/` folder
+- You've removed skills from `skills/` folder
+- You've updated skill descriptions or metadata
+- Agents are unable to find skills that should be available
+
+#### How to Run
+
+```bash
+# Use Build-With-Skills agent with the maintainer skill
+opencode --agent build-with-skills "Use opencode-skills-maintainer skill to update agents with current skills"
+
+# The maintainer skill will:
+# 1. Scan skills/ folder for all SKILL.md files
+# 2. Extract skill metadata from frontmatter
+# 3. Update both Build-With-Skills and Plan-With-Skills prompts
+# 4. Validate config.json with jq
+# 5. Generate a maintenance report
+```
+
+#### Automated Maintenance
+
+**Git Pre-Commit Hook** (auto-update when skills change):
+```bash
+# Add to .git/hooks/pre-commit
+#!/bin/bash
+if git diff --name-only --cached | grep -q "^skills/"; then
+  echo "Skills changed, updating agent prompts..."
+  opencode --agent build-with-skills "Use opencode-skills-maintainer skill"
+fi
+```
+
+**Cron Job** (run daily):
+```bash
+# Add to crontab: 0 2 * * * cd /path/to/repo && opencode --agent build-with-skills "Use opencode-skills-maintainer skill"
+```
+
+#### Verification
+
+After running `opencode-skills-maintainer`, verify:
+```bash
+# Validate JSON
+jq . config.json
+
+# Check Build-With-Skills has skills
+jq '.agent["build-with-skills"].prompt' config.json | grep "Available Skills"
+
+# Check Plan-With-Skills has skills
+jq '.agent["plan-with-skills"].prompt' config.json | grep "Available Skills"
+```
+
+#### Creating New Skills
+
+When creating new skills, use `opencode-skill-creation` skill which **automatically runs** `opencode-skills-maintainer` as a final step:
+
+```bash
+# Create a new skill (this will auto-update agents!)
+opencode --agent build-with-skills "Use opencode-skill-creation to create a new skill"
+
+# The skill-creation workflow:
+# 1. Prompts for skill requirements
+# 2. Generates SKILL.md with proper frontmatter
+# 3. Creates directory structure
+# 4. Validates skill naming and content
+# 5. [AUTOMATICALLY] Runs opencode-skills-maintainer to update agents
+```
+
+This ensures every new skill is immediately available to both Build-With-Skills and Plan-With-Skills agents.
 
 ### MCP Servers
 - **atlassian** - Jira and Confluence integration
@@ -516,6 +631,19 @@ Contributors should update `CHANGELOG.md` when making significant changes.
 ### Config not loading
 - Verify file path: `ls -la ~/.config/opencode/config.json`
 - Check JSON syntax: `jq . ~/.config/opencode/config.json` (requires `jq`)
+
+### Skills not found by agents
+- Verify skill was added to `skills/` folder
+- Run `opencode-skills-maintainer` to update agents: `opencode --agent build-with-skills "Use opencode-skills-maintainer skill"`
+- Check if skill is in agent prompts: `jq '.agent["build-with-skills"].prompt' config.json | grep "<skill-name>"`
+- Verify skill name matches frontmatter exactly
+- If using `opencode-skill-creation`, check if it auto-updated agents (should have completed Step 8)
+
+### Agent prompts out of sync with skills
+- Run `opencode-skills-maintainer` skill to synchronize: `opencode --agent build-with-skills "Use opencode-skills-maintainer skill"`
+- Verify both agents have identical skill sections: `diff <(jq '.agent["build-with-skills"].prompt' config.json) <(jq '.agent["plan-with-skills"].prompt' config.json)`
+- Check if JSON is valid: `jq . config.json`
+- If automated maintenance failed, run manually as above
 
 
 ## License

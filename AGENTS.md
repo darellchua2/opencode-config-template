@@ -21,17 +21,23 @@ bash setup.sh --dry-run
 opencode --agent diagram-creator "test prompt"
 ```
 
+**Agent Skill Maintenance:**
+```bash
+# Update agents with new skills
+opencode --agent build-with-skills "Use opencode-skills-maintainer skill"
+
+# Verify agents have current skills
+jq '.agent["build-with-skills"].prompt' config.json | grep "Available Skills"
+jq '.agent["plan-with-skills"].prompt' config.json | grep "Available Skills"
+```
+
 ## Code Style Guidelines
 
 ### Configuration Files (config.json)
 
-**Schema Compliance:**
-- Follows OpenCode config schema at https://opencode.ai/config.json
-- Always validate with `jq . config.json` after changes
+**Schema Compliance:** Follow OpenCode config schema at https://opencode.ai/config.json, always validate with `jq . config.json`
 
-**Environment Variables:**
-- Use `${VAR_NAME}` or `{env:VAR_NAME}` syntax
-- Never hardcode API keys or secrets
+**Environment Variables:** Use `${VAR_NAME}` or `{env:VAR_NAME}` syntax, never hardcode API keys
 
 **MCP Server Configuration:**
 - **Type**: `local` (runs via npx) or `remote` (HTTPS endpoint)
@@ -42,56 +48,24 @@ opencode --agent diagram-creator "test prompt"
 **Agent Configuration:**
 - `description`: Single sentence stating agent's primary purpose
 - `mode`: "primary" or "subagent"
-- `model`: Provider/model string (e.g., "zai-coding-plan/glm-4.6v")
+- `model`: Provider/model string (e.g., "zai-coding-plan/glm-4.7")
 - `prompt`: Detailed instructions covering delegation, output format, error handling
 - `tools`: Boolean flags for read/write/edit/glob/grep
 - `mcp`: Object with MCP server names and `enabled: true` status
 
 ### Shell Scripts (setup.sh)
 
-**Header:**
-```bash
-#!/bin/bash
-set -o pipefail
-set -o nounset
-```
+**Header:** `#!/bin/bash`, `set -o pipefail`, `set -o nounset`
 
-**Error Handling:**
-- Don't use `set -e` (implement custom error handling)
-- Wrap commands in functions with error checking
-- Use trap for cleanup on failure
+**Error Handling:** Don't use `set -e`, wrap commands in functions with error checking, use trap for cleanup
 
-**User Interaction:**
-- Destructive operations require confirmation: `prompt_yes_no "Proceed?" "n"`
-- Mask sensitive output: `${VAR:0:8}...${VAR: -4}`
-- Provide clear prompts with defaults
+**User Interaction:** Destructive operations require confirmation, mask sensitive output, provide clear prompts with defaults
 
-**Logging/Security:**
-- Use color-coded output: RED (errors), GREEN (success), YELLOW (warnings)
-- Include section headers: `echo "=== Section Name ==="`
-- Never echo raw API keys, validate user input, create backups
+**Logging/Security:** Use color-coded output (RED/GREEN/YELLOW), include section headers, never echo raw API keys
 
 ### Skills (skills/*/SKILL.md)
 
-**Skill Discovery Mechanism:**
-After running `setup.sh`, skills are deployed to `~/.config/opencode/skills/` and a `SKILL_INDEX.json` file is generated for optimized skill discovery. Both `build-with-skills` and `plan-with-skills` agents must use `SKILL_INDEX.json` as the primary method for discovering available skills.
-
-**Verification Commands:**
-```bash
-# Check if SKILL_INDEX.json exists
-ls -la ~/.config/opencode/skills/SKILL_INDEX.json
-
-# View skill index contents
-cat ~/.config/opencode/skills/SKILL_INDEX.json | jq '.skills[].name'
-
-# View full index
-cat ~/.config/opencode/skills/SKILL_INDEX.json | jq '.'
-```
-
-**Skill Discovery Workflow:**
-1. **Primary Method**: Read `~/.config/opencode/skills/SKILL_INDEX.json` to get all skill metadata
-2. **Fallback**: If SKILL_INDEX.json doesn't exist, use glob discovery on local `skills/` folder with a warning
-3. **Skill Loading**: Once a skill is identified, load its full SKILL.md from `~/.config/opencode/skills/[skill-path]/SKILL.md`
+**Skill Discovery Mechanism:** Build-With-Skills and Plan-With-Skills use **hardcoded skill lists** embedded in system prompts. Use `opencode-skills-maintainer` skill to update agents when skills change.
 
 **Frontmatter Format:**
 ```yaml
@@ -106,29 +80,15 @@ metadata:
 ---
 ```
 
-**Content Structure:**
-- "What I do", "When to use me", "Prerequisites", "Steps", "Best Practices", "Common Issues"
-- Use triple backticks with bash language specifier for code blocks
-- Include example commands with context
+**Content Structure:** "What I do", "When to use me", "Prerequisites", "Steps", "Best Practices", "Common Issues", use triple backticks with bash language specifier for code blocks
 
 ### Documentation (README.md)
 
-**Sections:**
-1. Brief description (1-2 sentences)
-2. Prerequisites with installation commands
-3. Setup instructions (automated + manual)
-4. Configuration overview
-5. Usage examples
-6. Troubleshooting
+**Sections:** Brief description (1-2 sentences), Prerequisites with installation commands, Setup instructions (automated + manual), Configuration overview, Usage examples, Troubleshooting
 
-**Code Examples:**
-- Always include bash language specifier
-- Show verification commands
-- Include output examples
+**Code Examples:** Always include bash language specifier, show verification commands, include output examples
 
-**Links:**
-- Use absolute URLs for external resources
-- Use relative paths for internal references
+**Links:** Use absolute URLs for external resources, use relative paths for internal references
 
 ## Agent Design Patterns
 
@@ -152,49 +112,23 @@ metadata:
 
 ## Error Handling
 
-**Configuration Errors:**
-- Validate JSON before deployment: `jq . config.json`
-- Check environment variables: `echo $VAR_NAME`
-- Provide clear error messages with recovery steps
+**Configuration Errors:** Validate JSON before deployment, check environment variables, provide clear error messages with recovery steps
 
-**Shell Script Errors:**
-- Check command existence before execution: `command_exists node`
-- Use conditional execution with `|| true` for non-critical steps
-- Implement custom error handler with trap
+**Shell Script Errors:** Check command existence before execution, use conditional execution with `|| true`, implement custom error handler with trap
 
-**Missing Dependencies:**
-- Check for required tools (nvm, node, npm, jq, curl)
-- Provide installation guidance
-- Offer to skip optional components
+**Missing Dependencies:** Check for required tools (nvm, node, npm, jq, curl), provide installation guidance
 
-**Agent Skill Discovery Issues:**
-- **SKILL_INDEX.json missing**: Re-run setup.sh to regenerate index
-- **Agents not finding skills**: Verify `~/.config/opencode/skills/SKILL_INDEX.json` exists
-- **Incorrect path references**: Ensure agents use `~/.config/opencode/skills/SKILL_INDEX.json` not relative paths
-- **Outdated index**: Run `bash setup.sh --skills-only` to refresh skills and index
-- **Permission issues**: Check read permissions on `~/.config/opencode/skills/` directory
+**Agent Skill Discovery Issues:** Verify skill is in `skills/` folder and run `opencode-skills-maintainer`, check skill name matches frontmatter exactly
 
 ## Making Changes
 
-**config.json:**
-- Update MCP server URLs, model names, or agent prompts only
-- Validate JSON after any changes
-- Test with `opencode --agent <name>`
+**config.json:** Update MCP server URLs, model names, or agent prompts, validate JSON, test with `opencode --agent <name>`
 
-**setup.sh:**
-- Modify installation logic or add setup steps
-- Validate shell syntax: `bash -n setup.sh`
-- Test in dry-run mode first
+**setup.sh:** Modify installation logic, validate shell syntax, test in dry-run mode first
 
-**README.md:**
-- Keep in sync with config.json changes
-- Update MCP server documentation
-- Add new agent descriptions
+**README.md:** Keep in sync with config.json, update MCP server documentation, add new agent descriptions
 
-**Skills:**
-- Follow SKILL.md format strictly
-- Update metadata for compatibility
-- Test skill invocation with opencode
+**Skills:** Follow SKILL.md format, update metadata for compatibility, test skill invocation
 
 ## Security
 
@@ -212,6 +146,7 @@ metadata:
 4. Verify schema compliance with https://opencode.ai/config.json
 5. Test deployment to `~/.config/opencode/`
 6. Test agent invocation: `opencode --agent <name> "test prompt"`
+7. Run `opencode-skills-maintainer` after skill changes
 
 ## Important Notes
 
@@ -222,6 +157,5 @@ metadata:
 - Document breaking changes in README.md
 - Skills folder is copied recursively during setup
 - OpenCode config directory: `~/.config/opencode/`
-- **SKILL_INDEX.json**: Generated by setup.sh at `~/.config/opencode/skills/SKILL_INDEX.json` for optimized skill discovery
-- **Skill Discovery**: Agents must use SKILL_INDEX.json as primary discovery method, with fallback to glob
-- **Path Resolution**: Skills are loaded from `~/.config/opencode/skills/[skill-path]/SKILL.md`
+- **Hardcoded Skill Lists**: Build-With-Skills and Plan-With-Skills use embedded skill lists for zero-latency discovery
+- **Skill Maintenance**: Use `opencode-skills-maintainer` to keep agents synchronized with available skills
