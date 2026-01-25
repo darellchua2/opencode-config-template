@@ -44,12 +44,12 @@ Detailed steps for implementation:
    - Check that all references to SKILL_INDEX.json are correct
 
 ## Success Criteria
-- [ ] AGENTS.md correctly documents SKILL_INDEX.json discovery for both agents
-- [ ] No hardcoded assumptions about local skills folder in documentation
-- [ ] Agent prompts in config.json reference SKILL_INDEX.json correctly
-- [ ] Fallback behavior is documented for missing SKILL_INDEX.json
-- [ ] All path references are accurate and consistent
-- [ ] Documentation includes troubleshooting guidance
+- [x] AGENTS.md correctly documents SKILL_INDEX.json discovery for both agents
+- [x] No hardcoded assumptions about local skills folder in documentation
+- [x] Agent prompts in config.json reference SKILL_INDEX.json correctly
+- [x] Fallback behavior is documented for missing SKILL_INDEX.json
+- [x] All path references are accurate and consistent
+- [x] Documentation includes troubleshooting guidance
 
 ## Notes
 - The setup.sh generates SKILL_INDEX.json at lines 977-1047
