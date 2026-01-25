@@ -1,106 +1,128 @@
-# Plan: Add OpenTofu related skills for infrastructure provisioning
+# Plan: Update setup.sh to reflect current available skill set (27 skills vs documented 16)
 
 ## Overview
-Add new skills to the OpenCode framework that provide guidance on using OpenTofu (the open-source fork of Terraform) for infrastructure provisioning. These skills should leverage official OpenTofu and Terraform provider documentation to ensure best practices and proper implementation patterns.
+Update setup.sh to accurately document all 27 available skills instead of the currently documented 16 skills. The skills directory has grown but the setup script's help text and output messages haven't been updated to reflect this.
 
 ## Issue Reference
-- Issue: #38
-- URL: https://github.com/darellchua2/opencode-config-template/issues/38
-- Labels: enhancement
+- Issue: #40
+- URL: https://github.com/darellchua2/opencode-config-template/issues/40
+- Labels: enhancement, documentation
 
-## Requirements
+## Current State
+**Documented in setup.sh (16 skills):**
+- Framework Skills (5): test-generator-framework, jira-git-integration, pr-creation-workflow, ticket-branch-workflow, linting-workflow
+- Specialized Skills (11): ascii-diagram-creator, git-issue-creator, git-pr-creator, jira-git-workflow, nextjs-pr-workflow, nextjs-unit-test-creator, opencode-agent-creation, opencode-skill-creation, python-pytest-creator, python-ruff-linter, typescript-dry-principle
 
-### Scope
+## Actual State
+**Available in skills/ directory (27 skills):**
+All 16 documented skills plus 11 new skills:
+1. coverage-readme-workflow - Ensure test coverage percentage is displayed in README.md
+2. docstring-generator - Generate language-specific docstrings (C#, Java, Python, TypeScript)
+3. javascript-eslint-linter - JavaScript/TypeScript linting with ESLint
+4. nextjs-standard-setup - Create standardized Next.js 16 demo applications
+5. opencode-skill-auditor - Audit existing OpenCode skills to identify modularization opportunities
+6. opentofu-aws-explorer - Explore and manage AWS cloud infrastructure resources
+7. opentofu-keycloak-explorer - Explore and manage Keycloak identity and access management
+8. opentofu-kubernetes-explorer - Explore and manage Kubernetes clusters and resources
+9. opentofu-neon-explorer - Explore and manage Neon Postgres serverless database resources
+10. opentofu-provider-setup - Configure OpenTofu with cloud providers
+11. opentofu-provisioning-workflow - Infrastructure as Code development patterns with OpenTofu
 
-Create one or more skills in the `skills/` directory that provide:
-
-1. **OpenTofu Provider Setup Skills**
-   - Guidance on configuring OpenTofu with various cloud providers
-   - Best practices for provider authentication and configuration
-   - State management strategies
-
-2. **OpenTofu Provisioning Workflows**
-   - Infrastructure as Code (IaC) development patterns
-   - Resource lifecycle management
-   - Configuration and state management workflows
-
-### Documentation Requirements
-
-Each skill MUST include:
-- **Reference URL**: Link to the official provider documentation (OpenTofu or Terraform Registry)
-- **Best Practices**: Verified implementation patterns from provider documentation
-- **Common Examples**: Typical use cases and configurations
-
-#### Example Skill Structure
-
-```
-skills/opentofu-provider-setup/SKILL.md
-- Provider configuration overview
-- Authentication setup
-- State backend configuration
-- Reference URL: https://opentofu.org/docs/providers/
-
-skills/opentofu-provisioning-workflow/SKILL.md
-- Resource provisioning patterns
-- Dependency management
-- State lifecycle management
-- Reference URL: https://registry.terraform.io/providers/
-```
-
-## Rationale
-
-OpenTofu is gaining traction as a community-driven fork of Terraform. Adding skills for OpenTofu:
-- Provides support for open-source infrastructure provisioning
-- Enables users to leverage provider documentation effectively
-- Ensures best practices are followed through documented workflows
-- Aligns with the open-source nature of the OpenCode framework
-
-## Files to Modify/Create
-
-1. `skills/opentofu-provider-setup/SKILL.md` - New skill for provider setup
-2. `skills/opentofu-provisioning-workflow/SKILL.md` - New skill for provisioning workflows
-3. `README.md` - Update to document new OpenTofu skills (optional)
-4. `setup.sh` - Add OpenTofu dependency checks (if needed)
+## Files to Modify
+1. `setup.sh` - Update skill documentation in multiple sections
 
 ## Approach
 
-### Phase 1: Research and Planning
-1. Review OpenTofu documentation structure and best practices
-2. Identify common use cases for OpenTofu provisioning
-3. Select representative cloud providers (AWS, Azure, GCP) for examples
-4. Document reference URLs for each provider
+1. **Identify All Sections to Update**:
+   - Lines 204-239: CONFIGURED FEATURES section in show_help()
+   - Lines 946-967: Deployed Skills section in setup_config()
+   - Lines 1067-1068: Summary section (line 946's echo statement)
+   - Lines 1136-1156: Next Steps section
 
-### Phase 2: Skill Development (using opencode-skill-creation)
-1. Use opencode-skill-creation skill to create `opentofu-provider-setup` skill
-2. Use opencode-skill-creation skill to create `opentofu-provisioning-workflow` skill
-3. Ensure each skill follows SKILL.md format with proper frontmatter
+2. **Organize Skills into Logical Categories**:
+   - Framework Skills (5): test-generator-framework, jira-git-integration, pr-creation-workflow, ticket-branch-workflow, linting-workflow
+   - Language-Specific Skills (3): python-pytest-creator, python-ruff-linter, javascript-eslint-linter
+   - Framework-Specific Skills (4): nextjs-pr-workflow, nextjs-unit-test-creator, nextjs-standard-setup, typescript-dry-principle
+   - OpenCode Meta Skills (3): opencode-agent-creation, opencode-skill-creation, opencode-skill-auditor
+   - OpenTofu Skills (6): opentofu-aws-explorer, opentofu-keycloak-explorer, opentofu-kubernetes-explorer, opentofu-neon-explorer, opentofu-provider-setup, opentofu-provisioning-workflow
+   - Git/Workflow Skills (3): ascii-diagram-creator, git-issue-creator, git-pr-creator
+   - Documentation Skills (2): coverage-readme-workflow, docstring-generator
+   - JIRA Skills (1): jira-git-workflow
 
-### Phase 3: Testing and Validation
-1. Test skill invocation with `opencode` command
-2. Verify reference URLs are accessible and accurate
-3. Validate skills follow existing SKILL.md format
-4. Test setup.sh with OpenTofu dependencies
+3. **Update Each Section**:
+   - Update skill count from 16 to 27
+   - Add all 11 missing skills with descriptions
+   - Reorganize into logical categories for better readability
+   - Ensure consistent formatting across all sections
 
-### Phase 4: Documentation Updates
-1. Update README.md to include new OpenTofu skills in the overview
-2. Update setup.sh to check for OpenTofu CLI (tofu)
-3. Add examples to README showing skill usage
+4. **Testing**:
+   - Verify `./setup.sh --help` displays updated documentation
+   - Verify setup output shows correct skill count and descriptions
+   - Ensure shell syntax is valid: `bash -n setup.sh`
 
 ## Success Criteria
-
-- [ ] At least 2-3 skills created for OpenTofu workflows
-- [ ] Each skill includes a reference URL to provider documentation
-- [ ] Skills follow the existing SKILL.md format (see skills/jira-git-workflow/SKILL.md)
-- [ ] Skills are tested and documented in the repository
-- [ ] Setup.sh includes any necessary OpenTofu dependencies (if applicable)
-- [ ] README.md updated with new skills documentation
+- [ ] All skill count references updated from 16 to 27
+- [ ] All 11 missing skills added to relevant sections
+- [ ] Skills organized into logical categories
+- [ ] Help text (./setup.sh --help) reflects complete skill set
+- [ ] Summary output reflects complete skill set
+- [ ] Next steps output reflects complete skill set
+- [ ] Shell syntax validation passes: `bash -n setup.sh`
+- [ ] All skill descriptions are accurate and consistent
 
 ## Notes
+- The OpenTofu skills are a new category that should be highlighted
+- Language-specific skills (Python, JavaScript) should be grouped together
+- Framework-specific skills (Next.js) should be grouped together
+- OpenCode meta skills (agent/skill creation) should be grouped together
+- Maintain the existing format and style for consistency
+- Ensure descriptions are brief but informative
 
-- OpenTofu maintains API compatibility with Terraform 1.5.x
-- Provider documentation can be sourced from both Terraform Registry and OpenTofu docs
-- Focus on common providers (AWS, Azure, GCP, etc.) initially
-- Ensure skills are vendor-agnostic where possible
-- Reference URLs:
-  - OpenTofu Documentation: https://opentofu.org/docs/
-  - Terraform Registry: https://registry.terraform.io/
+## Skill Organization Proposal
+
+```
+Framework Skills (5):
+  - test-generator-framework: Generate tests for any language/framework
+  - jira-git-integration: JIRA ticket and Git operations
+  - pr-creation-workflow: Generic PR creation with quality checks
+  - ticket-branch-workflow: Ticket-to-branch-to-PLAN workflow
+  - linting-workflow: Multi-language linting with auto-fix
+
+Language-Specific Skills (3):
+  - python-pytest-creator: Generate pytest tests for Python
+  - python-ruff-linter: Python linting with Ruff
+  - javascript-eslint-linter: JavaScript/TypeScript linting with ESLint
+
+Framework-Specific Skills (4):
+  - nextjs-pr-workflow: Next.js PR workflow with JIRA integration
+  - nextjs-unit-test-creator: Generate unit/E2E tests for Next.js
+  - nextjs-standard-setup: Create standardized Next.js 16 demo applications
+  - typescript-dry-principle: Apply DRY principle to TypeScript
+
+OpenCode Meta Skills (3):
+  - opencode-agent-creation: Generate OpenCode agents
+  - opencode-skill-creation: Generate OpenCode skills
+  - opencode-skill-auditor: Audit existing OpenCode skills
+
+OpenTofu Skills (6):
+  - opentofu-aws-explorer: Explore and manage AWS cloud infrastructure resources
+  - opentofu-keycloak-explorer: Explore and manage Keycloak identity and access management
+  - opentofu-kubernetes-explorer: Explore and manage Kubernetes clusters and resources
+  - opentofu-neon-explorer: Explore and manage Neon Postgres serverless database resources
+  - opentofu-provider-setup: Configure OpenTofu with cloud providers
+  - opentofu-provisioning-workflow: Infrastructure as Code development patterns with OpenTofu
+
+Git/Workflow Skills (3):
+  - ascii-diagram-creator: Create ASCII diagrams from workflows
+  - git-issue-creator: GitHub issue creation with tag detection
+  - git-pr-creator: Create pull requests with issue linking
+
+Documentation Skills (2):
+  - coverage-readme-workflow: Ensure test coverage percentage is displayed in README.md
+  - docstring-generator: Generate language-specific docstrings
+
+JIRA Skills (1):
+  - jira-git-workflow: JIRA ticket creation and branching
+
+Total: 27 skills
+```
