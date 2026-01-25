@@ -116,14 +116,26 @@ Detailed steps for implementation:
    - Identify all skills that create commits or PRs
    - Update related skills to use git-semantic-commits for formatting
 
-10. **Streamline Git-Related Skills**
+10. **Streamline Git-Related Skills** ✅ DONE
    - Analyze git-issue-creator and ticket-branch-workflow for label detection overlap
    - Refactor to use git-issue-labeler as a shared framework skill
-   - Remove duplicate label detection logic from git-issue-creator
-   - Remove duplicate label detection logic from ticket-branch-workflow
+   - Remove duplicate label detection logic from git-issue-creator ✅ DONE
+   - Remove duplicate label detection logic from ticket-branch-workflow ✅ DONE
    - Ensure both skills delegate to git-issue-labeler for label assessment
    - Update related skills sections to reference git-issue-labeler
    - Test streamlined workflow end-to-end
+
+11. **Assess and Update jira-git-workflow** ⏳ PENDING
+   - Review jira-git-workflow for commit message formatting
+   - Use git-semantic-commits for commit formatting
+   - Use git-issue-updater for issue comment after commits
+   - Update related skills sections to reference new frameworks
+
+12. **Assess and Update git-pr-creator** ⏳ PENDING
+   - Review for commit message formatting needs
+   - Use git-semantic-commits for commit formatting
+   - Use git-issue-updater for issue comments after PRs (if applicable)
+   - Update related skills sections
 
 13. **Testing and Validation**
    - Test the updated skill end-to-end
