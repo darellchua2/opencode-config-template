@@ -238,6 +238,7 @@ Before creating PR:
 
 ## Related Skills
 
+- `nextjs-standard-setup`: For creating standardized Next.js 16 applications with proper component architecture
 - `jira-git-workflow`: For creating JIRA tickets and initial PLAN.md setup
 - `coverage-readme-workflow`: For updating README with coverage badges before PR creation
 

@@ -653,6 +653,7 @@ opencode --agent nextjs-pr-workflow "create PR with test coverage"
 
 ## Related Skills
 
+- `nextjs-standard-setup`: For creating standardized Next.js 16 applications with proper component architecture
 - `test-generator-framework`: Core test generation framework
 - `nextjs-unit-test-creator`: Next.js test generation
 - `python-pytest-creator`: Python test generation
