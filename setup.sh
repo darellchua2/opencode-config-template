@@ -888,10 +888,10 @@ setup_config() {
 
             echo ""
             echo "✓ Configured 4 agents:"
-            echo "    • build-with-skills (default) - Skill-aware coding agent"
-            echo "    • explore - Codebase exploration and analysis"
-            echo "    • image-analyzer - Image/screenshot analysis"
-            echo "    • diagram-creator - Draw.io diagram creation"
+            echo "    - build-with-skills (default) - Skill-aware coding agent"
+            echo "    - explore - Codebase exploration and analysis"
+            echo "    - image-analyzer - Image/screenshot analysis"
+            echo "    - diagram-creator - Draw.io diagram creation"
             echo ""
             echo "✓ Configured 6 MCP servers:"
             echo "    Local (auto-start): atlassian, zai-mcp-server"
@@ -935,40 +935,40 @@ setup_config() {
 
         echo ""
         echo "✓ Deployed 27 skills:"
-        echo "    • Framework (5):"
+        echo "    - Framework (5):"
         echo "      - test-generator-framework"
         echo "      - jira-git-integration"
         echo "      - pr-creation-workflow"
         echo "      - ticket-branch-workflow"
         echo "      - linting-workflow"
-        echo "    • Language-Specific (3):"
+        echo "    - Language-Specific (3):"
         echo "      - python-pytest-creator"
         echo "      - python-ruff-linter"
         echo "      - javascript-eslint-linter"
-        echo "    • Framework-Specific (4):"
+        echo "    - Framework-Specific (4):"
         echo "      - nextjs-pr-workflow"
         echo "      - nextjs-unit-test-creator"
         echo "      - nextjs-standard-setup"
         echo "      - typescript-dry-principle"
-        echo "    • OpenCode Meta (3):"
+        echo "    - OpenCode Meta (3):"
         echo "      - opencode-agent-creation"
         echo "      - opencode-skill-creation"
         echo "      - opencode-skill-auditor"
-        echo "    • OpenTofu (6):"
+        echo "    - OpenTofu (6):"
         echo "      - opentofu-aws-explorer"
         echo "      - opentofu-keycloak-explorer"
         echo "      - opentofu-kubernetes-explorer"
         echo "      - opentofu-neon-explorer"
         echo "      - opentofu-provider-setup"
         echo "      - opentofu-provisioning-workflow"
-        echo "    • Git/Workflow (3):"
+        echo "    - Git/Workflow (3):"
         echo "      - ascii-diagram-creator"
         echo "      - git-issue-creator"
         echo "      - git-pr-creator"
-        echo "    • Documentation (2):"
+        echo "    - Documentation (2):"
         echo "      - coverage-readme-workflow"
         echo "      - docstring-generator"
-        echo "    • JIRA (1):"
+        echo "    - JIRA (1):"
         echo "      - jira-git-workflow"
         echo ""
         echo "  Run 'opencode --list-skills' for detailed descriptions"
@@ -1037,7 +1037,9 @@ with open(os.path.join(skills_dir, "SKILL_INDEX.json"), 'w') as f:
 PYEOF
 
             if [ -f "${SKILLS_DIR}/SKILL_INDEX.json" ]; then
-                log_success "SKILL_INDEX.json generated with $(python3 -c "import json; print(len(json.load(open('${SKILLS_DIR}/SKILL_INDEX.json'))['skills']))" skills"
+                local skill_count
+                skill_count=$(python3 -c "import json; print(len(json.load(open('${SKILLS_DIR}/SKILL_INDEX.json'))['skills']))")
+                log_success "SKILL_INDEX.json generated with ${skill_count} skills"
             else
                 log_error "SKILL_INDEX.json generation failed"
                 return 1
@@ -1097,6 +1099,11 @@ setup_bashrc_vars() {
 
 # Print setup summary
 print_summary() {
+    local nvm_version
+    local opencode_version
+    local node_version
+    local skill_count
+
     echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo "                      📊 Setup Summary"
@@ -1105,21 +1112,24 @@ print_summary() {
 
     # nvm status
     if command_exists nvm; then
-        echo "✓ nvm: Installed (v$(nvm --version 2>/dev/null))"
+        nvm_version=$(nvm --version 2>/dev/null)
+        echo "✓ nvm: Installed v${nvm_version}"
     else
         echo "✗ nvm: Not installed"
     fi
 
     # Node.js status
     if command_exists node; then
-        echo "✓ Node.js: $(node --version)"
+        node_version=$(node --version)
+        echo "✓ Node.js: ${node_version}"
     else
         echo "✗ Node.js: Not installed"
     fi
 
     # opencode-ai status
     if command_exists opencode; then
-        echo "✓ opencode-ai: Installed (v$(opencode --version 2>/dev/null || echo "unknown"))"
+        opencode_version=$(opencode --version 2>/dev/null || echo "unknown")
+        echo "✓ opencode-ai: Installed v${opencode_version}"
     else
         echo "✗ opencode-ai: Not installed"
     fi
@@ -1127,8 +1137,8 @@ print_summary() {
     # config.json status
     if [ -f "$CONFIG_FILE" ]; then
         echo "✓ config.json: Copied to ${CONFIG_DIR}/"
-        echo "    • Model: zai-coding-plan/glm-4.7"
-        echo "    • Default agent: build-with-skills"
+        echo "    - Model: zai-coding-plan/glm-4.7"
+        echo "    - Default agent: build-with-skills"
     else
         echo "✗ config.json: Not copied"
     fi
@@ -1136,61 +1146,61 @@ print_summary() {
     # Agents configured
     if [ -f "$CONFIG_FILE" ]; then
         echo "✓ Configured 4 agents:"
-        echo "    • build-with-skills (default) - Skill-aware coding agent"
-        echo "    • explore - Codebase exploration and analysis"
-        echo "    • image-analyzer - Image/screenshot analysis"
-        echo "    • diagram-creator - Draw.io diagram creation"
+        echo "    - build-with-skills (default) - Skill-aware coding agent"
+        echo "    - explore - Codebase exploration and analysis"
+        echo "    - image-analyzer - Image/screenshot analysis"
+        echo "    - diagram-creator - Draw.io diagram creation"
     fi
 
     # MCP servers configured
     if [ -f "$CONFIG_FILE" ]; then
         echo "✓ Configured 6 MCP servers:"
-        echo "    • atlassian - JIRA and Confluence integration (auto-start)"
-        echo "    • drawio - Draw.io diagram server (needs local instance)"
-        echo "    • web-reader - Web page reading (needs ZAI_API_KEY)"
-        echo "    • web-search-prime - Web search (needs ZAI_API_KEY)"
-        echo "    • zai-mcp-server - Image analysis (auto-start)"
-        echo "    • zread - GitHub repo search (needs ZAI_API_KEY)"
+        echo "    - atlassian - JIRA and Confluence integration (auto-start)"
+        echo "    - drawio - Draw.io diagram server (needs local instance)"
+        echo "    - web-reader - Web page reading (needs ZAI_API_KEY)"
+        echo "    - web-search-prime - Web search (needs ZAI_API_KEY)"
+        echo "    - zai-mcp-server - Image analysis (auto-start)"
+        echo "    - zread - GitHub repo search (needs ZAI_API_KEY)"
     fi
 
     # skills directory status
     if [ -d "$SKILLS_DIR" ] && [ "$(ls -A ${SKILLS_DIR} 2>/dev/null)" ]; then
         local skill_count=$(find ${SKILLS_DIR} -name "SKILL.md" 2>/dev/null | wc -l)
         echo "✓ skills: ${skill_count} skills deployed to ${SKILLS_DIR}/"
-        echo "    • Framework (5):"
+        echo "    - Framework (5):"
         echo "      - test-generator-framework"
         echo "      - jira-git-integration"
         echo "      - pr-creation-workflow"
         echo "      - ticket-branch-workflow"
         echo "      - linting-workflow"
-        echo "    • Language-Specific (3):"
+        echo "    - Language-Specific (3):"
         echo "      - python-pytest-creator"
         echo "      - python-ruff-linter"
         echo "      - javascript-eslint-linter"
-        echo "    • Framework-Specific (4):"
+        echo "    - Framework-Specific (4):"
         echo "      - nextjs-pr-workflow"
         echo "      - nextjs-unit-test-creator"
         echo "      - nextjs-standard-setup"
         echo "      - typescript-dry-principle"
-        echo "    • OpenCode Meta (3):"
+        echo "    - OpenCode Meta (3):"
         echo "      - opencode-agent-creation"
         echo "      - opencode-skill-creation"
         echo "      - opencode-skill-auditor"
-        echo "    • OpenTofu (6):"
+        echo "    - OpenTofu (6):"
         echo "      - opentofu-aws-explorer"
         echo "      - opentofu-keycloak-explorer"
         echo "      - opentofu-kubernetes-explorer"
         echo "      - opentofu-neon-explorer"
         echo "      - opentofu-provider-setup"
         echo "      - opentofu-provisioning-workflow"
-        echo "    • Git/Workflow (3):"
+        echo "    - Git/Workflow (3):"
         echo "      - ascii-diagram-creator"
         echo "      - git-issue-creator"
         echo "      - git-pr-creator"
-        echo "    • Documentation (2):"
+        echo "    - Documentation (2):"
         echo "      - coverage-readme-workflow"
         echo "      - docstring-generator"
-        echo "    • JIRA (1):"
+        echo "    - JIRA (1):"
         echo "      - jira-git-workflow"
     else
         echo "✗ skills: Not deployed"
@@ -1234,10 +1244,10 @@ print_next_steps() {
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
     echo "🤖 Agents (4):"
-    echo "  • build-with-skills (default) - Auto-detects and uses best practices"
-    echo "  • explore - Fast codebase exploration and analysis"
-    echo "  • image-analyzer - Images/screenshots to code, OCR, error diagnosis"
-    echo "  • diagram-creator - Draw.io diagrams (architecture, flowcharts, UML)"
+    echo "  - build-with-skills (default) - Auto-detects and uses best practices"
+    echo "  - explore - Fast codebase exploration and analysis"
+    echo "  - image-analyzer - Images/screenshots to code, OCR, error diagnosis"
+    echo "  - diagram-creator - Draw.io diagrams (architecture, flowcharts, UML)"
     echo ""
     echo "  Usage: opencode --agent <name> \"prompt\""
     echo "         opencode \"prompt\" (uses build-with-skills)"
@@ -1266,11 +1276,11 @@ print_next_steps() {
     echo "                     📚 Documentation"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "  • Update CLI: ./setup.sh --update"
-    echo "  • Config file: ${CONFIG_FILE}"
-    echo "  • Log file: ${LOG_FILE}"
-    echo "  • Backup dir: ${BACKUP_DIR}"
-    echo "  • Full docs: https://opencode.ai"
+    echo "  - Update CLI: ./setup.sh --update"
+    echo "  - Config file: ${CONFIG_FILE}"
+    echo "  - Log file: ${LOG_FILE}"
+    echo "  - Backup dir: ${BACKUP_DIR}"
+    echo "  - Full docs: https://opencode.ai"
     echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
