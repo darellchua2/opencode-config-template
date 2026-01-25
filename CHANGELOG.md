@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/darellchua2/opencode-config-template/compare/v1.5.0...v1.6.0) (2026-01-25)
+
+
+### Features
+
+* implement hardcoded skill list approach for agent discovery ([b94380d](https://github.com/darellchua2/opencode-config-template/commit/b94380d94a9749b1fea8f5c5093207fe7b57ed7b))
+
 # [1.5.0](https://github.com/darellchua2/opencode-config-template/compare/v1.4.0...v1.5.0) (2026-01-25)
 
 
