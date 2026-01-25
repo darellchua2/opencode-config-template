@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/darellchua2/opencode-config-template/compare/v1.6.0...v1.7.0) (2026-01-25)
+
+
+### Features
+
+* update nextjs standard setup with npx, React compiler, and src directory ([7d0be3e](https://github.com/darellchua2/opencode-config-template/commit/7d0be3ebf152e727a5552757842f2c19b1ddfd9b)), closes [#issue-id](https://github.com/darellchua2/opencode-config-template/issues/issue-id)
+
 # [1.6.0](https://github.com/darellchua2/opencode-config-template/compare/v1.5.0...v1.6.0) (2026-01-25)
 
 
