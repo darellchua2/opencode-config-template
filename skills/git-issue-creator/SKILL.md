@@ -1,6 +1,6 @@
 ---
 name: git-issue-creator
-description: GitHub issue creation with intelligent tag detection, extending ticket-branch-workflow
+description: GitHub issue creation with semantic commit formatting and automatic label assignment, extending git-issue-labeler, git-semantic-commits, git-issue-updater, and ticket-branch-workflow
 license: Apache-2.0
 compatibility: opencode
 metadata:
@@ -10,21 +10,29 @@ metadata:
 
 ## What I do
 
-I implement GitHub issue creation with intelligent tag detection by extending `ticket-branch-workflow`:
+I implement GitHub issue creation with automatic label assignment and semantic commit formatting by extending framework skills:
 
-1. **Analyze Request**: Parse the user's statement to determine issue type
-2. **Detect Tags**: Automatically assign relevant tags (feature, bug, documentation, enhancement, task) based on content analysis
-3. **Create GitHub Issue**: Use `gh issue create` with title, description, auto-detected labels, and assignee
-4. **Delegate to Framework**: Use `ticket-branch-workflow` for branch creation, PLAN.md, commit, and push
-5. **Display Summary**: Show issue URL, branch name, and framework completion status
+1. **Analyze Request**: Parse the user's statement to determine issue type and content
+2. **Assign Labels**: Use `git-issue-labeler` framework to assign GitHub default labels (bug, enhancement, documentation, duplicate, good first issue, help wanted, invalid, question, wontfix)
+3. **Format Commits**: Use `git-semantic-commits` framework for semantic commit message formatting (Conventional Commits specification)
+4. **Create GitHub Issue**: Use `gh issue create` with title, description, assigned labels, and assignee
+5. **Update Issue Progress**: Use `git-issue-updater` framework to add progress comments with user, date, time, and commit details
+6. **Delegate to Framework**: Use `ticket-branch-workflow` for branch creation, PLAN.md, commit (using git-semantic-commits), and push
+7. **Display Summary**: Show issue URL, branch name, and framework completion status
 
 ## When to use me
 
-**Framework**: This skill extends `ticket-branch-workflow` for core workflow (branch creation, PLAN.md, commit, push), adding GitHub-specific issue creation and intelligent tag detection.
+**Frameworks Used**: This skill extends multiple framework skills:
+- `git-issue-labeler` - For GitHub default label assignment (bug, enhancement, documentation, duplicate, good first issue, help wanted, invalid, question, wontfix)
+- `git-semantic-commits` - For semantic commit message formatting (Conventional Commits specification)
+- `git-issue-updater` - For updating issues with commit progress including user, date, time
+- `ticket-branch-workflow` - For core workflow (branch creation, PLAN.md, commit, push)
 
 Use this workflow when:
-- You need to create a GitHub issue with intelligent tag assignment
-- You want the complete workflow: issue → branch → PLAN.md → commit → push
+- You need to create a GitHub issue with automatic label assignment
+- You want semantic commit message formatting (Conventional Commits)
+- You want automatic issue progress updates with consistent documentation
+- You want the complete workflow: issue → branch → PLAN.md → commit → issue update → push
 - You prefer GitHub CLI (`gh`) for issue creation over manual entry
 
 ## Prerequisites
@@ -33,36 +41,40 @@ Use this workflow when:
 - Git repository initialized
 - Write access to the GitHub repository
 - Valid `GITHUB_TOKEN` or `gh` authentication setup
+- `git-issue-labeler` skill available in skills/ directory
+- `git-semantic-commits` skill available in skills/ directory
+- `git-issue-updater` skill available in skills/ directory
+- `ticket-branch-workflow` skill available in skills/ directory
 
 ## Steps
 
 ### Step 1: Analyze the Request
 - Read the user's statement describing the issue
-- Identify key indicators for issue type:
-  - **Bug**: "fix", "error", "doesn't work", "broken", "crash", "fails"
-  - **Feature**: "add", "implement", "create", "new", "support"
-  - **Enhancement**: "improve", "optimize", "refactor", "update", "enhance"
-  - **Documentation**: "document", "readme", "docs", "guide", "explain"
-  - **Task**: "setup", "configure", "deploy", "clean", "organize"
+- Extract title and description for issue creation
+- Identify any specific requirements or constraints mentioned
 
-### Step 2: Determine Tags
-- Analyze the statement for multiple possible tags
-- Assign all applicable tags from:
-  - `feature`: New functionality or features
-  - `bug`: Defects or fixes required
-  - `documentation`: Documentation updates or improvements
-  - `enhancement`: Existing functionality improvements
-  - `task`: Administrative or setup tasks
-- Default to `enhancement` if no specific type is detected
+### Step 2: Assign Labels Using git-issue-labeler
+- Use `git-issue-labeler` framework to determine appropriate GitHub default labels
+- Analyze user statement for issue type indicators
+- Assign labels from GitHub defaults: bug, enhancement, documentation, duplicate, good first issue, help wanted, invalid, question, wontfix
+- Let git-issue-labeler handle keyword matching and label detection
+
+**Label Detection Logic** (Delegated to git-issue-labeler):
+```bash
+# git-issue-labeler will analyze the statement
+# and determine appropriate GitHub default labels
+# Example: "Fix login error" → labels: bug
+# Example: "Add dark mode" → labels: enhancement, good first issue
+```
 
 ### Step 3: Create GitHub Issue
 - Get the current authenticated GitHub user:
   ```bash
   gh api user --jq '.login'
   ```
-- Use `gh issue create` command:
+- Use `gh issue create` command with labels from git-issue-labeler:
   ```bash
-  gh issue create --title "<Issue Title>" --body "<Issue Description>" --label "<tag1>,<tag2>" --assignee @me
+  gh issue create --title "<Issue Title>" --body "<Issue Description>" --label "<label1>,<label2>" --assignee @me
   ```
 - Format the issue body:
   ```markdown
@@ -70,11 +82,11 @@ Use this workflow when:
   <Detailed description of the issue>
 
   ## Type
-  <Primary tag>
+  <Primary label>
 
-  ## Additional Labels
-  - <tag2>
-  - <tag3>
+  ## Labels
+  - <label1>
+  - <label2>
 
   ## Context
   <Additional context or background information>
@@ -89,21 +101,42 @@ Use this workflow when:
 - Use `ticket-branch-workflow` for the following steps:
   - Create GitHub branch: `git checkout -b issue-<issue-number>` or `feature/<issue-number>-<short-title>`
   - Create PLAN.md with issue reference
-  - Commit PLAN.md: `git commit -m "Add PLAN.md for #<issue-number>: <issue-title>"`
+  - Format commit using git-semantic-commits: `docs(plan): add PLAN.md for #<issue-number>`
+  - Commit PLAN.md: `git commit -m "$(git-semantic-commits --type docs --scope plan --subject 'Add PLAN.md for #<issue-number>')"`
   - Push branch: `git push -u origin <branch-name>`
+
+### Step 5: Update Issue with Commit Progress Using git-issue-updater
+- Use `git-issue-updater` framework to add progress comment to GitHub issue
+- Extract commit details: hash, message, author, date, time, files changed
+- Format comment with consistent documentation including user, date, time
+- Add comment to GitHub issue with link to commit
+
+**Issue Update Logic** (Delegated to git-issue-updater):
+```bash
+# After committing PLAN.md, update issue with progress
+git-issue-updater --issue <issue-number> --platform github
+
+# This will:
+# 1. Extract latest commit details
+# 2. Format comment with user, date, time
+# 3. Add comment to GitHub issue
+# 4. Link to commit for reference
+```
 
 ### Step 5: Display Summary
 - Display issue and framework completion status:
   ```
   ✅ GitHub Issue #<issue-number> created successfully!
+  ✅ Labels assigned: <labels> (via git-issue-labeler)
   ✅ Branch created and checked out: <branch-name>
-  ✅ PLAN.md created and committed (via ticket-branch-workflow)
+  ✅ PLAN.md created with semantic commit (via git-semantic-commits)
+  ✅ Issue updated with progress comment (via git-issue-updater)
   ✅ Branch pushed to remote (via ticket-branch-workflow)
 
   **Issue Details**:
   - Title: <issue-title>
   - URL: <issue-url>
-  - Labels: <tag1>, <tag2>, <tag3>
+  - Labels: <labels> (assigned by git-issue-labeler)
   - Assignee: <current-user>
 
   **Branch**:
@@ -113,84 +146,103 @@ Use this workflow when:
 
   **PLAN.md**:
   - Created at: ./PLAN.md
-  - Committed: Yes
+  - Committed with semantic format: docs(plan): add PLAN.md
   - Pushed: Yes
+
+  **Issue Update**:
+  - Comment added: Yes (via git-issue-updater)
+  - User: <commit-author>
+  - Date: <commit-date>
+  - Time: <commit-time>
 
   You're now on the new branch and ready to start implementation!
   ```
 
-## Tag Detection Logic
-
-The skill uses keyword matching to determine appropriate tags:
-
-### Bug Detection
-Keywords: `fix`, `error`, `doesn't work`, `broken`, `crash`, `fails`, `issue`, `problem`, `incorrect`, `wrong`, `bug`
-
-### Feature Detection
-Keywords: `add`, `implement`, `create`, `new`, `support`, `introduce`, `build`, `develop`
-
-### Documentation Detection
-Keywords: `document`, `readme`, `docs`, `guide`, `explain`, `tutorial`, `wiki`, `comment`
-
-### Enhancement Detection
-Keywords: `improve`, `optimize`, `refactor`, `update`, `enhance`, `better`, `faster`, `cleaner`
-
-### Task Detection
-Keywords: `setup`, `configure`, `deploy`, `clean`, `organize`, `maintenance`, `chore`, `update dependencies`
-
 ## Examples
 
-### Example 1: Bug Fix
+### Example 1: Bug Fix with Automatic Labeling
+
 **User Input**: "Fix the login error when user enters invalid credentials"
 
-**Detected Tags**: `bug`
+**Workflow Execution**:
+1. **git-issue-labeler**: Analyzes statement → assigns `bug` label
+2. **GitHub Issue Creation**: Creates issue #123 with title and bug label
+3. **ticket-branch-workflow**: Creates branch `issue-123`, PLAN.md
+4. **git-semantic-commits**: Formats commit as `docs(plan): add PLAN.md for #123`
+5. **git-issue-updater**: Adds progress comment with user, date, time
+6. **Push**: Branch pushed to remote
 
-**Issue Created**:
-- Title: "Fix the login error when user enters invalid credentials"
-- Labels: `bug`
-- Assignee: `<current-user>`
-- Branch: `issue-123`
+**Result**:
+```
+✅ GitHub Issue #123 created successfully!
+✅ Labels assigned: bug (via git-issue-labeler)
+✅ Branch created and checked out: issue-123
+✅ PLAN.md created with semantic commit: docs(plan): add PLAN.md for #123
+✅ Issue updated with progress comment (via git-issue-updater)
+✅ Branch pushed to remote
 
-**Framework Executes**: ticket-branch-workflow creates branch, PLAN.md, commits, and pushes
+Issue Details:
+- Title: Fix the login error when user enters invalid credentials
+- URL: https://github.com/org/repo/issues/123
+- Labels: bug
+- Assignee: @john-doe
 
-### Example 2: New Feature
-**User Input**: "Add support for dark mode in the dashboard"
+Issue Update:
+- Comment added: Yes
+- User: John Doe (john.doe@example.com)
+- Date: 2024-01-25
+- Time: 14:30 UTC+08:00
+```
 
-**Detected Tags**: `feature`, `enhancement`
+### Example 2: New Feature with Multiple Labels
 
-**Issue Created**:
-- Title: "Add support for dark mode in the dashboard"
-- Labels: `feature, enhancement`
-- Assignee: `<current-user>`
-- Branch: `feature/124-add-dark-mode`
+**User Input**: "Add support for dark mode in the dashboard and make it good for newcomers"
 
-**Framework Executes**: ticket-branch-workflow creates branch, PLAN.md, commits, and pushes
+**Workflow Execution**:
+1. **git-issue-labeler**: Analyzes statement → assigns `enhancement`, `good first issue` labels
+2. **GitHub Issue Creation**: Creates issue #124 with title and labels
+3. **ticket-branch-workflow**: Creates branch `issue-124`, PLAN.md
+4. **git-semantic-commits**: Formats commit as `docs(plan): add PLAN.md for #124`
+5. **git-issue-updater**: Adds progress comment with user, date, time
+6. **Push**: Branch pushed to remote
 
-### Example 3: Documentation
+**Result**:
+```
+✅ GitHub Issue #124 created successfully!
+✅ Labels assigned: enhancement, good first issue (via git-issue-labeler)
+✅ Branch created and checked out: issue-124
+✅ PLAN.md created with semantic commit: docs(plan): add PLAN.md for #124
+✅ Issue updated with progress comment (via git-issue-updater)
+✅ Branch pushed to remote
+
+Issue Details:
+- Title: Add support for dark mode in the dashboard
+- URL: https://github.com/org/repo/issues/124
+- Labels: enhancement, good first issue
+- Assignee: @jane-smith
+```
+
+### Example 3: Documentation Update
+
 **User Input**: "Document the API endpoints for the authentication module"
 
-**Detected Tags**: `documentation`
+**Workflow Execution**:
+1. **git-issue-labeler**: Analyzes statement → assigns `documentation` label
+2. **GitHub Issue Creation**: Creates issue #125 with title and documentation label
+3. **ticket-branch-workflow**: Creates branch `issue-125`, PLAN.md
+4. **git-semantic-commits**: Formats commit as `docs(plan): add PLAN.md for #125`
+5. **git-issue-updater**: Adds progress comment with user, date, time
+6. **Push**: Branch pushed to remote
 
-**Issue Created**:
-- Title: "Document the API endpoints for the authentication module"
-- Labels: `documentation`
-- Assignee: `<current-user>`
-- Branch: `issue-125`
-
-**Framework Executes**: ticket-branch-workflow creates branch, PLAN.md, commits, and pushes
-
-### Example 4: Multiple Tags
-**User Input**: "Improve performance of the search functionality and optimize database queries"
-
-**Detected Tags**: `enhancement`, `task`
-
-**Issue Created**:
-- Title: "Improve performance of the search functionality and optimize database queries"
-- Labels: `enhancement, task`
-- Assignee: `<current-user>`
-- Branch: `issue-126`
-
-**Framework Executes**: ticket-branch-workflow creates branch, PLAN.md, commits, and pushes
+**Result**:
+```
+✅ GitHub Issue #125 created successfully!
+✅ Labels assigned: documentation (via git-issue-labeler)
+✅ Branch created and checked out: issue-125
+✅ PLAN.md created with semantic commit: docs(plan): add PLAN.md for #125
+✅ Issue updated with progress comment (via git-issue-updater)
+✅ Branch pushed to remote
+```
 
 ## PLAN.md Template Structure
 
@@ -204,7 +256,7 @@ Brief description of what this issue implements or fixes.
 ## Issue Reference
 - Issue: #<issue-number>
 - URL: <issue-url>
-- Labels: <tag1>, <tag2>, <tag3>
+- Labels: <label1>, <label2>, <label3>
 
 ## Files to Modify
 1. `src/path/to/file1.ts` - Description of changes
@@ -231,14 +283,17 @@ Any additional notes, constraints, or considerations.
 ## Best Practices
 
 - Always provide clear, descriptive issue titles
-- Include sufficient context in the issue description
+- Include sufficient context in issue description
 - Assign issues to yourself (`--assignee @me`) for accountability
-- Assign multiple tags when applicable (up to 3 recommended)
+- Let `git-issue-labeler` framework handle label detection (GitHub default labels: bug, enhancement, documentation, duplicate, good first issue, help wanted, invalid, question, wontfix)
+- Let `git-semantic-commits` framework handle commit message formatting (Conventional Commits specification)
+- Let `git-issue-updater` framework handle issue progress updates with user, date, time
 - Use semantic branch names that reference the issue number
 - Confirm the issue URL is accessible
-- The framework handles branch creation, PLAN.md, commit, and push automatically
+- The frameworks handle branch creation, PLAN.md, commit, and push automatically
 - Keep issue titles concise (under 72 characters preferred)
 - Update the issue with a comment linking to the PR when ready
+- Framework delegation reduces code duplication and improves maintainability
 
 ## Common Issues
 
@@ -257,10 +312,11 @@ Any additional notes, constraints, or considerations.
 
 **Solution**: The framework handles this with `-B` flag to force branch creation
 
-### No Tags Detected
+### No Labels Detected
 **Issue**: Issue created without labels
 
-**Solution**: Default to `enhancement` tag if no keywords match
+**Solution**: Default to `enhancement` label (via git-issue-labeler)
+Note: git-issue-labeler should still be called to ensure consistent label assignment even when no keywords match
 
 ### PLAN.md Already Exists
 **Issue**: PLAN.md file already exists in the branch
@@ -303,11 +359,25 @@ gh issue edit <issue-number> --add-assignee @me
 
 # Delete an issue
 gh issue delete <issue-number>
+
+# Format commit message using git-semantic-commits
+git-semantic-commits --type docs --scope plan --subject "Add PLAN.md for #123"
+
+# Update issue with commit progress using git-issue-updater
+git-issue-updater --issue 123 --platform github
 ```
 
 ## Related Skills
 
-- **Framework**: `ticket-branch-workflow` - Provides core workflow (branch creation, PLAN.md, commit, push)
-- `nextjs-pr-workflow`: For creating PRs after completing the issue
-- `jira-git-workflow`: For JIRA-integrated workflows (uses same ticket-branch-workflow framework)
-- `jira-git-integration`: For JIRA-specific operations when working with JIRA tickets
+- **Frameworks**:
+  - `ticket-branch-workflow` - Provides core workflow (branch creation, PLAN.md, commit, push)
+  - `git-issue-labeler` - Provides GitHub default label assignment (bug, enhancement, documentation, duplicate, good first issue, help wanted, invalid, question, wontfix)
+  - `git-semantic-commits` - Provides semantic commit message formatting (Conventional Commits specification)
+  - `git-issue-updater` - Provides issue progress updates with user, date, time
+- `jira-git-integration` - Provides JIRA-specific operations when working with JIRA tickets
+
+- **Related Workflows**:
+  - `nextjs-pr-workflow`: For creating PRs after completing the issue
+  - `jira-git-workflow`: For JIRA-integrated workflows (uses same ticket-branch-workflow framework)
+  - `git-pr-creator`: For creating PRs with optional JIRA integration
+  - `pr-creation-workflow`: For generic PR creation with configurable quality checks
