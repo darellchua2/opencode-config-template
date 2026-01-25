@@ -1,7 +1,9 @@
-# Plan: Create Plan-With-Skills Agent/Skill
+# Plan: Create Plan-With-Skills Agent
 
 ## Overview
-Create a new agent/skill called "Plan-With-Skills" that prioritizes using available skills when creating PLAN.md files. This agent will ensure that the planning phase is as skill-aware as the existing Build-With-Skills agent is for the building phase.
+Create a new agent called "Plan-With-Skills" that prioritizes using available skills when creating PLAN.md files. This agent will ensure that the planning phase is as skill-aware as the existing Build-With-Skills agent is for the building phase.
+
+**Note**: This is an **agent-only** implementation, consistent with build-with-skills (which is also an agent without a corresponding skill).
 
 ## Ticket Reference
 - **Ticket**: IBIS-109
@@ -52,27 +54,7 @@ Add new agent with:
 - Include comprehensive prompt with skill identification logic
 - Set appropriate tool permissions (read-only for planning)
 
-### 2. skills/plan-with-skills/SKILL.md
-Create skill documentation following SKILL.md format:
-```yaml
----
-name: plan-with-skills
-description: Creates skill-prioritized PLAN.md files by identifying relevant skills
-license: Apache-2.0
-compatibility: opencode
-metadata:
-  audience: developers
-  workflow: planning
----
-```
-
-Content structure:
-- "What I do", "When to use me", "Prerequisites"
-- "Steps": Skill identification → Skill prioritization → PLAN.md generation
-- "Best Practices": Skill-first planning, compatibility with Build-With-Skills
-- "Common Issues": Skill conflicts, missing skills, etc.
-
-### 3. AGENTS.md (Optional)
+### 2. AGENTS.md (Optional)
 - Update agent guidelines if needed to include Plan-With-Skills workflow
 - Document when to use Plan-With-Skills vs default planning
 
@@ -87,14 +69,7 @@ Content structure:
    - Includes examples of skill-based plans
 3. Set tool permissions (read-only for planning phase)
 
-### Phase 2: Skill Documentation (SKILL.md)
-1. Follow SKILL.md format strictly
-2. Document skill identification workflow
-3. Provide examples of skill-prioritized plans
-4. Include troubleshooting guide
-5. Link to related skills (Build-With-Skills, ticket-branch-workflow)
-
-### Phase 3: Integration Testing
+### Phase 2: Integration Testing
 1. Test with various task types (test generation, PR creation, JIRA workflows)
 2. Verify skill matching accuracy
 3. Ensure smooth handoff to Build-With-Skills
@@ -152,7 +127,6 @@ The Plan-With-Skills agent should clearly indicate when to transition:
 - [ ] Agent can identify relevant skills for various task types
 - [ ] Generated PLAN.md prioritizes skill usage with clear skill sections
 - [ ] Integration with Build-With-Skills workflow is seamless
-- [ ] SKILL.md documentation is complete and follows format
 - [ ] Agent is testable with `opencode --agent plan-with-skills`
 - [ ] Plans created are actionable and follow skill best practices
 
@@ -194,9 +168,8 @@ The agent should:
 
 ## Timeline Estimate
 - Phase 1 (config.json): 30 minutes
-- Phase 2 (SKILL.md): 45 minutes
-- Phase 3 (Testing): 30 minutes
-- **Total**: ~2 hours
+- Phase 2 (Testing): 30 minutes
+- **Total**: ~1 hour
 
 ## Implementation Status
 

@@ -973,6 +973,76 @@ setup_config() {
         echo ""
         echo "  Run 'opencode --list-skills' for detailed descriptions"
         echo ""
+        
+        # Generate SKILL_INDEX.json for optimized skill discovery
+        log_info "Generating SKILL_INDEX.json for optimized skill discovery..."
+        
+        if ! command_exists python3; then
+            log_warn "Python3 not found. Skipping SKILL_INDEX.json generation."
+        else
+            # Generate skill index using Python
+            python3 << 'PYEOF'
+import os
+import json
+from datetime import datetime, timezone
+
+skills_dir = "${SKILLS_DIR}"
+skills = []
+
+for skill_path in sorted(os.listdir(skills_dir)):
+    skill_dir = os.path.join(skills_dir, skill_path)
+    skill_file = os.path.join(skill_dir, "SKILL.md")
+    
+    if not os.path.isdir(skill_dir) or not os.path.isfile(skill_file):
+        continue
+    
+    # Read first 10 lines to get frontmatter
+    with open(skill_file, 'r') as f:
+        lines = [f.readline() for _ in range(10)]
+    
+    # Parse frontmatter
+    name = None
+    description = None
+    
+    for line in lines:
+        if line.startswith("name:"):
+            name = line.split(":", 1)[1].strip()
+        elif line.startswith("description:"):
+            description = line.split(":", 1)[1].strip()
+    
+    if name and description:
+        # Determine category
+        category = "specialized"
+        if "workflow" in name.lower() or "framework" in name.lower():
+            category = "framework"
+        
+        skills.append({
+            "name": name,
+            "description": description,
+            "path": skill_path,
+            "category": category
+        })
+
+index = {
+    "skills": skills,
+    "metadata": {
+        "version": "1.0",
+        "generated": datetime.now(timezone.utc).isoformat() + "Z",
+        "total_skills": len(skills)
+    }
+}
+
+with open(os.path.join(skills_dir, "SKILL_INDEX.json"), 'w') as f:
+    json.dump(index, f, indent=2)
+PYEOF
+
+            if [ -f "${SKILLS_DIR}/SKILL_INDEX.json" ]; then
+                log_success "SKILL_INDEX.json generated with $(python3 -c "import json; print(len(json.load(open('${SKILLS_DIR}/SKILL_INDEX.json'))['skills']))" skills"
+            else
+                log_error "SKILL_INDEX.json generation failed"
+                return 1
+            fi
+        fi
     else
         log_warn "skills/ folder not found in ${SCRIPT_DIR}"
     fi
