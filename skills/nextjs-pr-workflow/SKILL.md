@@ -15,8 +15,8 @@ I implement a complete Next.js PR creation workflow by extending framework skill
 1. **Identify Target Branch**: Determine which branch PR should merge into (configurable, not hardcoded)
 2. **Run Next.js Quality Checks**: Execute `npm run lint`, `npm run build`, and `npm run test` using `linting-workflow` framework
 3. **Identify Tracking**: Check for JIRA tickets or git issue references
-4. **Create Pull Request**: Use `pr-creation-workflow` framework for PR creation
-5. **Add JIRA Comments**: Use `jira-git-integration` framework for JIRA operations
+4. **Create Pull Request**: Use `pr-creation-workflow` framework with `git-semantic-commits` for PR title formatting
+5. **Add JIRA Comments**: Use `git-issue-updater` framework for consistent JIRA ticket updates
 
 **Critical Requirement**: All tests MUST pass (`npm run test`) before PR creation. This is a blocking step.
 
@@ -148,14 +148,20 @@ Use `pr-creation-workflow` framework with Next.js-specific configuration:
 - Target branch: User-specified or detected
 - Tracking: JIRA ticket or git issue
 - Platform: GitHub PR (not GitLab)
+- **Use git-semantic-commits for PR title formatting**: Follow Conventional Commits specification
+  - Examples: `feat: add user authentication`, `fix(ui): resolve layout issue`, `docs: update API docs`
+  - Include ticket reference: `feat: add login feature [IBIS-456]` or `fix(IBIS-456): resolve session timeout`
+  - Use scope: `feat(api): add authentication`, `fix(ui): resolve layout issue`
+  - Breaking changes: `feat!: breaking API change` or `feat(api)!: breaking change to authentication`
 - PR body should include test results summary
 
-### Step 6: Handle JIRA Integration via JIRA Workflow
+### Step 6: Handle JIRA Integration via Git Issue Updater
 
-Use `jira-git-integration` framework for:
+Use `git-issue-updater` framework for:
 - JIRA resource detection (cloud ID, projects)
-- Adding comments with PR details
+- Adding comments with PR details (user, date, time, commit hash, files changed)
 - Uploading images (if applicable)
+- Consistent progress tracking across all JIRA tickets
 
 ### Step 7: Merge Confirmation
 
@@ -180,8 +186,8 @@ IBIS-456: https://company.atlassian.net/browse/IBIS-456
 This skill will:
 1. Detect JIRA ticket `IBIS-456`
 2. Run linting and build
-3. Create PR with `[IBIS-456]` prefix
-4. Add comment to JIRA ticket IBIS-456
+3. Create PR with Conventional Commits format (e.g., `feat: add user component [IBIS-456]`)
+4. Add comment to JIRA ticket IBIS-456 using git-issue-updater
 5. Prompt for merge target
 
 ## Common Issues
@@ -212,8 +218,12 @@ This skill will:
 - Always run linting, building, and testing before creating any PR
 - **Never create a PR with failing tests** - this is a blocking requirement
 - Keep PRs focused and small (ideally < 400 lines changed)
-- Write clear, descriptive PR titles that include ticket numbers
+- **Use git-semantic-commits for PR title formatting** following Conventional Commits specification
+- Write clear, descriptive PR titles: `feat: add user component [IBIS-456]` or `fix(IBIS-456): resolve session timeout`
+- Include scope when relevant: `feat(api): add authentication`, `fix(ui): resolve layout issue`
+- Use breaking change indicator: `feat!: breaking API change` or `feat(api)!: breaking change to authentication`
 - Include quality check status in every PR (linting ✓, build ✓, test ✓)
+- **Use git-issue-updater for JIRA ticket updates** with consistent format (user, date, time, PR details)
 - Add JIRA comments immediately after PR creation for traceability
 - Never skip the build or test steps - they catch production-breaking issues
 - Commit linting, build, and test fixes separately for clarity
@@ -238,7 +248,18 @@ Before creating PR:
 
 ## Related Skills
 
-- `nextjs-standard-setup`: For creating standardized Next.js 16 applications with proper component architecture
-- `jira-git-workflow`: For creating JIRA tickets and initial PLAN.md setup
-- `coverage-readme-workflow`: For updating README with coverage badges before PR creation
+- **Next.js Specific**:
+  - `nextjs-standard-setup`: For creating standardized Next.js 16 applications with proper component architecture
+  - `nextjs-unit-test-creator`: For generating comprehensive unit tests for Next.js applications
+- **Git Frameworks**:
+  - `git-semantic-commits`: For semantic commit message formatting and PR title conventions
+  - `git-issue-updater`: For consistent issue/ticket update functionality with user, date, time
+- **JIRA Integration**:
+  - `jira-git-workflow`: For creating JIRA tickets and initial PLAN.md setup
+- **Quality Assurance**:
+  - `linting-workflow`: For code quality checks (ESLint, Pylint, etc.)
+  - `coverage-readme-workflow`: For updating README with coverage badges before PR creation
+- **PR Workflows**:
+  - `pr-creation-workflow`: For generic PR creation workflow
+  - `git-pr-creator`: For creating Git pull requests with JIRA integration
 
