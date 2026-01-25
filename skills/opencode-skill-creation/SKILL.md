@@ -181,10 +181,23 @@ touch skills/python-pytest-creator/SKILL.md
 
 ### Step 6: Write Skill Documentation
 
+**IMPORTANT: Always use `read` tool before using `write` or `edit` on existing files.**
+
+This is especially critical when updating:
+- **PLAN.md** - Always read first to preserve existing task status
+- **README.md** - Always read first to preserve documentation structure
+- **Existing SKILL.md files** - Always read first to avoid overwriting content
+
+**Why Read First?**
+- The `write` tool completely overwrites existing files
+- Prevents accidental data loss of existing content
+- Ensures you have full context before making changes
+- Required for proper file safety in OpenCode workflows
+
 Write the complete SKILL.md file:
 
 ```bash
-# Write content to SKILL.md
+# For NEW files (created in Step 5), you can write directly:
 cat > "skills/<skill-name>/SKILL.md" << 'EOF'
 ---
 name: <skill-name>
@@ -211,6 +224,16 @@ Use this when:
 ## [Optional sections...]
 
 EOF
+
+# For EXISTING files, ALWAYS read first:
+# 1. Read the file
+read filePath="PLAN.md"
+
+# 2. Now use edit to make targeted changes
+edit filePath="PLAN.md" oldString="old content" newString="new content"
+
+# OR use write with full content (only if you have the full context)
+write filePath="PLAN.md" content="full updated content after reading"
 ```
 
 ### Step 7: Validate Created Skill
@@ -283,6 +306,32 @@ echo "Running opencode-skills-maintainer to update agents with new skill..."
 - **Use code blocks**: Include examples with triple backticks
 - **Be thorough**: More detail is better than less
 
+### File Safety
+
+- **ALWAYS read before writing**: Use `read` tool before using `write` or `edit` on any existing file
+- **Never assume content**: Always check current file content before modifying
+- **Preserve existing data**: Read the file first to avoid overwriting content
+- **Check file existence**: Use `glob` or `read` to verify file exists before operations
+
+**Why This is Critical**:
+- The `write` tool completely overwrites existing files
+- Using `read` first prevents accidental data loss
+- Ensures you have the full context before making changes
+- Required when updating PLAN.md, README.md, or any existing documentation
+
+**Example Workflow**:
+```bash
+# WRONG - Direct write without reading
+write filePath="PLAN.md" content="new content"
+
+# CORRECT - Read first, then write/edit
+read filePath="PLAN.md"
+# Now you have the full context
+edit filePath="PLAN.md" oldString="..." newString="..."
+# OR
+write filePath="PLAN.md" content="full updated content"
+```
+
 ### Validation
 
 - **Always validate YAML**: Check frontmatter syntax
@@ -290,6 +339,7 @@ echo "Running opencode-skills-maintainer to update agents with new skill..."
 - **Review documentation**: Ensure clarity and completeness
 - **Check naming**: Verify skill follows naming conventions
 - **Update agents**: Never skip Step 8!
+- **Always read before write**: Verify file content before modifying existing files
 
 ## Common Issues
 
@@ -347,6 +397,37 @@ python_ ✗ (underscore)
 - Manually invoke opencode-skills-maintainer if automated step failed
 - Verify skill name matches frontmatter exactly
 
+### Accidental Data Loss
+
+**Issue**: File content overwritten when using `write` tool without reading first
+
+**Solution**:
+- **ALWAYS use `read` before `write` or `edit` on existing files**
+- The `write` tool completely overwrites files without warning
+- Always read the file first to see existing content
+- Use `edit` for targeted changes when possible
+- Only use `write` when you have the complete file content
+
+**Example of What NOT To Do**:
+```bash
+# BAD - This overwrites everything!
+write filePath="PLAN.md" content="just the new tasks"
+```
+
+**Correct Approach**:
+```bash
+# GOOD - Read first to preserve existing content
+read filePath="PLAN.md"
+# Now you have the full context
+edit filePath="PLAN.md" oldString="old text" newString="new text"
+```
+
+**Common Files Requiring Read First**:
+- **PLAN.md** - Contains task statuses that must be preserved
+- **README.md** - Contains documentation structure
+- **Existing SKILL.md** - Contains complete skill documentation
+- **config.json** - Contains agent and MCP server configurations
+
 ## Verification Commands
 
 After creating a skill, verify with these commands:
@@ -384,6 +465,7 @@ opencode --agent build-with-skills "Use opencode-skills-maintainer skill"
 - [ ] Build-With-Skills agent prompt includes new skill
 - [ ] Plan-With-Skills agent prompt includes new skill
 - [ ] Skill can be invoked and executes correctly
+- [ ] **Read tool was used before modifying any existing files** (PLAN.md, README.md, etc.)
 
 ## Example Output
 

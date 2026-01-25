@@ -378,7 +378,7 @@ fi
 ```bash
 gh pr create \
   --base "$TARGET_BRANCH" \
-  --title "[${TRACKING_ID}] <Summary>" \
+  --title "feat: <summary> [${TRACKING_ID}]" \
   --body "$(cat <<'EOF'
 ## Summary
 <Bullet points describing changes>
@@ -412,11 +412,18 @@ EOF
 )"
 ```
 
+**Note**: PR title follows Conventional Commits format. Use `git-semantic-commits` for guidance:
+- `feat: <summary> [${TRACKING_ID}]` - New feature
+- `fix: <summary> [${TRACKING_ID}]` - Bug fix
+- `docs: <summary> [${TRACKING_ID}]` - Documentation change
+- With scope: `feat(api): add authentication [${TRACKING_ID}]`
+- Breaking change: `feat!: breaking API change [${TRACKING_ID}]`
+
 #### Git Issue-Linked PR:
 ```bash
 gh pr create \
   --base "$TARGET_BRANCH" \
-  --title "Fix #${TRACKING_ID}: <Summary>" \
+  --title "fix: <summary> (#${TRACKING_ID})" \
   --body "$(cat <<'EOF'
 ## Summary
 <Bullet points describing changes>
@@ -447,11 +454,17 @@ EOF
 )"
 ```
 
+**Note**: PR title follows Conventional Commits format. Use `git-semantic-commits` for guidance:
+- `fix: <summary> (#${TRACKING_ID})` - Bug fix
+- `feat: <summary> (#${TRACKING_ID})` - New feature
+- With scope: `fix(ui): resolve layout issue (#${TRACKING_ID})`
+- Breaking change: `fix!: breaking API change (#${TRACKING_ID})`
+
 #### Standalone PR (No Tracking):
 ```bash
 gh pr create \
   --base "$TARGET_BRANCH" \
-  --title "<Summary>" \
+  --title "feat: <summary>" \
   --body "$(cat <<'EOF'
 ## Summary
 <Bullet points describing changes>
@@ -479,6 +492,14 @@ gh pr create \
 EOF
 )"
 ```
+
+**Note**: PR title follows Conventional Commits format. Use `git-semantic-commits` for guidance:
+- `feat: <summary>` - New feature
+- `fix: <summary>` - Bug fix
+- `docs: <summary>` - Documentation change
+- `refactor: <summary>` - Code refactoring
+- With scope: `feat(api): add authentication`
+- Breaking change: `feat!: breaking API change`
 
 ### Step 7: Handle Images in PR
 
@@ -575,7 +596,11 @@ fi
 - **Image Handling**: Upload local images, don't link to `/tmp/` or local paths
 - **Merge Confirmation**: Always ask user before merging
 - **Branch Cleanliness**: Ensure working tree is clean before creating PR
-- **Commit Quality**: Use clear, descriptive commit messages
+- **Commit Quality**: **Use git-semantic-commits for PR title formatting** following Conventional Commits specification
+- **PR Titles**: Follow semantic format: `feat: <summary>`, `fix: <summary>`, `docs: <summary>`
+- **PR Scopes**: Include scope when relevant: `feat(api): add authentication`, `fix(ui): resolve layout issue`
+- **Breaking Changes**: Use `!` indicator: `feat!: breaking API change` or `feat(api)!: breaking change to authentication`
+- **Issue Tracking**: **Use git-issue-updater for JIRA ticket updates** with consistent format (user, date, time, PR details)
 - **PR Size**: Keep PRs focused and small (< 400 lines changed ideal)
 - **Review Checklist**: Include self-review checklist in every PR
 - **Virtual Environments**: Always activate Python virtual environments before running tests or type checks to prevent system library pollution
@@ -874,6 +899,12 @@ Skills that use this PR creation framework:
 - `nextjs-pr-workflow`: Next.js-specific PR workflow with linting and building
 
 Supporting framework skills:
-- `jira-git-integration`: For JIRA ticket management and comments
-- `linting-workflow`: For configurable quality checks
-- `ticket-branch-workflow`: For initial ticket-to-branch setup
+- **Git Frameworks**:
+  - `git-semantic-commits`: For semantic commit message formatting and PR title conventions
+  - `git-issue-updater`: For consistent issue/ticket update functionality with user, date, time
+- **JIRA Integration**:
+  - `jira-git-integration`: For JIRA ticket management and comments
+- **Quality Assurance**:
+  - `linting-workflow`: For configurable quality checks
+- **Workflow Management**:
+  - `ticket-branch-workflow`: For initial ticket-to-branch setup

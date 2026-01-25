@@ -10,13 +10,14 @@ metadata:
 
 ## What I do
 
-I implement the standard JIRA-to-Git workflow by combining `jira-git-integration` and `ticket-branch-workflow`:
+I implement the standard JIRA-to-Git workflow by combining `jira-git-integration`, `ticket-branch-workflow`, and git framework skills:
 
 1. **Identify JIRA Project**: Use `jira-git-integration` to find project and cloud ID
 2. **Create JIRA Ticket**: Use `jira-git-integration` to create task/issue with summary and description
 3. **Add Comments** (Optional): Use `jira-git-integration` to add clarifying comments if needed
 4. **Create Git Branch**: Create branch named after JIRA ticket (format: `PROJECT-NUM`)
-5. **Commit PLAN.md**: Use `ticket-branch-workflow` to create and commit PLAN.md
+5. **Commit PLAN.md**: Use `ticket-branch-workflow` to create PLAN.md, commit with semantic formatting, and push
+6. **Update JIRA Ticket**: Use `git-issue-updater` to add progress comment with commit details
 
 ## When to use me
 
@@ -72,8 +73,37 @@ Use this workflow when:
 ### Step 5: Execute Ticket-Branch-Workflow
 - Use `ticket-branch-workflow` to:
   - Create PLAN.md with JIRA ticket reference
-  - Commit PLAN.md: `git commit -m "Add PLAN.md for <TICKET-KEY>: <brief summary>"`
+  - **Use git-semantic-commits for commit formatting**:
+    - Commit PLAN.md with semantic format: `git commit -m "feat: add PLAN.md for <TICKET-KEY>"`
+    - Or with scope: `git commit -m "docs(PLAN): add planning document for <TICKET-KEY>"`
   - Push branch to remote: `git push -u origin <TICKET-KEY>`
+
+### Step 6: Update JIRA Ticket with Initial Commit
+- **Use git-issue-updater to add progress comment to JIRA ticket**:
+  - Extract commit details: hash, message, author, date, time, files changed
+  - Use `atlassian_addCommentToJiraIssue` with:
+    - `cloudId`: The cloud ID
+    - `issueIdOrKey`: The ticket key (e.g., IBIS-101)
+    - `commentBody`: Formatted comment with:
+      - User who made the commit
+      - Date and time of commit
+      - Commit hash (with link if available)
+      - Commit message
+      - Files changed (from git diff --stat)
+      - Statistics summary
+  - Example comment format:
+    ```markdown
+    **Initial commit created**
+
+    - **User**: [author name]
+    - **Date**: [ISO 8601 date]
+    - **Time**: [ISO 8601 time]
+    - **Commit**: [commit hash]
+    - **Message**: [commit message]
+    - **Files changed**: [number]
+    - **Insertions**: [number]
+    - **Deletions**: [number]
+    ```
 
 ## Example PLAN.md Structure
 
@@ -105,10 +135,15 @@ Detailed steps or methodology for implementation.
 
 - Use `jira-git-integration` for all JIRA operations (project discovery, ticket creation, comments)
 - Use `ticket-branch-workflow` for branch, PLAN.md, commit, and push operations
+- **Use `git-semantic-commits` for all commit formatting** to ensure consistent semantic versioning
+- **Use `git-issue-updater` after all commits** to add progress comments to JIRA tickets
 - Keep the plan specific and actionable
 - Use the JIRA ticket key as the branch name for traceability
 - Include a clear rationale in both the JIRA ticket and PLAN.md
 - Commit the PLAN.md as the first commit on the new branch
+- **Always update JIRA ticket with commit details** after each significant commit
+- **Use semantic commit types**: feat, fix, docs, style, refactor, test, chore, perf, ci, build, revert
+- **Use scopes** to identify affected components (e.g., docs(PLAN):, feat(api):, fix(ui):)
 
 ## Common Issues
 
@@ -148,13 +183,22 @@ After ticket creation:
 After framework execution:
 - [ ] Branch is created and checked out successfully
 - [ ] PLAN.md is created with ticket reference
-- [ ] PLAN.md is committed to the branch
+- [ ] PLAN.md is committed with semantic message format
 - [ ] Branch is pushed to remote successfully
+- [ ] JIRA ticket is updated with initial commit details
+- [ ] JIRA ticket comment includes user, date, time, commit hash, message, and file changes
 
 ## Related Skills
 
-- **Frameworks**:
+- **JIRA Integration**:
   - `jira-git-integration` - Provides JIRA-specific operations (project discovery, ticket creation, comments)
+- **Core Workflow Framework**:
   - `ticket-branch-workflow` - Provides core workflow (branch creation, PLAN.md, commit, push)
-- `nextjs-pr-workflow`: For creating PRs after completing the ticket
-- `git-issue-creator`: For GitHub-integrated workflows (uses same ticket-branch-workflow framework)
+- **Git Frameworks**:
+  - `git-semantic-commits` - Provides semantic commit message formatting following Conventional Commits spec
+  - `git-issue-updater` - Provides consistent issue/ticket update functionality for GitHub and JIRA
+  - `git-issue-labeler` - Provides intelligent label detection for GitHub issues
+- **Next.js Specific**:
+  - `nextjs-pr-workflow` - For creating PRs after completing the ticket
+- **GitHub Integration**:
+  - `git-issue-creator` - For GitHub-integrated workflows (uses same ticket-branch-workflow framework)

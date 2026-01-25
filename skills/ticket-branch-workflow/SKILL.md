@@ -10,16 +10,18 @@ metadata:
 
 ## What I do
 
-I provide a generic ticket-to-branch-to-PLAN workflow that can be adapted for multiple platforms:
+I provide a generic ticket-to-branch-to-PLAN workflow that can be adapted for multiple platforms, delegating to framework skills:
 
 1. **Analyze Request**: Parse user's statement to determine work type and required platform
 2. **Detect Platform**: Identify if using GitHub issues or JIRA tickets (or both)
-3. **Create Ticket**: Create a new ticket with appropriate labels/tags/issue type
-4. **Generate Branch Name**: Create a consistent branch name from ticket number/ID
-5. **Create Branch**: Create and checkout new git branch
-6. **Create PLAN.md**: Generate a PLAN.md file with implementation structure
-7. **Commit PLAN.md**: Commit PLAN.md to new branch
-8. **Push Branch**: Push branch to remote repository
+3. **Assign Labels/Type**: Use `git-issue-labeler` framework to determine appropriate labels (GitHub) or issue types (JIRA)
+4. **Create Ticket**: Create a new ticket with assigned labels/issue type
+5. **Generate Branch Name**: Create a consistent branch name from ticket number/ID
+6. **Create Branch**: Create and checkout new git branch
+7. **Create PLAN.md**: Generate a PLAN.md file with implementation structure
+8. **Commit PLAN.md**: Use `git-semantic-commits` framework to format commit message
+9. **Update Issue**: Use `git-issue-updater` framework to add progress comment with user, date, time
+10. **Push Branch**: Push branch to remote repository
 
 ## When to use me
 
@@ -28,6 +30,12 @@ Use this framework when:
 - You want a systematic approach with ticket creation, branching, planning, and syncing
 - You're creating a workflow skill that includes ticket creation and branching
 - You need to support both GitHub and JIRA ticketing
+
+**Frameworks Used**:
+- `git-issue-labeler` - For GitHub default label assignment (bug, enhancement, documentation, duplicate, good first issue, help wanted, invalid, question, wontfix)
+- `git-semantic-commits` - For semantic commit message formatting (Conventional Commits specification)
+- `git-issue-updater` - For updating issues with commit progress (user, date, time)
+- `jira-git-integration` - For JIRA-specific operations when working with JIRA tickets (API, comments, attachments)
 
 This is a **framework skill** - it provides ticket-to-branch logic that other skills extend.
 
@@ -69,50 +77,45 @@ echo "Using platform: $PLATFORM"
 | Project has JIRA integration | jira |
 | Context suggests specific platform | detected from context |
 
-### Step 2: Determine Ticket Type and Labels
+### Step 2: Determine Labels/Issue Type Using git-issue-labeler
 
-**Purpose**: Analyze user statement to determine ticket categorization
+**Purpose**: Use git-issue-labeler framework to assign GitHub default labels or JIRA issue types
 
-**Ticket Type Detection (Generic)**:
-
-| Keyword | GitHub Label | JIRA Issue Type |
-|---------|--------------|------------------|
-| fix, error, broken, crash, bug | `bug` | `Bug` |
-| add, implement, create, new, support | `feature`, `enhancement` | `Story`, `Task` |
-| improve, optimize, refactor, update | `enhancement` | `Task`, `Improvement` |
-| document, readme, docs, guide | `documentation` | `Task` |
-| setup, configure, deploy, clean | `chore`, `maintenance` | `Task` |
+**Label Detection Logic** (Delegated to git-issue-labeler):
+```bash
+# git-issue-labeler will analyze the ticket title and description
+# and determine appropriate labels for GitHub or issue types for JIRA
+# Examples:
+# - "Fix login error" → GitHub labels: bug
+# - "Add dark mode" → GitHub labels: enhancement, good first issue
+# - "Update documentation" → GitHub labels: documentation
+# - JIRA: "Fix authentication" → Issue type: Bug
+# - JIRA: "Add feature" → Issue type: Story
+```
 
 **Implementation**:
 ```bash
-# Detect ticket type from user input
-if echo "$USER_INPUT" | grep -qiE "fix|error|broken|crash|bug"; then
-  TICKET_TYPE="bug"
-elif echo "$USER_INPUT" | grep -qiE "add|implement|create|new|support"; then
-  TICKET_TYPE="feature"
-elif echo "$USER_INPUT" | grep -qiE "improve|optimize|refactor|update"; then
-  TICKET_TYPE="enhancement"
-else
-  TICKET_TYPE="enhancement"  # Default
-fi
+# For GitHub: git-issue-labeler returns GitHub default labels
+# For JIRA: git-issue-labeler suggests issue type (Task, Story, Bug)
+LABELS=$(git-issue-labeler --platform github --content "$TICKET_TITLE")
 
-echo "Ticket type detected: $TICKET_TYPE"
+echo "Labels assigned: $LABELS"
 ```
 
 ### Step 3: Create Ticket (Platform-Specific)
 
-**Purpose**: Create a new ticket in the appropriate platform
+**Purpose**: Create a new ticket in the appropriate platform with labels from git-issue-labeler
 
 #### GitHub Ticket Creation:
 ```bash
 # Get current authenticated GitHub user
 GITHUB_USER=$(gh api user --jq '.login')
 
-# Create GitHub issue
+# Create GitHub issue with labels from git-issue-labeler
 ISSUE_OUTPUT=$(gh issue create \
   --title "<Ticket Title>" \
   --body "<Ticket Description>" \
-  --label "<label1>,<label2>" \
+  --label "$LABELS" \
   --assignee @me)
 
 # Extract issue number and URL
@@ -336,29 +339,47 @@ EOF
 echo "✅ Created PLAN.md"
 ```
 
-### Step 7: Commit PLAN.md
+### Step 7: Commit PLAN.md Using git-semantic-commits
 
-**Purpose**: Commit PLAN.md as the first commit on the new branch
+**Purpose**: Commit PLAN.md as the first commit on the new branch with semantic formatting
 
 **Implementation**:
 ```bash
 # Stage PLAN.md
 git add PLAN.md
 
-# Commit with descriptive message
+# Format commit message using git-semantic-commits
 if [ "$PLATFORM" = "github" ]; then
-  git commit -m "Add PLAN.md for #${ISSUE_NUMBER}: ${TICKET_TITLE}"
+  COMMIT_MSG=$(git-semantic-commits --type docs --scope plan --subject "Add PLAN.md for #${ISSUE_NUMBER}")
+  git commit -m "$COMMIT_MSG"
 elif [ "$PLATFORM" = "jira" ]; then
-  git commit -m "Add PLAN.md for ${TICKET_KEY}: ${TICKET_TITLE}"
+  COMMIT_MSG=$(git-semantic-commits --type docs --scope plan --subject "Add PLAN.md for ${TICKET_KEY}")
+  git commit -m "$COMMIT_MSG"
 fi
 
 # Verify commit
 git log --oneline -1
 
-echo "✅ Committed PLAN.md"
+echo "✅ Committed PLAN.md with semantic format"
 ```
 
-### Step 8: Push Branch to Remote
+### Step 8: Update Issue with Commit Progress Using git-issue-updater
+
+**Purpose**: Add progress comment to GitHub issue or JIRA ticket with commit details
+
+**Implementation**:
+```bash
+# Update issue with commit progress using git-issue-updater
+if [ "$PLATFORM" = "github" ]; then
+  git-issue-updater --issue "$ISSUE_NUMBER" --platform github
+elif [ "$PLATFORM" = "jira" ]; then
+  git-issue-updater --ticket "$TICKET_KEY" --platform jira
+fi
+
+echo "✅ Issue updated with progress comment"
+```
+
+### Step 9: Push Branch to Remote
 
 **Purpose**: Push the new branch to the remote repository
 
@@ -389,9 +410,56 @@ echo "Branch URL: $BRANCH_URL"
 
 ### Step 9: Display Summary
 
-**Purpose**: Show user all the work completed
+**Purpose**: Show user all of work completed with framework skill usage
 
 **Summary Template**:
+```
+✅ Workflow completed successfully!
+
+**Frameworks Used**:
+- `git-issue-labeler`: Labels assigned
+- `git-semantic-commits`: Commit message formatted
+- `git-issue-updater`: Issue updated with progress
+- `jira-git-integration`: JIRA operations (if applicable)
+
+**Ticket Details**:
+<if github>
+- Issue: #<ISSUE_NUMBER>
+- URL: <ISSUE_URL>
+- Labels: <labels> (via git-issue-labeler)
+</if>
+
+<if jira>
+- Ticket: <TICKET_KEY>
+- URL: <TICKET_URL>
+- Type: <Task | Story | Bug> (via git-issue-labeler)
+</if>
+
+**Branch**:
+- Name: $BRANCH_NAME
+- Remote: origin/$BRANCH_NAME
+- URL: <branch-url>
+
+**PLAN.md**:
+- Created: Yes
+- Committed: Yes (with semantic format via git-semantic-commits)
+- Pushed: Yes
+
+**Issue Update**:
+- Comment added: Yes (via git-issue-updater)
+- User: <commit-author>
+- Date: <commit-date>
+- Time: <commit-time>
+
+**Next Steps**:
+1. Review and update PLAN.md as needed
+2. Start implementation following plan
+3. Make commits with clear messages (use git-semantic-commits)
+4. Run quality checks (linting, tests, builds)
+5. Update issue with progress (use git-issue-updater)
+6. Create pull request when implementation is complete
+
+**Ready to start implementation! 🚀**
 ```
 ✅ Workflow completed successfully!
 
@@ -604,10 +672,17 @@ git status
 
 ## Relevant Skills
 
-Skills that use this ticket-to-branch framework:
-- `git-issue-creator`: GitHub issue creation with branch and PLAN.md
-- `jira-git-workflow`: JIRA ticket creation with branch and PLAN.md
+**Framework Skills Used**:
+- `git-issue-labeler` - For GitHub default label assignment
+- `git-semantic-commits` - For semantic commit message formatting
+- `git-issue-updater` - For updating issues with commit progress
+- `jira-git-integration` - For JIRA utilities and operations
 
-Supporting framework skills:
-- `jira-git-integration`: For JIRA utilities and operations
-- `pr-creation-workflow`: For PR creation after implementation
+**Skills that use this framework**:
+- `git-issue-creator` - GitHub issue creation with semantic commit formatting
+- `jira-git-workflow` - JIRA ticket creation with semantic commit formatting
+
+Additional related skills:
+- `pr-creation-workflow` - For PR creation workflows
+- `nextjs-pr-workflow` - For Next.js-specific PR workflows
+- `git-pr-creator` - For Git PR creation with JIRA integration

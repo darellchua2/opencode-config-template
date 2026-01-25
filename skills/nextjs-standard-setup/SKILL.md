@@ -1,6 +1,6 @@
 ---
 name: nextjs-standard-setup
-description: Create standardized Next.js 16 demo applications with shadcn, Tailwind v4, and specific folder structure using Tekk-prefixed components and proper documentation standards
+description: Create standardized Next.js 16 demo applications with shadcn, Tailwind v4, src directory with path aliases, React Compiler, and npx zero-install experience using Tekk-prefixed components and proper documentation standards
 license: Apache-2.0
 compatibility: opencode
 metadata:
@@ -12,24 +12,15 @@ metadata:
 
 I create a standardized Next.js 16 application with:
 
-1. **Next.js 16 Setup**: Install and configure the latest Next.js 16
+1. **Next.js 16 Setup**: Install and configure latest Next.js 16 with npx
 2. **shadcn Integration**: Install and configure shadcn@latest with TypeScript
 3. **Tailwind v4 Configuration**: Set up Tailwind CSS v4 with proper configuration
-4. **Folder Structure**: Create standardized src/ directory structure
+4. **src Directory**: Use src/ directory structure with path aliases (@/*)
 5. **Component Architecture**: Set up Tekk-prefixed abstraction layer with **named exports**
 6. **Export Patterns**: Enforce named exports for all custom components with index.ts re-exports
-7. **Documentation Standards**: Generate components with proper JSDoc docstrings
-8. **Best Practices**: Ensure Next.js best practices (next/image, proper imports, etc.)
-
-**Data Flow Architecture**:
-```
-page.tsx (server) → page-containers (client state) → sections/custom-components (stateless)
-```
-
-**Export Pattern Philosophy**:
-- All custom components use **named exports** for better tree-shaking
-- Library components (shadcn/ui) maintain their default exports
-- Index.ts files provide clean import paths and enable named imports
+7. **React Compiler**: Enable React Compiler for optimized reactivity
+8. **Documentation Standards**: Generate components with proper JSDoc docstrings
+9. **Best Practices**: Ensure Next.js best practices (next/image, proper imports, etc.)
 
 ## When to use me
 
@@ -39,7 +30,9 @@ Use this skill when:
 - Want to ensure best practices from the start
 - Creating maintainable component architecture
 - Setting up projects with Tekk-prefixed naming conventions
-- Need proper TypeScript and documentation standards
+- Need to use npx for all commands (zero-install experience)
+- Want to enable React Compiler for optimized performance
+- Want to use src/ directory with path aliases (@/)
 
 ## Prerequisites
 
@@ -51,15 +44,73 @@ Use this skill when:
 
 ## Steps
 
-### Step 1: Initialize Next.js 16 Project
+### Step 1: Initialize Next.js 16 Project with npx
 
 Create a new Next.js 16 application with TypeScript:
-```bash
-# Create Next.js 16 app
-npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias "@/*"
 
-# Install latest Next.js 16
-npm install next@latest react@latest react-dom@latest
+```bash
+# Create Next.js 16 app with npx -y for zero-install experience
+npx -y create-next-app@latest --typescript --tailwind --eslint --app --src-dir --import-alias "@/*"
+
+# Alternative: Manual npx commands for each step
+npx -y create-next-app@latest my-app --typescript --tailwind --eslint --app --src-dir --import-alias "@/*"
+npx -y create-next-app@latest --typescript --tailwind --eslint --app --src-dir --turbopack
+```
+
+**npx Flags Explanation**:
+- `-y`: Automatically confirm yes to all prompts (recommended for automation)
+- `--typescript`: Initialize with TypeScript
+- `--tailwind`: Use Tailwind CSS
+- `--eslint`: Set up ESLint configuration
+- `--app`: Use App Router (recommended for new projects)
+- `--src-dir`: Use src/ directory structure
+- `--import-alias "@/*"`: Configure path aliases for clean imports
+
+### Step 2: Configure Tailwind v4 with npx
+
+Update to Tailwind CSS v4 and configure properly:
+
+```bash
+# Install Tailwind v4 with npx -y for zero-install experience
+npx -y tailwindcss@latest init -p
+```
+
+Update `tailwind.config.ts` or `tailwind.config.js`:
+```typescript
+import type { Config } from "tailwindcss"
+
+const config: Config = {
+  content: [
+    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
+
+export default config
+```
+
+Update `tailwind.config.ts` or `tailwind.config.js`:
+```typescript
+import type { Config } from "tailwindcss"
+
+const config: Config = {
+  content: [
+    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
+
+export default config
 ```
 
 ### Step 2: Configure Tailwind v4
@@ -72,32 +123,119 @@ npm install tailwindcss@next @tailwindcss/vite@next
 
 Update configuration files for Tailwind v4 compatibility.
 
-### Step 3: Install and Configure shadcn
+### Step 3: Install and Configure shadcn with npx
 
-Install shadcn with proper TypeScript configuration:
+Install shadcn with proper TypeScript configuration using npx:
+
 ```bash
-# Install shadcn CLI
-npx shadcn@latest init
+# Initialize shadcn with npx
+npx -y shadcn@latest init
 
-# Initialize with defaults
-npx shadcn@latest add button card input label textarea select checkbox radio-group switch toast
+# Configuration options during init
+- TypeScript: Yes
+- Style: Default (Tailwind)
+- Base color: Slate
+- CSS variables: Yes
+- Tailwind config: tailwind.config.ts
+- Aliases: @/components, @/lib, @/utils
 ```
 
-### Step 4: Create Standardized Folder Structure
+shadcn will create:
+- `src/components/ui/` - Library components directory
+- `src/lib/utils.ts` - Utility functions
+- `components.json` - Component configuration
 
-Create the required directory structure:
+### Step 4: Create Standardized src/ Directory Structure
+
+Create src/ directory structure with proper path aliases:
+
 ```bash
+# Create src directory structure
+mkdir -p src/app
+mkdir -p src/components
+mkdir -p src/lib
+mkdir -p src/types
 mkdir -p src/custom-components
-mkdir -p src/app/custom-components/sections
-mkdir -p src/page-containers/the/page/route
+mkdir -p src/page-containers
 ```
 
-### Step 5: Generate Tekk-Prefixed Components
+**Project Structure**:
+```
+project-root/
+├── src/
+│   ├── app/                    # App Router pages
+│   │   ├── layout.tsx
+│   │   ├── page.tsx
+│   │   └── globals.css
+│   ├── components/             # Reusable UI components
+│   │   ├── ui/               # shadcn library components
+│   │   │   ├── button.tsx
+│   │   │   ├── card.tsx
+│   │   │   └── input.tsx
+│   │   └── TekkComponents/    # Tekk-prefixed wrappers
+│   │       ├── TekkButton.tsx
+│   │       └── TekkCard.tsx
+│   ├── lib/                    # Utility functions
+│   │   ├── utils.ts
+│   │   └── constants.ts
+│   ├── types/                  # TypeScript type definitions
+│   │   └── index.ts
+│   ├── custom-components/    # Feature-specific components
+│   │   ├── TekkHomePageContainer/
+│   │   └── TekkDashboardPageContainer/
+│   └── page-containers/       # Client state containers
+│       └── the/page/route/
+├── public/                   # Static assets
+├── tsconfig.json             # TypeScript configuration with path aliases
+├── next.config.ts             # Next.js configuration with React Compiler
+├── tailwind.config.ts           # Tailwind CSS configuration
+└── package.json
+```
 
-Create abstraction layer over shadcn components with Tekk prefix:
+### Step 5: Configure tsconfig.json with Path Aliases
 
-**custom-components Examples**:
-- TekkButton (extends shadcn Button)
+Set up TypeScript with @/ path aliases for src/ directory:
+
+```json
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@/components/*": ["./src/components/*"],
+      "@/lib/*": ["./src/lib/*"],
+      "@/app/*": ["./src/app/*"],
+      "@/types/*": ["./src/types/*"],
+      "@/utils/*": ["./src/lib/*"]
+    },
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "incremental": true,
+    "jsx": "preserve",
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
+```
 - TekkCard (extends shadcn Card)
 - TekkInput (extends shadcn Input)
 - TekkModal (extends shadcn Dialog)
@@ -131,7 +269,226 @@ Ensure all components have proper JSDoc docstrings with:
  */
 ```
 
-### Step 7: Configure Next.js Best Practices
+### Step 6: Enable React Compiler
+
+Enable React Compiler for optimized reactivity in Next.js 16:
+
+```typescript
+// next.config.ts
+const nextConfig = {
+  experimental: {
+    reactCompiler: true,
+  },
+}
+
+module.exports = nextConfig
+```
+
+**React Compiler Benefits**:
+- Automatic optimization of React components
+- Eliminates need for manual memo, useMemo, useCallback
+- Reduces re-renders automatically
+- Improves application performance
+- No code changes required in components
+
+**React Compiler Requirements**:
+- Next.js 16 or later
+- React 18.2.0 or later
+- TypeScript strict mode enabled
+- No explicit memo, useMemo, useCallback in components (compiler handles optimization)
+
+**Configuration Example**:
+```typescript
+// next.config.ts
+import type { NextConfig } from 'next'
+
+const nextConfig: NextConfig = {
+  // React Compiler
+  experimental: {
+    reactCompiler: true,
+  },
+  
+  // Optional: Configure React Compiler behavior
+  experimental: {
+    reactCompiler: true,
+    // Enable only for specific paths
+    reactCompiler: {
+      sources: {
+        src: ['src'],
+      },
+    },
+  },
+  
+  // Other existing configurations
+  // ...rest of config
+}
+
+module.exports = nextConfig
+```
+
+**Best Practices with React Compiler**:
+- Let compiler handle optimization (no manual memo needed)
+- Focus on business logic instead of performance
+- Compiler optimizes automatically based on dependency analysis
+- Use TypeScript strict mode for best results
+- Test with and without compiler to verify improvements
+
+### Step 8: Configure Next.js Best Practices with npx
+
+Set up Next.js configurations using npx -y for zero-install experience:
+
+```bash
+# Install Next.js 16 and React with npx
+npx -y npm install next@latest react@latest react-dom@latest
+
+# Set up TypeScript strict mode
+npx -y tsc --init
+
+# Install ESLint and Prettier with npx
+npx -y eslint-config-prettier@latest --save-dev
+
+# Install other dev dependencies with npx
+npx -y install -D typescript @types/node
+npx -y install -D @types/react @types/react-dom
+```
+
+Configure `tsconfig.json` for strict type checking:
+```json
+{
+  "compilerOptions": {
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
+    // ...other strict options
+  }
+}
+```
+
+Set up ESLint and Prettier:
+```bash
+# Install ESLint and Prettier with npx
+npx -y eslint-config-prettier@latest --save-dev
+
+# Create .eslintrc.json
+cat > .eslintrc.json <<EOF
+{
+  "extends": ["prettier"],
+  "rules": {
+    "react/react-in-jsx-scope": "off",
+    "react/prop-types": "error"
+  }
+}
+EOF
+
+# Create .prettierrc
+cat > .prettierrc <<EOF
+{
+  "semi": true,
+  "singleQuote": true,
+  "tabWidth": 2,
+  "trailingComma": "es5",
+  "printWidth": 100
+}
+EOF
+```
+
+Add environment variable templates:
+```bash
+# Create .env.local template
+cat > .env.local.example <<EOF
+# Database
+DATABASE_URL=postgresql://user:password@localhost:5432/mydb
+NEXT_PUBLIC_API_URL=http://localhost:3000/api
+
+# Authentication
+NEXTAUTH_SECRET=your-secret-key-here
+
+# Feature Flags
+NEXT_PUBLIC_FEATURE_X=true
+NEXT_PUBLIC_FEATURE_Y=false
+EOF
+```
+
+### Step 8: Configure Next.js Best Practices with npx
+
+Set up Next.js configurations using npx -y for zero-install experience:
+
+```bash
+# Install Next.js 16 and React with npx
+npx -y npm install next@latest react@latest react-dom@latest
+
+# Set up TypeScript strict mode
+npx -y tsc --init
+```
+
+Configure `tsconfig.json` for strict type checking:
+```json
+{
+  "compilerOptions": {
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
+    // ...other strict options
+  }
+}
+```
+
+Set up ESLint and Prettier:
+```bash
+# Install ESLint and Prettier with npx
+npx -y eslint-config-prettier@latest --save-dev
+
+# Create .eslintrc.json
+cat > .eslintrc.json <<EOF
+{
+  "extends": ["prettier"],
+  "rules": {
+    "react/react-in-jsx-scope": "off",
+    "react/prop-types": "error"
+  }
+}
+EOF
+
+# Create .prettierrc
+cat > .prettierrc <<EOF
+{
+  "semi": true,
+  "singleQuote": true,
+  "tabWidth": 2,
+  "trailingComma": "es5",
+  "printWidth": 100
+}
+EOF
+```
+
+Add environment variable templates:
+```bash
+# Create .env.local template
+cat > .env.local.example <<EOF
+# Database
+DATABASE_URL=postgresql://user:password@localhost:5432/mydb
+NEXT_PUBLIC_API_URL=http://localhost:3000/api
+
+# Authentication
+NEXTAUTH_SECRET=your-secret-key-here
+
+# Feature Flags
+NEXT_PUBLIC_FEATURE_X=true
+NEXT_PUBLIC_FEATURE_Y=false
+EOF
+```
+
+### Step 9: Generate Tekk-Prefixed Components
 
 Set up proper Next.js configurations:
 - Use `next/image` for all images
