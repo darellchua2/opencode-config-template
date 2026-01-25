@@ -130,17 +130,29 @@ Detailed steps for implementation:
    - Update related skills sections to reference git-issue-labeler
    - Test streamlined workflow end-to-end
 
-11. **Assess and Update jira-git-workflow** ⏳ PENDING
-   - Review jira-git-workflow for commit message formatting
-   - Use git-semantic-commits for commit formatting
-   - Use git-issue-updater for issue comment after commits
-   - Update related skills sections to reference new frameworks
+ 11. **Assess and Update jira-git-workflow** ✅ DONE
+    - Review jira-git-workflow for commit message formatting ✅
+    - Use git-semantic-commits for commit formatting ✅
+    - Use git-issue-updater for issue comment after commits ✅
+    - Update related skills sections to reference new frameworks ✅
 
-12. **Assess and Update git-pr-creator** ⏳ PENDING
-   - Review for commit message formatting needs
-   - Use git-semantic-commits for commit formatting
-   - Use git-issue-updater for issue comments after PRs (if applicable)
-   - Update related skills sections
+ 12. **Assess and Update git-pr-creator** ✅ DONE
+    - Review for commit message formatting needs ✅
+    - Use git-semantic-commits for commit formatting ✅
+    - Use git-issue-updater for issue comments after PRs (if applicable) ✅
+    - Update related skills sections ✅
+
+ 12.5. **Assess and Update nextjs-pr-workflow** ✅ DONE
+    - Review for commit message formatting needs ✅
+    - Use git-semantic-commits for PR title formatting ✅
+    - Use git-issue-updater for issue comments after PRs ✅
+    - Update related skills sections ✅
+
+ 12.6. **Assess and Update pr-creation-workflow** ✅ DONE
+    - Review for commit message formatting needs ✅
+    - Use git-semantic-commits for PR title formatting ✅
+    - Use git-issue-updater for issue comments after PRs (if applicable) ✅
+    - Update related skills sections ✅
 
 13. **Testing and Validation**
    - Test the updated skill end-to-end
@@ -182,12 +194,14 @@ Detailed steps for implementation:
 - [ ] git-issue-creator uses git-issue-updater for issue comments
 - [ ] ticket-branch-workflow uses git-semantic-commits for commit formatting
 - [ ] ticket-branch-workflow uses git-issue-updater for issue comments
-- [ ] jira-git-workflow uses git-semantic-commits for commit formatting
-- [ ] jira-git-workflow uses git-issue-updater for ticket comments
-- [ ] git-pr-creator uses git-semantic-commits for PR title formatting
-- [ ] git-pr-creator uses git-issue-updater for issue updates (when linked)
-- [ ] nextjs-pr-workflow uses git-semantic-commits for commit formatting
-- [ ] nextjs-pr-workflow uses git-issue-updater for issue updates (when linked)
+- [x] jira-git-workflow uses git-semantic-commits for commit formatting
+- [x] jira-git-workflow uses git-issue-updater for ticket comments
+- [x] git-pr-creator uses git-semantic-commits for PR title formatting
+- [x] git-pr-creator uses git-issue-updater for issue updates (when linked)
+- [x] nextjs-pr-workflow uses git-semantic-commits for commit formatting
+- [x] nextjs-pr-workflow uses git-issue-updater for issue updates (when linked)
+- [x] pr-creation-workflow uses git-semantic-commits for PR title formatting
+- [x] pr-creation-workflow uses git-issue-updater for issue updates (when linked)
 - [ ] git-issue-creator uses git-issue-labeler for label detection
 - [ ] ticket-branch-workflow uses git-issue-labeler for label detection
 - [ ] Duplicate label detection logic removed from git-issue-creator
