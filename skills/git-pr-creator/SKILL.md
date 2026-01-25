@@ -14,9 +14,10 @@ I implement a complete Git PR creation workflow with optional JIRA integration:
 
 1. **Check JIRA Integration**: Ask the user if JIRA is used for the project
 2. **Create Pull Request**: Create a GitHub/GitLab PR with comprehensive description
-3. **Scan for Diagrams/Images**: Search for workflow-related images and diagrams
-4. **Attach Images to JIRA**: Upload local/temporary images directly to JIRA (not just links)
-5. **Add JIRA Comments**: Create comments on existing JIRA tickets with PR details and attachments
+3. **Use git-semantic-commits**: Format PR title following Conventional Commits specification
+4. **Scan for Diagrams/Images**: Search for workflow-related images and diagrams
+5. **Attach Images to JIRA**: Upload local/temporary images directly to JIRA (not just links)
+6. **Add JIRA Comments**: Use `git-issue-updater` to create comments with PR details and attachments
 
 ## When to use me
 
@@ -57,19 +58,24 @@ Use this workflow when:
 
 ### Step 4: Create Pull Request
 - Push the current branch to remote:
-  ```bash
+   ```bash
   git push -u origin <branch-name>
   ```
+- **Use git-semantic-commits for PR title formatting**:
+  - Format PR title following Conventional Commits specification
+  - Examples: `feat: add login functionality`, `fix(auth): resolve session timeout`, `docs: update API documentation`
+  - Include scope when relevant: `feat(api): add user authentication`, `fix(ui): resolve layout issue`
+  - Use breaking change indicator if applicable: `feat!: change API signature` or `feat(api)!: breaking change to authentication`
 - Create the PR with a comprehensive description:
-  ```bash
+   ```bash
   gh pr create --title "<PR Title>" --body "<PR Description>"
   ```
 - PR description should include:
-  - Overview of changes
-  - JIRA ticket reference (if applicable)
-  - Files changed
-  - Testing performed
-  - Screenshots/diagrams (as references)
+   - Overview of changes
+   - JIRA ticket reference (if applicable)
+   - Files changed
+   - Testing performed
+   - Screenshots/diagrams (as references)
 
 ### Step 5: Scan for Diagrams and Images
 - Search for image files in the repository:
@@ -402,7 +408,12 @@ Returns: Issue details including status, assignee, etc.
 ## Best Practices
 
 - Always confirm JIRA usage with the user before proceeding
+- **Use git-semantic-commits for PR title formatting** to ensure consistent semantic versioning
+- **Follow Conventional Commits specification**: feat, fix, docs, style, refactor, test, chore, perf, ci, build, revert
+- **Include scopes** in PR titles to identify affected components (e.g., feat(api):, fix(ui):)
+- **Use breaking change indicator** (!) when appropriate: `feat!: breaking API change`
 - Upload local/temporary images as JIRA attachments, don't link to local paths
+- **Use git-issue-updater for consistent JIRA ticket comments** with user, date, time, and PR details
 - Use descriptive filenames for images before uploading
 - Organize images in a `diagrams/` directory for consistency
 - Include PR number and brief description in JIRA comments
@@ -410,7 +421,7 @@ Returns: Issue details including status, assignee, etc.
 - Verify image accessibility before embedding URLs
 - Clean up temporary images after uploading to JIRA
 - Keep JIRA comments concise and well-formatted
-- Always verify the PR was created successfully
+- Always verify that the PR was created successfully
 - Test JIRA attachments by opening the URL in a browser
 
 ## Common Issues
@@ -469,6 +480,7 @@ Before creating PR:
 - [ ] Current branch is correct
 - [ ] Branch name follows conventions
 - [ ] User confirmed JIRA usage (yes/no)
+- [ ] PR title follows Conventional Commits format (if applicable)
 
 Before JIRA integration (if yes):
 - [ ] JIRA ticket ID is valid
@@ -525,8 +537,15 @@ identify workflow.png
 
 ## Related Skills
 
-- `jira-git-integration`: For JIRA utilities, comments, and image uploads
-- `pr-creation-workflow`: For generic PR creation workflow
-- `ascii-diagram-creator`: For creating workflow diagrams
-- `git-issue-creator`: For creating GitHub issues with branches
-- `nextjs-pr-workflow`: For Next.js-specific PR workflows
+- **JIRA Integration**:
+  - `jira-git-integration`: For JIRA utilities, comments, and image uploads
+- **Git Frameworks**:
+  - `git-semantic-commits`: For semantic commit message formatting and PR title conventions
+  - `git-issue-updater`: For consistent issue/ticket update functionality with user, date, time
+- **PR Workflows**:
+  - `pr-creation-workflow`: For generic PR creation workflow
+  - `nextjs-pr-workflow`: For Next.js-specific PR workflows
+- **Issue Management**:
+  - `git-issue-creator`: For creating GitHub issues with branches
+- **Diagram Creation**:
+  - `ascii-diagram-creator`: For creating workflow diagrams
