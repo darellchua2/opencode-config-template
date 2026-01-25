@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/darellchua2/opencode-config-template/compare/v1.3.0...v1.4.0) (2026-01-25)
+
+
+### Features
+
+* add Plan-With-Skills agent and optimized skill index ([ee00dee](https://github.com/darellchua2/opencode-config-template/commit/ee00dee8cb69695bfaee66dab1ae063ea329a0a6)), closes [#109](https://github.com/darellchua2/opencode-config-template/issues/109)
+
 # [1.3.0](https://github.com/darellchua2/opencode-config-template/compare/v1.2.0...v1.3.0) (2026-01-24)
 
 
