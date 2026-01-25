@@ -217,26 +217,17 @@ CONFIGURED FEATURES:
     - zai-mcp-server: Image analysis and video processing (auto-start with npx)
     - zread: GitHub repo search and file reading (requires ZAI_API_KEY)
 
-  Skills (16):
-    Framework Skills (5):
-      - test-generator-framework: Generate tests for any language/framework
-      - jira-git-integration: JIRA ticket and Git operations
-      - pr-creation-workflow: Generic PR creation with quality checks
-      - ticket-branch-workflow: Ticket-to-branch-to-PLAN workflow
-      - linting-workflow: Multi-language linting with auto-fix
+   Skills (27):
+    Framework (5): test-generator-framework, jira-git-integration, pr-creation-workflow, ticket-branch-workflow, linting-workflow
+    Language-Specific (3): python-pytest-creator, python-ruff-linter, javascript-eslint-linter
+    Framework-Specific (4): nextjs-pr-workflow, nextjs-unit-test-creator, nextjs-standard-setup, typescript-dry-principle
+    OpenCode Meta (3): opencode-agent-creation, opencode-skill-creation, opencode-skill-auditor
+    OpenTofu (6): opentofu-aws-explorer, opentofu-keycloak-explorer, opentofu-kubernetes-explorer, opentofu-neon-explorer, opentofu-provider-setup, opentofu-provisioning-workflow
+    Git/Workflow (3): ascii-diagram-creator, git-issue-creator, git-pr-creator
+    Documentation (2): coverage-readme-workflow, docstring-generator
+    JIRA (1): jira-git-workflow
 
-    Specialized Skills (11):
-      - ascii-diagram-creator: Create ASCII diagrams from workflows
-      - git-issue-creator: GitHub issue creation with tag detection
-      - git-pr-creator: Create pull requests with issue linking
-      - jira-git-workflow: JIRA ticket creation and branching
-      - nextjs-pr-workflow: Next.js PR workflow with JIRA integration
-      - nextjs-unit-test-creator: Generate unit/E2E tests for Next.js
-      - opencode-agent-creation: Generate OpenCode agents
-      - opencode-skill-creation: Generate OpenCode skills
-      - python-pytest-creator: Generate pytest tests for Python
-      - python-ruff-linter: Python linting with Ruff
-      - typescript-dry-principle: Apply DRY principle to TypeScript
+   Run 'opencode --list-skills' for detailed descriptions
 
 REQUIREMENTS:
   - Node.js v20+ (required for Draw.io MCP server)
@@ -493,7 +484,10 @@ show_progress() {
 # Setup GitHub PAT
 setup_github_pat() {
     echo ""
-    echo "=== GitHub Personal Access Token Setup ==="
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "              🔑 GitHub Personal Access Token Setup"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
     echo "This setup can use a GitHub Personal Access Token (optional)."
     echo "If you prefer OAuth authentication, you can skip this."
     echo ""
@@ -532,7 +526,10 @@ setup_github_pat() {
 # Setup Z.AI API Key
 setup_zai_api_key() {
     echo ""
-    echo "=== Z.AI API Key Setup ==="
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "                  🔑 Z.AI API Key Setup"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
     echo "This setup requires a Z.AI API Key for MCP services."
     echo ""
 
@@ -852,7 +849,10 @@ update_opencode_cli() {
 # Setup configuration file
 setup_config() {
     echo ""
-    echo "=== Configuration Setup ==="
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "                  📁 Configuration Setup"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
 
     # Create config directory
     run_cmd "mkdir -p ${CONFIG_DIR}"
@@ -887,24 +887,15 @@ setup_config() {
             log_success "config.json copied successfully"
 
             echo ""
-            echo "=== Configured Agents ==="
-            echo "  1. build-with-skills (default): Skill-aware coding agent"
-            echo "     Automatically finds and uses appropriate skills for best practices"
-            echo "  2. explore: Codebase exploration and analysis"
-            echo "  3. image-analyzer: Image/screenshot analysis"
-            echo "  4. diagram-creator: Draw.io diagram creation"
+            echo "✓ Configured 4 agents:"
+            echo "    • build-with-skills (default) - Skill-aware coding agent"
+            echo "    • explore - Codebase exploration and analysis"
+            echo "    • image-analyzer - Image/screenshot analysis"
+            echo "    • diagram-creator - Draw.io diagram creation"
             echo ""
-
-            echo "=== Configured MCP Servers ==="
-            echo "  Local Servers (auto-start):"
-            echo "    - atlassian: JIRA and Confluence integration"
-            echo "    - zai-mcp-server: Image analysis and video processing"
-            echo ""
-            echo "  Remote Servers (require API key):"
-            echo "    - web-reader: Web page reading (needs ZAI_API_KEY)"
-            echo "    - web-search-prime: Web search (needs ZAI_API_KEY)"
-            echo "    - zread: GitHub repo search and file reading (needs ZAI_API_KEY)"
-            echo "    - drawio: Draw.io MCP server (needs local instance on port 41033)"
+            echo "✓ Configured 6 MCP servers:"
+            echo "    Local (auto-start): atlassian, zai-mcp-server"
+            echo "    Remote (needs key): web-reader, web-search-prime, zread, drawio"
             echo ""
         else
             log_error "config.json not found in ${SCRIPT_DIR}"
@@ -943,27 +934,17 @@ setup_config() {
         log_success "Skills copied successfully to ${SKILLS_DIR}"
 
         echo ""
-        echo "=== Deployed Skills (16) ==="
+        echo "✓ Deployed 27 skills:"
+        echo "    Framework (5): test-generator-framework, jira-git-integration, pr-creation-workflow, ticket-branch-workflow, linting-workflow"
+        echo "    Language-Specific (3): python-pytest-creator, python-ruff-linter, javascript-eslint-linter"
+        echo "    Framework-Specific (4): nextjs-pr-workflow, nextjs-unit-test-creator, nextjs-standard-setup, typescript-dry-principle"
+        echo "    OpenCode Meta (3): opencode-agent-creation, opencode-skill-creation, opencode-skill-auditor"
+        echo "    OpenTofu (6): opentofu-aws-explorer, opentofu-keycloak-explorer, opentofu-kubernetes-explorer, opentofu-neon-explorer, opentofu-provider-setup, opentofu-provisioning-workflow"
+        echo "    Git/Workflow (3): ascii-diagram-creator, git-issue-creator, git-pr-creator"
+        echo "    Documentation (2): coverage-readme-workflow, docstring-generator"
+        echo "    JIRA (1): jira-git-workflow"
         echo ""
-        echo "Framework Skills (5):"
-        echo "  - test-generator-framework: Generate tests for any language/framework"
-        echo "  - jira-git-integration: JIRA ticket and Git operations"
-        echo "  - pr-creation-workflow: Generic PR creation with quality checks"
-        echo "  - ticket-branch-workflow: Ticket-to-branch-to-PLAN workflow"
-        echo "  - linting-workflow: Multi-language linting with auto-fix"
-        echo ""
-        echo "Specialized Skills (11):"
-        echo "  - ascii-diagram-creator: Create ASCII diagrams from workflows"
-        echo "  - git-issue-creator: GitHub issue creation with tag detection"
-        echo "  - git-pr-creator: Create pull requests with issue linking"
-        echo "  - jira-git-workflow: JIRA ticket creation and branching"
-        echo "  - nextjs-pr-workflow: Next.js PR workflow with JIRA integration"
-        echo "  - nextjs-unit-test-creator: Generate unit/E2E tests for Next.js"
-        echo "  - opencode-agent-creation: Generate OpenCode agents"
-        echo "  - opencode-skill-creation: Generate OpenCode skills"
-        echo "  - python-pytest-creator: Generate pytest tests for Python"
-        echo "  - python-ruff-linter: Python linting with Ruff"
-        echo "  - typescript-dry-principle: Apply DRY principle to TypeScript"
+        echo "  Run 'opencode --list-skills' for detailed descriptions"
         echo ""
     else
         log_warn "skills/ folder not found in ${SCRIPT_DIR}"
@@ -975,7 +956,10 @@ setup_config() {
 # Setup environment variables in bashrc
 setup_bashrc_vars() {
     echo ""
-    echo "=== Environment Variables Setup ==="
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "              🔐 Environment Variables Setup"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
 
     # Add ZAI_API_KEY to ~/.bashrc
     if [ -n "$ZAI_API_KEY" ]; then
@@ -1017,7 +1001,9 @@ setup_bashrc_vars() {
 # Print setup summary
 print_summary() {
     echo ""
-    echo "=== Setup Summary ==="
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "                      📊 Setup Summary"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
 
     # nvm status
@@ -1044,28 +1030,29 @@ print_summary() {
     # config.json status
     if [ -f "$CONFIG_FILE" ]; then
         echo "✓ config.json: Copied to ${CONFIG_DIR}/"
-        echo "  - Model: zai-coding-plan/glm-4.7"
-        echo "  - Default agent: build-with-skills"
+        echo "  Model: zai-coding-plan/glm-4.7"
+        echo "  Default agent: build-with-skills"
     else
         echo "✗ config.json: Not copied"
     fi
 
     # Agents configured
     if [ -f "$CONFIG_FILE" ]; then
-        echo "  - Configured agents (4): build-with-skills (default), explore, image-analyzer, diagram-creator"
+        echo "✓ Configured 4 agents: build-with-skills (default), explore, image-analyzer, diagram-creator"
     fi
 
     # MCP servers configured
     if [ -f "$CONFIG_FILE" ]; then
-        echo "  - MCP servers (6): atlassian, drawio, web-reader, web-search-prime, zai-mcp-server, zread"
+        echo "✓ Configured 6 MCP servers: atlassian, drawio, web-reader, web-search-prime, zai-mcp-server, zread"
     fi
 
     # skills directory status
     if [ -d "$SKILLS_DIR" ] && [ "$(ls -A ${SKILLS_DIR} 2>/dev/null)" ]; then
         local skill_count=$(find ${SKILLS_DIR} -name "SKILL.md" 2>/dev/null | wc -l)
-        echo "✓ skills: Deployed to ${SKILLS_DIR}/ (${skill_count} skill(s) found)"
-        echo "  - Framework skills (5): test-generator-framework, jira-git-integration, pr-creation-workflow, ticket-branch-workflow, linting-workflow"
-        echo "  - Specialized skills (11): ascii-diagram-creator, git-issue-creator, git-pr-creator, jira-git-workflow, nextjs-pr-workflow, nextjs-unit-test-creator, opencode-agent-creation, opencode-skill-creation, python-pytest-creator, python-ruff-linter, typescript-dry-principle"
+        echo "✓ skills: ${skill_count} skills deployed to ${SKILLS_DIR}/"
+        echo "  Framework (5), Language-Specific (3), Framework-Specific (4)"
+        echo "  OpenCode Meta (3), OpenTofu (6), Git/Workflow (3)"
+        echo "  Documentation (2), JIRA (1)"
     else
         echo "✗ skills: Not deployed"
     fi
@@ -1094,79 +1081,59 @@ print_summary() {
 # Print next steps
 print_next_steps() {
     echo ""
-    echo "=== Next Steps ==="
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "                        🎉 Setup Complete!"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "To finish setup:"
-    echo "1. Restart your terminal or run: source ${BASHRC_FILE}"
-    echo "2. Ensure LM Studio is running on http://127.0.0.1:1234/v1"
-    echo "3. Verify installation: opencode --version"
-    echo "4. Test configuration: opencode --help"
+    echo "📋 Next Steps:"
+    echo "  1. Restart terminal or run: source ${BASHRC_FILE}"
+    echo "  2. Start LM Studio: http://127.0.0.1:1234/v1"
+    echo "  3. Verify installation: opencode --version"
     echo ""
-    echo "=== Available Agents ==="
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "                        🚀 Quick Start"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "Primary Agents:"
-    echo "  - build-with-skills (default): Identifies and uses appropriate skills to ensure best practices"
-    echo "    Automatically finds matching skills for: testing, linting, PR creation, JIRA workflows, etc."
-    echo "  - explore: Fast codebase exploration, file search, and code analysis"
+    echo "🤖 Agents (4):"
+    echo "  • build-with-skills (default) - Auto-detects and uses best practices"
+    echo "  • explore - Fast codebase exploration and analysis"
+    echo "  • image-analyzer - Images/screenshots to code, OCR, error diagnosis"
+    echo "  • diagram-creator - Draw.io diagrams (architecture, flowcharts, UML)"
     echo ""
-    echo "Specialized Agents:"
-    echo "  - image-analyzer: Analyze images/screenshots (UI to code, text extraction, error diagnosis)"
-    echo "  - diagram-creator: Create Draw.io diagrams (architectural diagrams, flowcharts, UML)"
+    echo "  Usage: opencode --agent <name> \"prompt\""
+    echo "         opencode \"prompt\" (uses build-with-skills)"
     echo ""
-    echo "Usage: opencode --agent <agent-name> \"<prompt>\""
-    echo "       opencode \"<prompt>\" (uses build-with-skills by default)"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "                     📦 27 Skills Available"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "=== MCP Servers ==="
+    echo "  Framework (5) • Language-Specific (3) • Framework-Specific (4)"
+    echo "  OpenCode Meta (3) • OpenTofu (6) • Git/Workflow (3)"
+    echo "  Documentation (2) • JIRA (1)"
     echo ""
-    echo "Local Servers (auto-start with npx):"
-    echo "  - atlassian: JIRA and Confluence integration"
-    echo "  - zai-mcp-server: Image analysis and video processing"
+    echo "  Run 'opencode --list-skills' for detailed descriptions"
+    echo "  Run 'opencode --skill <name> \"prompt\"' to use a skill"
     echo ""
-    echo "Remote Servers (require API key):"
-    echo "  - web-reader: Read web pages (needs ZAI_API_KEY)"
-    echo "  - web-search-prime: Web search (needs ZAI_API_KEY)"
-    echo "  - zread: GitHub repo search and file reading (needs ZAI_API_KEY)"
-    echo "  - drawio: Draw.io MCP server (needs local instance on port 41033)"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "                     🔌 MCP Servers (6)"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "MCP Authentication:"
-    echo "  - Atlassian: opencode mcp auth atlassian"
-    echo "  - GitHub: opencode mcp auth github (or configure GITHUB_PAT in config.json)"
+    echo "  Local (auto-start): atlassian, zai-mcp-server"
+    echo "  Remote (needs key): web-reader, web-search-prime, zread, drawio"
     echo ""
-    echo "=== Skills ==="
+    echo "  Auth: opencode mcp auth atlassian / opencode mcp auth github"
     echo ""
-    echo "Framework Skills (reusable workflows):"
-    echo "  - test-generator-framework: Generate tests for any language/framework"
-    echo "  - jira-git-integration: JIRA ticket and Git operations"
-    echo "  - pr-creation-workflow: Generic PR creation with quality checks"
-    echo "  - ticket-branch-workflow: Ticket-to-branch-to-PLAN workflow"
-    echo "  - linting-workflow: Multi-language linting with auto-fix"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "                     📚 Documentation"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "Specialized Skills:"
-    echo "  - ascii-diagram-creator: Create ASCII diagrams from workflows"
-    echo "  - git-issue-creator: GitHub issue creation with tag detection"
-    echo "  - git-pr-creator: Create pull requests with issue linking"
-    echo "  - jira-git-workflow: JIRA ticket creation and branching"
-    echo "  - nextjs-pr-workflow: Next.js PR workflow with JIRA integration"
-    echo "  - nextjs-unit-test-creator: Generate unit/E2E tests for Next.js"
-    echo "  - opencode-agent-creation: Generate OpenCode agents"
-    echo "  - opencode-skill-creation: Generate OpenCode skills"
-    echo "  - python-pytest-creator: Generate pytest tests for Python"
-    echo "  - python-ruff-linter: Python linting with Ruff"
-    echo "  - typescript-dry-principle: Apply DRY principle to TypeScript"
+    echo "  • Update CLI: ./setup.sh --update"
+    echo "  • Config file: ${CONFIG_FILE}"
+    echo "  • Log file: ${LOG_FILE}"
+    echo "  • Backup dir: ${BACKUP_DIR}"
+    echo "  • Full docs: https://opencode.ai"
     echo ""
-    echo "Usage: opencode --skill <skill-name> \"<prompt>\""
-    echo ""
-    echo "Update OpenCode CLI:"
-    echo "  - Run: ./setup.sh --update"
-    echo "  - Or: opencode --help (if update command is available)"
-    echo ""
-    echo "GitHub Authentication:"
-    echo "  - If you set a GITHUB_PAT, update config.json to use it (see README.md)"
-    echo "  - Or use OAuth: opencode mcp auth github"
-    echo ""
-    echo "Configuration file: ${CONFIG_FILE}"
-    echo "Log file: ${LOG_FILE}"
-    echo "Backup directory: ${BACKUP_DIR}"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
 }
 
@@ -1242,15 +1209,18 @@ main() {
 
     # Main menu (if not quick setup or skills-only)
     if [ "$QUICK_SETUP" = false ] && [ "$SKILLS_ONLY" = false ] && [ "$AUTO_ACCEPT" = false ]; then
-        echo "Select an option:"
-        echo "1) Copy config.json and skills only (quick setup)"
-        echo "2) Copy skills only (skills-only setup)"
-        echo "3) Run full setup (API keys, Node.js, OpenCode, config)"
-        echo "4) Update OpenCode CLI only"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "                      Setup Mode Selection"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
+        echo "  1) Quick setup (config + skills only)"
+        echo "  2) Skills-only setup"
+        echo "  3) Full setup (API keys, Node.js, OpenCode)"
+        echo "  4) Update OpenCode CLI only"
         echo ""
 
         local setup_option
-        setup_option=$(prompt_user "Enter option" "2")
+        setup_option=$(prompt_user "Select option [default: 2]" "2")
 
         case "$setup_option" in
             1)
