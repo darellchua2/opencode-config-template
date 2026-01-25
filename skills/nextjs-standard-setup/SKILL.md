@@ -16,14 +16,20 @@ I create a standardized Next.js 16 application with:
 2. **shadcn Integration**: Install and configure shadcn@latest with TypeScript
 3. **Tailwind v4 Configuration**: Set up Tailwind CSS v4 with proper configuration
 4. **Folder Structure**: Create standardized src/ directory structure
-5. **Component Architecture**: Set up Tekk-prefixed abstraction layer
-6. **Documentation Standards**: Generate components with proper docstrings
-7. **Best Practices**: Ensure Next.js best practices (next/image, proper imports, etc.)
+5. **Component Architecture**: Set up Tekk-prefixed abstraction layer with **named exports**
+6. **Export Patterns**: Enforce named exports for all custom components with index.ts re-exports
+7. **Documentation Standards**: Generate components with proper JSDoc docstrings
+8. **Best Practices**: Ensure Next.js best practices (next/image, proper imports, etc.)
 
 **Data Flow Architecture**:
 ```
 page.tsx (server) → page-containers (client state) → sections/custom-components (stateless)
 ```
+
+**Export Pattern Philosophy**:
+- All custom components use **named exports** for better tree-shaking
+- Library components (shadcn/ui) maintain their default exports
+- Index.ts files provide clean import paths and enable named imports
 
 ## When to use me
 
@@ -148,6 +154,68 @@ Set up proper Next.js configurations:
 - Organize sections by feature/page
 - Use index files for clean imports
 
+### Export Patterns
+
+**CRITICAL: ALL custom functional components MUST use named exports**
+
+```typescript
+// ✅ CORRECT - Named export for custom component
+export const TekkButton: React.FC<TekkButtonProps> = ({ ... }) => {
+  // component implementation
+}
+
+// ❌ INCORRECT - Default export for custom component
+export default function TekkButton() { ... }
+```
+
+**Index.ts Pattern**:
+Every custom components directory MUST have an `index.ts` file for clean imports:
+
+```typescript
+// /src/custom-components/index.ts
+export { TekkButton } from './TekkButton'
+export { TekkCard } from './TekkCard'
+export { TekkModal } from './TekkModal'
+```
+
+**Library vs Custom Components**:
+
+- **Library Components**: Use default exports as provided by the library (e.g., shadcn/ui)
+  ```typescript
+  // ✅ CORRECT - Default export from library
+  import { Button } from '@/components/ui/button'  // shadcn component
+  ```
+
+- **Custom Wrappers**: Use named exports when extending library components
+  ```typescript
+  // ✅ CORRECT - Named export for custom wrapper
+  import { Button as ShadcnButton } from '@/components/ui/button'
+
+  export const TekkButton: React.FC<TekkButtonProps> = ({ ... }) => {
+    return <ShadcnButton {...props} />
+  }
+  ```
+
+**Import Patterns for Consumers**:
+```typescript
+// ✅ CORRECT - Clean named imports from index
+import { TekkButton, TekkCard } from '@/custom-components'
+
+// ✅ CORRECT - Direct import for tree-shaking
+import { TekkButton } from '@/custom-components/TekkButton'
+
+// ❌ AVOID - Default import from custom component
+import TekkButton from '@/custom-components/TekkButton'
+```
+
+**Benefits of Named Exports**:
+1. **Better Tree Shaking**: Bundlers can eliminate unused exports more effectively
+2. **Clearer Imports**: Named imports make it explicit which components are being used
+3. **Improved IDE Support**: Better auto-completion and refactoring capabilities
+4. **Code Consistency**: Standardizes the codebase pattern across all components
+5. **Easier Testing**: Named exports are easier to mock and test in isolation
+6. **Better Documentation**: Explicit exports make component APIs clearer
+
 ### Documentation
 - Every component must have JSDoc docstring
 - Include parameter types and descriptions
@@ -192,17 +260,18 @@ Set up proper Next.js configurations:
 
 ### TekkButton Example
 ```typescript
-import { Button as ShadcnButton } from "@/components/ui/button"
+import React from 'react'
+import { Button as ShadcnButton, ButtonProps } from "@/components/ui/button"
 
 /**
  * Extended button component with Tekk styling and behavior
- * 
+ *
  * @param variant - Button style variant (default, destructive, outline, etc.)
  * @param size - Button size (default, sm, lg, icon)
  * @param children - Button content
  * @param className - Additional CSS classes
  * @returns Enhanced button component
- * 
+ *
  * @example
  * ```tsx
  * <TekkButton variant="default" size="lg">
@@ -210,17 +279,17 @@ import { Button as ShadcnButton } from "@/components/ui/button"
  * </TekkButton>
  * ```
  */
-export const TekkButton = ({
+export const TekkButton: React.FC<ButtonProps> = ({
   variant = "default",
   size = "default",
   children,
   className,
   ...props
-}: ButtonProps) => {
+}) => {
   return (
-    <ShadcnButton 
-      variant={variant} 
-      size={size} 
+    <ShadcnButton
+      variant={variant}
+      size={size}
       className={`font-semibold ${className}`}
       {...props}
     >
@@ -233,13 +302,14 @@ export const TekkButton = ({
 ### TekkHomePageContainer Example
 ```typescript
 "use client"
+import React, { useState } from 'react'
 
 /**
  * Client-side container for home page with state management
- * 
+ *
  * @param children - Page content components
  * @returns Client-side home page wrapper with state
- * 
+ *
  * @example
  * ```tsx
  * <TekkHomePageContainer>
@@ -248,7 +318,7 @@ export const TekkButton = ({
  * </TekkHomePageContainer>
  * ```
  */
-export const TekkHomePageContainer = ({ children }: { children: React.ReactNode }) => {
+export const TekkHomePageContainer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false)
 
   return (
@@ -258,6 +328,65 @@ export const TekkHomePageContainer = ({ children }: { children: React.ReactNode 
       ) : (
         children
       )}
+    </div>
+  )
+}
+```
+
+### Index.ts Example (Custom Components)
+```typescript
+// /src/custom-components/index.ts
+
+/**
+ * Central export file for all Tekk-prefixed custom components
+ * Provides clean import paths and enables tree-shaking
+ *
+ * @example
+ * ```typescript
+ * import { TekkButton, TekkCard } from '@/custom-components'
+ * ```
+ */
+
+// Core UI Components
+export { TekkButton } from './TekkButton'
+export { TekkCard } from './TekkCard'
+export { TekkInput } from './TekkInput'
+export { TekkModal } from './TekkModal'
+
+// Section Components
+export { TekkHeroSection } from './sections/TekkHeroSection'
+export { TekkFeaturesSection } from './sections/TekkFeaturesSection'
+export { TekkContactSection } from './sections/TekkContactSection'
+
+// Page Containers
+export { TekkHomePageContainer } from '../page-containers/TekkHomePageContainer'
+export { TekkDashboardPageContainer } from '../page-containers/TekkDashboardPageContainer'
+```
+
+### Consumer Usage Example
+```typescript
+// ✅ CORRECT - Named import from index
+import { TekkButton, TekkCard } from '@/custom-components'
+
+// ✅ CORRECT - Named import for tree-shaking specific components
+import { TekkButton } from '@/custom-components/TekkButton'
+
+// ✅ CORRECT - Library component import (default export from library)
+import { Button } from '@/components/ui/button'
+
+// ❌ AVOID - Default import from custom component
+import TekkButton from '@/custom-components/TekkButton'
+
+// Usage in component
+export const MyPage: React.FC = () => {
+  return (
+    <div>
+      <TekkButton variant="default" onClick={() => console.log('Clicked')}>
+        Click me
+      </TekkButton>
+      <TekkCard title="Card Title">
+        <p>Card content</p>
+      </TekkCard>
     </div>
   )
 }
@@ -278,7 +407,24 @@ npm run lint
 
 # Run development server
 npm run dev
+
+# Verify named exports are used (manual check)
+grep -r "export const" src/custom-components/ | wc -l
+# Should equal the number of component files
+
+# Check for index.ts files in component directories
+ls -la src/custom-components/index.ts
+ls -la src/custom-components/sections/index.ts
 ```
+
+**Verification Checklist**:
+- [ ] All custom components use `export const ComponentName`
+- [ ] No custom components use `export default`
+- [ ] All component directories have index.ts files
+- [ ] Index.ts files re-export components using named exports
+- [ ] Library imports (shadcn) use their original export pattern
+- [ ] TypeScript compilation passes without errors
+- [ ] Build completes successfully
 
 ## Related Skills
 
