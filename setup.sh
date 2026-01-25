@@ -935,14 +935,14 @@ setup_config() {
 
         echo ""
         echo "✓ Deployed 27 skills:"
-        echo "    Framework (5): test-generator-framework, jira-git-integration, pr-creation-workflow, ticket-branch-workflow, linting-workflow"
-        echo "    Language-Specific (3): python-pytest-creator, python-ruff-linter, javascript-eslint-linter"
-        echo "    Framework-Specific (4): nextjs-pr-workflow, nextjs-unit-test-creator, nextjs-standard-setup, typescript-dry-principle"
-        echo "    OpenCode Meta (3): opencode-agent-creation, opencode-skill-creation, opencode-skill-auditor"
-        echo "    OpenTofu (6): opentofu-aws-explorer, opentofu-keycloak-explorer, opentofu-kubernetes-explorer, opentofu-neon-explorer, opentofu-provider-setup, opentofu-provisioning-workflow"
-        echo "    Git/Workflow (3): ascii-diagram-creator, git-issue-creator, git-pr-creator"
-        echo "    Documentation (2): coverage-readme-workflow, docstring-generator"
-        echo "    JIRA (1): jira-git-workflow"
+        echo "    • Framework (5): test-generator-framework, jira-git-integration, pr-creation-workflow, ticket-branch-workflow, linting-workflow"
+        echo "    • Language-Specific (3): python-pytest-creator, python-ruff-linter, javascript-eslint-linter"
+        echo "    • Framework-Specific (4): nextjs-pr-workflow, nextjs-unit-test-creator, nextjs-standard-setup, typescript-dry-principle"
+        echo "    • OpenCode Meta (3): opencode-agent-creation, opencode-skill-creation, opencode-skill-auditor"
+        echo "    • OpenTofu (6): opentofu-aws-explorer, opentofu-keycloak-explorer, opentofu-kubernetes-explorer, opentofu-neon-explorer, opentofu-provider-setup, opentofu-provisioning-workflow"
+        echo "    • Git/Workflow (3): ascii-diagram-creator, git-issue-creator, git-pr-creator"
+        echo "    • Documentation (2): coverage-readme-workflow, docstring-generator"
+        echo "    • JIRA (1): jira-git-workflow"
         echo ""
         echo "  Run 'opencode --list-skills' for detailed descriptions"
         echo ""
@@ -1030,29 +1030,44 @@ print_summary() {
     # config.json status
     if [ -f "$CONFIG_FILE" ]; then
         echo "✓ config.json: Copied to ${CONFIG_DIR}/"
-        echo "  Model: zai-coding-plan/glm-4.7"
-        echo "  Default agent: build-with-skills"
+        echo "    • Model: zai-coding-plan/glm-4.7"
+        echo "    • Default agent: build-with-skills"
     else
         echo "✗ config.json: Not copied"
     fi
 
     # Agents configured
     if [ -f "$CONFIG_FILE" ]; then
-        echo "✓ Configured 4 agents: build-with-skills (default), explore, image-analyzer, diagram-creator"
+        echo "✓ Configured 4 agents:"
+        echo "    • build-with-skills (default) - Skill-aware coding agent"
+        echo "    • explore - Codebase exploration and analysis"
+        echo "    • image-analyzer - Image/screenshot analysis"
+        echo "    • diagram-creator - Draw.io diagram creation"
     fi
 
     # MCP servers configured
     if [ -f "$CONFIG_FILE" ]; then
-        echo "✓ Configured 6 MCP servers: atlassian, drawio, web-reader, web-search-prime, zai-mcp-server, zread"
+        echo "✓ Configured 6 MCP servers:"
+        echo "    • atlassian - JIRA and Confluence integration (auto-start)"
+        echo "    • drawio - Draw.io diagram server (needs local instance)"
+        echo "    • web-reader - Web page reading (needs ZAI_API_KEY)"
+        echo "    • web-search-prime - Web search (needs ZAI_API_KEY)"
+        echo "    • zai-mcp-server - Image analysis (auto-start)"
+        echo "    • zread - GitHub repo search (needs ZAI_API_KEY)"
     fi
 
     # skills directory status
     if [ -d "$SKILLS_DIR" ] && [ "$(ls -A ${SKILLS_DIR} 2>/dev/null)" ]; then
         local skill_count=$(find ${SKILLS_DIR} -name "SKILL.md" 2>/dev/null | wc -l)
         echo "✓ skills: ${skill_count} skills deployed to ${SKILLS_DIR}/"
-        echo "  Framework (5), Language-Specific (3), Framework-Specific (4)"
-        echo "  OpenCode Meta (3), OpenTofu (6), Git/Workflow (3)"
-        echo "  Documentation (2), JIRA (1)"
+        echo "    • Framework (5): test-generator-framework, jira-git-integration, pr-creation-workflow, ticket-branch-workflow, linting-workflow"
+        echo "    • Language-Specific (3): python-pytest-creator, python-ruff-linter, javascript-eslint-linter"
+        echo "    • Framework-Specific (4): nextjs-pr-workflow, nextjs-unit-test-creator, nextjs-standard-setup, typescript-dry-principle"
+        echo "    • OpenCode Meta (3): opencode-agent-creation, opencode-skill-creation, opencode-skill-auditor"
+        echo "    • OpenTofu (6): opentofu-aws-explorer, opentofu-keycloak-explorer, opentofu-kubernetes-explorer, opentofu-neon-explorer, opentofu-provider-setup, opentofu-provisioning-workflow"
+        echo "    • Git/Workflow (3): ascii-diagram-creator, git-issue-creator, git-pr-creator"
+        echo "    • Documentation (2): coverage-readme-workflow, docstring-generator"
+        echo "    • JIRA (1): jira-git-workflow"
     else
         echo "✗ skills: Not deployed"
     fi
