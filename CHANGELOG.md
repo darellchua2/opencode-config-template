@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/darellchua2/opencode-config-template/compare/v1.4.0...v1.5.0) (2026-01-25)
+
+
+### Features
+
+* enforce named exports for custom components in nextjs-standard-setup skill ([9de4dad](https://github.com/darellchua2/opencode-config-template/commit/9de4dade96ec43290c15241d019dc7f560238746)), closes [#42](https://github.com/darellchua2/opencode-config-template/issues/42)
+
 # [1.4.0](https://github.com/darellchua2/opencode-config-template/compare/v1.3.0...v1.4.0) (2026-01-25)
 
 
