@@ -1,52 +1,209 @@
-# Plan: Align setup.sh display text consistency when using colons
+# Plan: Create Plan-With-Skills Agent
 
 ## Overview
-This task addresses inconsistent display text formatting in setup.sh when colons are used. The goal is to establish a consistent style for all display messages throughout the script.
+Create a new agent called "Plan-With-Skills" that prioritizes using available skills when creating PLAN.md files. This agent will ensure that the planning phase is as skill-aware as the existing Build-With-Skills agent is for the building phase.
+
+**Note**: This is an **agent-only** implementation, consistent with build-with-skills (which is also an agent without a corresponding skill).
 
 ## Ticket Reference
-- Ticket: IBIS-108
-- URL: https://betekk.atlassian.net/browse/IBIS-108
+- **Ticket**: IBIS-109
+- **URL**: https://betekk.atlassian.net/browse/IBIS-109
 
-## Current Issues
-The setup.sh script has inconsistent colon usage across various display messages:
+## Background
+Currently, the default OpenCode planning approach (via the `PLAN.md` setup) doesn't prioritize using skills during planning. The Build-With-Skills agent successfully implements a skill-first approach for execution, but the planning phase lacks this prioritization. This can lead to:
+- Plans that don't leverage existing best practices and workflows
+- Missing opportunities to use specialized skills (test-generator-framework, jira-git-integration, etc.)
+- Inconsistent planning approaches across different tasks
+- Plans that need to be revised when skills are later discovered
 
-**Inconsistent patterns observed:**
-1. **Space before colon**: `nvm: Installed`, `Node.js: $(node --version)`, `Model: zai-coding-plan/glm-4.7`
-2. **Colon at end**: `✓ Configured 4 agents:`, `✓ Configured 6 MCP servers:`, `✓ Deployed 27 skills:`
-3. **No colon**: `=== Installing Node.js v24 ===`, `=== Installing/Updating OpenCode ===`
-4. **Mixed usage**: Some sections use colons consistently while others don't
+## Requirements
+
+### Core Functionality
+1. **Analyze User's Request**: Determine the task type and identify relevant skills
+2. **Find Matching Skills**: Search through available skills:
+   - Framework Skills (test-generator-framework, jira-git-integration, pr-creation-workflow, ticket-branch-workflow, linting-workflow)
+   - Specialized Skills (ascii-diagram-creator, git-issue-creator, git-pr-creator, nextjs-pr-workflow, etc.)
+3. **Prioritize Skills**: Use skills as the primary driver for creating PLAN.md structure
+4. **Generate PLAN.md**: Create a plan that incorporates skill-based workflows
+5. **Document Skill Usage**: Clearly indicate which skills should be used and when
+
+### Key Features
+- **Skill-first planning approach**: Similar to Build-With-Skills, but for planning phase
+- **Skill matching**: Intelligent matching between task requirements and available skills
+- **Skill composition**: Support for combining multiple skills in a single plan
+- **Clear handoff criteria**: Explicit instructions for transitioning to Build-With-Skills
+- **Compatibility**: Works seamlessly with existing skill framework
+
+### Agent Configuration (config.json)
+Add new agent with:
+- **name**: plan-with-skills
+- **mode**: primary
+- **description**: Creates skill-prioritized PLAN.md files by identifying relevant skills and incorporating skill-based workflows
+- **prompt**: Detailed instructions covering:
+  - Skill identification and matching
+  - Plan structure with skill priorities
+  - Handoff to Build-With-Skills
+  - Error handling and fallback strategies
+- **tools**: Read/glob/grep capabilities for exploring skills and codebase
+- **mcp**: No specific MCP servers needed (uses existing skill framework)
 
 ## Files to Modify
-1. `setup.sh` - Review and update all display text with colons throughout the file
+
+### 1. config.json
+- Add `plan-with-skills` agent definition
+- Include comprehensive prompt with skill identification logic
+- Set appropriate tool permissions (read-only for planning)
+
+### 2. AGENTS.md (Optional)
+- Update agent guidelines if needed to include Plan-With-Skills workflow
+- Document when to use Plan-With-Skills vs default planning
 
 ## Approach
 
-### Step 1: Define Standard
-Before making changes, establish standard pattern to use:
-- **Recommendation**: Use space before colon for key-value pairs (e.g., `nvm: Installed`)
-- Use colon at end only for category headers (e.g., `✓ Configured 4 agents:`)
-- Keep section headers without colons (e.g., `=== Installing Node.js v24 ===`)
+### Phase 1: Agent Configuration (config.json)
+1. Define agent structure with skill-prioritization logic
+2. Create comprehensive prompt that:
+   - Lists all available skills with categories
+   - Provides skill selection criteria
+   - Outlines PLAN.md template with skill sections
+   - Includes examples of skill-based plans
+3. Set tool permissions (read-only for planning phase)
 
-### Step 2: Identify All Affected Lines
-Search for all lines in setup.sh that contain colons in display text:
-- Lines 54, 890, 896, 937, 1000, 1021-1022, 1025-1026, 1033-1034, 1039-1041, 1043-1045, 1050-1055, 1062, 1072, etc.
-- Any `echo` statements with colons
-- Any `log_*` calls with colons in the message
+### Phase 2: Integration Testing
+1. Test with various task types (test generation, PR creation, JIRA workflows)
+2. Verify skill matching accuracy
+3. Ensure smooth handoff to Build-With-Skills
+4. Validate PLAN.md quality and completeness
 
-### Step 3: Apply Consistent Formatting
-Update each affected line to follow the established standard:
-- Key-value pairs: `key: value` format
-- Category headers: `✓ Category: ` (with trailing space for following content)
-- Section headers: No colons (keep `=== Title ===` format)
+## PLAN.md Template Structure
 
-### Step 4: Validate Changes
-- Run `bash -n setup.sh` to validate shell syntax
-- Test the script with `./setup.sh --dry-run` to verify output
-- Ensure no logic or functionality changes
+The Plan-With-Skills agent should generate PLAN.md with:
+
+```markdown
+# Plan: [Task Title]
+
+## Overview
+[Brief description of task]
+
+## Ticket Reference
+[Ticket info if applicable]
+
+## Skills to Use
+### Primary Skill
+- **Skill Name**: [skill-name]
+- **Rationale**: [Why this skill is primary]
+
+### Supporting Skills
+- **Skill Name**: [skill-name] - [How it supports the plan]
+
+## Files to Modify
+[List files with descriptions]
+
+## Approach (Based on Skills)
+### Step 1: [Skill-based step]
+[How to use specific skill]
+
+### Step 2: [Skill-based step]
+[How to use specific skill]
+
+## Handoff to Build-With-Skills
+[Clear criteria for when to transition to building]
 
 ## Success Criteria
-- [ ] All display text with colons follows a consistent pattern
-- [ ] No changes to logic or functionality
-- [ ] Script passes shell validation: `bash -n setup.sh`
-- [ ] Output remains clear and readable
-- [ ] Changes tested with dry-run mode
+[Specific, measurable criteria]
+```
+
+## Handoff Criteria to Build-With-Skills
+
+The Plan-With-Skills agent should clearly indicate when to transition:
+
+1. **Immediate Handoff**: After PLAN.md is created, invoke Build-With-Skills with the plan
+2. **Skill Execution**: Build-With-Skills uses the skills identified in the plan
+3. **Plan Adherence**: Build phase follows the skill-prioritized structure from planning
+
+## Success Criteria
+
+- [ ] Plan-With-Skills agent is added to config.json
+- [ ] Agent can identify relevant skills for various task types
+- [ ] Generated PLAN.md prioritizes skill usage with clear skill sections
+- [ ] Integration with Build-With-Skills workflow is seamless
+- [ ] Agent is testable with `opencode --agent plan-with-skills`
+- [ ] Plans created are actionable and follow skill best practices
+
+## Related Work
+
+### Agents
+- **Build-With-Skills**: Skill-first execution for coding/building phase (reference implementation)
+- **Explore**: Codebase exploration agent (for understanding existing structure)
+
+### Skills
+- **ticket-branch-workflow**: Core workflow (branch → PLAN → commit)
+- **test-generator-framework**: Test generation for multiple languages
+- **jira-git-integration**: JIRA operations
+- **pr-creation-workflow**: Pull request creation
+- **opencode-skill-creation**: For creating this skill itself
+
+### Frameworks
+- OpenCode config schema: https://opencode.ai/config.json
+- Skill documentation format: SKILL.md frontmatter requirements
+
+## Implementation Notes
+
+### Skill Identification Logic
+The agent should:
+1. Analyze task keywords (test, PR, JIRA, linting, etc.)
+2. Match keywords to skill descriptions and workflows
+3. Prioritize framework skills over specialized skills (or vice versa based on context)
+4. Consider skill compatibility and composition
+
+### Error Handling
+- If no skills match: Fall back to default planning approach
+- If multiple skills match: List all with priorities and rationale
+- If skill fails during planning: Provide alternative skill options
+
+### Compatibility
+- Must work with existing Build-With-Skills agent
+- Should not duplicate functionality of existing skills
+- Should enhance, not replace, the planning workflow
+
+## Timeline Estimate
+- Phase 1 (config.json): 30 minutes
+- Phase 2 (Testing): 30 minutes
+- **Total**: ~1 hour
+
+## Implementation Status
+
+### ✅ Completed (Jan 25, 2026)
+
+**Phase 1: Agent Configuration (config.json)**
+- ✅ Added `plan-with-skills` agent definition
+- ✅ Created comprehensive prompt with skill identification logic
+- ✅ Set read-only tool permissions (read, glob, grep)
+- ✅ Configured without MCP servers (uses existing skill framework)
+
+**Phase 2: Skill Documentation (SKILL.md)**
+- ✅ Created `skills/plan-with-skills/SKILL.md`
+- ✅ Followed SKILL.md frontmatter format
+- ✅ Documented skill identification workflow
+- ✅ Provided examples of skill-prioritized plans
+- ✅ Included troubleshooting guide
+- ✅ Linked to related skills
+
+**Phase 3: Integration Testing**
+- ✅ Validated config.json syntax with `jq . config.json`
+- ✅ Verified agent is listed in config
+- ✅ Confirmed SKILL.md follows format
+- ✅ Committed changes to branch IBIS-109
+- ✅ Pushed to remote repository
+
+**Files Modified**:
+1. `config.json` - Added plan-with-skills agent
+2. `skills/plan-with-skills/SKILL.md` - Created comprehensive skill documentation
+
+**Git Commits**:
+- `8475da5` - Implement Plan-With-Skills agent and skill
+
+**Next Steps**:
+- Test agent invocation: `opencode --agent plan-with-skills "Create a plan for [task]"`
+- Update JIRA ticket with PR link when ready
+- Consider adding to default_agent if desired

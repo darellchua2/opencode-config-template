@@ -1,0 +1,171 @@
+{
+  "skills": [
+    {
+      "name": "ascii-diagram-creator",
+      "description": "Create ASCII diagrams from workflow definitions and save them as image files (PNG, SVG, etc.)",
+      "path": "ascii-diagram-creator",
+      "category": "specialized"
+    },
+    {
+      "name": "coverage-readme-workflow",
+      "description": "Ensure test coverage percentage is displayed in README.md for Next.js and Python projects following industry standards",
+      "path": "coverage-readme-workflow",
+      "category": "framework"
+    },
+    {
+      "name": "docstring-generator",
+      "description": "Generate language-specific docstrings for C#, Java, Python, and TypeScript following industry standards (PEP 257, Javadoc, JSDoc, XML documentation)",
+      "path": "docstring-generator",
+      "category": "specialized"
+    },
+    {
+      "name": "git-issue-creator",
+      "description": "GitHub issue creation with intelligent tag detection, extending ticket-branch-workflow",
+      "path": "git-issue-creator",
+      "category": "specialized"
+    },
+    {
+      "name": "git-pr-creator",
+      "description": "Create Git pull requests and optionally update JIRA tickets with comments and image attachments",
+      "path": "git-pr-creator",
+      "category": "specialized"
+    },
+    {
+      "name": "javascript-eslint-linter",
+      "description": "Ensure JavaScript/TypeScript code follows industry standards using ESLint linter with linting-workflow framework",
+      "path": "javascript-eslint-linter",
+      "category": "specialized"
+    },
+    {
+      "name": "jira-git-integration",
+      "description": "Generic JIRA + Git workflow utilities for ticket management, branch creation, and integration",
+      "path": "jira-git-integration",
+      "category": "specialized"
+    },
+    {
+      "name": "jira-git-workflow",
+      "description": "JIRA ticket creation and branching, extending ticket-branch-workflow and jira-git-integration",
+      "path": "jira-git-workflow",
+      "category": "framework"
+    },
+    {
+      "name": "linting-workflow",
+      "description": "Generic linting workflow for multiple languages with auto-fix and error resolution guidance",
+      "path": "linting-workflow",
+      "category": "framework"
+    },
+    {
+      "name": "nextjs-pr-workflow",
+      "description": "Complete Next.js PR workflow using pr-creation-workflow, jira-git-integration, and linting-workflow frameworks",
+      "path": "nextjs-pr-workflow",
+      "category": "framework"
+    },
+    {
+      "name": "nextjs-standard-setup",
+      "description": "Create standardized Next.js 16 demo applications with shadcn, Tailwind v4, and specific folder structure using Tekk-prefixed components and proper documentation standards",
+      "path": "nextjs-standard-setup",
+      "category": "specialized"
+    },
+    {
+      "name": "nextjs-unit-test-creator",
+      "description": "Generate comprehensive unit tests for Next.js 16 applications covering App Router, Server Components, Client Components, API routes, and Server Actions with industry best practices",
+      "path": "nextjs-unit-test-creator",
+      "category": "specialized"
+    },
+    {
+      "name": "opencode-agent-creation",
+      "description": "Generate OpenCode agents following official documentation best practices",
+      "path": "opencode-agent-creation",
+      "category": "specialized"
+    },
+    {
+      "name": "opencode-skill-auditor",
+      "description": "Audit existing OpenCode skills to identify modularization opportunities and eliminate redundancy",
+      "path": "opencode-skill-auditor",
+      "category": "specialized"
+    },
+    {
+      "name": "opencode-skill-creation",
+      "description": "Generate OpenCode skills following official documentation best practices",
+      "path": "opencode-skill-creation",
+      "category": "specialized"
+    },
+    {
+      "name": "opentofu-aws-explorer",
+      "description": "Explore and manage AWS cloud infrastructure resources using OpenTofu/Terraform",
+      "path": "opentofu-aws-explorer",
+      "category": "specialized"
+    },
+    {
+      "name": "opentofu-keycloak-explorer",
+      "description": "Explore and manage Keycloak identity and access management resources using OpenTofu/Terraform",
+      "path": "opentofu-keycloak-explorer",
+      "category": "specialized"
+    },
+    {
+      "name": "opentofu-kubernetes-explorer",
+      "description": "Explore and manage Kubernetes clusters and resources using OpenTofu/Terraform",
+      "path": "opentofu-kubernetes-explorer",
+      "category": "specialized"
+    },
+    {
+      "name": "opentofu-neon-explorer",
+      "description": "Explore and manage Neon Postgres serverless database resources using OpenTofu/Terraform",
+      "path": "opentofu-neon-explorer",
+      "category": "specialized"
+    },
+    {
+      "name": "opentofu-provider-setup",
+      "description": "Configure OpenTofu with cloud providers, manage authentication, and setup state backends",
+      "path": "opentofu-provider-setup",
+      "category": "specialized"
+    },
+    {
+      "name": "opentofu-provisioning-workflow",
+      "description": "Infrastructure as Code development patterns, resource lifecycle management, and state management workflows with OpenTofu",
+      "path": "opentofu-provisioning-workflow",
+      "category": "framework"
+    },
+    {
+      "name": "pr-creation-workflow",
+      "description": "Generic pull request creation workflow with configurable quality checks and multi-platform integration",
+      "path": "pr-creation-workflow",
+      "category": "framework"
+    },
+    {
+      "name": "python-pytest-creator",
+      "description": "Generate comprehensive pytest test files for Python using the test-generator-framework",
+      "path": "python-pytest-creator",
+      "category": "specialized"
+    },
+    {
+      "name": "python-ruff-linter",
+      "description": "Ensure Python code follows industry standards using Ruff linter with linting-workflow framework",
+      "path": "python-ruff-linter",
+      "category": "specialized"
+    },
+    {
+      "name": "test-generator-framework",
+      "description": "Generic test generation framework supporting multiple languages and testing frameworks",
+      "path": "test-generator-framework",
+      "category": "framework"
+    },
+    {
+      "name": "ticket-branch-workflow",
+      "description": "Generic ticket-to-branch-to-PLAN workflow supporting multiple platforms (GitHub, JIRA)",
+      "path": "ticket-branch-workflow",
+      "category": "framework"
+    },
+    {
+      "name": "typescript-dry-principle",
+      "description": "Apply DRY principle to eliminate code duplication in TypeScript projects with comprehensive refactoring patterns",
+      "path": "typescript-dry-principle",
+      "category": "specialized"
+    }
+  ],
+  "metadata": {
+    "version": "1.0",
+    "generated": "2026-01-25T02:50:16.431920Z",
+    "total_skills": 27
+  }
+}
