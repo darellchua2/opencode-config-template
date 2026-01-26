@@ -1,3 +1,10 @@
+# [1.10.0](https://github.com/darellchua2/opencode-config-template/compare/v1.9.0...v1.10.0) (2026-01-26)
+
+
+### Features
+
+* **jira:** add jira-status-updater skill for automated ticket transitions after PR merge ([9888cf3](https://github.com/darellchua2/opencode-config-template/commit/9888cf39b3544e0f7647c41e5bc850496a530c51)), closes [#52](https://github.com/darellchua2/opencode-config-template/issues/52)
+
 # [1.9.0](https://github.com/darellchua2/opencode-config-template/compare/v1.8.0...v1.9.0) (2026-01-26)
 
 
