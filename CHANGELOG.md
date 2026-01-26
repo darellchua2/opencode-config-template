@@ -1,3 +1,11 @@
+# [1.9.0](https://github.com/darellchua2/opencode-config-template/compare/v1.8.0...v1.9.0) (2026-01-26)
+
+
+### Features
+
+* add permissions and auto-discovery for Build-With-Skills and Plan-With-Skills agents ([#51](https://github.com/darellchua2/opencode-config-template/issues/51)) ([b4918d1](https://github.com/darellchua2/opencode-config-template/commit/b4918d162e083e9bf06a78b9b42b5dcd9912d09c)), closes [#50](https://github.com/darellchua2/opencode-config-template/issues/50)
+* **agents:** add permissions and auto-discovery for Build-With-Skills and Plan-With-Skills agents ([a1139ed](https://github.com/darellchua2/opencode-config-template/commit/a1139ed511a06a378269e6633dfb380fa0c38878)), closes [#50](https://github.com/darellchua2/opencode-config-template/issues/50)
+
 # [1.8.0](https://github.com/darellchua2/opencode-config-template/compare/v1.7.1...v1.8.0) (2026-01-26)
 
 
