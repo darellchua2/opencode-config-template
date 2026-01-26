@@ -1261,6 +1261,9 @@ main() {
             exit 1
         fi
 
+    # Generate and inject skills section before config copy
+    generate_and_inject_skills
+
         setup_config || true
         print_summary
         echo ""
@@ -1315,6 +1318,8 @@ main() {
                 else
                     log_error "OpenCode CLI is not installed globally"
                     log_info "Please install OpenCode first: npm install -g opencode-ai"
+    generate_and_inject_skills
+
                     exit 1
                 fi
                 
@@ -1351,6 +1356,8 @@ main() {
         setup_opencode || true
     else
         if [ "$QUICK_SETUP" = true ]; then
+    generate_and_inject_skills
+
             log_info "Running quick setup: config.json and skills deployment only"
         fi
     fi
@@ -1375,3 +1382,97 @@ main() {
 
 # Run main function with all arguments
 main "$@"
+
+################################################################################
+# DYNAMIC SKILLS GENERATION
+################################################################################
+
+# Generate skills section from skills folder
+generate_and_inject_skills() {
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "                  📋 Generating Skills Section"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    
+    local config_file="${SCRIPT_DIR}/config.json"
+    local temp_config="${SCRIPT_DIR}/config.json.tmp"
+    
+    # Check if Python script exists
+    local gen_script="${SCRIPT_DIR}/scripts/generate-skills.py"
+    if [ ! -f "$gen_script" ]; then
+        log_warn "Skills generator script not found: ${gen_script}"
+        log_info "Skipping skills section generation"
+        return 0
+    fi
+    
+    # Generate skills markdown
+    log_info "Generating skills section from skills/ folder..."
+    local skills_md=$("$gen_script" 2>&1)
+    
+    if [ $? -ne 0 ]; then
+        log_warn "Skills generation failed"
+        return 1
+    fi
+    
+    # Read config.json
+    if ! command_exists python3; then
+        log_error "Python 3 is required for skills generation"
+        return 1
+    fi
+    
+    # Inject skills section into config.json
+    log_info "Injecting skills section into config.json..."
+    
+    # Use Python to replace placeholder with skills
+    python3 << EOF
+import json
+import sys
+
+# Read config
+try:
+    with open('${config_file}', 'r') as f:
+        config = json.load(f)
+except:
+    print(f"Error: Cannot read {config_file}", file=sys.stderr)
+    sys.exit(1)
+
+# Skills markdown (passed as argument)
+skills_md = """${skills_md}"""
+
+# Update both agents
+for agent in ['build-with-skills', 'plan-with-skills']:
+    if agent in config.get('agent', {}):
+        old_prompt = config['agent'][agent]['prompt']
+        placeholder = '{{SKILLS_SECTION_PLACEHOLDER}}'
+        
+        if placeholder in old_prompt:
+            new_prompt = old_prompt.replace(placeholder, skills_md)
+            config['agent'][agent]['prompt'] = new_prompt
+            print(f"Updated {agent}")
+
+# Write back
+try:
+    with open('${temp_config}', 'w') as f:
+        json.dump(config, f, indent=2)
+    print("Temporary config written")
+except Exception as e:
+    print(f"Error: {e}", file=sys.stderr)
+    sys.exit(1)
+EOF
+    
+    if [ $? -eq 0 ] && [ -f "$temp_config" ]; then
+        # Replace original with temp
+        run_cmd "mv ${temp_config} ${config_file}"
+        log_success "Skills section generated and injected"
+        
+        # Show summary
+        echo ""
+        local skill_count=$(echo "$skills_md" | grep -c "^- \*\*")
+        echo "✓ Generated skills section with ${skill_count} skills"
+        echo "✓ Skills will be auto-discovered at runtime"
+    else
+        log_warn "Skills injection failed, using original config"
+    fi
+}
+
