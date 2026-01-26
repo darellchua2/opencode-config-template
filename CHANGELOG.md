@@ -1,3 +1,10 @@
+## [1.7.1](https://github.com/darellchua2/opencode-config-template/compare/v1.7.0...v1.7.1) (2026-01-26)
+
+
+### Bug Fixes
+
+* cleanup ([565aed3](https://github.com/darellchua2/opencode-config-template/commit/565aed33f703efd18b0dd94b07a49c8c1f3a0e6f))
+
 # [1.7.0](https://github.com/darellchua2/opencode-config-template/compare/v1.6.0...v1.7.0) (2026-01-25)
 
 
