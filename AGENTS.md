@@ -1,6 +1,6 @@
 # Agent Guidelines for OpenCode Agentic Development Framework
 
-This repository is an **agentic configuration framework** for building and orchestrating coding agents locally. The `config.json` file defines agents, capabilities, and MCP servers. The `skills/` folder contains reusable workflow definitions.
+This repository is an **agentic configuration template** for building and orchestrating coding agents locally. The `config.json` file defines agents, capabilities, and MCP servers. The `skills/` folder contains reusable workflow definitions that are **auto-discovered at setup time**.
 
 ## Build/Lint/Test Commands
 
@@ -17,18 +17,14 @@ bash -n setup.sh
 # Test setup script in dry-run mode
 bash setup.sh --dry-run
 
+# Regenerate skills section and deploy
+./setup.sh --skills-only
+
 # Test agent invocation
-opencode --agent diagram-creator "test prompt"
-```
+opencode --agent build-with-skills "test prompt"
 
-**Agent Skill Maintenance:**
-```bash
-# Update agents with new skills
-opencode --agent build-with-skills "Use opencode-skills-maintainer skill"
-
-# Verify agents have current skills
-jq '.agent["build-with-skills"].prompt' config.json | grep "Available Skills"
-jq '.agent["plan-with-skills"].prompt' config.json | grep "Available Skills"
+# List available skills
+opencode --list-skills
 ```
 
 ## Code Style Guidelines
@@ -52,6 +48,7 @@ jq '.agent["plan-with-skills"].prompt' config.json | grep "Available Skills"
 - `prompt`: Detailed instructions covering delegation, output format, error handling
 - `tools`: Boolean flags for read/write/edit/glob/grep
 - `mcp`: Object with MCP server names and `enabled: true` status
+- `permission.skill`: Object with `"*": "allow"` to grant all skills
 
 ### Shell Scripts (setup.sh)
 
@@ -65,7 +62,7 @@ jq '.agent["plan-with-skills"].prompt' config.json | grep "Available Skills"
 
 ### Skills (skills/*/SKILL.md)
 
-**Skill Discovery Mechanism:** Build-With-Skills and Plan-With-Skills use **hardcoded skill lists** embedded in system prompts. Use `opencode-skills-maintainer` skill to update agents when skills change.
+**Auto-Discovery Mechanism:** Skills are automatically discovered from `skills/` folder at setup time by `scripts/generate-skills.py`. The generated markdown is injected into agent prompts via `{{SKILLS_SECTION_PLACEHOLDER}}`. Adding/removing skills requires running `./setup.sh --skills-only`.
 
 **Frontmatter Format:**
 ```yaml
@@ -82,9 +79,9 @@ metadata:
 
 **Content Structure:** "What I do", "When to use me", "Prerequisites", "Steps", "Best Practices", "Common Issues", use triple backticks with bash language specifier for code blocks
 
-### Documentation (README.md)
+### Documentation (README.md, AGENTS.md, etc.)
 
-**Sections:** Brief description (1-2 sentences), Prerequisites with installation commands, Setup instructions (automated + manual), Configuration overview, Usage examples, Troubleshooting
+**Sections:** Brief description (1-2 sentences), Prerequisites with installation commands, Setup instructions, Configuration overview, Usage examples, Troubleshooting
 
 **Code Examples:** Always include bash language specifier, show verification commands, include output examples
 
@@ -116,25 +113,23 @@ metadata:
 
 **Shell Script Errors:** Check command existence before execution, use conditional execution with `|| true`, implement custom error handler with trap
 
-**Missing Dependencies:** Check for required tools (nvm, node, npm, jq, curl), provide installation guidance
+**Missing Dependencies:** Check for required tools (nvm, node, npm, jq, curl, python3), provide installation guidance
 
-**Agent Skill Discovery Issues:** Verify skill is in `skills/` folder and run `opencode-skills-maintainer`, check skill name matches frontmatter exactly
+**Agent Skill Discovery Issues:** Verify skill is in `skills/` folder and run `./setup.sh --skills-only`, check skill name matches frontmatter exactly
 
 ## Making Changes
 
-**config.json:** Update MCP server URLs, model names, or agent prompts, validate JSON, test with `opencode --agent <name>`
+**config.json:** Update MCP server URLs, model names, or agent prompts, validate JSON, test with `opencode --agent <name>`. Use `{{SKILLS_SECTION_PLACEHOLDER}}` for auto-discovered skills.
 
-**setup.sh:** Modify installation logic, validate shell syntax, test in dry-run mode first
+**setup.sh:** Modify installation logic, validate shell syntax with `bash -n setup.sh`, test in dry-run mode first
 
-**README.md:** Keep in sync with config.json, update MCP server documentation, add new agent descriptions
-
-**Skills:** Follow SKILL.md format, update metadata for compatibility, test skill invocation
+**Skills:** Follow SKILL.md format, update metadata for compatibility, run `./setup.sh --skills-only` to regenerate agent prompts
 
 ## Security
 
 - Never commit actual API keys or secrets
 - Use environment variables for all sensitive data
-- Mask values in logs and output
+- Mask values in logs and output (show only first 8 and last 4 chars)
 - Validate user input before execution
 - Use HTTPS for all remote connections
 
@@ -144,18 +139,18 @@ metadata:
 2. Check shell syntax: `bash -n setup.sh`
 3. Dry-run setup: `bash setup.sh --dry-run`
 4. Verify schema compliance with https://opencode.ai/config.json
-5. Test deployment to `~/.config/opencode/`
+5. Regenerate skills: `./setup.sh --skills-only`
 6. Test agent invocation: `opencode --agent <name> "test prompt"`
-7. Run `opencode-skills-maintainer` after skill changes
+7. Verify skills are available: `opencode --list-skills`
 
 ## Important Notes
 
-- This is a **template repository** - deployed to user config directory
+- This is a **template repository** - deployed to user config directory `~/.config/opencode/`
 - No package.json, build system, or test framework exists
 - Changes must preserve backward compatibility
 - Always use environment variables for sensitive configuration
 - Document breaking changes in README.md
 - Skills folder is copied recursively during setup
-- OpenCode config directory: `~/.config/opencode/`
-- **Hardcoded Skill Lists**: Build-With-Skills and Plan-With-Skills use embedded skill lists for zero-latency discovery
-- **Skill Maintenance**: Use `opencode-skills-maintainer` to keep agents synchronized with available skills
+- **Auto-Discovery**: Skills are generated at setup time by `scripts/generate-skills.py` and injected via `{{SKILLS_SECTION_PLACEHOLDER}}`
+- **Skills Maintenance**: Adding/removing skills requires running `./setup.sh --skills-only` to update agent prompts
+- Agent prompts contain skills section auto-generated from actual skills folder content
