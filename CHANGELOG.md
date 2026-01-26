@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/darellchua2/opencode-config-template/compare/v1.7.1...v1.8.0) (2026-01-26)
+
+
+### Features
+
+* **skills:** add opentofu-ecr-provision skill to template ([0bead43](https://github.com/darellchua2/opencode-config-template/commit/0bead43cf01ea020f1e6d2a26981f93f477372b7))
+
 ## [1.7.1](https://github.com/darellchua2/opencode-config-template/compare/v1.7.0...v1.7.1) (2026-01-26)
 
 
