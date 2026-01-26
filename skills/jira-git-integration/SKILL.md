@@ -440,8 +440,42 @@ fi
 | inaccessible_url | Download and upload as JIRA attachment |
 | local_file | Upload as JIRA attachment |
 | not_found | Warn user and skip |
+ 
+### Step 9: Transition JIRA Ticket Status
+
+**Purpose**: Update JIRA ticket status after PR merge
+
+**Tools Used**: `atlassian_getTransitionsForJiraIssue`, `atlassian_transitionJiraIssue`
+
+**Usage**:
+```bash
+# Get available transitions
+TRANSITIONS=$(atlassian_getTransitionsForJiraIssue \
+  --cloudId <CLOUD_ID> \
+  --issueIdOrKey <TICKET_KEY>)
+
+# Find "Done" or "Closed" transition
+TARGET_TRANSITION_ID=$(echo "$TRANSITIONS" | jq -r '.transitions[] | select(.to.name == "Done" or .to.name == "Closed") | .id' | head -1)
+
+# Execute transition
+atlassian_transitionJiraIssue \
+  --cloudId <CLOUD_ID> \
+  --issueIdOrKey <TICKET_KEY> \
+  --transition '{"id": "<TRANSITION_ID>"}')
+```
+
+**When to Use**:
+- PR has been successfully merged
+- Work is complete and ticket should be closed
+- Automating workflow to eliminate manual status updates
+
+**Integration**:
+- Use with `jira-status-updater` skill for complete automation
+- Use with `pr-creation-workflow` for integrated PR + status updates
+- Use with `git-pr-creator` for optional status updates after manual merge
 
 ## Best Practices
+
 
 - **Cloud ID**: Always retrieve cloud ID once per session
 - **User Info**: Cache user account ID for assignment operations
@@ -563,6 +597,7 @@ Skills that use this JIRA integration framework:
 - `git-pr-creator`: PR creation with JIRA comments and image uploads
 - `jira-git-workflow`: JIRA ticket creation and branch management
 - `nextjs-pr-workflow`: Next.js PR workflow with JIRA integration
+- `jira-status-updater`: Automated JIRA ticket status transitions after PR merge
 
 Additional related skills:
 - `pr-creation-workflow`: Generic PR creation workflow

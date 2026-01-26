@@ -565,6 +565,115 @@ if [ "$MERGE_CONFIRMATION" = "y" ]; then
   # Merge PR
   gh pr merge "$PR_NUMBER" --base "$MERGE_TARGET"
   echo "✅ PR merged into $MERGE_TARGET"
+
+  # Step 9: Update JIRA Ticket Status (if applicable)
+  if [ "$TRACKING_SYSTEM" = "jira" ] && [ -n "$TRACKING_ID" ]; then
+    read -p "Update JIRA ticket status to Done? (y/n): " UPDATE_JIRA
+
+    if [ "$UPDATE_JIRA" = "y" ]; then
+      echo ""
+      echo "Updating JIRA ticket status..."
+      echo "=========================================="
+
+      # Use jira-status-updater to transition ticket
+      # This skill handles:
+      # - Detecting JIRA ticket from PR/commits
+      # - Querying available transitions
+      # - Finding target status (Done/Closed)
+      # - Executing status transition
+      # - Adding merge comment with details
+
+      # Integration pattern:
+      # 1. Extract commit details
+      COMMIT_HASH=$(git rev-parse HEAD)
+      COMMIT_AUTHOR=$(git log -1 --pretty=%an)
+      COMMIT_DATE=$(git log -1 --date=iso8601 --pretty=%aI)
+
+      # 2. Detect JIRA ticket (already have TRACKING_ID)
+      JIRA_TICKET="$TRACKING_ID"
+
+      # 3. Get cloud ID
+      CLOUD_ID="${ATLASSIAN_CLOUD_ID:-<your-cloud-id>}"
+
+      # 4. Get available transitions
+      TRANSITIONS=$(atlassian_getTransitionsForJiraIssue \
+        --cloudId "$CLOUD_ID" \
+        --issueIdOrKey "$JIRA_TICKET")
+
+      # 5. Find "Done" or "Closed" transition
+      TARGET_TRANSITION_ID=$(echo "$TRANSITIONS" | jq -r '.transitions[] | select(.to.name == "Done" or .to.name == "Closed") | .id' | head -1)
+      TARGET_TRANSITION_NAME=$(echo "$TRANSITIONS" | jq -r '.transitions[] | select(.to.name == "Done" or .to.name == "Closed") | .to.name' | head -1)
+
+      # 6. Get current status
+      TICKET_DETAILS=$(atlassian_getJiraIssue \
+        --cloudId "$CLOUD_ID" \
+        --issueIdOrKey "$JIRA_TICKET")
+      CURRENT_STATUS=$(echo "$TICKET_DETAILS" | jq -r '.fields.status.name')
+
+      # 7. Check if already in target status
+      if [ "$CURRENT_STATUS" = "$TARGET_TRANSITION_NAME" ]; then
+        echo "✅ Ticket already in target status: $TARGET_TRANSITION_NAME"
+      else
+        # 8. Execute transition
+        if [ -n "$TARGET_TRANSITION_ID" ]; then
+          TRANSITION_RESULT=$(atlassian_transitionJiraIssue \
+            --cloudId "$CLOUD_ID" \
+            --issueIdOrKey "$JIRA_TICKET" \
+            --transition "{\"id\": \"$TARGET_TRANSITION_ID\"}")
+
+          if [ $? -eq 0 ]; then
+            echo "✅ Successfully transitioned $JIRA_TICKET from $CURRENT_STATUS to $TARGET_TRANSITION_NAME"
+          else
+            echo "❌ Failed to transition $JIRA_TICKET"
+            echo "   Transition ID: $TARGET_TRANSITION_ID"
+            echo "   Please check permissions and available transitions"
+          fi
+        else
+          echo "⚠️  No 'Done' or 'Closed' transition available for $JIRA_TICKET"
+          echo "   Available transitions:"
+          echo "$TRANSITIONS" | jq -r '.transitions[] | "   - \(.to.name)"'
+        fi
+      fi
+
+      # 9. Add merge comment
+      COMMENT_BODY=$(cat <<EOF
+## Pull Request Merged
+
+**PR**: #$PR_NUMBER - <pr-title>
+**URL**: $PR_URL
+**Branch**: $CURRENT_BRANCH → $MERGE_TARGET
+
+### Status Update
+✅ Ticket transitioned from **$CURRENT_STATUS** to **$TARGET_TRANSITION_NAME**
+
+### Merge Details
+- **Commit**: \`$COMMIT_HASH\`
+- **Author**: $COMMIT_AUTHOR
+- **Date**: $COMMIT_DATE
+
+### Files Changed
+\`\`\`
+$(git diff --stat HEAD~1 HEAD)
+\`\`\`
+EOF
+)
+
+      atlassian_addCommentToJiraIssue \
+        --cloudId "$CLOUD_ID" \
+        --issueIdOrKey "$JIRA_TICKET" \
+        --commentBody "$COMMENT_BODY"
+
+      if [ $? -eq 0 ]; then
+        echo "✅ Added merge comment to $JIRA_TICKET"
+      else
+        echo "⚠️  Failed to add comment to $JIRA_TICKET"
+      fi
+
+      echo "=========================================="
+      echo ""
+      echo "🔗 JIRA Ticket: https://<company>.atlassian.net/browse/$JIRA_TICKET"
+    fi
+  fi
 fi
 ```
 
@@ -816,6 +925,13 @@ After PR creation:
 - [ ] Images are properly referenced
 - [ ] Tracking reference is included (if applicable)
 
+After JIRA status update (if enabled):
+- [ ] JIRA ticket key is valid
+- [ ] Cloud ID is configured
+- [ ] Status transition was successful
+- [ ] Merge comment was added to JIRA
+- [ ] Error handling for missing transitions or permissions
+
 ## Relevant Commands
 
 ```bash
@@ -904,6 +1020,7 @@ Supporting framework skills:
   - `git-issue-updater`: For consistent issue/ticket update functionality with user, date, time
 - **JIRA Integration**:
   - `jira-git-integration`: For JIRA ticket management and comments
+  - `jira-status-updater`: For automated JIRA ticket status transitions after PR merge
 - **Quality Assurance**:
   - `linting-workflow`: For configurable quality checks
 - **Workflow Management**:
