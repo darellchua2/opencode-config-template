@@ -12,12 +12,14 @@ metadata:
 
 I implement a complete Git PR creation workflow with optional JIRA integration:
 
-1. **Check JIRA Integration**: Ask the user if JIRA is used for the project
+1. **Check JIRA Integration**: Ask user if JIRA is used for the project
 2. **Create Pull Request**: Create a GitHub/GitLab PR with comprehensive description
 3. **Use git-semantic-commits**: Format PR title following Conventional Commits specification
 4. **Scan for Diagrams/Images**: Search for workflow-related images and diagrams
 5. **Attach Images to JIRA**: Upload local/temporary images directly to JIRA (not just links)
 6. **Add JIRA Comments**: Use `git-issue-updater` to create comments with PR details and attachments
+7. **Update JIRA Status** (Optional): Use `jira-status-updater` to transition ticket status after manual merge
+
 
 ## When to use me
 
@@ -163,12 +165,140 @@ Create a comprehensive comment on the JIRA ticket with PR details using `atlassi
   - Title: <title>
   
   **JIRA Update**:
-  - Ticket: <TICKET-KEY>
-  - Comments added: Yes
-  - Images attached: <count>
-  ```
+   - Ticket: <TICKET-KEY>
+   - Comments added: Yes
+   - Images attached: <count>
+   ```
+
+### Step 10: Update JIRA Ticket Status (Optional)
+
+**Purpose**: Provide option to update JIRA ticket status after manual PR merge
+
+**When to use**:
+- PR was manually merged (not through pr-creation-workflow)
+- You want to transition JIRA ticket to "Done" status
+- You have merged the PR outside of the automated workflow
+
+**Implementation**:
+```bash
+# Prompt user for status update
+if [ "$JIRA_USED" = "yes" ] && [ -n "$JIRA_TICKET" ]; then
+  read -p "Would you like to update JIRA ticket status after merge? (yes/no): " UPDATE_STATUS
+
+  if [ "$UPDATE_STATUS" = "yes" ]; then
+    echo ""
+    echo "Updating JIRA ticket status..."
+    echo "=========================================="
+
+    # Use jira-status-updater integration
+    # This provides automated status transitions with error handling
+
+    # Get cloud ID
+    CLOUD_ID="${ATLASSIAN_CLOUD_ID:-<your-cloud-id>}"
+
+    # 1. Get available transitions
+    TRANSITIONS=$(atlassian_getTransitionsForJiraIssue \
+      --cloudId "$CLOUD_ID" \
+      --issueIdOrKey "$JIRA_TICKET")
+
+    # 2. Find target status (Done or Closed)
+    TARGET_TRANSITION_ID=$(echo "$TRANSITIONS" | jq -r '.transitions[] | select(.to.name == "Done" or .to.name == "Closed") | .id' | head -1)
+    TARGET_TRANSITION_NAME=$(echo "$TRANSITIONS" | jq -r '.transitions[] | select(.to.name == "Done" or .to.name == "Closed") | .to.name' | head -1)
+
+    # 3. Get current status
+    TICKET_DETAILS=$(atlassian_getJiraIssue \
+      --cloudId "$CLOUD_ID" \
+      --issueIdOrKey "$JIRA_TICKET")
+    CURRENT_STATUS=$(echo "$TICKET_DETAILS" | jq -r '.fields.status.name')
+
+    echo "Current status: $CURRENT_STATUS"
+    echo "Target status: $TARGET_TRANSITION_NAME"
+
+    # 4. Execute transition (if not already in target status)
+    if [ "$CURRENT_STATUS" = "$TARGET_TRANSITION_NAME" ]; then
+      echo "✅ Ticket already in target status: $TARGET_TRANSITION_NAME"
+    elif [ -n "$TARGET_TRANSITION_ID" ]; then
+      atlassian_transitionJiraIssue \
+        --cloudId "$CLOUD_ID" \
+        --issueIdOrKey "$JIRA_TICKET" \
+        --transition "{\"id\": \"$TARGET_TRANSITION_ID\"}"
+
+      if [ $? -eq 0 ]; then
+        echo "✅ Successfully transitioned $JIRA_TICKET from $CURRENT_STATUS to $TARGET_TRANSITION_NAME"
+
+        # 5. Add merge comment
+        COMMIT_HASH=$(git rev-parse HEAD)
+        COMMIT_AUTHOR=$(git log -1 --pretty=%an)
+        COMMIT_DATE=$(git log -1 --date=iso8601 --pretty=%aI)
+
+        COMMENT_BODY=$(cat <<EOF
+## Pull Request Merged (Manual)
+
+**PR**: #$PR_NUMBER - <pr-title>
+**URL**: $PR_URL
+**Branch**: $CURRENT_BRANCH
+
+### Status Update
+✅ Ticket transitioned from **$CURRENT_STATUS** to **$TARGET_TRANSITION_NAME**
+
+### Merge Details
+- **Commit**: \`$COMMIT_HASH\`
+- **Author**: $COMMIT_AUTHOR
+- **Date**: $COMMIT_DATE
+
+### Files Changed
+\`\`\`
+$(git diff --stat HEAD~1 HEAD)
+\`\`\`
+
+### Work Completed
+The pull request has been manually merged and the ticket has been closed.
+EOF
+)
+
+        atlassian_addCommentToJiraIssue \
+          --cloudId "$CLOUD_ID" \
+          --issueIdOrKey "$JIRA_TICKET" \
+          --commentBody "$COMMENT_BODY"
+
+        if [ $? -eq 0 ]; then
+          echo "✅ Added merge comment to $JIRA_TICKET"
+        fi
+      else
+        echo "❌ Failed to transition $JIRA_TICKET"
+        echo "   Check permissions and available transitions"
+      fi
+    else
+      echo "⚠️  No 'Done' or 'Closed' transition available for $JIRA_TICKET"
+      echo "   Available transitions:"
+      echo "$TRANSITIONS" | jq -r '.transitions[] | "   - \(.to.name)"'
+    fi
+
+    echo "=========================================="
+    echo ""
+    echo "🔗 JIRA Ticket: https://<company>.atlassian.net/browse/$JIRA_TICKET"
+  fi
+fi
+```
+
+**Example Output**:
+```
+Would you like to update JIRA ticket status after merge? (yes/no): yes
+
+Updating JIRA ticket status...
+==========================================
+Current status: In Progress
+Target status: Done
+
+✅ Successfully transitioned IBIS-101 from In Progress to Done
+✅ Added merge comment to IBIS-101
+==========================================
+
+🔗 JIRA Ticket: https://company.atlassian.net/browse/IBIS-101
+```
 
 ## Image Handling Strategy
+
 
 ### For Accessible Images (Public URLs)
 If the image is already hosted on a public URL (e.g., GitHub, S3, cloud storage):
@@ -539,6 +669,7 @@ identify workflow.png
 
 - **JIRA Integration**:
   - `jira-git-integration`: For JIRA utilities, comments, and image uploads
+  - `jira-status-updater`: For automated JIRA ticket status transitions after PR merge
 - **Git Frameworks**:
   - `git-semantic-commits`: For semantic commit message formatting and PR title conventions
   - `git-issue-updater`: For consistent issue/ticket update functionality with user, date, time

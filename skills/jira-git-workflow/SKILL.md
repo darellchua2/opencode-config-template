@@ -192,6 +192,7 @@ After framework execution:
 
 - **JIRA Integration**:
   - `jira-git-integration` - Provides JIRA-specific operations (project discovery, ticket creation, comments)
+  - `jira-status-updater` - Provides automated JIRA ticket status transitions after PR merge
 - **Core Workflow Framework**:
   - `ticket-branch-workflow` - Provides core workflow (branch creation, PLAN.md, commit, push)
 - **Git Frameworks**:
@@ -202,3 +203,37 @@ After framework execution:
   - `nextjs-pr-workflow` - For creating PRs after completing the ticket
 - **GitHub Integration**:
   - `git-issue-creator` - For GitHub-integrated workflows (uses same ticket-branch-workflow framework)
+
+## Complete JIRA-to-Git Workflow with Status Updates
+
+The complete workflow ensures JIRA tickets are properly closed after PR merges:
+
+1. **Create JIRA Ticket** (via `jira-git-integration`)
+   - Use `atlassian_createJiraIssue` to create ticket
+   - Status: "To Do" or "Backlog"
+
+2. **Create Git Branch** (via `ticket-branch-workflow`)
+   - Create branch named after ticket key (e.g., `IBIS-101`)
+   - Status: "To Do"
+
+3. **Commit PLAN.md** (via `ticket-branch-workflow`)
+   - Commit planning document
+   - Add progress comment to JIRA (via `git-issue-updater`)
+   - Status: "In Progress"
+
+4. **Implement Work**
+   - Make commits and add progress comments
+   - Status: "In Progress"
+
+5. **Create Pull Request** (via `pr-creation-workflow` or `git-pr-creator`)
+   - Create PR with JIRA ticket reference
+   - Add PR comment to JIRA (via `git-issue-updater`)
+   - Status: "In Progress" or "In Review"
+
+6. **Merge Pull Request**
+   - PR successfully merged
+   - **Update JIRA ticket status to "Done" (via `jira-status-updater`)** ⭐ NEW
+   - Add final merge comment to JIRA
+   - Status: "Done" ✅
+
+**Result**: Complete automation from ticket creation to closure without manual intervention.

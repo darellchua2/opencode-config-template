@@ -57,7 +57,39 @@ Implement automated JIRA status transitions in PR-related skills to automaticall
 - [x] Confirmed no skill handles JIRA status transitions
 - [x] Verified MCP tools available: `atlassian_getTransitionsForJiraIssue`, `atlassian_transitionJiraIssue`
 
-### Phase 2: Framework Updates
+### Phase 2: Framework Updates (COMPLETED)
+
+**Step 1: Create new skill jira-status-updater (COMPLETED)**
+- [x] Created `skills/jira-status-updater/SKILL.md`
+- [x] Documented status transition workflow
+- [x] Added error handling and edge cases
+- [x] Included integration patterns and examples
+
+**Step 2: Update pr-creation-workflow (COMPLETED)**
+- [x] Added Step 9: Update JIRA Ticket Status
+- [x] Integrated jira-status-updater workflow
+- [x] Added JIRA status update to merge confirmation
+- [x] Updated Related Skills section
+
+**Step 3: Update git-pr-creator (COMPLETED)**
+- [x] Added Step 10: Update JIRA Ticket Status (Optional)
+- [x] Documented manual merge status update
+- [x] Updated Related Skills section
+
+**Step 4: Update jira-git-workflow (COMPLETED)**
+- [x] Added jira-status-updater to Related Skills
+- [x] Documented complete workflow with status updates
+- [x] Added "Complete JIRA-to-Git Workflow with Status Updates" section
+
+**Step 5: Update jira-git-integration (COMPLETED)**
+- [x] Added Step 9: Transition JIRA Ticket Status
+- [x] Documented status transition API usage
+- [x] Updated Related Skills section
+
+**Step 6: Update git-issue-updater (COMPLETED)**
+- [x] Added jira-status-updater to Related Skills
+
+### Phase 3: Testing and Validation
 
 **Step 1: Update `pr-creation-workflow`**
 1. Add new step after "Merge Confirmation" section:
@@ -141,14 +173,15 @@ fi
 
 ## Success Criteria
 
-- [ ] JIRA ticket status automatically transitions after PR merge
-- [ ] Status transition is logged with user, date, time, PR details
-- [ ] Skills documentation includes JIRA status update process
-- [ ] Error handling for missing transitions or permissions
-- [ ] Backward compatibility (works without JIRA integration)
-- [ ] Configuration option to enable/disable status updates
-- [ ] Clear documentation and examples
-- [ ] Tests pass for all scenarios
+- [x] Created jira-status-updater skill with comprehensive documentation
+- [x] JIRA ticket status automatically transitions after PR merge (documented in pr-creation-workflow)
+- [x] Status transition is logged with user, date, time, PR details
+- [x] Skills documentation includes JIRA status update process
+- [x] Error handling for missing transitions or permissions
+- [x] Backward compatibility (works without JIRA integration)
+- [x] Configuration option to enable/disable status updates
+- [x] Clear documentation and examples
+- [ ] Tests pass for all scenarios (requires manual testing with actual JIRA instance)
 
 ## Prerequisites
 
@@ -177,11 +210,12 @@ fi
 
 ## Related Skills
 
+- `jira-status-updater` - Automated JIRA ticket status transitions after PR merge (NEW)
 - `jira-git-integration` - Provides JIRA utilities
 - `git-issue-updater` - Adds progress comments to JIRA
-- `pr-creation-workflow` - PR creation framework (to be updated)
-- `git-pr-creator` - PR creation with JIRA (to be updated)
-- `jira-git-workflow` - JIRA ticket creation and branching (to document)
+- `pr-creation-workflow` - PR creation framework (updated)
+- `git-pr-creator` - PR creation with JIRA (updated)
+- `jira-git-workflow` - JIRA ticket creation and branching (updated)
 
 ## Notes
 
