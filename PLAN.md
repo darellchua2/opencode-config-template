@@ -235,17 +235,13 @@ Concise description.
 ### Phase 3: Remaining Skills (15 skills, ~1,000 lines to remove)
 
 - [x] 12. opencode-skill-auditor (133 → 82 lines, 38% reduction)
-  - Reduced verbose bullet points to essentials
-  - Simplified step descriptions
-  - Consolidated analysis commands
-  - Follows standardized structure
-- [ ] 13. opentofu-provisioning-workflow (pending)
-- [ ] 14. opentofu-aws-explorer (pending)
-- [ ] 15. opentofu-provider-setup (pending)
-- [ ] 16. opentofu-keycloak-explorer (pending)
-- [ ] 17. opentofu-ecr-provision (pending)
-- [ ] 18. jira-git-integration (pending)
-- [ ] 19. git-issue-updater (pending)
+- [x] 13. opentofu-provisioning-workflow (747 → 199 lines, 73% reduction)
+- [x] 14. opentofu-aws-explorer (1159 → 381 lines, 67% reduction)
+- [x] 15. opentofu-provider-setup (374 → 172 lines, 54% reduction)
+- [x] 16. opentofu-keycloak-explorer (831 → 293 lines, 65% reduction)
+- [x] 17. opentofu-ecr-provision (694 → 298 lines, 57% reduction)
+- [ ] 18. jira-git-integration (604 lines, pending)
+- [ ] 19. git-issue-updater (835 lines, pending)
 - [ ] 20. coverage-readme-workflow (pending)
 - [ ] 21. ascii-diagram-creator (pending)
 - [ ] 22. typescript-dry-principle (pending)
@@ -292,11 +288,11 @@ Concise description.
 
 **Phase 1 Status**: ✅ 4/4 complete (100%)
 **Phase 2 Status**: ✅ 7/7 complete (100%)
-**Phase 3 Status**: 1/15 complete (7%)
-**Overall Progress**: 12/33 complete (36%)
+**Phase 3 Status**: 6/15 complete (40%)
+**Overall Progress**: 17/33 complete (52%)
 
-**Lines Reduced**: 4,767 / ~9,000 (53%)
-**Tokens Saved**: ~35,753 / ~67,500 (53%)
+**Lines Reduced**: 5,864 / ~9,000 (65%)
+**Tokens Saved**: ~43,980 / ~67,500 (65%)
 
 ## References
 
