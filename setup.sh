@@ -72,19 +72,79 @@ detect_platform() {
             echo "macOS"
             ;;
         Linux*)
-            echo "Linux"
+            # Check if running under WSL
+            if grep -q Microsoft /proc/version 2>/dev/null; then
+                echo "Windows-WSL"
+            else
+                echo "Linux"
+            fi
             ;;
         CYGWIN*|MINGW*|MSYS*)
             echo "Windows"
             ;;
+        MINGW64_NT-*)
+            # Git Bash on Windows
+            echo "Windows-GitBash"
+            ;;
         *)
-            echo "Unknown"
+            # Check for Windows environment variables
+            if [ -n "$OS" ] && [[ "$OS" == "Windows_NT" ]]; then
+                echo "Windows"
+            else
+                echo "Unknown"
+            fi
             ;;
     esac
 }
 
 DETECTED_OS=$(detect_platform)
 OS_VERSION=$(sw_vers 2>/dev/null || uname -r)
+
+# Detect package manager based on platform
+detect_package_manager() {
+    local platform="$1"
+
+    case "$platform" in
+        macOS)
+            # Check for Homebrew
+            if command_exists brew; then
+                echo "brew"
+            else
+                echo "none"
+            fi
+            ;;
+        Linux*)
+            # Detect distribution package manager
+            if [ -f /etc/debian_version ]; then
+                echo "apt"
+            elif [ -f /etc/redhat-release ]; then
+                echo "dnf"
+            elif [ -f /etc/arch-release ]; then
+                echo "pacman"
+            elif command_exists zypper; then
+                echo "zypper"
+            else
+                echo "none"
+            fi
+            ;;
+        Windows*|Windows-GitBash)
+            # Check for winget
+            if command_exists winget; then
+                echo "winget"
+            # Check for chocolatey
+            elif command_exists choco; then
+                echo "chocolatey"
+            else
+                echo "none"
+            fi
+            ;;
+        *)
+            echo "none"
+            ;;
+    esac
+}
+
+PACKAGE_MANAGER=$(detect_package_manager "$DETECTED_OS")
 
 # Detect shell (bash, zsh, or powershell)
 detect_shell() {
@@ -298,8 +358,13 @@ EXAMPLES:
    Windows:
      - Shells: PowerShell, Git Bash, WSL2
      - Config: $PROFILE (PowerShell), ~/.bashrc (Git Bash/WSL2)
-     - Package Managers: winget, chocolatey
+     - Package Managers: winget (Windows 10+), chocolatey
      - Tested: PowerShell, Git Bash, WSL2
+
+ PACKAGE MANAGERS:
+   macOS: brew
+   Linux: apt (Ubuntu/Debian), dnf (Fedora/RHEL), pacman (Arch)
+   Windows: winget (Windows 10+), chocolatey
 
  CONFIGURED FEATURES:
   Agents (4):
@@ -729,15 +794,73 @@ setup_nodejs() {
     echo ""
     echo "=== Installing Node.js v24 ==="
 
-    # Ensure nvm is available
-    if ! command_exists nvm; then
-        log_error "nvm is not available. Cannot install Node.js."
-        return 1
-    fi
+    # Check platform and install accordingly
+    case "$DETECTED_OS" in
+        Windows*|Windows-GitBash)
+            # Windows: Check if Node.js is already installed
+            if command_exists node; then
+                log_info "Node.js is already installed ($(node --version))"
+                log_info "Node.js v20+ is required for Draw.io MCP server integration"
+                echo ""
+                echo "=== Draw.io MCP Server Setup ==="
+                echo "To use the diagram-creator agent with Draw.io MCP server on Windows:"
+                echo "1. Clone and build Draw.io MCP server:"
+                echo "   git clone https://github.com/scholtzm/mcp-drawio.git"
+                echo "   cd mcp-drawio"
+                echo "   npm install"
+                echo "   npm run build"
+                echo ""
+                echo "2. Start the server:"
+                echo "   npm start"
+                echo ""
+                echo "3. Ensure it's running on: http://localhost:41033/mcp"
+                echo ""
+                log_info "Diagram-creator agent requires Draw.io MCP server for diagram creation"
 
-    # Load nvm
-    export NVM_DIR="$HOME/.nvm"
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+                if prompt_yes_no "Install a newer version of Node.js?" "n"; then
+                    log_info "To install/update Node.js on Windows:"
+                    echo "  1. Download from https://nodejs.org/"
+                    echo "  2. Use winget: winget install OpenJS.NodeJS.LTS"
+                    echo "  3. Use chocolatey: choco install nodejs"
+                    echo "  4. Follow the installer prompts"
+                fi
+            else
+                log_info "Node.js is not installed on Windows"
+                echo ""
+                echo "To install Node.js on Windows:"
+                echo "  Option 1: Download from https://nodejs.org/"
+                echo "  Option 2: Use winget (Windows 10+):"
+                echo "           winget install OpenJS.NodeJS.LTS"
+                echo "  Option 3: Use chocolatey:"
+                echo "           choco install nodejs"
+                echo ""
+
+                if prompt_yes_no "Would you like to install Node.js now?" "y"; then
+                    if command_exists winget; then
+                        log_info "Installing Node.js via winget..."
+                        run_cmd "winget install OpenJS.NodeJS.LTS"
+                    elif command_exists choco; then
+                        log_info "Installing Node.js via chocolatey..."
+                        run_cmd "choco install nodejs"
+                    else
+                        log_error "No package manager found (winget or chocolatey)"
+                        log_info "Please install Node.js manually from https://nodejs.org/"
+                    fi
+                fi
+            fi
+            ;;
+
+        macOS|Linux*)
+            # Unix-like systems: Use nvm
+            # Ensure nvm is available
+            if ! command_exists nvm; then
+                log_error "nvm is not available. Cannot install Node.js."
+                return 1
+            fi
+
+            # Load nvm
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
     if prompt_yes_no "Install/switch to Node.js v24?" "y"; then
         log_info "Installing Node.js v24..."
@@ -766,10 +889,12 @@ setup_nodejs() {
             log_error "Node.js installation failed"
             return 1
         fi
-    else
-        log_info "Skipping Node.js v24 installation"
-        log_warn "Node.js v20+ is recommended for Draw.io MCP server integration"
-    fi
+        else
+            log_info "Skipping Node.js v24 installation"
+            log_warn "Node.js v20+ is recommended for Draw.io MCP server integration"
+        fi
+        ;;
+    esac
 
     return 0
 }
@@ -1148,12 +1273,33 @@ print_summary() {
     echo "✓ Shell Config: ${SHELL_CONFIG_FILE}"
     echo ""
 
-    # nvm status
+    # nvm status (Unix-like systems only)
     if command_exists nvm; then
         nvm_version=$(nvm --version 2>/dev/null)
         echo "✓ nvm: Installed v${nvm_version}"
     else
-        echo "✗ nvm: Not installed"
+        case "$DETECTED_OS" in
+            Windows*|Windows-GitBash)
+                # On Windows, nvm is not used
+                ;;
+            *)
+                echo "✗ nvm: Not installed"
+                ;;
+        esac
+    fi
+
+    # Package manager status
+    if [ "$PACKAGE_MANAGER" != "none" ]; then
+        echo "✓ Package Manager: ${PACKAGE_MANAGER}"
+    else
+        case "$DETECTED_OS" in
+            Windows*|Windows-GitBash)
+                echo "○ Package Manager: Not detected (use winget or chocolatey)"
+                ;;
+            *)
+                echo "✗ Package Manager: Not detected"
+                ;;
+        esac
     fi
 
     # Node.js status
