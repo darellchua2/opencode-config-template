@@ -59,8 +59,89 @@ LOG_FILE="${HOME}/.opencode-setup.log"
 CONFIG_DIR="${HOME}/.config/opencode"
 CONFIG_FILE="${CONFIG_DIR}/config.json"
 SKILLS_DIR="${CONFIG_DIR}/skills"
-BASHRC_FILE="${HOME}/.bashrc"
 BACKUP_DIR="${HOME}/.opencode-backup-$(date +%Y%m%d_%H%M%S)"
+
+################################################################################
+# PLATFORM AND SHELL DETECTION
+################################################################################
+
+# Detect operating system
+detect_platform() {
+    case "$(uname -s)" in
+        Darwin)
+            echo "macOS"
+            ;;
+        Linux*)
+            echo "Linux"
+            ;;
+        CYGWIN*|MINGW*|MSYS*)
+            echo "Windows"
+            ;;
+        *)
+            echo "Unknown"
+            ;;
+    esac
+}
+
+DETECTED_OS=$(detect_platform)
+OS_VERSION=$(sw_vers 2>/dev/null || uname -r)
+
+# Detect shell (bash, zsh, or powershell)
+detect_shell() {
+    if [ -n "$ZSH_VERSION" ]; then
+        echo "zsh"
+    elif [ -n "$BASH_VERSION" ]; then
+        echo "bash"
+    elif [ -n "$PSVersionTable" ]; then
+        echo "powershell"
+    else
+        # Fallback: check $0
+        case "$0" in
+            *zsh*)
+                echo "zsh"
+                ;;
+            *bash*)
+                echo "bash"
+                ;;
+            *)
+                echo "bash"
+                ;;
+        esac
+    fi
+}
+
+DETECTED_SHELL=$(detect_shell)
+
+# Determine shell config file based on OS and shell
+determine_shell_config() {
+    local shell="$1"
+    local os="$2"
+
+    case "${os}:${shell}" in
+        macOS:zsh)
+            echo "${HOME}/.zshrc"
+            ;;
+        macOS:bash)
+            if [ -f "${HOME}/.bash_profile" ]; then
+                echo "${HOME}/.bash_profile"
+            else
+                echo "${HOME}/.bashrc"
+            fi
+            ;;
+        Linux:bash|Linux:*)
+            echo "${HOME}/.bashrc"
+            ;;
+        Windows:powershell)
+            echo "${PROFILE}"
+            ;;
+        *)
+            # Default to bashrc
+            echo "${HOME}/.bashrc"
+            ;;
+    esac
+}
+
+SHELL_CONFIG_FILE=$(determine_shell_config "$DETECTED_SHELL" "$DETECTED_OS")
 
 # Flags
 QUICK_SETUP=false
@@ -201,7 +282,26 @@ EXAMPLES:
     ./setup.sh -y -q        # Quick setup with auto-accept
     ./setup.sh --update     # Update OpenCode CLI only
 
-CONFIGURED FEATURES:
+ PLATFORM SUPPORT:
+   macOS:
+     - Shells: zsh (default), bash
+     - Config: ~/.zshrc (zsh), ~/.bash_profile (bash)
+     - Package Manager: Homebrew
+     - Tested: Intel and Apple Silicon
+
+   Linux:
+     - Shells: bash, zsh
+     - Config: ~/.bashrc
+     - Package Managers: apt (Ubuntu/Debian), dnf (Fedora), pacman (Arch)
+     - Tested: Ubuntu, Debian, Fedora, Arch
+
+   Windows:
+     - Shells: PowerShell, Git Bash, WSL2
+     - Config: $PROFILE (PowerShell), ~/.bashrc (Git Bash/WSL2)
+     - Package Managers: winget, chocolatey
+     - Tested: PowerShell, Git Bash, WSL2
+
+ CONFIGURED FEATURES:
   Agents (4):
     - build-with-skills (default): Skill-aware coding agent that identifies and uses appropriate skills
       Automatically ensures best practices: testing, linting, PR workflows, JIRA integration
@@ -980,40 +1080,43 @@ setup_config() {
     return 0
 }
 
-# Setup environment variables in bashrc
-setup_bashrc_vars() {
+# Setup environment variables in shell config (bashrc, zshrc, etc.)
+setup_shell_vars() {
     echo ""
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo "              🔐 Environment Variables Setup"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    echo "Detected shell: ${DETECTED_SHELL}"
+    echo "Config file: ${SHELL_CONFIG_FILE}"
     echo ""
 
-    # Add ZAI_API_KEY to ~/.bashrc
+    # Add ZAI_API_KEY to shell config
     if [ -n "$ZAI_API_KEY" ]; then
-        if grep -q "ZAI_API_KEY" "$BASHRC_FILE" 2>/dev/null; then
-            log_info "ZAI_API_KEY already exists in ${BASHRC_FILE}"
+        if grep -q "ZAI_API_KEY" "$SHELL_CONFIG_FILE" 2>/dev/null; then
+            log_info "ZAI_API_KEY already exists in ${SHELL_CONFIG_FILE}"
         else
-            if prompt_yes_no "Add ZAI_API_KEY to ~/.bashrc for persistent access?" "y"; then
-                create_backup "$BASHRC_FILE"
-                run_cmd "echo 'export ZAI_API_KEY=\"${ZAI_API_KEY}\"' >> ${BASHRC_FILE}"
-                log_success "ZAI_API_KEY added to ${BASHRC_FILE}"
+            if prompt_yes_no "Add ZAI_API_KEY to $(basename ${SHELL_CONFIG_FILE}) for persistent access?" "y"; then
+                create_backup "$SHELL_CONFIG_FILE"
+                run_cmd "echo 'export ZAI_API_KEY=\"${ZAI_API_KEY}\"' >> ${SHELL_CONFIG_FILE}"
+                log_success "ZAI_API_KEY added to ${SHELL_CONFIG_FILE}"
             else
-                log_info "Skipping ~/.bashrc update for ZAI_API_KEY"
+                log_info "Skipping shell config update for ZAI_API_KEY"
             fi
         fi
     fi
 
-    # Add GITHUB_PAT to ~/.bashrc
+    # Add GITHUB_PAT to shell config
     if [ -n "$GITHUB_PAT" ]; then
-        if grep -q "GITHUB_PAT" "$BASHRC_FILE" 2>/dev/null; then
-            log_info "GITHUB_PAT already exists in ${BASHRC_FILE}"
+        if grep -q "GITHUB_PAT" "$SHELL_CONFIG_FILE" 2>/dev/null; then
+            log_info "GITHUB_PAT already exists in ${SHELL_CONFIG_FILE}"
         else
-            if prompt_yes_no "Add GITHUB_PAT to ~/.bashrc for persistent access?" "y"; then
-                create_backup "$BASHRC_FILE"
-                run_cmd "echo 'export GITHUB_PAT=\"${GITHUB_PAT}\"' >> ${BASHRC_FILE}"
-                log_success "GITHUB_PAT added to ${BASHRC_FILE}"
+            if prompt_yes_no "Add GITHUB_PAT to $(basename ${SHELL_CONFIG_FILE}) for persistent access?" "y"; then
+                create_backup "$SHELL_CONFIG_FILE"
+                run_cmd "echo 'export GITHUB_PAT=\"${GITHUB_PAT}\"' >> ${SHELL_CONFIG_FILE}"
+                log_success "GITHUB_PAT added to ${SHELL_CONFIG_FILE}"
             else
-                log_info "Skipping ~/.bashrc update for GITHUB_PAT"
+                log_info "Skipping shell config update for GITHUB_PAT"
             fi
         fi
     fi
@@ -1036,6 +1139,13 @@ print_summary() {
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo "                      📊 Setup Summary"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+
+    # Platform detection status
+    echo "Platform Detection:"
+    echo "✓ Detected OS: ${DETECTED_OS} ${OS_VERSION:+(${OS_VERSION})}"
+    echo "✓ Detected Shell: ${DETECTED_SHELL}"
+    echo "✓ Shell Config: ${SHELL_CONFIG_FILE}"
     echo ""
 
     # nvm status
@@ -1135,8 +1245,8 @@ print_summary() {
     fi
 
     # ZAI_API_KEY status
-    if grep -q "ZAI_API_KEY" "$BASHRC_FILE" 2>/dev/null; then
-        echo "✓ ZAI_API_KEY: Added to ${BASHRC_FILE}"
+    if grep -q "ZAI_API_KEY" "$SHELL_CONFIG_FILE" 2>/dev/null; then
+        echo "✓ ZAI_API_KEY: Added to ${SHELL_CONFIG_FILE}"
     elif [ -n "$ZAI_API_KEY" ]; then
         echo "○ ZAI_API_KEY: Set in current session only"
     else
@@ -1144,8 +1254,8 @@ print_summary() {
     fi
 
     # GITHUB_PAT status
-    if grep -q "GITHUB_PAT" "$BASHRC_FILE" 2>/dev/null; then
-        echo "✓ GITHUB_PAT: Added to ${BASHRC_FILE}"
+    if grep -q "GITHUB_PAT" "$SHELL_CONFIG_FILE" 2>/dev/null; then
+        echo "✓ GITHUB_PAT: Added to ${SHELL_CONFIG_FILE}"
     elif [ -n "$GITHUB_PAT" ]; then
         echo "○ GITHUB_PAT: Set in current session only"
     else
@@ -1163,7 +1273,7 @@ print_next_steps() {
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
     echo "📋 Next Steps:"
-    echo "  1. Restart terminal or run: source ${BASHRC_FILE}"
+    echo "  1. Restart terminal or run: source ${SHELL_CONFIG_FILE}"
     echo "  2. Start LM Studio: http://127.0.0.1:1234/v1"
     echo "  3. Verify installation: opencode --version"
     echo ""
@@ -1363,7 +1473,7 @@ main() {
     fi
 
     setup_config || true
-    setup_bashrc_vars || true
+    setup_shell_vars || true
 
     # Print summary and next steps
     print_summary
