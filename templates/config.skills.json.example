@@ -1,0 +1,220 @@
+{
+  "version": "1.0.0",
+  "skills": {
+    "enabled": [
+      "*"
+    ],
+    "disabled": [
+      "deprecated-skill-name"
+    ],
+    "priorities": {
+      "git-workflow-framework": 10,
+      "test-generator-framework": 9,
+      "linting-workflow": 8,
+      "pr-creation-workflow": 7,
+      "jira-git-integration": 6,
+      "issue-framework": 5,
+      "documentation-framework": 4,
+      "opentofu-framework": 3
+    },
+    "customSkillsPath": "/path/to/custom/skills",
+    "autoLoad": true,
+    "cacheEnabled": true,
+    "cacheDuration": 3600,
+    "categories": {
+      "framework": {
+        "enabled": true,
+        "skills": [
+          "test-generator-framework",
+          "linting-workflow",
+          "pr-creation-workflow",
+          "jira-git-integration",
+          "ticket-branch-workflow"
+        ]
+      },
+      "language": {
+        "enabled": true,
+        "skills": [
+          "python-pytest-creator",
+          "python-ruff-linter",
+          "javascript-eslint-linter"
+        ]
+      },
+      "framework-specific": {
+        "enabled": true,
+        "skills": [
+          "nextjs-pr-workflow",
+          "nextjs-unit-test-creator",
+          "nextjs-standard-setup",
+          "typescript-dry-principle"
+        ]
+      },
+      "opencode-meta": {
+        "enabled": true,
+        "skills": [
+          "opencode-agent-creation",
+          "opencode-skill-creation",
+          "opencode-skill-auditor"
+        ]
+      },
+      "opentofu": {
+        "enabled": true,
+        "skills": [
+          "opentofu-aws-explorer",
+          "opentofu-keycloak-explorer",
+          "opentofu-kubernetes-explorer",
+          "opentofu-neon-explorer",
+          "opentofu-provider-setup",
+          "opentofu-provisioning-workflow",
+          "opentofu-ecr-provision"
+        ]
+      },
+      "git": {
+        "enabled": true,
+        "skills": [
+          "ascii-diagram-creator",
+          "git-issue-creator",
+          "git-issue-labeler",
+          "git-issue-updater",
+          "git-pr-creator",
+          "git-semantic-commits"
+        ]
+      },
+      "documentation": {
+        "enabled": true,
+        "skills": [
+          "coverage-readme-workflow",
+          "docstring-generator"
+        ]
+      },
+      "jira": {
+        "enabled": true,
+        "skills": [
+          "jira-git-workflow"
+        ]
+      }
+    }
+  },
+  "agents": {
+    "defaultAgent": "build-with-skills",
+    "planningAgent": "plan-with-skills",
+    "implementationAgent": "build-with-skills",
+    "subagentTimeout": 300,
+    "maxConcurrentAgents": 3,
+    "subagentRouting": {
+      "enabled": true,
+      "patterns": {
+        "lint*": "linting-subagent",
+        "fix*style*": "linting-subagent",
+        "test*": "testing-subagent",
+        "spec*": "testing-subagent",
+        "branch*": "git-workflow-subagent",
+        "commit*": "git-workflow-subagent",
+        "pr*": "git-workflow-subagent",
+        "doc*": "documentation-subagent",
+        "readme*": "documentation-subagent",
+        "infra*": "opentofu-explorer-subagent",
+        "terraform*": "opentofu-explorer-subagent",
+        "k8s*": "opentofu-explorer-subagent",
+        "workflow*": "workflow-subagent",
+        "automation*": "workflow-subagent"
+      }
+    }
+  },
+  "behavior": {
+    "autoLint": true,
+    "autoFixLint": true,
+    "autoTest": true,
+    "autoDocument": false,
+    "preferTDD": false,
+    "createPRs": true,
+    "updateIssues": true
+  },
+  "codeQuality": {
+    "enforceCoverage": true,
+    "minCoverage": 80,
+    "requireTests": true,
+    "lintOnSave": true,
+    "fixLintErrors": true
+  },
+  "git": {
+    "commitStyle": "conventional",
+    "branchNaming": "feature/{ticket-id}-{short-description}",
+    "requireTicket": true,
+    "updateBranchFromMain": true,
+    "deleteMergedBranches": true
+  },
+  "aliases": {
+    "plan": "plan-with-skills",
+    "planning": "plan-with-skills",
+    "code": "build-with-skills",
+    "implement": "build-with-skills",
+    "implementation": "build-with-skills",
+    "lint": "linting-subagent",
+    "fix": "linting-subagent",
+    "review": "linting-subagent",
+    "test": "testing-subagent",
+    "spec": "testing-subagent",
+    "branch": "git-workflow-subagent",
+    "commit": "git-workflow-subagent",
+    "pr": "git-workflow-subagent",
+    "pullrequest": "git-workflow-subagent",
+    "doc": "documentation-subagent",
+    "docs": "documentation-subagent",
+    "infra": "opentofu-explorer-subagent",
+    "workflow": "workflow-subagent"
+  },
+  "platform": {
+    "shell": "auto",
+    "shellConfigFile": "auto",
+    "packageManager": "auto"
+  },
+  "updates": {
+    "enabled": true,
+    "schedule": "weekly",
+    "autoUpdate": false,
+    "checkForUpdates": true,
+    "backupBeforeUpdate": true
+  },
+  "logging": {
+    "enabled": true,
+    "level": "info",
+    "logFile": "~/.config/opencode/opencode.log",
+    "maxLogSize": 10485760,
+    "logRotation": 5
+  },
+  "integration": {
+    "github": {
+      "enabled": true,
+      "defaultRepo": "owner/repo",
+      "createIssues": true,
+      "createPRs": true
+    },
+    "jira": {
+      "enabled": false,
+      "baseUrl": "https://your-domain.atlassian.net",
+      "defaultProject": "PROJ",
+      "createTickets": true,
+      "updateStatus": true
+    },
+    "slack": {
+      "enabled": false,
+      "webhookUrl": "",
+      "notifications": ["pr_created", "build_failed"]
+    }
+  },
+  "notifications": {
+    "enabled": true,
+    "types": ["error", "warning", "success"],
+    "desktopNotifications": false,
+    "emailNotifications": false
+  },
+  "experimental": {
+    "enabled": false,
+    "features": []
+  },
+  "custom": {
+    "userDefined": "Custom configuration values",
+    "exampleKey": "exampleValue"
+  }
+}
