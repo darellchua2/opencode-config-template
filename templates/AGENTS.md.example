@@ -1,0 +1,392 @@
+# USER Level AGENTS.md (Example)
+
+This is an example user-level AGENTS.md file that overrides global settings.
+
+## Purpose
+
+This file contains personal preferences and behavior overrides that apply across all projects. Settings here take precedence over Global AGENTS.md (`~/.config/opencode/AGENTS.md`) but are overridden by Project AGENTS.md (`.AGENTS.md`).
+
+---
+
+## Personal Preferences
+
+### Model Selection
+
+- **Default Model**: glm-4.7 for all coding tasks
+- **Fallback Model**: glm-4.6v if primary model unavailable
+- **Reason**: glm-4.7 provides better performance for complex reasoning
+
+### Language Preferences
+
+- **Primary Languages**: TypeScript, Python, Go
+- **Secondary Languages**: Rust, Java
+- **Reason**: These match personal expertise and project requirements
+
+---
+
+## Agent Preferences
+
+### Default Agents
+
+- **Planning**: plan-with-skills
+  - Use for: Architecture decisions, complex tasks, multi-step implementations
+  - Skip for: Simple bug fixes, trivial changes
+
+- **Implementation**: build-with-skills
+  - Use for: Feature implementation, bug fixes, code updates
+  - Use always for: All coding tasks unless explicitly requested otherwise
+
+### Subagent Routing
+
+**Override global routing patterns with personal preferences**:
+
+- `test*` → testing-subagent (always generate tests)
+- `unit*test*` → python-pytest-creator (Python projects)
+- `react*test*` → nextjs-unit-test-creator (React/Next.js projects)
+- `lint*` → linting-subagent (run linter, fix issues)
+- `fix*style*` → linting-subagent (auto-fix style issues)
+- `branch*`, `commit*`, `pr*` → git-workflow-subagent (all git operations)
+
+---
+
+## Code Style Overrides
+
+### Personal Coding Standards
+
+Override global defaults with personal preferences:
+
+#### Python
+- Use 4 spaces indentation (override global 2 spaces)
+- Prefer type hints in all functions
+- Use f-strings for string formatting
+- Follow PEP 8 strictly
+- Use dataclasses over classes for simple data structures
+
+#### TypeScript/JavaScript
+- Use 2 spaces indentation (keep global default)
+- Use TypeScript strict mode
+- Prefer const over let
+- Use arrow functions for callbacks
+- Prefer functional programming patterns
+
+#### Git
+- Use Conventional Commits format
+- Always reference issue numbers
+- Keep commits atomic and focused
+- Never use `git commit --amend` after pushing
+
+---
+
+## Behavior Overrides
+
+### Workflow Preferences
+
+Override global behavior settings:
+
+- **Auto-Lint**: true (always run linter)
+- **Auto-Fix Lint**: true (automatically fix style issues)
+- **Auto-Test**: true (always generate/run tests)
+- **Auto-Document**: false (ask before generating docs)
+- **Create PRs**: true (always create PR for changes)
+- **Update Issues**: true (automatically update related issues)
+
+### Testing Preferences
+
+Override global testing requirements:
+
+- **Coverage Target**: 90% for critical code, 80% for non-critical
+- **Test Types**: Integration tests preferred over unit tests
+- **Test-First**: Prefer TDD when possible
+- **Edge Cases**: Always test boundary conditions
+- **Mocking**: Mock all external dependencies
+
+### Documentation Preferences
+
+Override global documentation standards:
+
+- **Docstrings**: Always include for public APIs
+- **Examples**: Include usage examples in docstrings
+- **Comments**: Prefer code clarity over comments
+- **README**: Always update for new features
+- **Complex Logic**: Add inline comments for complex algorithms
+
+---
+
+## Project-Specific Overrides
+
+### OpenCode Projects
+
+For opencode.ai-related projects:
+- Always use AGENTS.md standards
+- Follow skill creation patterns
+- Use semantic versioning
+- Include comprehensive tests
+
+### Personal Projects
+
+For personal projects:
+- Use simpler structure
+- Skip comprehensive documentation
+- Minimum viable tests (70% coverage)
+- Faster iteration cycles
+
+### Client Projects
+
+For client projects:
+- Follow client coding standards
+- Include comprehensive documentation
+- Full test coverage (90%+)
+- Detailed commit messages
+
+---
+
+## Subagent Preferences
+
+### Favorite Subagents
+
+Personal subagent preferences for specific tasks:
+
+#### linting-subagent (ALWAYS USE)
+- **Use for**: All code quality tasks
+- **Preferences**:
+  - Use strict linting rules
+  - Auto-fix when possible
+  - Report all warnings
+  - Fail build on lint errors
+
+#### testing-subagent (ALWAYS USE)
+- **Use for**: All test generation and maintenance
+- **Preferences**:
+  - Generate tests with edge cases
+  - Use appropriate test frameworks
+  - Include integration tests
+  - Aim for high coverage
+
+#### git-workflow-subagent (ALWAYS USE)
+- **Use for**: All Git operations and workflows
+- **Preferences**:
+  - Use semantic commits
+  - Reference issue numbers
+  - Create descriptive commit messages
+  - Keep PRs focused
+
+#### documentation-subagent (USE WHEN NEEDED)
+- **Use for**: Documentation generation
+- **Preferences**:
+  - Follow language-specific standards
+  - Include usage examples
+  - Keep docs concise
+  - Update with code changes
+
+#### opentofu-explorer-subagent (USE FOR INFRA)
+- **Use for**: Infrastructure provisioning and management
+- **Preferences**:
+  - Use infrastructure as code
+  - Follow security best practices
+  - Document infrastructure changes
+  - Use cost-effective resources
+
+#### workflow-subagent (USE FOR AUTOMATION)
+- **Use for**: PR workflows, JIRA automation, CI/CD
+- **Preferences**:
+  - Automate repetitive tasks
+  - Use quality gates
+  - Include proper approvals
+  - Monitor workflows
+
+---
+
+## Custom Behavior Rules
+
+### When to Use Plan-First
+
+Use `plan-with-skills` BEFORE `build-with-skills` when:
+- Task requires 5+ distinct steps
+- Multiple files need modification
+- Architecture decisions are needed
+- Task description is vague or incomplete
+- New feature implementation
+- Major refactoring efforts
+
+### When to Skip Planning
+
+Skip `plan-with-skills` and use `build-with-skills` directly when:
+- Simple bug fix (1-2 files)
+- Typo or minor formatting change
+- Well-defined, straightforward task
+- Follow existing patterns
+- Time-sensitive hotfix
+
+### When to Always Run Tests
+
+Always run tests (use testing-subagent) when:
+- Any code changes are made
+- Dependencies are updated
+- Configuration changes are made
+- Production code is modified
+- Database schema changes
+
+### When to Skip Tests
+
+Skip tests ONLY when:
+- Pure documentation changes
+- Comment-only changes
+- README updates
+- Configuration file comments
+- Non-code file updates
+
+---
+
+## Integration Settings
+
+### GitHub Integration
+
+- **Enabled**: true
+- **Create Issues**: true
+- **Create PRs**: true
+- **Update Issues**: true (with commit references)
+- **Default Branch**: main
+
+### JIRA Integration
+
+- **Enabled**: false (disable unless needed)
+- **Base URL**: https://your-domain.atlassian.net
+- **Default Project**: PROJ
+
+---
+
+## Performance Settings
+
+### Timeout Preferences
+
+- **Subagent Timeout**: 300 seconds (5 minutes)
+- **API Timeout**: 120 seconds (2 minutes)
+- **Test Timeout**: 60 seconds per test
+
+### Concurrency
+
+- **Max Concurrent Agents**: 3
+- **Max Parallel Tests**: 10
+- **Max Parallel Linters**: 5
+
+---
+
+## Logging and Debugging
+
+### Log Settings
+
+- **Log Level**: info (normal operations)
+- **Log File**: ~/.config/opencode/opencode.log
+- **Max Log Size**: 10MB
+- **Log Rotation**: Keep 5 logs
+
+### Debug Mode
+
+- **Enabled**: false (disable unless debugging)
+- **Verbose Output**: false
+- **Save Session Logs**: true
+
+---
+
+## Security Settings
+
+### Credential Management
+
+- **Never**: Log credentials or API keys
+- **Always**: Use environment variables for secrets
+- **Prefer**: System keychain for secure storage
+- **Never**: Commit credentials to git
+
+### Access Control
+
+- **File Permissions**: 600 for config files
+- **Directory Permissions**: 700 for config directories
+- **SSH Keys**: Use password-protected keys
+
+---
+
+## Platform-Specific Settings
+
+### macOS
+
+- **Default Shell**: zsh (~/.zshrc)
+- **Package Manager**: brew
+- **Node.js**: Use nvm
+
+### Linux
+
+- **Default Shell**: bash (~/.bashrc)
+- **Package Manager**: apt/dnf/pacman (auto-detect)
+- **Node.js**: Use nvm
+
+### Windows
+
+- **Default Shell**: PowerShell
+- **Package Manager**: winget
+- **Node.js**: Use official installer or winget
+
+---
+
+## Update Preferences
+
+### Auto-Update Settings
+
+- **Enabled**: true
+- **Schedule**: weekly
+- **Check for Updates**: true
+- **Auto-Install**: false (ask before installing)
+- **Backup Before Update**: true
+
+---
+
+## Custom Shortcuts and Aliases
+
+### Task Aliases
+
+- `plan` → plan-with-skills
+- `code` → build-with-skills
+- `lint` → linting-subagent
+- `test` → testing-subagent
+- `pr` → git-workflow-subagent
+- `doc` → documentation-subagent
+
+### Quick Commands
+
+```bash
+# Quick lint and fix
+lint --fix
+
+# Quick test with coverage
+test --coverage
+
+# Quick commit
+git commit -m "feat: description"
+
+# Quick PR
+gh pr create --title "Title" --body "..."
+```
+
+---
+
+## Notes and Reminders
+
+### Personal Guidelines
+
+- **Always**: Review generated code before committing
+- **Always**: Run tests locally before pushing
+- **Never**: Skip linting (unless explicitly requested)
+- **Prefer**: Explicit over implicit code
+- **Prefer**: Small, focused commits
+
+### Things to Remember
+
+- Global AGENTS.md provides defaults
+- This file overrides global settings
+- Project AGENTS.md overrides this file
+- config.json defines agents and tools
+- Changes here affect ALL projects
+
+---
+
+*This is an example file. Copy and modify for your personal preferences.*
+*Location: ~/.config/opencode/user/AGENTS.md*

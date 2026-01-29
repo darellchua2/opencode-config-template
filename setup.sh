@@ -60,6 +60,8 @@ CONFIG_DIR="${HOME}/.config/opencode"
 CONFIG_FILE="${CONFIG_DIR}/config.json"
 SKILLS_DIR="${CONFIG_DIR}/skills"
 BACKUP_DIR="${HOME}/.opencode-backup-$(date +%Y%m%d_%H%M%S)"
+LAST_UPDATE_CHECK="${CONFIG_DIR}/.last-update-check"
+UPDATE_LOG="${CONFIG_DIR}/update.log"
 
 ################################################################################
 # PLATFORM AND SHELL DETECTION
@@ -269,6 +271,15 @@ AUTO_ACCEPT=false
 VERBOSE=false
 SKIP_CONFIG_COPY=false
 UPDATE_ONLY=false
+ENABLE_AUTO_UPDATE=false
+UPDATE_SCHEDULE="manual"
+CHECK_UPDATE_ONLY=false
+
+# USER Configuration flags
+ENABLE_USER_CONFIG=false
+VALIDATE_CONFIG=false
+MIGRATE_CONFIG=false
+FORCE_MIGRATE=false
 
 # API Keys (initialize to empty to avoid unbound variable errors)
 # Capture from environment if they exist
@@ -391,45 +402,37 @@ OPTIONS:
     -y, --yes           Auto-accept all prompts (use with caution)
     -v, --verbose       Enable verbose output
     -u, --update        Update OpenCode CLI only
+    -A, --enable-auto-update
+                        Enable automatic opencode-ai updates
+    -D, --disable-auto-update
+                        Disable automatic opencode-ai updates
+    -S, --schedule-update <daily|weekly|monthly>
+                        Set update schedule (default: manual)
+    -C, --check-update
+                        Check for updates without installing
+    --user-config        Setup USER level configuration
+    --validate-config    Validate configuration files (with optional verbose output)
+    --migrate-config     Migrate existing configuration to USER level
+    --force-migrate      Force migration (overwrite existing USER config)
+ 
+ EXAMPLES:
+     ./setup.sh              # Interactive full setup
+     ./setup.sh --quick      # Quick setup (config and skills only)
+     ./setup.sh --skills-only # Skills-only setup (copy skills only)
+     ./setup.sh --dry-run    # Preview changes
+     ./setup.sh -y -q        # Quick setup with auto-accept
+     ./setup.sh --update     # Update OpenCode CLI only
+     ./setup.sh -A             # Enable automatic updates (default schedule: manual)
+     ./setup.sh -S daily     # Enable automatic updates with daily schedule
+     ./setup.sh -S weekly    # Enable automatic updates with weekly schedule
+     ./setup.sh -S monthly    # Enable automatic updates with monthly schedule
+     ./setup.sh -D             # Disable automatic updates
+     ./setup.sh -C             # Check for updates without installing
+     ./setup.sh --user-config  # Setup USER level configuration
+     ./setup.sh --validate-config  # Validate all configuration files
+     ./setup.sh --migrate-config   # Migrate to USER level configuration
 
-EXAMPLES:
-    ./setup.sh              # Interactive full setup
-    ./setup.sh --quick      # Quick setup (config and skills only)
-    ./setup.sh --skills-only # Skills-only setup (copy skills only)
-    ./setup.sh --dry-run    # Preview changes
-    ./setup.sh -y -q        # Quick setup with auto-accept
-    ./setup.sh --update     # Update OpenCode CLI only
-
- PLATFORM SUPPORT:
-   macOS:
-     - Shells: zsh (default), bash
-     - Config: ~/.zshrc (zsh), ~/.bash_profile (bash)
-     - Package Manager: Homebrew
-     - Tested: Intel and Apple Silicon
-
-   Linux:
-     - Shells: bash, zsh
-     - Config: ~/.bashrc
-     - Package Managers:
-       - apt: Ubuntu, Debian, Linux Mint, Pop!_OS, Elementary OS
-       - dnf: Fedora, RHEL, CentOS, Rocky, AlmaLinux
-       - pacman: Arch Linux, Manjaro, EndeavourOS
-       - zypper: openSUSE, SUSE Linux Enterprise
-       - apk: Alpine Linux
-     - Tested: Various distributions
-     - Tested: Ubuntu, Debian, Fedora, Arch
-
-   Windows:
-     - Shells: PowerShell, Git Bash, WSL2
-     - Config: $PROFILE (PowerShell), ~/.bashrc (Git Bash/WSL2)
-     - Package Managers: winget (Windows 10+), chocolatey
-     - Tested: PowerShell, Git Bash, WSL2
-
- PACKAGE MANAGERS:
-   macOS: brew
-   Linux: apt (Ubuntu/Debian), dnf (Fedora/RHEL), pacman (Arch)
-   Windows: winget (Windows 10+), chocolatey
-
+ 
  CONFIGURED FEATURES:
   Agents (4):
     - build-with-skills (default): Skill-aware coding agent that identifies and uses appropriate skills
@@ -498,8 +501,46 @@ parse_arguments() {
                 VERBOSE=true
                 shift
                 ;;
-            -u|--update)
+             -u|--update)
                 UPDATE_ONLY=true
+                shift
+                ;;
+            -A|--enable-auto-update)
+                ENABLE_AUTO_UPDATE=true
+                shift
+                ;;
+            -D|--disable-auto-update)
+                ENABLE_AUTO_UPDATE=false
+                shift
+                ;;
+            -S|--schedule-update)
+                if [ -n "$2" ]; then
+                    UPDATE_SCHEDULE="$2"
+                else
+                    log_error "--schedule-update requires an argument (daily, weekly, monthly)"
+                    exit 1
+                fi
+                shift 2
+                ;;
+            -C|--check-update)
+                CHECK_UPDATE_ONLY=true
+                shift
+                ;;
+            --user-config)
+                ENABLE_USER_CONFIG=true
+                shift
+                ;;
+            --validate-config)
+                VALIDATE_CONFIG=true
+                shift
+                ;;
+            --migrate-config)
+                MIGRATE_CONFIG=true
+                shift
+                ;;
+            --force-migrate)
+                MIGRATE_CONFIG=true
+                FORCE_MIGRATE=true
                 shift
                 ;;
             *)
@@ -1314,6 +1355,571 @@ setup_shell_vars() {
 }
 
 ################################################################################
+# USER CONFIGURATION FUNCTIONS
+################################################################################
+
+# USER config directory
+USER_CONFIG_DIR="${CONFIG_DIR}/user"
+USER_CONFIG_FILE="${USER_CONFIG_DIR}/config.user.json"
+USER_AGENTS_FILE="${USER_CONFIG_DIR}/AGENTS.md"
+USER_TEMPLATES_DIR="${SCRIPT_DIR}/templates"
+MIGRATION_LOG="${CONFIG_DIR}/migration.log"
+
+# Setup USER level configuration
+setup_user_config() {
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "             👤 USER Level Configuration Setup"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+
+    # Create USER config directory
+    run_cmd "mkdir -p ${USER_CONFIG_DIR}"
+    log_info "Created ${USER_CONFIG_DIR} directory"
+
+    # Check if user config already exists
+    local setup_user=false
+
+    if [ "$ENABLE_USER_CONFIG" = true ]; then
+        setup_user=true
+    elif [ -f "$USER_CONFIG_FILE" ]; then
+        log_info "USER config already exists at ${USER_CONFIG_FILE}"
+        if prompt_yes_no "Do you want to reset USER configuration?" "n"; then
+            setup_user=true
+        fi
+    else
+        if prompt_yes_no "Do you want to set up USER level configuration?" "y"; then
+            setup_user=true
+        fi
+    fi
+
+    if [ "$setup_user" = true ]; then
+        # Create USER config from template
+        if [ -f "${USER_TEMPLATES_DIR}/config.user.json.example" ]; then
+            cp "${USER_TEMPLATES_DIR}/config.user.json.example" "$USER_CONFIG_FILE"
+            log_success "Created ${USER_CONFIG_FILE}"
+        else
+            log_warn "Template not found, creating empty config"
+            echo '{}' > "$USER_CONFIG_FILE"
+        fi
+
+        # Optionally create USER AGENTS.md
+        if prompt_yes_no "Do you want to create USER level AGENTS.md?" "n"; then
+            if [ -f "${USER_TEMPLATES_DIR}/AGENTS.md.example" ]; then
+                cp "${USER_TEMPLATES_DIR}/AGENTS.md.example" "$USER_AGENTS_FILE"
+                log_success "Created ${USER_AGENTS_FILE}"
+            else
+                log_warn "AGENTS.md.example template not found"
+            fi
+        fi
+
+        # Update config.json to include USER config
+        update_config_json_for_user_config
+
+        echo ""
+        log_success "USER level configuration created successfully"
+        log_info "Configuration hierarchy:"
+        log_info "  1. Global: ${CONFIG_DIR}/AGENTS.md"
+        log_info "  2. USER:   ${USER_CONFIG_DIR}/AGENTS.md (optional)"
+        log_info "  3. Project: .AGENTS.md (if exists)"
+        log_info "  4. Config: ${CONFIG_FILE}"
+    else
+        log_info "Skipping USER level configuration setup"
+    fi
+
+    return 0
+}
+
+# Update config.json to include USER config in instructions
+update_config_json_for_user_config() {
+    if [ ! -f "$CONFIG_FILE" ]; then
+        log_warn "config.json not found, skipping update"
+        return 1
+    fi
+
+    # Check if USER config is already in instructions
+    if grep -q "${USER_CONFIG_FILE}" "$CONFIG_FILE" 2>/dev/null; then
+        log_info "USER config already referenced in config.json"
+        return 0
+    fi
+
+    # Backup config.json
+    create_backup "$CONFIG_FILE"
+
+    # Use jq to add USER config to instructions array if not already there
+    if command_exists jq; then
+        # Check if instructions field exists
+        if grep -q '"instructions"' "$CONFIG_FILE"; then
+            # Add USER config file to instructions array
+            jq --arg user_config "$USER_CONFIG_FILE" '.instructions = if type == "array" then (.instructions + [$user_config] | unique) else [$user_config] end' "$CONFIG_FILE" > "${CONFIG_FILE}.tmp" && mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
+        else
+            # Add instructions field with USER config
+            jq --arg user_config "$USER_CONFIG_FILE" '.instructions = [$user_config]' "$CONFIG_FILE" > "${CONFIG_FILE}.tmp" && mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
+        fi
+        log_success "Updated config.json to include USER configuration"
+    else
+        log_warn "jq not installed, cannot update config.json automatically"
+        log_info "Manually add ${USER_CONFIG_FILE} to instructions array in config.json"
+    fi
+
+    return 0
+}
+
+# Validate JSON configuration
+validate_json_config() {
+    local config_file="$1"
+
+    if [ ! -f "$config_file" ]; then
+        log_error "Configuration file not found: ${config_file}"
+        return 1
+    fi
+
+    # Check JSON syntax
+    if command_exists jq; then
+        if ! jq empty "$config_file" 2>/dev/null; then
+            log_error "Invalid JSON syntax in ${config_file}"
+            return 1
+        fi
+    elif command_exists python3; then
+        if ! python3 -m json.tool "$config_file" > /dev/null 2>&1; then
+            log_error "Invalid JSON syntax in ${config_file}"
+            return 1
+        fi
+    else
+        log_warn "No JSON validator available (jq or python3), skipping syntax check"
+    fi
+
+    log_success "✓ JSON syntax valid: ${config_file}"
+    return 0
+}
+
+# Validate AGENTS.md file
+validate_agents_md() {
+    local agents_file="$1"
+
+    if [ ! -f "$agents_file" ]; then
+        log_warn "AGENTS.md not found: ${agents_file}"
+        return 0
+    fi
+
+    # Check if file is markdown (has # headers)
+    if ! grep -q "^#" "$agents_file"; then
+        log_warn "${agents_file} does not appear to be a valid markdown file (no # headers)"
+        return 1
+    fi
+
+    log_success "✓ AGENTS.md format valid: ${agents_file}"
+    return 0
+}
+
+# Validate USER configuration
+validate_user_config() {
+    local verbose="${1:-false}"
+
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "           ✅ USER Configuration Validation"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+
+    local validation_passed=true
+
+    # Validate USER config directory
+    if [ ! -d "$USER_CONFIG_DIR" ]; then
+        log_warn "USER config directory not found: ${USER_CONFIG_DIR}"
+    else
+        log_success "✓ USER config directory exists"
+    fi
+
+    # Validate USER config file
+    if [ -f "$USER_CONFIG_FILE" ]; then
+        if validate_json_config "$USER_CONFIG_FILE"; then
+            if [ "$verbose" = true ]; then
+                echo ""
+                echo "Configuration structure:"
+                jq -r 'keys | .[]' "$USER_CONFIG_FILE" 2>/dev/null | while read key; do
+                    echo "  - ${key}"
+                done || echo "  (Unable to display structure)"
+            fi
+        else
+            validation_passed=false
+        fi
+    else
+        log_info "USER config file not found (optional)"
+    fi
+
+    # Validate USER AGENTS.md
+    if [ -f "$USER_AGENTS_FILE" ]; then
+        validate_agents_md "$USER_AGENTS_FILE"
+    else
+        log_info "USER AGENTS.md not found (optional)"
+    fi
+
+    # Validate config.json references
+    if [ -f "$CONFIG_FILE" ]; then
+        if grep -q "${USER_CONFIG_FILE}" "$CONFIG_FILE" 2>/dev/null; then
+            log_success "✓ config.json references USER configuration"
+        else
+            log_warn "config.json does not reference USER configuration"
+        fi
+    fi
+
+    echo ""
+    if [ "$validation_passed" = true ]; then
+        log_success "✓ USER configuration validation passed"
+    else
+        log_error "✗ USER configuration validation failed"
+        return 1
+    fi
+
+    return 0
+}
+
+# Migrate existing configuration to USER level
+migrate_to_user_config() {
+    local force="${1:-false}"
+
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "               🔄 Configuration Migration"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+
+    # Check if migration is needed
+    if [ -f "$USER_CONFIG_FILE" ] && [ "$force" != true ]; then
+        log_info "USER config already exists"
+        if prompt_yes_no "Do you want to re-migrate configuration?" "n"; then
+            force=true
+        else
+            log_info "Migration skipped"
+            return 0
+        fi
+    fi
+
+    # Log migration
+    {
+        echo "=========================================="
+        echo "Configuration Migration"
+        echo "=========================================="
+        echo "Date: $(date '+%Y-%m-%d %H:%M:%S')"
+        echo "User: ${USER}"
+        echo "Force: ${force}"
+        echo ""
+    } >> "$MIGRATION_LOG"
+
+    # Backup existing configuration
+    local timestamp=$(date +%Y%m%d_%H%M%S)
+    local backup_dir="${CONFIG_DIR}/backup/migration_${timestamp}"
+    run_cmd "mkdir -p ${backup_dir}"
+
+    if [ -f "$CONFIG_FILE" ]; then
+        cp "$CONFIG_FILE" "${backup_dir}/config.json"
+        log_info "Backed up config.json to ${backup_dir}"
+    fi
+
+    # Create USER config directory structure
+    run_cmd "mkdir -p ${USER_CONFIG_DIR}"
+
+    # Extract user preferences from existing config.json (if any)
+    local user_prefs='{}'
+    if [ -f "$CONFIG_FILE" ]; then
+        # Extract any user-specific settings if they exist
+        if command_exists jq; then
+            user_prefs=$(jq -r '{
+                version: .version // "1.0.0",
+                preferences: {
+                    defaultModel: .buildWithSkills.model // null,
+                    language: .buildWithSkills.language // "en",
+                    verbosity: "normal"
+                }
+            } | del(.[] | nulls)' "$CONFIG_FILE" 2>/dev/null || echo '{}')
+        fi
+    fi
+
+    # Create USER config file
+    echo "$user_prefs" > "${USER_CONFIG_FILE}"
+    log_success "Created ${USER_CONFIG_FILE}"
+
+    # Update config.json to reference USER config
+    update_config_json_for_user_config
+
+    # Copy templates if they don't exist
+    if [ ! -f "$USER_AGENTS_FILE" ] && [ -f "${USER_TEMPLATES_DIR}/AGENTS.md.example" ]; then
+        cp "${USER_TEMPLATES_DIR}/AGENTS.md.example" "$USER_AGENTS_FILE"
+        log_success "Created ${USER_AGENTS_FILE} from template"
+    fi
+
+    echo ""
+    log_success "Configuration migration completed"
+    log_info "Backup location: ${backup_dir}"
+    log_info "Migration log: ${MIGRATION_LOG}"
+
+    # Log completion
+    {
+        echo "Status: Success"
+        echo "Backup: ${backup_dir}"
+        echo "USER Config: ${USER_CONFIG_FILE}"
+        echo ""
+    } >> "$MIGRATION_LOG"
+
+    return 0
+}
+
+# Validate all configuration files
+validate_all_config() {
+    local verbose="${1:-false}"
+
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "           ✅ Configuration Validation"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+
+    local validation_passed=true
+
+    # Validate Global AGENTS.md
+    echo "Validating Global AGENTS.md..."
+    if [ -f "${CONFIG_DIR}/AGENTS.md" ]; then
+        validate_agents_md "${CONFIG_DIR}/AGENTS.md"
+    else
+        log_warn "Global AGENTS.md not found"
+    fi
+
+    # Validate USER config
+    echo ""
+    echo "Validating USER configuration..."
+    validate_user_config "$verbose" || validation_passed=false
+
+    # Validate Project AGENTS.md (if exists)
+    echo ""
+    echo "Validating Project AGENTS.md..."
+    if [ -f ".AGENTS.md" ]; then
+        validate_agents_md ".AGENTS.md"
+    else
+        log_info "Project AGENTS.md not found (optional)"
+    fi
+
+    # Validate config.json
+    echo ""
+    echo "Validating config.json..."
+    if [ -f "$CONFIG_FILE" ]; then
+        if validate_json_config "$CONFIG_FILE"; then
+            if [ "$verbose" = true ]; then
+                echo ""
+                echo "Agents configured:"
+                jq -r 'keys | .[]' "$CONFIG_FILE" 2>/dev/null | while read agent; do
+                    echo "  - ${agent}"
+                done || echo "  (Unable to display agents)"
+            fi
+        else
+            validation_passed=false
+        fi
+    else
+        log_error "config.json not found"
+        validation_passed=false
+    fi
+
+    echo ""
+    if [ "$validation_passed" = true ]; then
+        log_success "✓ All configuration validation passed"
+    else
+        log_error "✗ Configuration validation failed"
+        return 1
+    fi
+
+    return 0
+}
+
+################################################################################
+# AUTO-UPDATE FUNCTIONS
+################################################################################
+
+# Update last check time
+update_last_check_time() {
+    local timestamp=$(date +%s)
+    echo "$timestamp" > "$LAST_UPDATE_CHECK"
+    log_debug "Updated last check time: $(date -d @$timestamp)"
+}
+
+# Check if enough time has passed since last check
+should_check_for_updates() {
+    if [ ! -f "$LAST_UPDATE_CHECK" ]; then
+        log_debug "No last check file found, should check for updates"
+        return 0
+    fi
+
+    local last_check=$(cat "$LAST_UPDATE_CHECK" 2>/dev/null || echo "0")
+    local current_time=$(date +%s)
+    local time_diff=$((current_time - last_check))
+
+    # Time intervals in seconds
+    local daily=86400        # 24 * 60 * 60
+    local weekly=604800      # 7 * 24 * 60 * 60
+    local monthly=2592000    # 30 * 24 * 60 * 60
+
+    case "$UPDATE_SCHEDULE" in
+        daily)
+            return $((time_diff >= daily))
+            ;;
+        weekly)
+            return $((time_diff >= weekly))
+            ;;
+        monthly)
+            return $((time_diff >= monthly))
+            ;;
+        manual)
+            return 0
+            ;;
+        *)
+            # Default to weekly
+            return $((time_diff >= weekly))
+            ;;
+    esac
+}
+
+# Create backup before update
+create_backup_before_update() {
+    log_info "Creating backup before update..."
+
+    local backup_dir="${HOME}/.opencode-update-backup-$(date +%Y%m%d_%H%M%S)"
+    mkdir -p "$backup_dir" 2>/dev/null
+
+    # Backup config
+    if [ -f "$CONFIG_FILE" ]; then
+        cp "$CONFIG_FILE" "${backup_dir}/config.json"
+        log_info "Backed up: ${CONFIG_FILE}"
+    fi
+
+    # Backup AGENTS.md if it exists
+    if [ -f "${CONFIG_DIR}/AGENTS.md" ]; then
+        cp "${CONFIG_DIR}/AGENTS.md" "${backup_dir}/AGENTS.md"
+        log_info "Backed up: ${CONFIG_DIR}/AGENTS.md"
+    fi
+
+    # Backup skills directory if it exists
+    if [ -d "$SKILLS_DIR" ]; then
+        cp -r "$SKILLS_DIR" "${backup_dir}/skills"
+        log_info "Backed up: ${SKILLS_DIR}"
+    fi
+
+    log_success "Backup created at: ${backup_dir}"
+    echo "" >> "$UPDATE_LOG"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Backup created: ${backup_dir}" >> "$UPDATE_LOG"
+}
+
+# Check for updates only (don't install)
+check_for_updates_only() {
+    log_info "Checking for opencode-ai updates..."
+
+    # Check if enough time has passed
+    if ! should_check_for_updates; then
+        log_info "Skipping update check (scheduled time not reached)"
+        return 0
+    fi
+
+    # Get current version
+    local current_version
+    if ! command_exists opencode; then
+        log_warn "opencode-ai is not installed"
+        return 1
+    fi
+    current_version=$(opencode --version 2>/dev/null || echo "unknown")
+
+    # Get latest version
+    local latest_version
+    latest_version=$(npm view opencode-ai version 2>/dev/null || echo "unknown")
+
+    if [ "$latest_version" = "unknown" ]; then
+        log_error "Could not fetch latest version from npm registry"
+        return 1
+    fi
+
+    log_info "Current version: v${current_version}"
+    log_info "Latest version: v${latest_version}"
+
+    # Compare versions
+    if [ "$current_version" = "$latest_version" ]; then
+        log_success "opencode-ai is already up to date!"
+    else
+        log_info "Update available: v${current_version} → v${latest_version}"
+        log_info "Run: ./setup.sh -A -S <daily|weekly|monthly> to enable auto-updates"
+    fi
+
+    update_last_check_time
+    echo "" >> "$UPDATE_LOG"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Update check: v${current_version} (latest: v${latest_version})" >> "$UPDATE_LOG"
+}
+
+# Perform auto-update
+auto_update_opencode() {
+    # Check if auto-update is enabled
+    if [ "$ENABLE_AUTO_UPDATE" = false ]; then
+        log_info "Auto-update is disabled"
+        return 0
+    fi
+
+    # Check if enough time has passed
+    if ! should_check_for_updates; then
+        log_info "Skipping auto-update (scheduled time not reached)"
+        return 0
+    fi
+
+    log_info "Checking for opencode-ai updates..."
+
+    # Get current version
+    local current_version
+    if ! command_exists opencode; then
+        log_warn "opencode-ai is not installed"
+        return 1
+    fi
+    current_version=$(opencode --version 2>/dev/null || echo "unknown")
+
+    # Get latest version
+    local latest_version
+    latest_version=$(npm view opencode-ai version 2>/dev/null || echo "unknown")
+
+    if [ "$latest_version" = "unknown" ]; then
+        log_error "Could not fetch latest version from npm registry"
+        log_info "Check your internet connection and try again"
+        return 1
+    fi
+
+    log_info "Current version: v${current_version}"
+    log_info "Latest version: v${latest_version}"
+
+    # Check if update is needed
+    if [ "$current_version" = "$latest_version" ]; then
+        log_success "opencode-ai is already up to date!"
+        update_last_check_time
+        return 0
+    fi
+
+    log_info "Update available: v${current_version} → v${latest_version}"
+
+    # Create backup before update
+    create_backup_before_update
+
+    # Perform update
+    log_info "Auto-updating opencode-ai to v${latest_version}..."
+    run_cmd "npm install -g opencode-ai@${latest_version}"
+
+    # Verify update
+    local new_version
+    new_version=$(opencode --version 2>/dev/null || echo "unknown")
+
+    if [ "$new_version" = "$latest_version" ]; then
+        log_success "opencode-ai updated successfully to v${new_version}"
+        update_last_check_time
+    else
+        log_error "Update failed. Current version: v${new_version}"
+        return 1
+    fi
+
+    echo "" >> "$UPDATE_LOG"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Auto-update: v${current_version} → v${new_version}" >> "$UPDATE_LOG"
+}
+
+################################################################################
 # SUMMARY AND REPORTING
 ################################################################################
 
@@ -1605,6 +2211,24 @@ main() {
         exit 1
     fi
 
+    # Check for update command
+    if [ "$CHECK_UPDATE_ONLY" = true ]; then
+        check_for_updates_only
+        exit 0
+    fi
+
+    # Handle validation command
+    if [ "$VALIDATE_CONFIG" = true ]; then
+        validate_all_config "$VERBOSE"
+        exit 0
+    fi
+
+    # Handle migration command
+    if [ "$MIGRATE_CONFIG" = true ]; then
+        migrate_to_user_config "$FORCE_MIGRATE"
+        exit 0
+    fi
+
     # Check network connectivity (skip in quick setup)
     if [ "$QUICK_SETUP" = false ]; then
         if ! check_network; then
@@ -1612,6 +2236,14 @@ main() {
             if ! prompt_yes_no "Continue anyway?" "n"; then
                 exit 1
             fi
+        fi
+    fi
+
+    # Auto-update check (run before main menu)
+    if [ "$AUTO_ACCEPT" = true ] || [ "$CHECK_UPDATE_ONLY" = false ]; then
+        if [ "$ENABLE_AUTO_UPDATE" = true ]; then
+            log_info "Auto-update is enabled (schedule: ${UPDATE_SCHEDULE})"
+            auto_update_opencode
         fi
     fi
 
@@ -1692,6 +2324,7 @@ main() {
 
     setup_config || true
     setup_shell_vars || true
+    setup_user_config || true
 
     # Print summary and next steps
     print_summary

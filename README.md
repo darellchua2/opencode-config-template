@@ -55,3 +55,153 @@ This template implements **skill permissions** to control which skills agents ca
 
 See [SKILL-PERMISSIONS.md](./SKILL-PERMISSIONS.md) for detailed permission examples and use cases.
 
+## USER Level Configuration
+
+This repository supports **USER level configuration** for personal overrides and customizations. The configuration hierarchy is:
+
+```
+Global AGENTS.md (~/.config/opencode/AGENTS.md)
+    ↓ (defaults and personal preferences)
+USER Level Config (~/.config/opencode/user/)
+    ↓ (user-specific overrides)
+Project AGENTS.md (.AGENTS.md)
+    ↓ (team rules and project-specific settings)
+config.json (~/.config/opencode/config.json)
+    ↓ (agent definitions and tool permissions)
+Task Execution
+```
+
+### Setting Up USER Configuration
+
+#### Option 1: Interactive Setup (Recommended)
+
+Run setup.sh with user configuration:
+
+```bash
+./setup.sh --user-config
+```
+
+This will:
+1. Create `~/.config/opencode/user/` directory
+2. Generate `config.user.json` from template
+3. Optionally create `AGENTS.md` for user-level overrides
+4. Update `config.json` to reference USER configuration
+
+#### Option 2: Manual Setup
+
+```bash
+# Create user config directory
+mkdir -p ~/.config/opencode/user
+
+# Copy templates
+cp templates/config.user.json.example ~/.config/opencode/user/config.user.json
+cp templates/AGENTS.md.example ~/.config/opencode/user/AGENTS.md  # optional
+
+# Edit configuration
+nano ~/.config/opencode/user/config.user.json
+nano ~/.config/opencode/user/AGENTS.md  # optional
+```
+
+### USER Configuration Files
+
+#### config.user.json
+
+User-specific configuration that overrides global defaults:
+
+```json
+{
+  "preferences": {
+    "defaultModel": "glm-4.7",
+    "language": "en",
+    "timezone": "UTC"
+  },
+  "skills": {
+    "enabled": ["*"],
+    "disabled": [],
+    "customSkillsPath": "/path/to/custom/skills"
+  },
+  "agents": {
+    "defaultAgent": "build-with-skills",
+    "subagentTimeout": 300
+  },
+  "behavior": {
+    "autoLint": true,
+    "autoTest": true,
+    "autoDocument": false
+  }
+}
+```
+
+#### AGENTS.md (User Level)
+
+Optional user-level AGENTS.md that overrides global settings:
+
+```markdown
+# USER Level AGENTS.md
+
+## Personal Overrides
+
+### Model Preferences
+- Default model: glm-4.7
+- Fallback model: glm-4.6v
+
+### Agent Preferences
+- Prefer build-with-skills for most tasks
+- Use plan-with-skills for complex planning
+```
+
+### Configuration Validation
+
+Validate all configuration files:
+
+```bash
+./setup.sh --validate-config
+```
+
+Validate with verbose output:
+
+```bash
+./setup.sh --validate-config --verbose
+```
+
+### Configuration Migration
+
+Migrate existing configuration to USER level:
+
+```bash
+./setup.sh --migrate-config
+```
+
+Force migration (overwrite existing USER config):
+
+```bash
+./setup.sh --force-migrate
+```
+
+### Configuration Management Commands
+
+| Command | Description |
+|---------|-------------|
+| `--user-config` | Setup USER level configuration interactively |
+| `--validate-config` | Validate all configuration files |
+| `--migrate-config` | Migrate existing configuration to USER level |
+| `--force-migrate` | Force migration (overwrite existing USER config) |
+
+### USER Configuration Best Practices
+
+1. **Keep Global Settings Minimal**: Put essential defaults in Global AGENTS.md
+2. **Use Specific Overrides**: Only override what's necessary in USER config
+3. **Document Customizations**: Comment your changes in AGENTS.md
+4. **Test Configuration**: Run `--validate-config` after changes
+5. **Backup Before Changes**: Migration creates automatic backups
+
+### Template Files
+
+Template files are available in the `templates/` directory:
+
+- `USER_CONFIG.md` - Complete USER configuration guide
+- `config.user.json.example` - Example USER config with all options
+- `AGENTS.md.example` - Example USER AGENTS.md with common overrides
+
+For detailed documentation, see `templates/USER_CONFIG.md`.
+
