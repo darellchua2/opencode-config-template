@@ -1,3 +1,10 @@
+# [1.12.0](https://github.com/darellchua2/opencode-config-template/compare/v1.11.0...v1.12.0) (2026-01-29)
+
+
+### Features
+
+* **tdd:** add TDD workflow skill with red-green-refactor cycle guidance ([73de732](https://github.com/darellchua2/opencode-config-template/commit/73de73242c807c1432683c460e4ad68d64f026ce)), closes [#58](https://github.com/darellchua2/opencode-config-template/issues/58)
+
 # [1.11.0](https://github.com/darellchua2/opencode-config-template/compare/v1.10.0...v1.11.0) (2026-01-29)
 
 
