@@ -10,31 +10,29 @@ metadata:
 
 ## What I do
 
-I provide intelligent GitHub issue label assessment by:
-
-- Analyzing issue content to determine appropriate GitHub default labels
-- Using keyword and pattern matching to identify issue types
-- Assigning single or multiple labels based on issue complexity
-- Providing label descriptions for clarity and consistency
-- Supporting the 9 GitHub default labels: bug, enhancement, documentation, duplicate, good first issue, help wanted, invalid, question, wontfix
-- Using GitHub CLI (`gh`) to query available repository labels
-- Generating label assignment reports for review
+- Analyze issue content to determine appropriate GitHub default labels
+- Use keyword and pattern matching to identify issue types
+- Assign single or multiple labels based on issue complexity
+- Provide label descriptions for clarity and consistency
+- Support 9 GitHub default labels: bug, enhancement, documentation, duplicate, good first issue, help wanted, invalid, question, wontfix
+- Use GitHub CLI (`gh`) to query available repository labels
+- Generate label assignment reports for review
 
 ## When to use me
 
-Use this when:
+Use when:
 - You need to assess and label GitHub issues automatically
 - You want consistent label assignment across your repository
 - You need to categorize issues using GitHub's default label scheme
 - You're setting up a new repository and need label guidelines
-- You want to review unlabeled or mislabeled issues
-- You need to train contributors on when to use specific labels
+- You need to review unlabeled or mislabeled issues
+- You want to train contributors on when to use specific labels
 
 ## Prerequisites
 
 - GitHub CLI (`gh`) installed and authenticated
 - Git repository with GitHub remote
-- Write access to the GitHub repository
+- Write access to GitHub repository
 - Repository uses GitHub's default labels or custom labels
 - Valid `GITHUB_TOKEN` or `gh` authentication setup
 
@@ -56,7 +54,7 @@ Use this when:
 **Keywords**: add, implement, create, new, feature, support, introduce, build, develop, request, suggestion
 
 **Examples**:
-- "Add dark mode support to the dashboard"
+- "Add dark mode support to dashboard"
 - "Implement export to PDF functionality"
 - "Add pagination to user list"
 
@@ -66,7 +64,7 @@ Use this when:
 **Keywords**: document, readme, docs, guide, explain, tutorial, wiki, comment, manual, help
 
 **Examples**:
-- "Document the API endpoints for authentication"
+- "Document API endpoints for authentication"
 - "Update README with installation instructions"
 - "Add code comments to complex functions"
 
@@ -78,6 +76,7 @@ Use this when:
 **Examples**:
 - "This is the same as issue #123"
 - "Already reported in #456"
+- "Similar to #789"
 
 ### good first issue
 **Description**: Good for newcomers or first-time contributors
@@ -92,14 +91,15 @@ Use this when:
 ### help wanted
 **Description**: Extra attention or help is needed
 
-**Keywords**: help wanted, need help, assistance, looking for help, collaboration, community
+**Keywords**: help wanted, need help, assistance, looking for help, collaboration, community, mentorship
 
 **Examples**:
 - "Need help with performance optimization"
 - "Looking for someone to review documentation"
+- "Assistance needed for complex refactoring"
 
 ### invalid
-**Description**: This doesn't seem right or is not a valid issue
+**Description**: This doesn't seem right or isn't a valid issue
 
 **Keywords**: invalid, not an issue, wrong repo, user error, configuration, misunderstanding
 
@@ -121,7 +121,7 @@ Use this when:
 ### wontfix
 **Description**: This will not be worked on due to technical limitations, out of scope, or other reasons
 
-**Keywords**: wontfix, out of scope, not feasible, declined, rejected, wont do, never
+**Keywords**: wontfix, out of scope, not feasible, declined, rejected, never, wont do
 
 **Examples**:
 - "Feature is out of scope for this project"
@@ -131,10 +131,9 @@ Use this when:
 ## Steps
 
 ### Step 1: Query Available Labels
-First, check what labels are available in the repository:
 
 ```bash
-# Get all available labels in the repository
+# Get all available labels in repository
 gh label list --json name,description,color
 
 # Get default labels specifically
@@ -142,335 +141,85 @@ gh label list --search "bug|enhancement|documentation|duplicate|good first issue
 ```
 
 ### Step 2: Analyze Issue Content
-Read the issue title and body to identify keywords and patterns:
 
 ```bash
 # Read issue content
 gh issue view <issue-number> --json title,body,labels
-
-# Extract title and body for analysis
-issue_title=$(gh issue view <issue-number> --jq '.title')
-issue_body=$(gh issue view <issue-number> --jq '.body')
 ```
+
+**Key elements to analyze**:
+- Issue title and keywords
+- Issue body content
+- Existing labels
+- Issue comments (optional)
 
 ### Step 3: Determine Appropriate Labels
-Use keyword matching to assign labels:
 
-#### Label Detection Logic
+**Pattern matching strategy**:
+- Check issue title for keywords matching each label
+- Check issue body for additional context
+- Consider existing labels before adding new ones
+- Assign multiple labels if issue fits multiple categories
 
-**Bug Detection**:
-```bash
-if [[ "$issue_content" =~ (fix|error|broken|crash|fail|doesn't work|incorrect|wrong|problem|bug|defect) ]]; then
-  labels+=("bug")
-fi
-```
-
-**Enhancement Detection**:
-```bash
-if [[ "$issue_content" =~ (add|implement|create|new|feature|support|introduce|build|develop|request|suggestion) ]]; then
-  labels+=("enhancement")
-fi
-```
-
-**Documentation Detection**:
-```bash
-if [[ "$issue_content" =~ (document|readme|docs|guide|explain|tutorial|wiki|comment|manual|help) ]]; then
-  labels+=("documentation")
-fi
-```
-
-**Duplicate Detection**:
-```bash
-if [[ "$issue_content" =~ (duplicate|same as|already exists|similar|repeated|already reported) ]]; then
-  labels+=("duplicate")
-fi
-```
-
-**Good First Issue Detection**:
-```bash
-if [[ "$issue_content" =~ (beginner|simple|easy|small|straightforward|first time|newcomer|junior) ]]; then
-  labels+=("good first issue")
-fi
-```
-
-**Help Wanted Detection**:
-```bash
-if [[ "$issue_content" =~ (help wanted|need help|assistance|looking for help|collaboration|community) ]]; then
-  labels+=("help wanted")
-fi
-```
-
-**Invalid Detection**:
-```bash
-if [[ "$issue_content" =~ (invalid|not an issue|wrong repo|user error|configuration|misunderstanding) ]]; then
-  labels+=("invalid")
-fi
-```
-
-**Question Detection**:
-```bash
-if [[ "$issue_content" =~ (question|how|what|why|clarification|explain|understand|ask|wondering) ]]; then
-  labels+=("question")
-fi
-```
-
-**Wontfix Detection**:
-```bash
-if [[ "$issue_content" =~ (wontfix|out of scope|not feasible|declined|rejected|wont do|never) ]]; then
-  labels+=("wontfix")
-fi
-```
+**Priority order**:
+1. bug (if it's a broken feature)
+2. duplicate (if it already exists)
+3. invalid (if it's not a valid issue)
+4. enhancement, documentation (based on keywords)
+5. question (if it's asking for help)
+6. wontfix (if it's been declined)
+7. good first issue, help wanted (based on difficulty/complexity)
 
 ### Step 4: Assign Labels to Issue
-Use GitHub CLI to assign the determined labels:
 
 ```bash
-# Assign single label
-gh issue edit <issue-number> --add-label "bug"
+# Add label to issue
+gh issue edit <issue-number> --add-label <label-name>
 
-# Assign multiple labels
+# Add multiple labels
 gh issue edit <issue-number> --add-label "bug,enhancement"
 
-# Remove incorrect labels
-gh issue edit <issue-number> --remove-label "documentation"
+# Remove labels (if mislabeled)
+gh issue edit <issue-number> --remove-label <label-name>
 ```
 
-### Step 5: Generate Assessment Report
-Create a summary of the label assignment:
+### Step 5: Generate Report
 
-```markdown
-# Issue Label Assessment
-
-**Issue**: #<issue-number> - <issue-title>
-
-**Assigned Labels**:
-- `<label1>`: <label description>
-- `<label2>`: <label description>
-
-**Detection Keywords**:
-- `<keyword1>` → `<label1>`
-- `<keyword2>` → `<label2>`
-
-**Confidence**: High/Medium/Low
-
-**Recommendations**:
-- Additional labels to consider
-- Labels to review
-- Notes on ambiguous cases
+```bash
+echo "Label assignment complete!"
+echo "Issue: <issue-number>"
+echo "Labels added: <label1>, <label2>"
 ```
 
 ## Best Practices
 
-### Label Assignment
-
-- **Start with primary label**: Assign the most appropriate label first
-- **Use multiple labels sparingly**: Maximum 2-3 labels per issue is recommended
-- **Prioritize by impact**: Bug > enhancement > documentation
-- **Be consistent**: Use same labels for similar issues
-- **Review existing labels**: Check issue history before assigning new labels
-
-### Content Analysis
-
-- **Analyze both title and body**: Keywords can appear in either
-- **Consider context**: Same keyword may indicate different label based on context
-- **Look for explicit requests**: "Please add" vs "How to add"
-- **Check for negations**: "not a bug" should not be labeled as bug
-- **Review issue comments**: Comments may provide additional context
-
-### Quality Assurance
-
-- **Verify label exists**: Check repository label list before assigning
-- **Review custom labels**: Some repos use custom labels instead of defaults
-- **Consider issue priority**: Critical bugs may need additional attention
-- **Document decisions**: Add comments explaining label assignment rationale
-- **Update as needed**: Labels can change as issue evolves
+- Use GitHub's default labels for consistency
+- Check existing labels before adding new ones
+- Assign bug label if issue describes broken functionality
+- Assign enhancement label for new feature requests
+- Use question label for clarification requests
+- Use wontfix when declining requests
+- Provide clear descriptions for custom labels
+- Review label assignments periodically for consistency
+- Consider using good first issue for simple tasks
+- Use help wanted when community input is needed
 
 ## Common Issues
 
 ### Label Doesn't Exist
+**Solution**: Query available labels with `gh label list`, create custom label if needed.
 
-**Issue**: Attempting to assign a label that doesn't exist in the repository
-
-**Solution**:
-```bash
-# First, check available labels
-gh label list
-
-# If using custom labels, use those instead
-gh issue edit <issue-number> --add-label "custom-label-name"
-
-# Or create the missing label
-gh label create "bug" --color "d73a4a" --description "Something isn't working"
-```
-
-### Conflicting Labels
-
-**Issue**: Issue is assigned both "bug" and "enhancement" which may be conflicting
-
-**Solution**:
-- Review the issue content carefully
-- Determine primary intent: fix vs new feature
-- Remove the conflicting label
-- Add a comment explaining the decision
-
-### Multiple Labels Overlap
-
-**Issue**: Issue qualifies for multiple similar labels (e.g., bug + invalid)
-
-**Solution**:
-- Assess which label is more appropriate
-- "Invalid" takes precedence over "bug" if issue is not valid
-- "Documentation" can be combined with other labels
-- Use comment to explain the combination
-
-### Low Confidence Assignment
-
-**Issue**: Unable to confidently determine the appropriate label
-
-**Solution**:
-- Leave unlabeled or use generic label like "enhancement"
-- Add comment requesting clarification from issue author
-- Ask for team review: "needs: triage" label
-- Manual review by maintainer
+### Multiple Labels Conflict
+**Solution**: Ensure labels aren't contradictory (e.g., bug + wontfix).
 
 ### Keyword Ambiguity
+**Solution**: Review issue title and body for full context, ask clarifying questions if needed.
 
-**Issue**: Same keyword indicates different labels based on context
+### Repository Permission Issues
+**Solution**: Verify GitHub CLI authentication, check repository write permissions.
 
-**Examples**:
-- "add" could be enhancement ("add feature") or bug ("add error handling")
-- "fix" could be bug ("fix broken feature") or enhancement ("fix UI")
-- "help" could be help wanted or question
+## References
 
-**Solution**:
-- Analyze surrounding context
-- Check issue description for intent
-- Look at code examples or screenshots
-- When in doubt, ask for clarification
-
-## Verification Commands
-
-After assessing and labeling an issue:
-
-```bash
-# 1. Verify issue has labels
-gh issue view <issue-number> --jq '.labels[].name'
-
-# 2. Check label count
-label_count=$(gh issue view <issue-number> --jq '.labels | length')
-echo "Issue has $label_count label(s)"
-
-# 3. Validate labels exist in repository
-for label in $(gh issue view <issue-number> --jq '.labels[].name'); do
-  if gh label list --search "$label" --jq 'any(.name == "'"$label"'")' | grep -q "true"; then
-    echo "✓ Label '$label' exists"
-  else
-    echo "❌ Label '$label' does not exist"
-  fi
-done
-
-# 4. Review issue timeline for label changes
-gh issue view <issue-number> --json timeline --jq '.timeline[] | select(.event == "labeled")'
-
-# 5. Generate assessment report
-echo "Assessment for #<issue-number>"
-echo "Title: $(gh issue view <issue-number> --jq '.title')"
-echo "Labels: $(gh issue view <issue-number> --jq '.labels | map(.name) | join(\", \")')"
-```
-
-## Assessment Report Template
-
-```markdown
-# Issue Label Assessment Report
-
-**Issue**: #<issue-number> - <issue-title>
-**Author**: @<author>
-**Created**: <date>
-**Assessed By**: @<assessor>
-**Assessment Date**: <date>
-
-## Current Labels
-- [x] `bug` - Something isn't working
-- [ ] `enhancement` - New feature or request
-- [ ] `documentation` - Documentation improvements
-- [ ] `duplicate` - Already exists
-- [ ] `good first issue` - Good for newcomers
-- [ ] `help wanted` - Extra attention needed
-- [ ] `invalid` - Not a valid issue
-- [ ] `question` - Clarification needed
-- [ ] `wontfix` - Will not be worked on
-
-## Keyword Analysis
-| Keyword Found | Detected Label | Confidence |
-|---------------|----------------|------------|
-| fix | bug | High |
-| error | bug | High |
-| add feature | enhancement | Medium |
-
-## Recommended Labels
-1. **Primary**: `bug` (High confidence)
-2. **Secondary**: `enhancement` (Medium confidence)
-
-## Notes
-- Issue contains both bug report and feature request
-- Clarification from author recommended
-- Consider splitting into two separate issues
-
-## Action Taken
-- Assigned labels: `bug`, `enhancement`
-- Added comment requesting clarification
-- Scheduled for team review
-```
-
-## Related Skills
-
-- **git-issue-creator**: For creating GitHub issues with intelligent tag detection
-- **ticket-branch-workflow**: Framework for ticket-to-branch workflows
-- **jira-git-integration**: For JIRA + GitHub workflows
-- **pr-creation-workflow**: For creating pull requests after resolving issues
-
-## Automation Example
-
-Assess multiple issues at once:
-
-```bash
-#!/bin/bash
-# Assess all open issues without labels
-
-for issue_number in $(gh issue list --state open --limit 50 --jq '.[].number'); do
-  labels=$(gh issue view "$issue_number" --jq '.labels | length')
-
-  if [ "$labels" -eq 0 ]; then
-    echo "Assessing issue #$issue_number..."
-
-    # Get issue content
-    title=$(gh issue view "$issue_number" --jq '.title')
-    body=$(gh issue view "$issue_number" --jq '.body')
-    content="${title} ${body}"
-
-    # Determine labels
-    assign_labels=()
-
-    if [[ "$content" =~ (bug|fix|error|broken|crash) ]]; then
-      assign_labels+=("bug")
-    fi
-
-    if [[ "$content" =~ (enhancement|add|implement|feature) ]]; then
-      assign_labels+=("enhancement")
-    fi
-
-    if [[ "$content" =~ (documentation|docs|readme) ]]; then
-      assign_labels+=("documentation")
-    fi
-
-    # Assign labels
-    if [ ${#assign_labels[@]} -gt 0 ]; then
-      label_string=$(IFS=,; echo "${assign_labels[*]}")
-      gh issue edit "$issue_number" --add-label "$label_string"
-      echo "✓ Assigned labels: $label_string"
-    else
-      echo "? Could not determine label for #$issue_number"
-    fi
-  fi
-done
-```
+- GitHub Labels Documentation: https://docs.github.com/articles/creating-a-label
+- GitHub CLI Documentation: https://cli.github.com/manual/
+- Issue Triage Best Practices: https://docs.github.com/articles/triaging-issues-and-pull-requests
