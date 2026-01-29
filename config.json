@@ -2,6 +2,10 @@
   "$schema": "https://opencode.ai/config.json",
   "model": "zai-coding-plan/glm-4.7",
   "default_agent": "build-with-skills",
+  "instructions": [
+    "~/.config/opencode/AGENTS.md",
+    ".AGENTS.md"
+  ],
   "provider": {
     "lmstudio": {
       "npm": "@ai-sdk/openai-compatible",
