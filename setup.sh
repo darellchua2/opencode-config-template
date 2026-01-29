@@ -275,12 +275,6 @@ ENABLE_AUTO_UPDATE=false
 UPDATE_SCHEDULE="manual"
 CHECK_UPDATE_ONLY=false
 
-# USER Configuration flags
-ENABLE_USER_CONFIG=false
-VALIDATE_CONFIG=false
-MIGRATE_CONFIG=false
-FORCE_MIGRATE=false
-
 # API Keys (initialize to empty to avoid unbound variable errors)
 # Capture from environment if they exist
 GITHUB_PAT="${GITHUB_PAT:-}"
@@ -410,10 +404,6 @@ OPTIONS:
                         Set update schedule (default: manual)
     -C, --check-update
                         Check for updates without installing
-    --user-config        Setup USER level configuration
-    --validate-config    Validate configuration files (with optional verbose output)
-    --migrate-config     Migrate existing configuration to USER level
-    --force-migrate      Force migration (overwrite existing USER config)
  
  EXAMPLES:
      ./setup.sh              # Interactive full setup
@@ -428,9 +418,6 @@ OPTIONS:
      ./setup.sh -S monthly    # Enable automatic updates with monthly schedule
      ./setup.sh -D             # Disable automatic updates
      ./setup.sh -C             # Check for updates without installing
-     ./setup.sh --user-config  # Setup USER level configuration
-     ./setup.sh --validate-config  # Validate all configuration files
-     ./setup.sh --migrate-config   # Migrate to USER level configuration
 
  
  CONFIGURED FEATURES:
@@ -524,23 +511,6 @@ parse_arguments() {
                 ;;
             -C|--check-update)
                 CHECK_UPDATE_ONLY=true
-                shift
-                ;;
-            --user-config)
-                ENABLE_USER_CONFIG=true
-                shift
-                ;;
-            --validate-config)
-                VALIDATE_CONFIG=true
-                shift
-                ;;
-            --migrate-config)
-                MIGRATE_CONFIG=true
-                shift
-                ;;
-            --force-migrate)
-                MIGRATE_CONFIG=true
-                FORCE_MIGRATE=true
                 shift
                 ;;
             *)
@@ -1188,6 +1158,23 @@ setup_config() {
     run_cmd "mkdir -p ${CONFIG_DIR}"
     log_info "Created ${CONFIG_DIR} directory"
 
+    # Copy AGENTS.md from project to global config
+    if [ -f "${SCRIPT_DIR}/.AGENTS.md" ]; then
+        if [ -f "${CONFIG_DIR}/AGENTS.md" ]; then
+            log_warn "AGENTS.md already exists at ${CONFIG_DIR}/AGENTS.md"
+            if prompt_yes_no "Do you want to overwrite it?" "n"; then
+                create_backup "${CONFIG_DIR}/AGENTS.md"
+                run_cmd "cp ${SCRIPT_DIR}/.AGENTS.md ${CONFIG_DIR}/AGENTS.md"
+                log_success "AGENTS.md copied successfully (renamed from .AGENTS.md)"
+            fi
+        else
+            run_cmd "cp ${SCRIPT_DIR}/.AGENTS.md ${CONFIG_DIR}/AGENTS.md"
+            log_success "AGENTS.md copied successfully (renamed from .AGENTS.md)"
+        fi
+    else
+        log_warn ".AGENTS.md not found in ${SCRIPT_DIR}"
+    fi
+
     # Check if config.json already exists
     if [ -f "$CONFIG_FILE" ]; then
         echo ""
@@ -1349,382 +1336,6 @@ setup_shell_vars() {
                 log_info "Skipping shell config update for GITHUB_PAT"
             fi
         fi
-    fi
-
-    return 0
-}
-
-################################################################################
-# USER CONFIGURATION FUNCTIONS
-################################################################################
-
-# USER config directory
-USER_CONFIG_DIR="${CONFIG_DIR}/user"
-USER_CONFIG_FILE="${USER_CONFIG_DIR}/config.user.json"
-USER_AGENTS_FILE="${USER_CONFIG_DIR}/AGENTS.md"
-USER_TEMPLATES_DIR="${SCRIPT_DIR}/templates"
-MIGRATION_LOG="${CONFIG_DIR}/migration.log"
-
-# Setup USER level configuration
-setup_user_config() {
-    echo ""
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "             👤 USER Level Configuration Setup"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo ""
-
-    # Create USER config directory
-    run_cmd "mkdir -p ${USER_CONFIG_DIR}"
-    log_info "Created ${USER_CONFIG_DIR} directory"
-
-    # Check if user config already exists
-    local setup_user=false
-
-    if [ "$ENABLE_USER_CONFIG" = true ]; then
-        setup_user=true
-    elif [ -f "$USER_CONFIG_FILE" ]; then
-        log_info "USER config already exists at ${USER_CONFIG_FILE}"
-        if prompt_yes_no "Do you want to reset USER configuration?" "n"; then
-            setup_user=true
-        fi
-    else
-        if prompt_yes_no "Do you want to set up USER level configuration?" "y"; then
-            setup_user=true
-        fi
-    fi
-
-    if [ "$setup_user" = true ]; then
-        # Create USER config from template
-        if [ -f "${USER_TEMPLATES_DIR}/config.user.json.example" ]; then
-            cp "${USER_TEMPLATES_DIR}/config.user.json.example" "$USER_CONFIG_FILE"
-            log_success "Created ${USER_CONFIG_FILE}"
-        else
-            log_warn "Template not found, creating empty config"
-            echo '{}' > "$USER_CONFIG_FILE"
-        fi
-
-        # Optionally create USER AGENTS.md
-        if prompt_yes_no "Do you want to create USER level AGENTS.md?" "n"; then
-            if [ -f "${USER_TEMPLATES_DIR}/AGENTS.md.example" ]; then
-                cp "${USER_TEMPLATES_DIR}/AGENTS.md.example" "$USER_AGENTS_FILE"
-                log_success "Created ${USER_AGENTS_FILE}"
-            else
-                log_warn "AGENTS.md.example template not found"
-            fi
-        fi
-
-        # Update config.json to include USER config
-        update_config_json_for_user_config
-
-        echo ""
-        log_success "USER level configuration created successfully"
-        log_info "Configuration hierarchy:"
-        log_info "  1. Global: ${CONFIG_DIR}/AGENTS.md"
-        log_info "  2. USER:   ${USER_CONFIG_DIR}/AGENTS.md (optional)"
-        log_info "  3. Project: .AGENTS.md (if exists)"
-        log_info "  4. Config: ${CONFIG_FILE}"
-    else
-        log_info "Skipping USER level configuration setup"
-    fi
-
-    return 0
-}
-
-# Update config.json to include USER config in instructions
-update_config_json_for_user_config() {
-    if [ ! -f "$CONFIG_FILE" ]; then
-        log_warn "config.json not found, skipping update"
-        return 1
-    fi
-
-    # Check if USER config is already in instructions
-    if grep -q "${USER_CONFIG_FILE}" "$CONFIG_FILE" 2>/dev/null; then
-        log_info "USER config already referenced in config.json"
-        return 0
-    fi
-
-    # Backup config.json
-    create_backup "$CONFIG_FILE"
-
-    # Use jq to add USER config to instructions array if not already there
-    if command_exists jq; then
-        # Check if instructions field exists
-        if grep -q '"instructions"' "$CONFIG_FILE"; then
-            # Add USER config file to instructions array
-            jq --arg user_config "$USER_CONFIG_FILE" '.instructions = if type == "array" then (.instructions + [$user_config] | unique) else [$user_config] end' "$CONFIG_FILE" > "${CONFIG_FILE}.tmp" && mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
-        else
-            # Add instructions field with USER config
-            jq --arg user_config "$USER_CONFIG_FILE" '.instructions = [$user_config]' "$CONFIG_FILE" > "${CONFIG_FILE}.tmp" && mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
-        fi
-        log_success "Updated config.json to include USER configuration"
-    else
-        log_warn "jq not installed, cannot update config.json automatically"
-        log_info "Manually add ${USER_CONFIG_FILE} to instructions array in config.json"
-    fi
-
-    return 0
-}
-
-# Validate JSON configuration
-validate_json_config() {
-    local config_file="$1"
-
-    if [ ! -f "$config_file" ]; then
-        log_error "Configuration file not found: ${config_file}"
-        return 1
-    fi
-
-    # Check JSON syntax
-    if command_exists jq; then
-        if ! jq empty "$config_file" 2>/dev/null; then
-            log_error "Invalid JSON syntax in ${config_file}"
-            return 1
-        fi
-    elif command_exists python3; then
-        if ! python3 -m json.tool "$config_file" > /dev/null 2>&1; then
-            log_error "Invalid JSON syntax in ${config_file}"
-            return 1
-        fi
-    else
-        log_warn "No JSON validator available (jq or python3), skipping syntax check"
-    fi
-
-    log_success "✓ JSON syntax valid: ${config_file}"
-    return 0
-}
-
-# Validate AGENTS.md file
-validate_agents_md() {
-    local agents_file="$1"
-
-    if [ ! -f "$agents_file" ]; then
-        log_warn "AGENTS.md not found: ${agents_file}"
-        return 0
-    fi
-
-    # Check if file is markdown (has # headers)
-    if ! grep -q "^#" "$agents_file"; then
-        log_warn "${agents_file} does not appear to be a valid markdown file (no # headers)"
-        return 1
-    fi
-
-    log_success "✓ AGENTS.md format valid: ${agents_file}"
-    return 0
-}
-
-# Validate USER configuration
-validate_user_config() {
-    local verbose="${1:-false}"
-
-    echo ""
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "           ✅ USER Configuration Validation"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo ""
-
-    local validation_passed=true
-
-    # Validate USER config directory
-    if [ ! -d "$USER_CONFIG_DIR" ]; then
-        log_warn "USER config directory not found: ${USER_CONFIG_DIR}"
-    else
-        log_success "✓ USER config directory exists"
-    fi
-
-    # Validate USER config file
-    if [ -f "$USER_CONFIG_FILE" ]; then
-        if validate_json_config "$USER_CONFIG_FILE"; then
-            if [ "$verbose" = true ]; then
-                echo ""
-                echo "Configuration structure:"
-                jq -r 'keys | .[]' "$USER_CONFIG_FILE" 2>/dev/null | while read key; do
-                    echo "  - ${key}"
-                done || echo "  (Unable to display structure)"
-            fi
-        else
-            validation_passed=false
-        fi
-    else
-        log_info "USER config file not found (optional)"
-    fi
-
-    # Validate USER AGENTS.md
-    if [ -f "$USER_AGENTS_FILE" ]; then
-        validate_agents_md "$USER_AGENTS_FILE"
-    else
-        log_info "USER AGENTS.md not found (optional)"
-    fi
-
-    # Validate config.json references
-    if [ -f "$CONFIG_FILE" ]; then
-        if grep -q "${USER_CONFIG_FILE}" "$CONFIG_FILE" 2>/dev/null; then
-            log_success "✓ config.json references USER configuration"
-        else
-            log_warn "config.json does not reference USER configuration"
-        fi
-    fi
-
-    echo ""
-    if [ "$validation_passed" = true ]; then
-        log_success "✓ USER configuration validation passed"
-    else
-        log_error "✗ USER configuration validation failed"
-        return 1
-    fi
-
-    return 0
-}
-
-# Migrate existing configuration to USER level
-migrate_to_user_config() {
-    local force="${1:-false}"
-
-    echo ""
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "               🔄 Configuration Migration"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo ""
-
-    # Check if migration is needed
-    if [ -f "$USER_CONFIG_FILE" ] && [ "$force" != true ]; then
-        log_info "USER config already exists"
-        if prompt_yes_no "Do you want to re-migrate configuration?" "n"; then
-            force=true
-        else
-            log_info "Migration skipped"
-            return 0
-        fi
-    fi
-
-    # Log migration
-    {
-        echo "=========================================="
-        echo "Configuration Migration"
-        echo "=========================================="
-        echo "Date: $(date '+%Y-%m-%d %H:%M:%S')"
-        echo "User: ${USER}"
-        echo "Force: ${force}"
-        echo ""
-    } >> "$MIGRATION_LOG"
-
-    # Backup existing configuration
-    local timestamp=$(date +%Y%m%d_%H%M%S)
-    local backup_dir="${CONFIG_DIR}/backup/migration_${timestamp}"
-    run_cmd "mkdir -p ${backup_dir}"
-
-    if [ -f "$CONFIG_FILE" ]; then
-        cp "$CONFIG_FILE" "${backup_dir}/config.json"
-        log_info "Backed up config.json to ${backup_dir}"
-    fi
-
-    # Create USER config directory structure
-    run_cmd "mkdir -p ${USER_CONFIG_DIR}"
-
-    # Extract user preferences from existing config.json (if any)
-    local user_prefs='{}'
-    if [ -f "$CONFIG_FILE" ]; then
-        # Extract any user-specific settings if they exist
-        if command_exists jq; then
-            user_prefs=$(jq -r '{
-                version: .version // "1.0.0",
-                preferences: {
-                    defaultModel: .buildWithSkills.model // null,
-                    language: .buildWithSkills.language // "en",
-                    verbosity: "normal"
-                }
-            } | del(.[] | nulls)' "$CONFIG_FILE" 2>/dev/null || echo '{}')
-        fi
-    fi
-
-    # Create USER config file
-    echo "$user_prefs" > "${USER_CONFIG_FILE}"
-    log_success "Created ${USER_CONFIG_FILE}"
-
-    # Update config.json to reference USER config
-    update_config_json_for_user_config
-
-    # Copy templates if they don't exist
-    if [ ! -f "$USER_AGENTS_FILE" ] && [ -f "${USER_TEMPLATES_DIR}/AGENTS.md.example" ]; then
-        cp "${USER_TEMPLATES_DIR}/AGENTS.md.example" "$USER_AGENTS_FILE"
-        log_success "Created ${USER_AGENTS_FILE} from template"
-    fi
-
-    echo ""
-    log_success "Configuration migration completed"
-    log_info "Backup location: ${backup_dir}"
-    log_info "Migration log: ${MIGRATION_LOG}"
-
-    # Log completion
-    {
-        echo "Status: Success"
-        echo "Backup: ${backup_dir}"
-        echo "USER Config: ${USER_CONFIG_FILE}"
-        echo ""
-    } >> "$MIGRATION_LOG"
-
-    return 0
-}
-
-# Validate all configuration files
-validate_all_config() {
-    local verbose="${1:-false}"
-
-    echo ""
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "           ✅ Configuration Validation"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo ""
-
-    local validation_passed=true
-
-    # Validate Global AGENTS.md
-    echo "Validating Global AGENTS.md..."
-    if [ -f "${CONFIG_DIR}/AGENTS.md" ]; then
-        validate_agents_md "${CONFIG_DIR}/AGENTS.md"
-    else
-        log_warn "Global AGENTS.md not found"
-    fi
-
-    # Validate USER config
-    echo ""
-    echo "Validating USER configuration..."
-    validate_user_config "$verbose" || validation_passed=false
-
-    # Validate Project AGENTS.md (if exists)
-    echo ""
-    echo "Validating Project AGENTS.md..."
-    if [ -f ".AGENTS.md" ]; then
-        validate_agents_md ".AGENTS.md"
-    else
-        log_info "Project AGENTS.md not found (optional)"
-    fi
-
-    # Validate config.json
-    echo ""
-    echo "Validating config.json..."
-    if [ -f "$CONFIG_FILE" ]; then
-        if validate_json_config "$CONFIG_FILE"; then
-            if [ "$verbose" = true ]; then
-                echo ""
-                echo "Agents configured:"
-                jq -r 'keys | .[]' "$CONFIG_FILE" 2>/dev/null | while read agent; do
-                    echo "  - ${agent}"
-                done || echo "  (Unable to display agents)"
-            fi
-        else
-            validation_passed=false
-        fi
-    else
-        log_error "config.json not found"
-        validation_passed=false
-    fi
-
-    echo ""
-    if [ "$validation_passed" = true ]; then
-        log_success "✓ All configuration validation passed"
-    else
-        log_error "✗ Configuration validation failed"
-        return 1
     fi
 
     return 0
@@ -2195,9 +1806,6 @@ main() {
             exit 1
         fi
 
-    # Generate and inject skills section before config copy
-    generate_and_inject_skills
-
         setup_config || true
         print_summary
         echo ""
@@ -2214,18 +1822,6 @@ main() {
     # Check for update command
     if [ "$CHECK_UPDATE_ONLY" = true ]; then
         check_for_updates_only
-        exit 0
-    fi
-
-    # Handle validation command
-    if [ "$VALIDATE_CONFIG" = true ]; then
-        validate_all_config "$VERBOSE"
-        exit 0
-    fi
-
-    # Handle migration command
-    if [ "$MIGRATE_CONFIG" = true ]; then
-        migrate_to_user_config "$FORCE_MIGRATE"
         exit 0
     fi
 
@@ -2278,11 +1874,10 @@ main() {
                 else
                     log_error "OpenCode CLI is not installed globally"
                     log_info "Please install OpenCode first: npm install -g opencode-ai"
-    generate_and_inject_skills
 
                     exit 1
                 fi
-                
+
                 setup_config || true
                 print_summary
                 echo ""
@@ -2316,15 +1911,12 @@ main() {
         setup_opencode || true
     else
         if [ "$QUICK_SETUP" = true ]; then
-    generate_and_inject_skills
-
             log_info "Running quick setup: config.json and skills deployment only"
         fi
     fi
 
     setup_config || true
     setup_shell_vars || true
-    setup_user_config || true
 
     # Print summary and next steps
     print_summary
@@ -2344,9 +1936,6 @@ main() {
 # Run main function with all arguments
 main "$@"
 
-################################################################################
-# DYNAMIC SKILLS GENERATION
-################################################################################
 
 # Generate skills section from skills folder
 generate_and_inject_skills() {

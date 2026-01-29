@@ -123,7 +123,9 @@
       "mcp": {},
       "permission": {
         "skill": {
-          "*": "allow"
+          "linting-workflow": "allow",
+          "python-ruff-linter": "allow",
+          "javascript-eslint-linter": "allow"
         }
       }
     },
@@ -142,7 +144,9 @@
       "mcp": {},
       "permission": {
         "skill": {
-          "*": "allow"
+          "test-generator-framework": "allow",
+          "python-pytest-creator": "allow",
+          "nextjs-unit-test-creator": "allow"
         }
       }
     },
@@ -165,7 +169,16 @@
       },
       "permission": {
         "skill": {
-          "*": "allow"
+          "git-issue-creator": "allow",
+          "git-issue-updater": "allow",
+          "git-issue-labeler": "allow",
+          "git-pr-creator": "allow",
+          "git-semantic-commits": "allow",
+          "jira-git-integration": "allow",
+          "jira-git-workflow": "allow",
+          "jira-status-updater": "allow",
+          "ticket-branch-workflow": "allow",
+          "pr-creation-workflow": "allow"
         }
       }
     },
@@ -184,7 +197,8 @@
       "mcp": {},
       "permission": {
         "skill": {
-          "*": "allow"
+          "docstring-generator": "allow",
+          "coverage-readme-workflow": "allow"
         }
       }
     },
@@ -203,7 +217,13 @@
       "mcp": {},
       "permission": {
         "skill": {
-          "*": "allow"
+          "opentofu-kubernetes-explorer": "allow",
+          "opentofu-neon-explorer": "allow",
+          "opentofu-aws-explorer": "allow",
+          "opentofu-keycloak-explorer": "allow",
+          "opentofu-provisioning-workflow": "allow",
+          "opentofu-provider-setup": "allow",
+          "opentofu-ecr-provision": "allow"
         }
       }
     },
@@ -226,7 +246,11 @@
       },
       "permission": {
         "skill": {
-          "*": "allow"
+          "pr-creation-workflow": "allow",
+          "nextjs-pr-workflow": "allow",
+          "git-pr-creator": "allow",
+          "jira-git-workflow": "allow",
+          "jira-status-updater": "allow"
         }
       }
     }
