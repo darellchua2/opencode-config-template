@@ -261,11 +261,12 @@ Concise description.
   - Show key patterns instead of full implementations
   - Reference pytest and test-generator-framework docs
 
-- [ ] 10. git-semantic-commits (756 → <400 lines)
-  - Reduce verbose commit examples
-  - Simplify commit type descriptions
-  - Consolidate duplicate patterns
-  - Reference conventional commits spec
+- [x] 10. git-semantic-commits (756 → 266 lines, 65% reduction)
+  - Reduced verbose commit examples
+  - Simplified commit type descriptions (removed duplicates)
+  - Consolidated duplicate breaking change sections
+  - Show key examples instead of multiple per type
+  - Reference conventional commits and SemVer docs
 
 - [ ] 11. opencode-skill-creation (513 → <300 lines)
   - Reduce verbose creation steps
@@ -328,12 +329,12 @@ Concise description.
 ## Progress Tracking
 
 **Phase 1 Status**: ✅ 4/4 complete (100%)
-**Phase 2 Status**: 5/7 complete (71%)
+**Phase 2 Status**: 6/7 complete (86%)
 **Phase 3 Status**: 0/15 complete (0%)
-**Overall Progress**: 9/33 complete (27%)
+**Overall Progress**: 10/33 complete (30%)
 
-**Lines Reduced**: 4,008 / ~9,000 (45%)
-**Tokens Saved**: ~30,060 / ~67,500 (45%)
+**Lines Reduced**: 4,498 / ~9,000 (50%)
+**Tokens Saved**: ~33,735 / ~67,500 (50%)
 
 ## References
 
