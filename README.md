@@ -35,7 +35,7 @@ This repository uses a **custom configuration schema** that differs from officia
 
 ### Skill Permission System
 
-This template implements **skill permissions** to control which skills agents can access. See [SKILL-PERMISSIONS.md](./SKILL-PERMISSIONS.md) for detailed documentation.
+This template implements **skill permissions** to control which skills agents can access.
 
 **Current configuration:**
 - **build-with-skills**: All skills enabled, Atlassian MCP enabled
@@ -50,10 +50,6 @@ This template implements **skill permissions** to control which skills agents ca
 **Trade-offs:**
 - ⚠️ Not Crush-compatible - Uses custom schema
 - ⚠️ Manual maintenance required - Adding skills requires editing agent prompts
-
-### Agent Configuration
-
-See [SKILL-PERMISSIONS.md](./SKILL-PERMISSIONS.md) for detailed permission examples and use cases.
 
 ## Skill Modularization
 
@@ -85,8 +81,6 @@ This repository implements **skill modularization** with 33 skills organized acr
 | **opentofu-explorer-subagent** | Infrastructure as code | 7 OpenTofu skills (AWS, K8s, Keycloak, Neon, ECR) |
 | **workflow-subagent** | Workflow automation | pr-creation-workflow, jira-git-workflow, jira-status-updater |
 
-**For details:** See `docs/SUBAGENT_DOCUMENTATION.md`
-
 ### Skill Architecture
 
 Skills follow a modular architecture:
@@ -104,22 +98,9 @@ Skills follow a modular architecture:
                         ↓
 ┌─────────────────────────────────────────────────────┐
 │           Composite Skills (Workflow)               │
-│  jira-git-workflow combines multiple skills       │
-└─────────────────────────────────────────────────────┘
-```
-
-### Documentation
-
-- **Skill Modularization Audit:** `docs/SKILL_MODULARIZATION_AUDIT.md` - Complete skill analysis
-- **Skill Modularization Design:** `docs/SKILL_MODULARIZATION_DESIGN.md` - Framework architecture
-- **Subagent Documentation:** `docs/SUBAGENT_DOCUMENTATION.md` - Subagent details and skills
-- **Skill Migration Guide:** `docs/SKILL_MIGRATION_GUIDE.md` - Upgrade instructions
-
-### Migration
-
-No migration required - backward compatible.
-
-**For details:** See `docs/SKILL_MIGRATION_GUIDE.md`
+ │  jira-git-workflow combines multiple skills       │
+ └─────────────────────────────────────────────────────┘
+ ```
 
 ### Configuration Files
 
