@@ -59,8 +59,209 @@ LOG_FILE="${HOME}/.opencode-setup.log"
 CONFIG_DIR="${HOME}/.config/opencode"
 CONFIG_FILE="${CONFIG_DIR}/config.json"
 SKILLS_DIR="${CONFIG_DIR}/skills"
-BASHRC_FILE="${HOME}/.bashrc"
 BACKUP_DIR="${HOME}/.opencode-backup-$(date +%Y%m%d_%H%M%S)"
+LAST_UPDATE_CHECK="${CONFIG_DIR}/.last-update-check"
+UPDATE_LOG="${CONFIG_DIR}/update.log"
+
+################################################################################
+# PLATFORM AND SHELL DETECTION
+################################################################################
+
+# Detect operating system
+detect_platform() {
+    case "$(uname -s)" in
+        Darwin)
+            echo "macOS"
+            ;;
+        Linux*)
+            # Check if running under WSL
+            if grep -q Microsoft /proc/version 2>/dev/null; then
+                echo "Windows-WSL"
+            else
+                echo "Linux"
+            fi
+            ;;
+        CYGWIN*|MINGW*|MSYS*)
+            echo "Windows"
+            ;;
+        MINGW64_NT-*)
+            # Git Bash on Windows
+            echo "Windows-GitBash"
+            ;;
+        *)
+            # Check for Windows environment variables
+            if [ -n "$OS" ] && [[ "$OS" == "Windows_NT" ]]; then
+                echo "Windows"
+            else
+                echo "Unknown"
+            fi
+            ;;
+    esac
+}
+
+DETECTED_OS=$(detect_platform)
+OS_VERSION=$(sw_vers 2>/dev/null || uname -r)
+
+# Detect package manager and distribution based on platform
+detect_package_manager() {
+    local platform="$1"
+
+    case "$platform" in
+        macOS)
+            # Check for Homebrew
+            if command_exists brew; then
+                echo "brew"
+            else
+                echo "none"
+            fi
+            ;;
+        Linux*)
+            # Detect distribution and package manager
+            if [ -f /etc/debian_version ]; then
+                # Debian-based: Ubuntu, Debian, Linux Mint, etc.
+                local distro_id
+                distro_id=$(grep "^ID=" /etc/os-release 2>/dev/null | cut -d= -f2 | cut -d\" -f1)
+                echo "apt:${distro_id}"
+            elif [ -f /etc/redhat-release ]; then
+                # RHEL-based: Fedora, RHEL, CentOS, Rocky, etc.
+                local distro_id
+                distro_id=$(grep "^ID=" /etc/os-release 2>/dev/null | cut -d= -f2 | cut -d\" -f1)
+                echo "dnf:${distro_id}"
+            elif [ -f /etc/arch-release ]; then
+                # Arch-based: Arch, Manjaro, EndeavourOS, etc.
+                local distro_id
+                distro_id=$(grep "^ID=" /etc/os-release 2>/dev/null | cut -d= -f2 | cut -d\" -f1)
+                echo "pacman:${distro_id}"
+            elif [ -f /etc/SUSE-brand ] || [ -f /etc/SUSE-release ]; then
+                # SUSE-based: openSUSE, SUSE Linux
+                echo "zypper:opensuse"
+            elif command_exists zypper; then
+                # Check for zypper as fallback
+                echo "zypper:unknown"
+            elif [ -f /etc/alpine-release ]; then
+                # Alpine Linux
+                echo "apk:alpine"
+            elif command_exists pacman; then
+                # Fallback to pacman
+                echo "pacman:unknown"
+            elif command_exists apk; then
+                # Fallback to apk
+                echo "apk:unknown"
+            elif command_exists dnf; then
+                # Fallback to dnf
+                echo "dnf:unknown"
+            elif command_exists apt-get; then
+                # Fallback to apt
+                echo "apt:unknown"
+            else
+                echo "none"
+            fi
+            ;;
+        Windows*|Windows-GitBash)
+            # Check for winget
+            if command_exists winget; then
+                echo "winget"
+            # Check for chocolatey
+            elif command_exists choco; then
+                echo "chocolatey"
+            else
+                echo "none"
+            fi
+            ;;
+        *)
+            echo "none"
+            ;;
+    esac
+}
+
+PACKAGE_MANAGER=$(detect_package_manager "$DETECTED_OS")
+
+# Extract distribution name from package manager
+get_distribution_name() {
+    local pkg_manager="$1"
+    case "$pkg_manager" in
+        apt:*|apt:*)
+            echo "${pkg_manager#*:}"
+            ;;
+        dnf:*|dnf:*)
+            echo "${pkg_manager#*:}"
+            ;;
+        pacman:*|pacman:*)
+            echo "${pkg_manager#*:}"
+            ;;
+        zypper:*)
+            echo "opensuse"
+            ;;
+        apk:*)
+            echo "alpine"
+            ;;
+        brew|winget|chocolatey)
+            echo "$pkg_manager"
+            ;;
+        *)
+            echo "unknown"
+            ;;
+    esac
+}
+
+DISTRIBUTION_NAME=$(get_distribution_name "$PACKAGE_MANAGER")
+
+# Detect shell (bash, zsh, or powershell)
+detect_shell() {
+    if [ -n "$ZSH_VERSION" ]; then
+        echo "zsh"
+    elif [ -n "$BASH_VERSION" ]; then
+        echo "bash"
+    elif [ -n "$PSVersionTable" ]; then
+        echo "powershell"
+    else
+        # Fallback: check $0
+        case "$0" in
+            *zsh*)
+                echo "zsh"
+                ;;
+            *bash*)
+                echo "bash"
+                ;;
+            *)
+                echo "bash"
+                ;;
+        esac
+    fi
+}
+
+DETECTED_SHELL=$(detect_shell)
+
+# Determine shell config file based on OS and shell
+determine_shell_config() {
+    local shell="$1"
+    local os="$2"
+
+    case "${os}:${shell}" in
+        macOS:zsh)
+            echo "${HOME}/.zshrc"
+            ;;
+        macOS:bash)
+            if [ -f "${HOME}/.bash_profile" ]; then
+                echo "${HOME}/.bash_profile"
+            else
+                echo "${HOME}/.bashrc"
+            fi
+            ;;
+        Linux:bash|Linux:*)
+            echo "${HOME}/.bashrc"
+            ;;
+        Windows:powershell)
+            echo "${PROFILE}"
+            ;;
+        *)
+            # Default to bashrc
+            echo "${HOME}/.bashrc"
+            ;;
+    esac
+}
+
+SHELL_CONFIG_FILE=$(determine_shell_config "$DETECTED_SHELL" "$DETECTED_OS")
 
 # Flags
 QUICK_SETUP=false
@@ -70,6 +271,9 @@ AUTO_ACCEPT=false
 VERBOSE=false
 SKIP_CONFIG_COPY=false
 UPDATE_ONLY=false
+ENABLE_AUTO_UPDATE=false
+UPDATE_SCHEDULE="manual"
+CHECK_UPDATE_ONLY=false
 
 # API Keys (initialize to empty to avoid unbound variable errors)
 # Capture from environment if they exist
@@ -192,16 +396,31 @@ OPTIONS:
     -y, --yes           Auto-accept all prompts (use with caution)
     -v, --verbose       Enable verbose output
     -u, --update        Update OpenCode CLI only
+    -A, --enable-auto-update
+                        Enable automatic opencode-ai updates
+    -D, --disable-auto-update
+                        Disable automatic opencode-ai updates
+    -S, --schedule-update <daily|weekly|monthly>
+                        Set update schedule (default: manual)
+    -C, --check-update
+                        Check for updates without installing
+ 
+ EXAMPLES:
+     ./setup.sh              # Interactive full setup
+     ./setup.sh --quick      # Quick setup (config and skills only)
+     ./setup.sh --skills-only # Skills-only setup (copy skills only)
+     ./setup.sh --dry-run    # Preview changes
+     ./setup.sh -y -q        # Quick setup with auto-accept
+     ./setup.sh --update     # Update OpenCode CLI only
+     ./setup.sh -A             # Enable automatic updates (default schedule: manual)
+     ./setup.sh -S daily     # Enable automatic updates with daily schedule
+     ./setup.sh -S weekly    # Enable automatic updates with weekly schedule
+     ./setup.sh -S monthly    # Enable automatic updates with monthly schedule
+     ./setup.sh -D             # Disable automatic updates
+     ./setup.sh -C             # Check for updates without installing
 
-EXAMPLES:
-    ./setup.sh              # Interactive full setup
-    ./setup.sh --quick      # Quick setup (config and skills only)
-    ./setup.sh --skills-only # Skills-only setup (copy skills only)
-    ./setup.sh --dry-run    # Preview changes
-    ./setup.sh -y -q        # Quick setup with auto-accept
-    ./setup.sh --update     # Update OpenCode CLI only
-
-CONFIGURED FEATURES:
+ 
+ CONFIGURED FEATURES:
   Agents (4):
     - build-with-skills (default): Skill-aware coding agent that identifies and uses appropriate skills
       Automatically ensures best practices: testing, linting, PR workflows, JIRA integration
@@ -269,8 +488,29 @@ parse_arguments() {
                 VERBOSE=true
                 shift
                 ;;
-            -u|--update)
+             -u|--update)
                 UPDATE_ONLY=true
+                shift
+                ;;
+            -A|--enable-auto-update)
+                ENABLE_AUTO_UPDATE=true
+                shift
+                ;;
+            -D|--disable-auto-update)
+                ENABLE_AUTO_UPDATE=false
+                shift
+                ;;
+            -S|--schedule-update)
+                if [ -n "$2" ]; then
+                    UPDATE_SCHEDULE="$2"
+                else
+                    log_error "--schedule-update requires an argument (daily, weekly, monthly)"
+                    exit 1
+                fi
+                shift 2
+                ;;
+            -C|--check-update)
+                CHECK_UPDATE_ONLY=true
                 shift
                 ;;
             *)
@@ -629,15 +869,73 @@ setup_nodejs() {
     echo ""
     echo "=== Installing Node.js v24 ==="
 
-    # Ensure nvm is available
-    if ! command_exists nvm; then
-        log_error "nvm is not available. Cannot install Node.js."
-        return 1
-    fi
+    # Check platform and install accordingly
+    case "$DETECTED_OS" in
+        Windows*|Windows-GitBash)
+            # Windows: Check if Node.js is already installed
+            if command_exists node; then
+                log_info "Node.js is already installed ($(node --version))"
+                log_info "Node.js v20+ is required for Draw.io MCP server integration"
+                echo ""
+                echo "=== Draw.io MCP Server Setup ==="
+                echo "To use the diagram-creator agent with Draw.io MCP server on Windows:"
+                echo "1. Clone and build Draw.io MCP server:"
+                echo "   git clone https://github.com/scholtzm/mcp-drawio.git"
+                echo "   cd mcp-drawio"
+                echo "   npm install"
+                echo "   npm run build"
+                echo ""
+                echo "2. Start the server:"
+                echo "   npm start"
+                echo ""
+                echo "3. Ensure it's running on: http://localhost:41033/mcp"
+                echo ""
+                log_info "Diagram-creator agent requires Draw.io MCP server for diagram creation"
 
-    # Load nvm
-    export NVM_DIR="$HOME/.nvm"
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+                if prompt_yes_no "Install a newer version of Node.js?" "n"; then
+                    log_info "To install/update Node.js on Windows:"
+                    echo "  1. Download from https://nodejs.org/"
+                    echo "  2. Use winget: winget install OpenJS.NodeJS.LTS"
+                    echo "  3. Use chocolatey: choco install nodejs"
+                    echo "  4. Follow the installer prompts"
+                fi
+            else
+                log_info "Node.js is not installed on Windows"
+                echo ""
+                echo "To install Node.js on Windows:"
+                echo "  Option 1: Download from https://nodejs.org/"
+                echo "  Option 2: Use winget (Windows 10+):"
+                echo "           winget install OpenJS.NodeJS.LTS"
+                echo "  Option 3: Use chocolatey:"
+                echo "           choco install nodejs"
+                echo ""
+
+                if prompt_yes_no "Would you like to install Node.js now?" "y"; then
+                    if command_exists winget; then
+                        log_info "Installing Node.js via winget..."
+                        run_cmd "winget install OpenJS.NodeJS.LTS"
+                    elif command_exists choco; then
+                        log_info "Installing Node.js via chocolatey..."
+                        run_cmd "choco install nodejs"
+                    else
+                        log_error "No package manager found (winget or chocolatey)"
+                        log_info "Please install Node.js manually from https://nodejs.org/"
+                    fi
+                fi
+            fi
+            ;;
+
+        macOS|Linux*)
+            # Unix-like systems: Use nvm
+            # Ensure nvm is available
+            if ! command_exists nvm; then
+                log_error "nvm is not available. Cannot install Node.js."
+                return 1
+            fi
+
+            # Load nvm
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
     if prompt_yes_no "Install/switch to Node.js v24?" "y"; then
         log_info "Installing Node.js v24..."
@@ -666,10 +964,12 @@ setup_nodejs() {
             log_error "Node.js installation failed"
             return 1
         fi
-    else
-        log_info "Skipping Node.js v24 installation"
-        log_warn "Node.js v20+ is recommended for Draw.io MCP server integration"
-    fi
+        else
+            log_info "Skipping Node.js v24 installation"
+            log_warn "Node.js v20+ is recommended for Draw.io MCP server integration"
+        fi
+        ;;
+    esac
 
     return 0
 }
@@ -858,6 +1158,23 @@ setup_config() {
     run_cmd "mkdir -p ${CONFIG_DIR}"
     log_info "Created ${CONFIG_DIR} directory"
 
+    # Copy AGENTS.md from project to global config
+    if [ -f "${SCRIPT_DIR}/.AGENTS.md" ]; then
+        if [ -f "${CONFIG_DIR}/AGENTS.md" ]; then
+            log_warn "AGENTS.md already exists at ${CONFIG_DIR}/AGENTS.md"
+            if prompt_yes_no "Do you want to overwrite it?" "n"; then
+                create_backup "${CONFIG_DIR}/AGENTS.md"
+                run_cmd "cp ${SCRIPT_DIR}/.AGENTS.md ${CONFIG_DIR}/AGENTS.md"
+                log_success "AGENTS.md copied successfully (renamed from .AGENTS.md)"
+            fi
+        else
+            run_cmd "cp ${SCRIPT_DIR}/.AGENTS.md ${CONFIG_DIR}/AGENTS.md"
+            log_success "AGENTS.md copied successfully (renamed from .AGENTS.md)"
+        fi
+    else
+        log_warn ".AGENTS.md not found in ${SCRIPT_DIR}"
+    fi
+
     # Check if config.json already exists
     if [ -f "$CONFIG_FILE" ]; then
         echo ""
@@ -980,45 +1297,237 @@ setup_config() {
     return 0
 }
 
-# Setup environment variables in bashrc
-setup_bashrc_vars() {
+# Setup environment variables in shell config (bashrc, zshrc, etc.)
+setup_shell_vars() {
     echo ""
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo "              🔐 Environment Variables Setup"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    echo "Detected shell: ${DETECTED_SHELL}"
+    echo "Config file: ${SHELL_CONFIG_FILE}"
     echo ""
 
-    # Add ZAI_API_KEY to ~/.bashrc
+    # Add ZAI_API_KEY to shell config
     if [ -n "$ZAI_API_KEY" ]; then
-        if grep -q "ZAI_API_KEY" "$BASHRC_FILE" 2>/dev/null; then
-            log_info "ZAI_API_KEY already exists in ${BASHRC_FILE}"
+        if grep -q "ZAI_API_KEY" "$SHELL_CONFIG_FILE" 2>/dev/null; then
+            log_info "ZAI_API_KEY already exists in ${SHELL_CONFIG_FILE}"
         else
-            if prompt_yes_no "Add ZAI_API_KEY to ~/.bashrc for persistent access?" "y"; then
-                create_backup "$BASHRC_FILE"
-                run_cmd "echo 'export ZAI_API_KEY=\"${ZAI_API_KEY}\"' >> ${BASHRC_FILE}"
-                log_success "ZAI_API_KEY added to ${BASHRC_FILE}"
+            if prompt_yes_no "Add ZAI_API_KEY to $(basename ${SHELL_CONFIG_FILE}) for persistent access?" "y"; then
+                create_backup "$SHELL_CONFIG_FILE"
+                run_cmd "echo 'export ZAI_API_KEY=\"${ZAI_API_KEY}\"' >> ${SHELL_CONFIG_FILE}"
+                log_success "ZAI_API_KEY added to ${SHELL_CONFIG_FILE}"
             else
-                log_info "Skipping ~/.bashrc update for ZAI_API_KEY"
+                log_info "Skipping shell config update for ZAI_API_KEY"
             fi
         fi
     fi
 
-    # Add GITHUB_PAT to ~/.bashrc
+    # Add GITHUB_PAT to shell config
     if [ -n "$GITHUB_PAT" ]; then
-        if grep -q "GITHUB_PAT" "$BASHRC_FILE" 2>/dev/null; then
-            log_info "GITHUB_PAT already exists in ${BASHRC_FILE}"
+        if grep -q "GITHUB_PAT" "$SHELL_CONFIG_FILE" 2>/dev/null; then
+            log_info "GITHUB_PAT already exists in ${SHELL_CONFIG_FILE}"
         else
-            if prompt_yes_no "Add GITHUB_PAT to ~/.bashrc for persistent access?" "y"; then
-                create_backup "$BASHRC_FILE"
-                run_cmd "echo 'export GITHUB_PAT=\"${GITHUB_PAT}\"' >> ${BASHRC_FILE}"
-                log_success "GITHUB_PAT added to ${BASHRC_FILE}"
+            if prompt_yes_no "Add GITHUB_PAT to $(basename ${SHELL_CONFIG_FILE}) for persistent access?" "y"; then
+                create_backup "$SHELL_CONFIG_FILE"
+                run_cmd "echo 'export GITHUB_PAT=\"${GITHUB_PAT}\"' >> ${SHELL_CONFIG_FILE}"
+                log_success "GITHUB_PAT added to ${SHELL_CONFIG_FILE}"
             else
-                log_info "Skipping ~/.bashrc update for GITHUB_PAT"
+                log_info "Skipping shell config update for GITHUB_PAT"
             fi
         fi
     fi
 
     return 0
+}
+
+################################################################################
+# AUTO-UPDATE FUNCTIONS
+################################################################################
+
+# Update last check time
+update_last_check_time() {
+    local timestamp=$(date +%s)
+    echo "$timestamp" > "$LAST_UPDATE_CHECK"
+    log_debug "Updated last check time: $(date -d @$timestamp)"
+}
+
+# Check if enough time has passed since last check
+should_check_for_updates() {
+    if [ ! -f "$LAST_UPDATE_CHECK" ]; then
+        log_debug "No last check file found, should check for updates"
+        return 0
+    fi
+
+    local last_check=$(cat "$LAST_UPDATE_CHECK" 2>/dev/null || echo "0")
+    local current_time=$(date +%s)
+    local time_diff=$((current_time - last_check))
+
+    # Time intervals in seconds
+    local daily=86400        # 24 * 60 * 60
+    local weekly=604800      # 7 * 24 * 60 * 60
+    local monthly=2592000    # 30 * 24 * 60 * 60
+
+    case "$UPDATE_SCHEDULE" in
+        daily)
+            return $((time_diff >= daily))
+            ;;
+        weekly)
+            return $((time_diff >= weekly))
+            ;;
+        monthly)
+            return $((time_diff >= monthly))
+            ;;
+        manual)
+            return 0
+            ;;
+        *)
+            # Default to weekly
+            return $((time_diff >= weekly))
+            ;;
+    esac
+}
+
+# Create backup before update
+create_backup_before_update() {
+    log_info "Creating backup before update..."
+
+    local backup_dir="${HOME}/.opencode-update-backup-$(date +%Y%m%d_%H%M%S)"
+    mkdir -p "$backup_dir" 2>/dev/null
+
+    # Backup config
+    if [ -f "$CONFIG_FILE" ]; then
+        cp "$CONFIG_FILE" "${backup_dir}/config.json"
+        log_info "Backed up: ${CONFIG_FILE}"
+    fi
+
+    # Backup AGENTS.md if it exists
+    if [ -f "${CONFIG_DIR}/AGENTS.md" ]; then
+        cp "${CONFIG_DIR}/AGENTS.md" "${backup_dir}/AGENTS.md"
+        log_info "Backed up: ${CONFIG_DIR}/AGENTS.md"
+    fi
+
+    # Backup skills directory if it exists
+    if [ -d "$SKILLS_DIR" ]; then
+        cp -r "$SKILLS_DIR" "${backup_dir}/skills"
+        log_info "Backed up: ${SKILLS_DIR}"
+    fi
+
+    log_success "Backup created at: ${backup_dir}"
+    echo "" >> "$UPDATE_LOG"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Backup created: ${backup_dir}" >> "$UPDATE_LOG"
+}
+
+# Check for updates only (don't install)
+check_for_updates_only() {
+    log_info "Checking for opencode-ai updates..."
+
+    # Check if enough time has passed
+    if ! should_check_for_updates; then
+        log_info "Skipping update check (scheduled time not reached)"
+        return 0
+    fi
+
+    # Get current version
+    local current_version
+    if ! command_exists opencode; then
+        log_warn "opencode-ai is not installed"
+        return 1
+    fi
+    current_version=$(opencode --version 2>/dev/null || echo "unknown")
+
+    # Get latest version
+    local latest_version
+    latest_version=$(npm view opencode-ai version 2>/dev/null || echo "unknown")
+
+    if [ "$latest_version" = "unknown" ]; then
+        log_error "Could not fetch latest version from npm registry"
+        return 1
+    fi
+
+    log_info "Current version: v${current_version}"
+    log_info "Latest version: v${latest_version}"
+
+    # Compare versions
+    if [ "$current_version" = "$latest_version" ]; then
+        log_success "opencode-ai is already up to date!"
+    else
+        log_info "Update available: v${current_version} → v${latest_version}"
+        log_info "Run: ./setup.sh -A -S <daily|weekly|monthly> to enable auto-updates"
+    fi
+
+    update_last_check_time
+    echo "" >> "$UPDATE_LOG"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Update check: v${current_version} (latest: v${latest_version})" >> "$UPDATE_LOG"
+}
+
+# Perform auto-update
+auto_update_opencode() {
+    # Check if auto-update is enabled
+    if [ "$ENABLE_AUTO_UPDATE" = false ]; then
+        log_info "Auto-update is disabled"
+        return 0
+    fi
+
+    # Check if enough time has passed
+    if ! should_check_for_updates; then
+        log_info "Skipping auto-update (scheduled time not reached)"
+        return 0
+    fi
+
+    log_info "Checking for opencode-ai updates..."
+
+    # Get current version
+    local current_version
+    if ! command_exists opencode; then
+        log_warn "opencode-ai is not installed"
+        return 1
+    fi
+    current_version=$(opencode --version 2>/dev/null || echo "unknown")
+
+    # Get latest version
+    local latest_version
+    latest_version=$(npm view opencode-ai version 2>/dev/null || echo "unknown")
+
+    if [ "$latest_version" = "unknown" ]; then
+        log_error "Could not fetch latest version from npm registry"
+        log_info "Check your internet connection and try again"
+        return 1
+    fi
+
+    log_info "Current version: v${current_version}"
+    log_info "Latest version: v${latest_version}"
+
+    # Check if update is needed
+    if [ "$current_version" = "$latest_version" ]; then
+        log_success "opencode-ai is already up to date!"
+        update_last_check_time
+        return 0
+    fi
+
+    log_info "Update available: v${current_version} → v${latest_version}"
+
+    # Create backup before update
+    create_backup_before_update
+
+    # Perform update
+    log_info "Auto-updating opencode-ai to v${latest_version}..."
+    run_cmd "npm install -g opencode-ai@${latest_version}"
+
+    # Verify update
+    local new_version
+    new_version=$(opencode --version 2>/dev/null || echo "unknown")
+
+    if [ "$new_version" = "$latest_version" ]; then
+        log_success "opencode-ai updated successfully to v${new_version}"
+        update_last_check_time
+    else
+        log_error "Update failed. Current version: v${new_version}"
+        return 1
+    fi
+
+    echo "" >> "$UPDATE_LOG"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Auto-update: v${current_version} → v${new_version}" >> "$UPDATE_LOG"
 }
 
 ################################################################################
@@ -1038,12 +1547,48 @@ print_summary() {
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
 
-    # nvm status
+    # Platform detection status
+    echo "Platform Detection:"
+    echo "✓ Detected OS: ${DETECTED_OS} ${OS_VERSION:+(${OS_VERSION})}"
+    echo "✓ Detected Shell: ${DETECTED_SHELL}"
+    echo "✓ Shell Config: ${SHELL_CONFIG_FILE}"
+    echo ""
+
+    # nvm status (Unix-like systems only)
     if command_exists nvm; then
         nvm_version=$(nvm --version 2>/dev/null)
         echo "✓ nvm: Installed v${nvm_version}"
     else
-        echo "✗ nvm: Not installed"
+        case "$DETECTED_OS" in
+            Windows*|Windows-GitBash)
+                # On Windows, nvm is not used
+                ;;
+            *)
+                echo "✗ nvm: Not installed"
+                ;;
+        esac
+    fi
+
+    # Package manager status
+    if [ "$PACKAGE_MANAGER" != "none" ]; then
+        echo "✓ Package Manager: ${PACKAGE_MANAGER}"
+        # Show distribution for Linux
+        case "$DETECTED_OS" in
+            Linux*)
+                if [ -n "$DISTRIBUTION_NAME" ] && [ "$DISTRIBUTION_NAME" != "unknown" ]; then
+                    echo "  Distribution: ${DISTRIBUTION_NAME}"
+                fi
+                ;;
+        esac
+    else
+        case "$DETECTED_OS" in
+            Windows*|Windows-GitBash)
+                echo "○ Package Manager: Not detected (use winget or chocolatey)"
+                ;;
+            *)
+                echo "✗ Package Manager: Not detected"
+                ;;
+        esac
     fi
 
     # Node.js status
@@ -1135,8 +1680,8 @@ print_summary() {
     fi
 
     # ZAI_API_KEY status
-    if grep -q "ZAI_API_KEY" "$BASHRC_FILE" 2>/dev/null; then
-        echo "✓ ZAI_API_KEY: Added to ${BASHRC_FILE}"
+    if grep -q "ZAI_API_KEY" "$SHELL_CONFIG_FILE" 2>/dev/null; then
+        echo "✓ ZAI_API_KEY: Added to ${SHELL_CONFIG_FILE}"
     elif [ -n "$ZAI_API_KEY" ]; then
         echo "○ ZAI_API_KEY: Set in current session only"
     else
@@ -1144,8 +1689,8 @@ print_summary() {
     fi
 
     # GITHUB_PAT status
-    if grep -q "GITHUB_PAT" "$BASHRC_FILE" 2>/dev/null; then
-        echo "✓ GITHUB_PAT: Added to ${BASHRC_FILE}"
+    if grep -q "GITHUB_PAT" "$SHELL_CONFIG_FILE" 2>/dev/null; then
+        echo "✓ GITHUB_PAT: Added to ${SHELL_CONFIG_FILE}"
     elif [ -n "$GITHUB_PAT" ]; then
         echo "○ GITHUB_PAT: Set in current session only"
     else
@@ -1163,7 +1708,7 @@ print_next_steps() {
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
     echo "📋 Next Steps:"
-    echo "  1. Restart terminal or run: source ${BASHRC_FILE}"
+    echo "  1. Restart terminal or run: source ${SHELL_CONFIG_FILE}"
     echo "  2. Start LM Studio: http://127.0.0.1:1234/v1"
     echo "  3. Verify installation: opencode --version"
     echo ""
@@ -1261,9 +1806,6 @@ main() {
             exit 1
         fi
 
-    # Generate and inject skills section before config copy
-    generate_and_inject_skills
-
         setup_config || true
         print_summary
         echo ""
@@ -1277,6 +1819,12 @@ main() {
         exit 1
     fi
 
+    # Check for update command
+    if [ "$CHECK_UPDATE_ONLY" = true ]; then
+        check_for_updates_only
+        exit 0
+    fi
+
     # Check network connectivity (skip in quick setup)
     if [ "$QUICK_SETUP" = false ]; then
         if ! check_network; then
@@ -1284,6 +1832,14 @@ main() {
             if ! prompt_yes_no "Continue anyway?" "n"; then
                 exit 1
             fi
+        fi
+    fi
+
+    # Auto-update check (run before main menu)
+    if [ "$AUTO_ACCEPT" = true ] || [ "$CHECK_UPDATE_ONLY" = false ]; then
+        if [ "$ENABLE_AUTO_UPDATE" = true ]; then
+            log_info "Auto-update is enabled (schedule: ${UPDATE_SCHEDULE})"
+            auto_update_opencode
         fi
     fi
 
@@ -1318,11 +1874,10 @@ main() {
                 else
                     log_error "OpenCode CLI is not installed globally"
                     log_info "Please install OpenCode first: npm install -g opencode-ai"
-    generate_and_inject_skills
 
                     exit 1
                 fi
-                
+
                 setup_config || true
                 print_summary
                 echo ""
@@ -1356,14 +1911,12 @@ main() {
         setup_opencode || true
     else
         if [ "$QUICK_SETUP" = true ]; then
-    generate_and_inject_skills
-
             log_info "Running quick setup: config.json and skills deployment only"
         fi
     fi
 
     setup_config || true
-    setup_bashrc_vars || true
+    setup_shell_vars || true
 
     # Print summary and next steps
     print_summary
@@ -1383,9 +1936,6 @@ main() {
 # Run main function with all arguments
 main "$@"
 
-################################################################################
-# DYNAMIC SKILLS GENERATION
-################################################################################
 
 # Generate skills section from skills folder
 generate_and_inject_skills() {
