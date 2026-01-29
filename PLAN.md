@@ -240,10 +240,11 @@ Concise description.
   - Reduced 15 steps to 7 concise steps
   - Reference Neon docs
 
-- [ ] 7. docstring-generator (749 → <400 lines)
-  - Reduce language-specific examples
-  - Simplify pattern descriptions
-  - Consolidate duplicate docstring formats
+- [x] 7. docstring-generator (749 → 372 lines, 50% reduction)
+  - Reduced language-specific examples (consolidated duplicates)
+  - Simplified pattern descriptions
+  - Removed duplicate special cases and troubleshooting sections
+  - Show one example per language/style instead of multiple
   - Reference official PEP/Javadoc docs
 
 - [ ] 8. nextjs-standard-setup (791 → <400 lines)
@@ -325,12 +326,12 @@ Concise description.
 ## Progress Tracking
 
 **Phase 1 Status**: ✅ 4/4 complete (100%)
-**Phase 2 Status**: 2/7 complete (29%)
+**Phase 2 Status**: 3/7 complete (43%)
 **Phase 3 Status**: 0/15 complete (0%)
-**Overall Progress**: 6/33 complete (18%)
+**Overall Progress**: 7/33 complete (21%)
 
-**Lines Reduced**: 2,961 / ~9,000 (33%)
-**Tokens Saved**: ~22,207 / ~67,500 (33%)
+**Lines Reduced**: 3,338 / ~9,000 (37%)
+**Tokens Saved**: ~25,035 / ~67,500 (37%)
 
 ## References
 
