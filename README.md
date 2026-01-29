@@ -55,138 +55,6 @@ This template implements **skill permissions** to control which skills agents ca
 
 See [SKILL-PERMISSIONS.md](./SKILL-PERMISSIONS.md) for detailed permission examples and use cases.
 
-## USER Level Configuration
-
-This repository supports **USER level configuration** for personal overrides and customizations. The configuration hierarchy is:
-
-```
-Global AGENTS.md (~/.config/opencode/AGENTS.md)
-    ↓ (defaults and personal preferences)
-USER Level Config (~/.config/opencode/)
-    ↓ (user-specific overrides)
-Project AGENTS.md (.AGENTS.md)
-    ↓ (team rules and project-specific settings)
-config.json (~/.config/opencode/config.json)
-    ↓ (agent definitions and tool permissions)
-Task Execution
-```
-
-### Setting Up USER Configuration
-
-#### Option 1: Interactive Setup (Recommended)
-
-Run setup.sh with user configuration:
-
-```bash
-./setup.sh --user-config
-```
-
-This will:
-1. Optionally create `~/.config/opencode/AGENTS.user.md` for user-level markdown overrides
-
-#### Option 2: Manual Setup
-
-```bash
-# USER config files go directly under ~/.config/opencode/ (no nested user/ directory)
-# Optionally create AGENTS.user.md
-cat > ~/.config/opencode/AGENTS.user.md << 'EOF'
-# USER Level AGENTS.md
-
-This file contains user-specific preferences that override global settings.
-
-## Personal Overrides
-
-### Model Preferences
-- Default model: (system default)
-- Fallback model: (system default)
-
-### Agent Preferences
-- Prefer build-with-skills for most tasks
-- Use plan-with-skills for complex planning
-EOF
-
-# Edit configuration
-nano ~/.config/opencode/AGENTS.user.md
-```
-
-### USER Configuration Files
-
-#### AGENTS.user.md
-
-Optional user-level AGENTS.md that overrides global settings:
-
-```markdown
-# USER Level AGENTS.md
-
-## Personal Overrides
-
-### Model Preferences
-- Default model: (system default)
-- Fallback model: (system default)
-
-### Agent Preferences
-- Prefer build-with-skills for most tasks
-- Use plan-with-skills for complex planning
-- Default to testing-subagent for test generation
-
-### Custom Behavior
-- Always run tests after code changes
-- Auto-fix linting issues when possible
-```
-
-### Configuration Validation
-
-Validate all configuration files:
-
-```bash
-./setup.sh --validate-config
-```
-
-Validate with verbose output:
-
-```bash
-./setup.sh --validate-config --verbose
-```
-
-### Configuration Migration
-
-Migrate existing configuration to USER level:
-
-```bash
-./setup.sh --migrate-config
-```
-
-Force migration (overwrite existing USER AGENTS.md):
-
-```bash
-./setup.sh --force-migrate
-```
-
-### Configuration Management Commands
-
-| Command | Description |
-|---------|-------------|
-| `--user-config` | Setup USER level AGENTS.md interactively |
-| `--validate-config` | Validate all configuration files |
-| `--migrate-config` | Migrate existing configuration to USER level |
-| `--force-migrate` | Force migration (overwrite existing USER AGENTS.md) |
-
-### USER Configuration Best Practices
-
-1. **Keep Global Settings Minimal**: Put essential defaults in Global AGENTS.md
-2. **Use Specific Overrides**: Only override what's necessary in USER AGENTS.md
-3. **Document Customizations**: Comment your changes in AGENTS.md
-4. **Test Configuration**: Run `--validate-config` after changes
-5. **Backup Before Changes**: Migration creates automatic backups
-
-### Setup Behavior
-
-The setup script automatically:
-- Copies `.AGENTS.md` to `~/.config/opencode/AGENTS.md` (renaming it)
-- Creates `~/.config/opencode/AGENTS.user.md` when USER config is enabled
-- Copies `skills/` folder to `~/.config/opencode/skills/`
-- Copies `config.json` to `~/.config/opencode/config.json`
-
 ## Skill Modularization
 
 This repository implements **skill modularization** with 33 skills organized across 8 categories. Skills are designed with clear separation of concerns and explicit dependencies.
@@ -203,12 +71,6 @@ This repository implements **skill modularization** with 33 skills organized acr
 | **Git/Workflow** (6) | ascii-diagram-creator, git-issue-creator, git-issue-labeler, git-issue-updater, git-pr-creator, git-semantic-commits | Git operations and workflows |
 | **Documentation** (2) | coverage-readme-workflow, docstring-generator | Documentation generation |
 | **JIRA** (1) | jira-git-workflow | JIRA integration |
-
-### USER Level Skill Control
-
-USER level AGENTS.md can be used to configure skill preferences and behavior overrides. This is a markdown file where you can document your personal skill preferences and agent behavior.
-
-**For details:** See `docs/USER_SKILL_CONTROL_GUIDE.md`
 
 ### Subagents
 
@@ -251,26 +113,20 @@ Skills follow a modular architecture:
 - **Skill Modularization Audit:** `docs/SKILL_MODULARIZATION_AUDIT.md` - Complete skill analysis
 - **Skill Modularization Design:** `docs/SKILL_MODULARIZATION_DESIGN.md` - Framework architecture
 - **Subagent Documentation:** `docs/SUBAGENT_DOCUMENTATION.md` - Subagent details and skills
-- **USER Skill Control Guide:** `docs/USER_SKILL_CONTROL_GUIDE.md` - Skill configuration
 - **Skill Migration Guide:** `docs/SKILL_MIGRATION_GUIDE.md` - Upgrade instructions
 
 ### Migration
 
-No migration required - backward compatible. Optionally enable USER level skill control:
-
-```bash
-# Enable USER level configuration
-./setup.sh --user-config
-
-# Or migrate existing configuration
-./setup.sh --migrate-config
-
-# Validate configuration
-./setup.sh --validate-config
-```
+No migration required - backward compatible.
 
 **For details:** See `docs/SKILL_MIGRATION_GUIDE.md`
 
+### Configuration Files
+
+The setup script automatically:
+- Copies `.AGENTS.md` to `~/.config/opencode/AGENTS.md` (renaming it)
+- Copies `skills/` folder to `~/.config/opencode/skills/`
+- Copies `config.json` to `~/.config/opencode/config.json`
 
 ### Template Files
 
