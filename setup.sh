@@ -100,7 +100,7 @@ detect_platform() {
 DETECTED_OS=$(detect_platform)
 OS_VERSION=$(sw_vers 2>/dev/null || uname -r)
 
-# Detect package manager based on platform
+# Detect package manager and distribution based on platform
 detect_package_manager() {
     local platform="$1"
 
@@ -114,15 +114,43 @@ detect_package_manager() {
             fi
             ;;
         Linux*)
-            # Detect distribution package manager
+            # Detect distribution and package manager
             if [ -f /etc/debian_version ]; then
-                echo "apt"
+                # Debian-based: Ubuntu, Debian, Linux Mint, etc.
+                local distro_id
+                distro_id=$(grep "^ID=" /etc/os-release 2>/dev/null | cut -d= -f2 | cut -d\" -f1)
+                echo "apt:${distro_id}"
             elif [ -f /etc/redhat-release ]; then
-                echo "dnf"
+                # RHEL-based: Fedora, RHEL, CentOS, Rocky, etc.
+                local distro_id
+                distro_id=$(grep "^ID=" /etc/os-release 2>/dev/null | cut -d= -f2 | cut -d\" -f1)
+                echo "dnf:${distro_id}"
             elif [ -f /etc/arch-release ]; then
-                echo "pacman"
+                # Arch-based: Arch, Manjaro, EndeavourOS, etc.
+                local distro_id
+                distro_id=$(grep "^ID=" /etc/os-release 2>/dev/null | cut -d= -f2 | cut -d\" -f1)
+                echo "pacman:${distro_id}"
+            elif [ -f /etc/SUSE-brand ] || [ -f /etc/SUSE-release ]; then
+                # SUSE-based: openSUSE, SUSE Linux
+                echo "zypper:opensuse"
             elif command_exists zypper; then
-                echo "zypper"
+                # Check for zypper as fallback
+                echo "zypper:unknown"
+            elif [ -f /etc/alpine-release ]; then
+                # Alpine Linux
+                echo "apk:alpine"
+            elif command_exists pacman; then
+                # Fallback to pacman
+                echo "pacman:unknown"
+            elif command_exists apk; then
+                # Fallback to apk
+                echo "apk:unknown"
+            elif command_exists dnf; then
+                # Fallback to dnf
+                echo "dnf:unknown"
+            elif command_exists apt-get; then
+                # Fallback to apt
+                echo "apt:unknown"
             else
                 echo "none"
             fi
@@ -145,6 +173,36 @@ detect_package_manager() {
 }
 
 PACKAGE_MANAGER=$(detect_package_manager "$DETECTED_OS")
+
+# Extract distribution name from package manager
+get_distribution_name() {
+    local pkg_manager="$1"
+    case "$pkg_manager" in
+        apt:*|apt:*)
+            echo "${pkg_manager#*:}"
+            ;;
+        dnf:*|dnf:*)
+            echo "${pkg_manager#*:}"
+            ;;
+        pacman:*|pacman:*)
+            echo "${pkg_manager#*:}"
+            ;;
+        zypper:*)
+            echo "opensuse"
+            ;;
+        apk:*)
+            echo "alpine"
+            ;;
+        brew|winget|chocolatey)
+            echo "$pkg_manager"
+            ;;
+        *)
+            echo "unknown"
+            ;;
+    esac
+}
+
+DISTRIBUTION_NAME=$(get_distribution_name "$PACKAGE_MANAGER")
 
 # Detect shell (bash, zsh, or powershell)
 detect_shell() {
@@ -352,7 +410,13 @@ EXAMPLES:
    Linux:
      - Shells: bash, zsh
      - Config: ~/.bashrc
-     - Package Managers: apt (Ubuntu/Debian), dnf (Fedora), pacman (Arch)
+     - Package Managers:
+       - apt: Ubuntu, Debian, Linux Mint, Pop!_OS, Elementary OS
+       - dnf: Fedora, RHEL, CentOS, Rocky, AlmaLinux
+       - pacman: Arch Linux, Manjaro, EndeavourOS
+       - zypper: openSUSE, SUSE Linux Enterprise
+       - apk: Alpine Linux
+     - Tested: Various distributions
      - Tested: Ubuntu, Debian, Fedora, Arch
 
    Windows:
@@ -1291,6 +1355,14 @@ print_summary() {
     # Package manager status
     if [ "$PACKAGE_MANAGER" != "none" ]; then
         echo "✓ Package Manager: ${PACKAGE_MANAGER}"
+        # Show distribution for Linux
+        case "$DETECTED_OS" in
+            Linux*)
+                if [ -n "$DISTRIBUTION_NAME" ] && [ "$DISTRIBUTION_NAME" != "unknown" ]; then
+                    echo "  Distribution: ${DISTRIBUTION_NAME}"
+                fi
+                ;;
+        esac
     else
         case "$DETECTED_OS" in
             Windows*|Windows-GitBash)
