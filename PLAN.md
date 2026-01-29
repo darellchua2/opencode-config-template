@@ -247,11 +247,12 @@ Concise description.
   - Show one example per language/style instead of multiple
   - Reference official PEP/Javadoc docs
 
-- [ ] 8. nextjs-standard-setup (791 → <400 lines)
-  - Reduce verbose setup instructions
-  - Simplify configuration examples
-  - Remove redundant explanations
-  - Reference Next.js docs
+- [x] 8. nextjs-standard-setup (791 → 336 lines, 58% reduction)
+  - Reduced verbose setup instructions
+  - Simplified configuration examples (removed duplicates)
+  - Removed redundant explanations and examples
+  - Show key patterns instead of full implementations
+  - Reference Next.js, Tailwind v4, shadcn docs
 
 - [ ] 9. python-pytest-creator (514 → <300 lines)
   - Reduce verbose test examples
@@ -326,12 +327,12 @@ Concise description.
 ## Progress Tracking
 
 **Phase 1 Status**: ✅ 4/4 complete (100%)
-**Phase 2 Status**: 3/7 complete (43%)
+**Phase 2 Status**: 4/7 complete (57%)
 **Phase 3 Status**: 0/15 complete (0%)
-**Overall Progress**: 7/33 complete (21%)
+**Overall Progress**: 8/33 complete (24%)
 
-**Lines Reduced**: 3,338 / ~9,000 (37%)
-**Tokens Saved**: ~25,035 / ~67,500 (37%)
+**Lines Reduced**: 3,793 / ~9,000 (42%)
+**Tokens Saved**: ~28,447 / ~67,500 (42%)
 
 ## References
 
