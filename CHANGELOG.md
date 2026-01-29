@@ -1,3 +1,15 @@
+# [1.11.0](https://github.com/darellchua2/opencode-config-template/compare/v1.10.0...v1.11.0) (2026-01-29)
+
+
+### Features
+
+* **config:** add 6 subagents to config.json and create PLAN.md for Phase 2 ([8a1945f](https://github.com/darellchua2/opencode-config-template/commit/8a1945f107d4b8d98e938c474cd07f599466f95d)), closes [#56](https://github.com/darellchua2/opencode-config-template/issues/56) [#55](https://github.com/darellchua2/opencode-config-template/issues/55)
+* **config:** create AGENTS.md configuration files ([2d741ae](https://github.com/darellchua2/opencode-config-template/commit/2d741ae3cc4ebe9a3770e45bce90d6ced9ae99b1)), closes [#56](https://github.com/darellchua2/opencode-config-template/issues/56) [#55](https://github.com/darellchua2/opencode-config-template/issues/55)
+* **setup:** add Linux distribution detection and package manager enhancement ([d4e7d82](https://github.com/darellchua2/opencode-config-template/commit/d4e7d82f4fb51b01cd6d4806c681d655acefa99c)), closes [#57](https://github.com/darellchua2/opencode-config-template/issues/57) [#55](https://github.com/darellchua2/opencode-config-template/issues/55)
+* **setup:** add macOS ~/.zshrc and cross-platform support ([c63ea13](https://github.com/darellchua2/opencode-config-template/commit/c63ea1318da7680c3ed550098bb9374117680079)), closes [#57](https://github.com/darellchua2/opencode-config-template/issues/57) [#55](https://github.com/darellchua2/opencode-config-template/issues/55)
+* **setup:** add Windows support with PowerShell, Git Bash, and WSL2 ([c1dfc88](https://github.com/darellchua2/opencode-config-template/commit/c1dfc88a60bbdccd74c6f1214b110bf803b55247)), closes [#57](https://github.com/darellchua2/opencode-config-template/issues/57) [#55](https://github.com/darellchua2/opencode-config-template/issues/55)
+* **setup:** implement Phase 3.4 and 3.5 - periodic updates and USER level config ([c5c08c3](https://github.com/darellchua2/opencode-config-template/commit/c5c08c3d633d139d004de8fd74ddad54b23dca50))
+
 # [1.10.0](https://github.com/darellchua2/opencode-config-template/compare/v1.9.0...v1.10.0) (2026-01-26)
 
 
