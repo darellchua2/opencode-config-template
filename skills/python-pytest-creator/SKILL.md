@@ -1,6 +1,6 @@
 ---
 name: python-pytest-creator
-description: Generate comprehensive pytest test files for Python using the test-generator-framework
+description: Generate comprehensive pytest test files for Python using test-generator-framework
 license: Apache-2.0
 compatibility: opencode
 metadata:
@@ -10,90 +10,94 @@ metadata:
 
 ## What I do
 
-I implement a complete Python pytest test generation workflow by extending the `test-generator-framework`:
+I implement Python pytest test generation by extending `test-generator-framework`:
 
-1. **Analyze Python Codebase**: Scan Python application to identify functions, classes, and modules
-2. **Detect Python Testing Setup**: Identify pytest version and Poetry availability
-3. **Generate Python-Specific Scenarios**: Create comprehensive test scenarios covering:
-   - Happy paths, edge cases, and error handling
-   - Python-specific patterns (decorators, context managers, async functions)
-4. **Delegate to Framework**: Use `test-generator-framework` for core test generation workflow
-5. **Ensure Executability**: Verify tests run with `poetry run pytest` or `pytest`
+- **Analyze Python Codebase**: Scan for functions, classes, and modules
+- **Detect Python Testing Setup**: Identify pytest version and Poetry availability
+- **Generate Python-Specific Scenarios**: Create comprehensive test scenarios for decorators, context managers, async functions
+- **Delegate to Framework**: Use `test-generator-framework` for core workflow
+- **Ensure Executability**: Verify tests run with `poetry run pytest` or `pytest`
 
 ## When to use me
 
-Use this workflow when:
-- You need to create comprehensive pytest test files for a Python application
-- You want to ensure all edge cases and error conditions are covered
-- You need tests that integrate with Poetry environments
-- You prefer a systematic approach to test generation with user confirmation
-- You want to ensure tests run correctly with your project's pytest version
+Use when:
+- Creating comprehensive pytest test files for a Python application
+- Ensuring edge cases and error conditions are covered
+- Integrating tests with Poetry environments
+- Preferring systematic test generation with user confirmation
+- Ensuring tests run correctly with project's pytest version
 
-**Framework**: This skill extends `test-generator-framework` for core test generation workflow, adding Python-specific functionality.
+**Framework**: Extends `test-generator-framework` for core workflow, adding Python-specific functionality.
 
 ## Prerequisites
 
 - Python project with Poetry (`pyproject.toml`) or pip (`requirements.txt`)
-- Pytest installed and configured in project
+- Pytest installed and configured
 - Python source code to test
-- Appropriate file permissions to create test files
+- File permissions to create test files
 
-Note: Poetry is optional. If Poetry is installed and `pyproject.toml` exists, tests will use `poetry run pytest`. Otherwise, tests will use `pytest` directly.
+**Note**: Poetry is optional. If Poetry and `pyproject.toml` exist, use `poetry run pytest`. Otherwise, use `pytest` directly.
 
 ## Steps
 
 ### Step 1: Analyze Python Codebase
-- Use glob patterns to find Python files: `**/*.py`
-- Exclude test files: `**/test_*.py`, `**/*_test.py`, `**/tests/**/*.py`
-- Read each Python file to identify:
-   - Functions: `def function_name(parameters):`
-   - Classes: `class ClassName:`
-   - Methods: `def method_name(self, parameters):`
-   - Async functions: `async def async_function():`
-   - Decorators: `@decorator_name`
-   - Context managers: `with context_manager():`
-- Identify import statements to understand dependencies
+
+Use glob patterns to find Python files and identify testable items:
+
+```bash
+# Find Python files (exclude existing tests)
+**/*.py
+exclude: **/test_*.py, **/*_test.py, **/tests/**/*.py
+```
+
+For each file, identify:
+- Functions: `def function_name(parameters):`
+- Classes: `class ClassName:`
+- Methods: `def method_name(self, parameters):`
+- Async functions: `async def async_function():`
+- Decorators: `@decorator_name`
+- Context managers: `with context_manager():`
+- Import statements
 
 ### Step 2: Detect Python Testing Setup
-- Check for `pyproject.toml` or `requirements.txt`
-- Determine pytest version and plugins
-- Check for Poetry installation: `poetry --version`
 
-### Step 3: Generate Python-Specific Test Scenarios
+```bash
+# Check for Poetry
+poetry --version 2>/dev/null
 
-#### Function Scenarios (Python-specific)
+# Determine pytest command
+if command -v poetry && [ -f pyproject.toml ]; then
+    PYTEST_CMD="poetry run pytest"
+else
+    PYTEST_CMD="pytest"
+fi
+```
+
+### Step 3: Generate Test Scenarios
+
+#### Function Scenarios
 - **Happy Path**: Normal inputs with expected outputs
 - **Edge Cases**: Empty strings, empty lists, `None`, `0`, `-1`
-- **Error Cases**: Invalid types, out of range values, missing parameters
+- **Error Cases**: Invalid types, out of range values
 - **Python Features**: Decorators, type hints, default arguments, *args/**kwargs
 
 #### Class Scenarios
 - **Initialization**: `__init__` with valid/invalid parameters
 - **Method Behavior**: Public/private method testing
-- **Special Methods**: `__str__`, `__repr__`, `__eq__`, `__hash__`
+- **Special Methods**: `__str__`, `__repr__`, `__eq__`, `__hash__`, `__len__`
 - **Class Methods**: `@classmethod`, `@staticmethod`
-- **Property**: Properties defined with `@property`
-- **Context Managers**: `__enter__` and `__exit__` methods
+- **Properties**: `@property` getter/setter/deleter
+- **Context Managers**: `__enter__` and `__exit__`
 
 #### Async Function Scenarios
 - **Awaitable Results**: Normal async execution
-- **Concurrency**: Multiple async calls with asyncio.gather()
-- **Error Handling**: Async exceptions with pytest.raises()
+- **Concurrency**: Multiple async calls with `asyncio.gather()`
+- **Error Handling**: Async exceptions with `pytest.raises()`
 - **Timeout**: Tests that should timeout
 
-### Step 4: Delegate to Test Generator Framework
+### Step 4: Create Test Files
 
-**Note**: Core test generation workflow is provided by `test-generator-framework`. This skill focuses only on Python-specific aspects.
-
-Refer to `test-generator-framework` for:
-- Generic test file creation structure
-- Framework detection and command determination
-- User confirmation workflow
-- Executability verification
-
-Python-specific test file templates below extend the framework structure.
-
-### Step 5: Create Test Files (Python-specific)
+**Note**: Core workflow provided by `test-generator-framework`. This skill adds Python-specific patterns.
 
 ```python
 """
@@ -135,12 +139,12 @@ def test_function_name_parametrized(input, expected):
 
 class TestClassName:
     """Test suite for ClassName"""
-    
+
     def test_initialization(self):
         """Test that ClassName initializes correctly"""
         instance = ClassName(param1, param2)
         assert instance.attribute == expected_value
-    
+
     def test_method_behavior(self, sample_instance):
         """Test that ClassName.method_name works correctly"""
         result = sample_instance.method_name(param)
@@ -153,11 +157,27 @@ async def test_async_function_happy_path():
     assert result["status"] == "success"
 ```
 
-### Step 6: Verify Executability
+**Pytest features**:
+- **Fixtures**: `@pytest.fixture` for common setup
+- **Parametrization**: `@pytest.mark.parametrize` for multiple test cases
+- **Marks**: `@pytest.mark.unit`, `@pytest.mark.integration`, `@pytest.mark.slow`
+- **Async**: `@pytest.mark.asyncio` for async functions
 
-Refer to `test-generator-framework` for core executability verification.
+### Step 5: Verify Executability
 
-### Step 7: Display Summary
+Refer to `test-generator-framework` for core verification.
+
+```bash
+# If Poetry:
+poetry run pytest tests/test_<module_name>.py -v
+poetry run pytest --cov=<module_name> tests/
+
+# Otherwise:
+pytest tests/test_<module_name>.py -v
+pytest --cov=<module_name> tests/
+```
+
+### Step 6: Display Summary
 
 ```
 ✅ Python test files created successfully!
@@ -175,283 +195,60 @@ Refer to `test-generator-framework` for core executability verification.
 - Async function tests: <number>
 
 **To run tests:**
-```bash
-# If Poetry is installed:
-poetry run pytest tests/test_<module_name>.py -v
-poetry run pytest --cov=<module_name> tests/
-
-# Otherwise:
-pytest tests/test_<module_name>.py -v
-pytest --cov=<module_name> tests/
-```
-- Check for `requirements.txt`:
-  ```bash
-  # Check if requirements.txt exists
-  ls requirements.txt
-
-  # Extract pytest version
-  grep pytest requirements.txt
-  ```
-- Determine pytest-specific configurations:
-  - Test discovery patterns
-  - Coverage requirements
-  - Custom pytest plugins
-
-### Step 3: Detect Poetry Installation
-- Check if Poetry is installed:
-  ```bash
-  poetry --version 2>/dev/null
-  ```
-- Determine which command to use:
-  - If Poetry is installed AND `pyproject.toml` exists → use `poetry run pytest`
-  - Otherwise → use `pytest` directly
-- Store the appropriate pytest command for use in later steps:
-  ```bash
-  if command -v poetry &>/dev/null && [ -f pyproject.toml ]; then
-      PYTEST_CMD="poetry run pytest"
-      echo "Using Poetry: $PYTEST_CMD"
-  else
-      PYTEST_CMD="pytest"
-      echo "Using pytest directly: $PYTEST_CMD"
-  fi
-  ```
-
-### Step 4: Generate Test Scenarios
-For each function/class identified, generate scenarios:
-
-#### Function Scenarios
-- **Happy Path**: Normal inputs with expected outputs
-- **Edge Cases**: Minimum/maximum values, empty inputs, None values
-- **Error Cases**: Invalid inputs, type mismatches, exceptions
-- **Boundary Conditions**: Zero, negative numbers, string length limits
-
-#### Class Scenarios
-- **Initialization**: Constructor with valid/invalid parameters
-- **Method Behavior**: Public/private method testing
-- **State Management**: Instance variable changes
-- **Inheritance**: Subclass behavior testing
-
-#### Async Function Scenarios
-- **Awaitable Results**: Normal async execution
-- **Concurrency**: Multiple async calls
-- **Error Handling**: Async exceptions
-
-### Step 5: Display Scenarios for Confirmation
-Display formatted output:
-```
-📋 Generated Test Scenarios for <module_name>.py
-
-**Functions to Test:**
-1. function_name(param1, param2)
-   - Happy path: Valid inputs return expected result
-   - Edge case: Empty param1 returns default
-   - Error case: Invalid type raises ValueError
-   - Boundary: Maximum param2 size handled
-
-2. another_function(param)
-   - Happy path: Valid param returns success
-   - Edge case: None param raises TypeError
-   - Error case: Negative param raises ValueError
-
-**Classes to Test:**
-1. ClassName
-   - Initialization: Valid params create instance
-   - Method behavior: method_name() returns expected
-   - State: Instance variables updated correctly
-
-**Total Scenarios: <number>**
-**Estimated Test Lines: <number>**
-
-Are these scenarios acceptable? (y/n/suggest)
+poetry run pytest -v  # or: pytest -v
 ```
 
-Wait for user response:
-- **y**: Proceed to create test files
-- **n**: Ask for modifications or cancel
-- **suggest**: Ask user to add/remove scenarios
-
-### Step 6: Create Test Files
-- Create `tests/` directory if not exists
-- Generate test file structure:
-  ```python
-  """
-  Test suite for <module_name>.py
-  Generated by python-pytest-creator skill
-  """
-  
-  import pytest
-  from <module_path> import <function_name>, <ClassName>
-  
-  # Test function_name
-  def test_function_name_happy_path():
-      """
-      Test that function_name works with valid inputs
-      """
-      result = function_name(param1, param2)
-      assert result == expected_result
-  
-  def test_function_name_edge_case_empty():
-      """
-      Test that function_name handles empty param1
-      """
-      result = function_name("", param2)
-      assert result is None
-  
-  def test_function_name_error_invalid_type():
-      """
-      Test that function_name raises ValueError for invalid type
-      """
-      with pytest.raises(ValueError):
-          function_name(invalid_param, param2)
-  
-  # Test ClassName
-  def test_class_name_initialization():
-      """
-      Test that ClassName initializes correctly
-      """
-      instance = ClassName(param1, param2)
-      assert instance.attribute == expected_value
-  
-  def test_class_name_method():
-      """
-      Test that ClassName.method_name works correctly
-      """
-      instance = ClassName(param1, param2)
-      result = instance.method_name(param)
-      assert result == expected_result
-  ```
-- Use pytest fixtures for common setup:
-  ```python
-  @pytest.fixture
-  def sample_instance():
-      """Create a sample instance for testing"""
-      return ClassName(param1, param2)
-  
-  @pytest.fixture
-  def sample_data():
-      """Provide sample test data"""
-      return {"key": "value"}
-  ```
-- Use pytest.mark for categorization:
-  ```python
-  @pytest.mark.unit
-  def test_unit_scenario():
-      pass
-  
-  @pytest.mark.integration
-  def test_integration_scenario():
-      pass
-  
-  @pytest.mark.slow
-  def test_performance_scenario():
-      pass
-  ```
-
-### Step 7: Verify Executability
-- Ensure tests can be run with the appropriate pytest command:
-  ```bash
-  # If Poetry is installed and pyproject.toml exists:
-  poetry run pytest tests/test_<module_name>.py -v
-
-  # Otherwise:
-  pytest tests/test_<module_name>.py -v
-
-  # Run all tests
-  [poetry run] pytest -v
-
-  # Run with coverage
-  [poetry run] pytest --cov=<module_name> tests/
-  ```
-- Verify no import errors or syntax issues
-- Check that all tests are discoverable by pytest
-
-### Step 8: Display Summary
-```
-✅ Test files created successfully!
-
-**Test Files Created:**
-- tests/test_<module_name1>.py (<number> tests)
-- tests/test_<module_name2>.py (<number> tests)
-
-**Total Tests Generated: <number>**
-**Test Categories:**
-- Unit tests: <number>
-- Integration tests: <number>
-- Edge case tests: <number>
-- Error handling tests: <number>
-
-**To run tests:**
-```bash
-# If Poetry is installed and pyproject.toml exists:
-poetry run pytest -v
-poetry run pytest tests/test_<module_name>.py -v
-poetry run pytest --cov=<module_name> tests/
-
-# Otherwise:
-pytest -v
-pytest tests/test_<module_name>.py -v
-pytest --cov=<module_name> tests/
-```
-
-**Next Steps:**
-1. Review generated test files
-2. Adjust test data and expected values
-3. Run tests to verify they pass
-4. Update coverage badge in README.md using `coverage-readme-workflow`
-5. Add any missing scenarios
-```
-
-## Python-Specific Scenario Generation
-
-Python-specific patterns to focus on:
+## Python-Specific Patterns
 
 ### Decorator Testing
-- **Decorator Execution**: Decorator modifies function behavior correctly
-- **Decorator Chaining**: Multiple decorators apply correctly
-- **Decorator Arguments**: Decorator with parameters works
-- **Class Decorators**: Decorator classes properly
+- Decorator modifies function behavior correctly
+- Decorator chaining applies correctly
+- Decorator arguments work
+- Class decorators function properly
 
 ### Context Manager Testing
-- **`__enter__`**: Returns context manager correctly
-- **`__exit__`**: Cleans up resources properly
-- **Exception Handling**: Exceptions in context are handled
-- **Nested Context**: Multiple context managers work together
+- `__enter__` returns context correctly
+- `__exit__` cleans up resources
+- Exception handling in context works
+- Nested context managers work together
 
-### Special Method Testing
-- **`__str__`**: String representation is correct
-- **`__repr__`**: Developer representation is correct
-- **`__eq__`**: Equality comparison works
-- **`__hash__`**: Hash allows use in sets/dicts
-- **`__len__`**: Length function returns correct value
-- **`__getitem__`**: Item access works
-- **`__setitem__`**: Item assignment works
+### Special Methods
+- `__str__`: String representation is correct
+- `__repr__`: Developer representation is correct
+- `__eq__`: Equality comparison works
+- `__hash__`: Hash allows use in sets/dicts
+- `__len__`: Length function returns correct value
+- `__getitem__`: Item access works
+- `__setitem__`: Item assignment works
 
 ### Property Testing
-- **Getter**: Property returns correct value
-- **Setter**: Property sets value correctly
-- **Deleter**: Property deletion works
-- **Cached Properties**: Cached behavior is correct
+- Getter returns correct value
+- Setter sets value correctly
+- Deleter handles deletion
+- Cached properties work correctly
 
 ## Best Practices
 
 Refer to `test-generator-framework` for general best practices.
 
-Python-specific best practices:
-- **Pytest Features**: Use fixtures, parametrization, marks
-- **Async Testing**: Use pytest-asyncio for async functions
-- **Type Hints**: Include type hints for better test coverage
-- **Mocking**: Use pytest-mock or unittest.mock appropriately
+**Python-specific**:
+- Use pytest fixtures for common setup
+- Use `@pytest.mark.asyncio` for async functions
+- Include type hints for better test coverage
+- Use `pytest-mock` or `unittest.mock` appropriately
+- Parametrize tests with `@pytest.mark.parametrize`
+- Mark tests with categories (unit, integration, slow)
 
 ## Common Issues
 
 Refer to `test-generator-framework` for general issues.
 
-Python-specific issues:
+**Python-specific**:
 
 ### Poetry Not Installed
 **Issue**: `poetry run pytest` command not found
 
-**Solution**: Use `pytest` directly instead:
+**Solution**: Use `pytest` directly
 ```bash
 pytest tests/
 ```
@@ -459,7 +256,7 @@ pytest tests/
 ### pytest-asyncio Not Installed
 **Issue**: Async tests fail or don't run
 
-**Solution**: Install pytest-asyncio:
+**Solution**: Install pytest-asyncio
 ```bash
 poetry add --group dev pytest-asyncio
 # or
@@ -469,23 +266,12 @@ pip install pytest-asyncio
 ### Module Not Found
 **Issue**: Import errors for modules to test
 
-**Solution**: Add source to PYTHONPATH:
+**Solution**: Add source to PYTHONPATH
 ```bash
 export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 ```
 
-## Troubleshooting Checklist
-
-Refer to `test-generator-framework` for general checklist.
-
-Python-specific additions:
-Before generating tests:
-- [ ] Python files exist and are syntactically correct
-- [ ] `pyproject.toml` or `requirements.txt` exists
-- [ ] Pytest is installed
-- [ ] Poetry is installed (if using Poetry)
-
-## Related Commands
+## Commands
 
 ```bash
 # Poetry commands
@@ -504,10 +290,10 @@ python -m pytest
 export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 ```
 
-## Related Skills
+## References
 
-- `test-generator-framework`: Core test generation framework
-- `coverage-readme-workflow`: For updating README with coverage badges
-- `python-ruff-linter`: Python code quality before testing
-- `linting-workflow`: Generic linting workflow
-
+- **test-generator-framework**: Core test generation framework
+- **Pytest Documentation**: https://docs.pytest.org/
+- **pytest-asyncio**: https://pytest-asyncio.readthedocs.io/
+- **coverage-readme-workflow**: Update README with coverage badges
+- **python-ruff-linter**: Python code quality before testing
