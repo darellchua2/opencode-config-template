@@ -417,5 +417,8 @@ Language-specific test generators that use this framework:
 - `nextjs-unit-test-creator`: For Next.js/React testing (Jest/Vitest)
 - `python-pytest-creator`: For Python testing (Pytest)
 
+Workflow skills:
+- `tdd-workflow`: For Test Driven Development methodology and red-green-refactor cycle
+
 Framework-specific utilities:
 - `linting-workflow`: For ensuring code quality before testing
