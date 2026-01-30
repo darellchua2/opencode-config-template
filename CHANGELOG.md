@@ -1,3 +1,10 @@
+# [1.13.0](https://github.com/darellchua2/opencode-config-template/compare/v1.12.0...v1.13.0) (2026-01-30)
+
+
+### Features
+
+* **config:** Add Playwright MCP server integration ([d1619de](https://github.com/darellchua2/opencode-config-template/commit/d1619de25b212e677be82e7c59427558ae5cad0e)), closes [#61](https://github.com/darellchua2/opencode-config-template/issues/61)
+
 # [1.12.0](https://github.com/darellchua2/opencode-config-template/compare/v1.11.0...v1.12.0) (2026-01-29)
 
 
