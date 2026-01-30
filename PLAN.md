@@ -1,98 +1,104 @@
-# Plan: Enhance opencode-skill-auditor
+# Plan: Add Playwright MCP server integration to config.json
 
 ## Overview
-
-Enhance `opencode-skill-auditor` skill to analyze subagent/skill suitability, create skill duplicity matrices, and provide token usage optimization recommendations.
+Implement and integrate the Playwright MCP server from https://github.com/microsoft/playwright-mcp into the config.json configuration. This will enable automated browser testing capabilities within the OpenCode agent system.
 
 ## Issue Reference
+- Issue: #61
+- URL: https://github.com/darellchua2/opencode-config-template/issues/61
+- Labels: enhancement, good first issue
+- Assignee: darellchua2
+- Branch: feature/61-playwright-mcp-server
 
-- Issue: #60
-- URL: https://github.com/darellchua2/opencode-config-template/issues/60
-- Labels: enhancement, optimization, architecture
-- Branch: feature/60-skill-auditor-enhancement
+## Files to Modify
+1. `config.json` - Add Playwright MCP server configuration to the `mcp` section
 
-## Problem Statement
+## Approach
 
-The current `opencode-skill-auditor` focuses on identifying redundancy and overlap but lacks:
-1. **Subagent/Skill Suitability Analysis** - Which skills should be loaded by which subagents
-2. **Quantitative Duplicity Scoring** - Numeric similarity scores between skills
-3. **Token Usage Optimization** - Recommendations for minimizing token consumption
+### Step 1: Research Playwright MCP Server Configuration
+- Review the Playwright MCP server documentation at https://github.com/microsoft/playwright-mcp
+- Understand the required configuration parameters:
+  - Command to start the server
+  - Environment variables needed
+  - Any additional configuration options
 
-### Current Issues
+### Step 2: Add MCP Server Configuration to config.json
+- Add a new entry under `mcp` section for Playwright
+- Configuration pattern based on existing MCP servers:
+  ```json
+  "playwright": {
+    "type": "local" or "remote",
+    "command": ["npx", "-y", "@playwright/mcp-server"],
+    "environment": {
+      // Required environment variables
+    },
+    "enabled": true
+  }
+  ```
 
-- Complex workflows (e.g., `git-issue-creator`, `nextjs-pr-workflow`) extend 4+ framework skills
-- Subagents cannot load these skills due to tool restrictions and token budget constraints
-- No quantitative measure of skill overlap
-- Token costs are not tracked or optimized
+### Step 3: Test Configuration
+- Validate the JSON syntax of config.json
+- Ensure the MCP server configuration follows the correct schema
+- Verify that the configuration is properly formatted
 
-## Implementation Tasks
+### Step 4: Consider Agent Integration (Optional)
+- Determine which agents should have access to the Playwright MCP server
+- Potential candidates:
+  - `image-analyzer` - for UI screenshot testing
+  - `testing-subagent` - for automated testing workflows
+- Update agent `mcp` sections if needed
 
-### Phase 1: Update opencode-skill-auditor/SKILL.md
+### Step 5: Documentation Updates (Optional)
+- Update README.md if new capabilities are enabled
+- Document the Playwright MCP server integration
+- Provide usage examples for testing workflows
 
-- [ ] Add "Subagent Suitability Analysis" section
-- [ ] Add "Duplicity Scoring Matrix" section
-- [ ] Add "Token Cost Estimation" section
-- [ ] Add "Subagent-Specific Recommendations" section
-- [ ] Update "Analysis Commands" section with new commands
+## Configuration Details
 
-### Phase 2: Create Report Templates
+### Playwright MCP Server
+Based on the Microsoft Playwright MCP server, the configuration should include:
 
-- [ ] Create `templates/suitability-report.md`
-- [ ] Create `templates/duplicity-matrix.md`
-- [ ] Create `templates/token-optimization.md`
+**Type**: `local` (npm package) or `remote` (depending on implementation)
 
-### Phase 3: Implement Analysis Logic
+**Command**:
+```json
+"command": ["npx", "-y", "@playwright/mcp-server"]
+```
 
-- [ ] Create Python script for duplicity scoring
-- [ ] Implement token cost estimation
-- [ ] Build subagent compatibility checker
-- [ ] Generate sample reports
+**Environment Variables**:
+- Check if any API keys or configuration are required
+- Document any required environment variables
 
-### Phase 4: Test and Validate
-
-- [ ] Run full audit on all 31 skills
-- [ ] Verify duplicity scores accuracy
-- [ ] Validate token estimates against actual loading
-- [ ] Test subagent compatibility checks
-
-### Phase 5: Document and Refine
-
-- [ ] Add usage examples to skill documentation
-- [ ] Document limitations of analysis
-- [ ] Provide troubleshooting guidance
-
-## Expected Outcomes
-
-### Immediate Benefits
-1. **Subagent Compatibility**: Clear guidance on which skills can be loaded by which subagents
-2. **Reduced Duplication**: Quantitative identification of overlapping skills
-3. **Token Optimization**: 20-40% reduction in skill loading costs
-
-### Long-term Benefits
-1. **Better Skill Architecture**: Framework + language-specific separation
-2. **Improved Performance**: Subagents can load skills within token budgets
-3. **Easier Maintenance**: Clear separation of concerns between skill types
+**Enabled**: `true`
 
 ## Success Criteria
-
-- [ ] `opencode-skill-auditor` updated with 4 new analysis sections
-- [ ] Subagent suitability analysis functional
-- [ ] Duplicity scoring matrix implemented with accurate similarity scores
-- [ ] Token cost estimation working with 10% accuracy
-- [ ] All three report templates created and formatted correctly
-- [ ] Analysis commands tested and validated
-- [ ] Documentation includes examples for each new capability
-- [ ] Subagent compatibility checks match `.AGENTS.md` restrictions
+- [ ] Playwright MCP server configuration added to config.json
+- [ ] JSON is valid and follows the schema
+- [ ] Configuration is properly formatted and indented
+- [ ] No syntax errors in config.json
+- [ ] Documentation updated (if applicable)
 
 ## Notes
+- The configuration should follow the existing pattern of other MCP servers in config.json
+- Pay attention to indentation and JSON formatting (2 spaces)
+- The `mcp` section currently has: `atlassian`, `web-reader`, `web-search-prime`, `zai-mcp-server`, `zread`, `drawio`
+- Playwright will be added as a new entry in this section
+- Consider whether to enable it globally or only for specific agents
 
-- This enhancement adds ~400-500 lines to `opencode-skill-auditor/SKILL.md`
-- Total skill size will increase from 133 to ~600 lines
-- Trade-off: Larger auditor skill but enables comprehensive analysis
-
-## References
-
-- Issue: https://github.com/darellchua2/opencode-config-template/issues/60
-- `.AGENTS.md` - Subagent tool restrictions
-- `skills/` - All 31 current skills to audit
-- `skills/opencode-skill-auditor/SKILL.md` - Base skill to enhance
+## MCP Server Structure Reference
+```json
+"mcp": {
+  "atlassian": { ... },
+  "web-reader": { ... },
+  "web-search-prime": { ... },
+  "zai-mcp-server": { ... },
+  "zread": { ... },
+  "drawio": { ... },
+  "playwright": {  // Add this
+    "type": "...",
+    "command": [...],
+    "environment": { ... },
+    "enabled": true
+  }
+}
+```
