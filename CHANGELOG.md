@@ -1,3 +1,11 @@
+# [1.14.0](https://github.com/darellchua2/opencode-config-template/compare/v1.13.0...v1.14.0) (2026-02-12)
+
+
+### Features
+
+* **config:** update GLM model consistency and add nextjs-tsdoc-documentor skill ([fc25b45](https://github.com/darellchua2/opencode-config-template/commit/fc25b45f6957552244656979784a186b0edbce2a)), closes [#64](https://github.com/darellchua2/opencode-config-template/issues/64)
+* **skills:** add jira-ticket-plan-workflow and git-issue-plan-workflow ([da548d8](https://github.com/darellchua2/opencode-config-template/commit/da548d83927ffe28576e4495c578996d152035da))
+
 # [1.13.0](https://github.com/darellchua2/opencode-config-template/compare/v1.12.0...v1.13.0) (2026-01-30)
 
 
