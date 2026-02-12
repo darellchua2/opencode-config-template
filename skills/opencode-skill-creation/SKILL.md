@@ -1,11 +1,13 @@
 ---
 name: opencode-skill-creation
 description: Generate OpenCode skills following official documentation best practices
+extends: opencode-tooling-framework
 license: Apache-2.0
 compatibility: opencode
 metadata:
   audience: developers
   workflow: skill-development
+  extends: opencode-tooling-framework
 ---
 
 ## What I do

@@ -1,11 +1,13 @@
 ---
 name: git-issue-updater
 description: Update GitHub issues and JIRA tickets with commit progress including user, date, time, and consistent documentation formatting for traceability
+extends: git-workflow-framework
 license: Apache-2.0
 compatibility: opencode
 metadata:
   audience: developers, maintainers
   workflow: issue-tracking
+  extends: git-workflow-framework
 ---
 
 ## What I do

@@ -1,11 +1,13 @@
 ---
 name: jira-git-integration
 description: Generic JIRA + Git workflow utilities for ticket management, branch creation, and integration
+extends: jira-workflow-framework
 license: Apache-2.0
 compatibility: opencode
 metadata:
   audience: developers
   workflow: jira-git-integration
+  extends: jira-workflow-framework
 ---
 
 ## What I do

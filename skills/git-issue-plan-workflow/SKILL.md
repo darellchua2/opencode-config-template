@@ -1,11 +1,13 @@
 ---
 name: git-issue-plan-workflow
 description: Standardized GitHub issue creation workflow with structured description, branch creation, PLAN.md generation, and phased execution
+extends: git-workflow-framework
 license: Apache-2.0
 compatibility: opencode
 metadata:
   audience: developers
   workflow: github-planning
+  extends: git-workflow-framework
 ---
 
 ## What I do

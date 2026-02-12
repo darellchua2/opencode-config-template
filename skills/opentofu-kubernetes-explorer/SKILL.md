@@ -1,11 +1,13 @@
 ---
 name: opentofu-kubernetes-explorer
 description: Explore and manage Kubernetes clusters and resources using OpenTofu/Terraform
+extends: opentofu-framework
 license: Apache-2.0
 compatibility: opencode
 metadata:
   audience: developers
   workflow: container-orchestration
+  extends: opentofu-framework
 ---
 
 # OpenTofu Kubernetes Explorer

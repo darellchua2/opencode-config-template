@@ -1,11 +1,13 @@
 ---
 name: opentofu-provider-setup
 description: Configure OpenTofu with cloud providers, manage authentication, and setup state backends
+extends: opentofu-framework
 license: Apache-2.0
 compatibility: opencode
 metadata:
   audience: developers
   workflow: infrastructure-provisioning
+  extends: opentofu-framework
 ---
 
 # OpenTofu Provider Setup

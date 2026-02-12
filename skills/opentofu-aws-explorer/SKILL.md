@@ -1,11 +1,13 @@
 ---
 name: opentofu-aws-explorer
 description: Explore and manage AWS cloud infrastructure resources using OpenTofu/Terraform
+extends: opentofu-framework
 license: Apache-2.0
 compatibility: opencode
 metadata:
   audience: developers
   workflow: cloud-infrastructure
+  extends: opentofu-framework
 ---
 
 # OpenTofu AWS Explorer

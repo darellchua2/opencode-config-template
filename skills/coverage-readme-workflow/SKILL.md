@@ -1,11 +1,13 @@
 ---
 name: coverage-readme-workflow
 description: Ensure test coverage percentage is displayed in README.md for Next.js and Python projects following industry standards
+extends: coverage-framework
 license: Apache-2.0
 compatibility: opencode
 metadata:
   audience: developers
   workflow: test-coverage-documentation
+  extends: coverage-framework
 ---
 
 ## What I do

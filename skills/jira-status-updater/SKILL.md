@@ -1,11 +1,13 @@
 ---
 name: jira-status-updater
 description: Automate JIRA ticket status transitions after pull requests are merged, ensuring proper workflow closure
+extends: jira-workflow-framework
 license: Apache-2.0
 compatibility: opencode
 metadata:
   audience: developers
   workflow: jira-status-transition
+  extends: jira-workflow-framework
 ---
 
 ## What I do

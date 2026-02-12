@@ -1,11 +1,13 @@
 ---
 name: opentofu-keycloak-explorer
 description: Explore and manage Keycloak identity and access management resources using OpenTofu/Terraform
+extends: opentofu-framework
 license: Apache-2.0
 compatibility: opencode
 metadata:
   audience: developers
   workflow: identity-management
+  extends: opentofu-framework
 ---
 
 # OpenTofu Keycloak Explorer

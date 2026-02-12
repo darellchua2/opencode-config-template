@@ -1,11 +1,13 @@
 ---
 name: opencode-skills-maintainer
 description: Automatically update Build-With-Skills and Plan-With-Skills agents with new skills from skills/ folder, keeping their system prompts synchronized with available skills
+extends: opencode-tooling-framework
 license: Apache-2.0
 compatibility: opencode
 metadata:
   audience: developers
   workflow: maintenance
+  extends: opencode-tooling-framework
 ---
 
 ## What I do

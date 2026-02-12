@@ -1,11 +1,13 @@
 ---
 name: opentofu-ecr-provision
 description: Provision AWS Elastic Container Registry (ECR) repositories with GitHub OIDC integration following BETEKK standards
+extends: opentofu-framework
 license: Apache-2.0
 compatibility: opencode
 metadata:
   audience: developers
   workflow: infrastructure-as-code
+  extends: opentofu-framework
 ---
 
 # OpenTofu ECR Provisioning

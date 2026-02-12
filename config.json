@@ -83,8 +83,8 @@
       }
     },
     "explore": {
-      "description": "Fast agent specialized for exploring codebases. Find files by patterns, search code for keywords, and answer questions about codebase structure.",
-      "mode": "primary",
+      "description": "Specialized subagent for fast codebase exploration. Find files by patterns, search code for keywords, and answer questions about codebase structure with read-only access.",
+      "mode": "subagent",
       "model": "zai-coding-plan/glm-4.7",
       "prompt": "You are a codebase exploration agent optimized for coding tasks. Use glob patterns to find files by name/extension, use grep to search file contents, and read files to understand implementation. When given a thoroughness level (quick/medium/very thorough), adjust search depth accordingly. For 'quick', limit to obvious patterns; for 'medium', include common variations; for 'very thorough', search extensively across multiple naming conventions and locations. Always return specific file paths and line numbers for findings. Provide concise summaries of what you discover, with focus on code structure, patterns, and implementation details.",
       "tools": {
@@ -170,6 +170,8 @@
       },
       "permission": {
         "skill": {
+          "git-workflow-framework": "allow",
+          "jira-workflow-framework": "allow",
           "git-issue-creator": "allow",
           "git-issue-updater": "allow",
           "git-issue-labeler": "allow",
@@ -199,6 +201,7 @@
       "permission": {
         "skill": {
           "docstring-generator": "allow",
+          "coverage-framework": "allow",
           "coverage-readme-workflow": "allow"
         }
       }
@@ -218,6 +221,7 @@
       "mcp": {},
       "permission": {
         "skill": {
+          "opentofu-framework": "allow",
           "opentofu-kubernetes-explorer": "allow",
           "opentofu-neon-explorer": "allow",
           "opentofu-aws-explorer": "allow",
@@ -253,6 +257,29 @@
           "jira-status-updater": "allow",
           "jira-ticket-plan-workflow": "allow",
           "git-issue-plan-workflow": "allow"
+        }
+      }
+    },
+    "opencode-tooling-subagent": {
+      "description": "Specialized subagent for OpenCode configuration management. Handles skill creation, agent creation, skill auditing, and configuration maintenance for the OpenCode system itself.",
+      "mode": "subagent",
+      "model": "zai-coding-plan/glm-4.7",
+      "prompt": "You are an OpenCode tooling specialist. Manage the OpenCode configuration system:\n\nSkill Management:\n- opencode-skill-creation: Generate new skills following official documentation best practices\n- opencode-skill-auditor: Audit existing skills for modularization opportunities and redundancy\n- opencode-skills-maintainer: Update Build-With-Skills and Plan-With-Skills agents with new skills\n\nAgent Management:\n- opencode-agent-creation: Generate new agents following official documentation best practices\n\nWorkflow:\n1. Understand the tooling requirement (new skill, new agent, audit, or maintenance)\n2. For skill creation: Use opencode-skill-creation with proper structure and documentation\n3. For agent creation: Use opencode-agent-creation with appropriate tool restrictions\n4. For audits: Use opencode-skill-auditor to identify improvements\n5. For maintenance: Use opencode-skills-maintainer to sync agent prompts with available skills\n6. Ensure all changes follow OpenCode configuration best practices\n\nAlways maintain consistency between skills, agents, and documentation. Validate JSON syntax and configuration structure.",
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "glob": true,
+        "grep": true
+      },
+      "mcp": {},
+      "permission": {
+        "skill": {
+          "opencode-tooling-framework": "allow",
+          "opencode-skill-creation": "allow",
+          "opencode-skill-auditor": "allow",
+          "opencode-skills-maintainer": "allow",
+          "opencode-agent-creation": "allow"
         }
       }
     }

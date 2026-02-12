@@ -1,11 +1,13 @@
 ---
 name: git-issue-creator
-description: GitHub issue creation with semantic commit formatting and automatic label assignment, extending git-issue-labeler, git-semantic-commits, git-issue-updater, and ticket-branch-workflow
+description: GitHub issue creation with semantic commit formatting and automatic label assignment
+extends: git-workflow-framework
 license: Apache-2.0
 compatibility: opencode
 metadata:
   audience: developers
   workflow: github-issue-branch
+  extends: git-workflow-framework
 ---
 
 ## What I do

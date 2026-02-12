@@ -1,11 +1,13 @@
 ---
 name: opentofu-neon-explorer
 description: Explore and manage Neon Postgres serverless database resources using OpenTofu/Terraform
+extends: opentofu-framework
 license: Apache-2.0
 compatibility: opencode
 metadata:
   audience: developers
   workflow: database-management
+  extends: opentofu-framework
 ---
 
 # OpenTofu Neon Explorer

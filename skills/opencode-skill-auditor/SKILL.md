@@ -1,11 +1,13 @@
 ---
 name: opencode-skill-auditor
 description: Audit existing OpenCode skills to identify modularization opportunities and eliminate redundancy
+extends: opencode-tooling-framework
 license: Apache-2.0
 compatibility: opencode
 metadata:
   audience: developers
   workflow: analysis-and-optimization
+  extends: opencode-tooling-framework
 ---
 
 ## What I do

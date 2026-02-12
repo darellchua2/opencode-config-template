@@ -1,11 +1,13 @@
 ---
 name: git-issue-labeler
 description: Assess GitHub issues and assign appropriate labels using GitHub default labels (bug, enhancement, documentation, duplicate, good first issue, help wanted, invalid, question, wontfix) with detailed descriptions
+extends: git-workflow-framework
 license: Apache-2.0
 compatibility: opencode
 metadata:
   audience: developers, maintainers
   workflow: issue-management
+  extends: git-workflow-framework
 ---
 
 ## What I do

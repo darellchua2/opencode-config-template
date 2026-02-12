@@ -1,11 +1,13 @@
 ---
 name: git-pr-creator
 description: Create Git pull requests and optionally update JIRA tickets with comments and image attachments
+extends: git-workflow-framework
 license: Apache-2.0
 compatibility: opencode
 metadata:
   audience: developers
   workflow: pr-creation
+  extends: git-workflow-framework
 ---
 
 ## What I do

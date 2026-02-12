@@ -1,11 +1,13 @@
 ---
 name: opentofu-provisioning-workflow
 description: Infrastructure as Code development patterns, resource lifecycle management, and state management workflows with OpenTofu
+extends: opentofu-framework
 license: Apache-2.0
 compatibility: opencode
 metadata:
   audience: developers
   workflow: infrastructure-provisioning
+  extends: opentofu-framework
 ---
 
 # OpenTofu Provisioning Workflow
