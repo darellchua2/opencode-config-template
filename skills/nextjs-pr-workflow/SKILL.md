@@ -35,24 +35,6 @@ Use this workflow when:
 - `linting-workflow`: For Next.js linting (npm run lint)
 - `jira-git-integration`: For JIRA ticket management and comments
 
-## When to use me
-
-Use this workflow when:
-- Completing implementation of a PLAN.md file
-- Finishing new feature implementation in Next.js apps
-- Ready to create a PR after development is complete
-- Need to ensure code quality before submitting changes
-- Following the standard practice of linting and building before PR
-
-## When to use me
-
-Use this workflow when:
-- Completing implementation of a PLAN.md file
-- Finishing new feature implementation in Next.js apps
-- Ready to create a PR after development is complete
-- Need to ensure code quality before submitting changes
-- Following the standard practice of linting and building before PR
-
 ## Prerequisites
 
 - Next.js project with `npm run lint`, `npm run build`, and `npm run test` scripts

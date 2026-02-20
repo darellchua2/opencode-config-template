@@ -1,104 +1,61 @@
-# Plan: Add Playwright MCP server integration to config.json
+# Plan: Remove duplicated sections from skill files
 
 ## Overview
-Implement and integrate the Playwright MCP server from https://github.com/microsoft/playwright-mcp into the config.json configuration. This will enable automated browser testing capabilities within the OpenCode agent system.
+Clean up duplicate section headers in SKILL.md files to improve consistency and readability.
 
 ## Issue Reference
-- Issue: #61
-- URL: https://github.com/darellchua2/opencode-config-template/issues/61
-- Labels: enhancement, good first issue
-- Assignee: darellchua2
-- Branch: feature/61-playwright-mcp-server
+- Issue: #67
+- URL: https://github.com/darellchua2/opencode-config-template/issues/67
+- Labels: enhancement, documentation
+- Branch: issue-67
 
-## Files to Modify
-1. `config.json` - Add Playwright MCP server configuration to the `mcp` section
+## Analysis Results
 
-## Approach
+After reviewing all 8 flagged files, only **1 file** had true duplicates:
 
-### Step 1: Research Playwright MCP Server Configuration
-- Review the Playwright MCP server documentation at https://github.com/microsoft/playwright-mcp
-- Understand the required configuration parameters:
-  - Command to start the server
-  - Environment variables needed
-  - Any additional configuration options
+| File | Status | Action |
+|------|--------|--------|
+| `skills/nextjs-pr-workflow/SKILL.md` | ✅ FIXED | Removed 2 duplicate `## When to use me` sections |
+| `skills/opencode-skill-creation/SKILL.md` | ✅ No action | "Duplicates" are in template examples (intentional) |
+| `skills/coverage-readme-workflow/SKILL.md` | ✅ No action | `## Test Coverage` is in README template example |
+| `skills/git-issue-plan-workflow/SKILL.md` | ✅ No action | Headers are in issue body template example |
+| `skills/git-issue-updater/SKILL.md` | ✅ No action | `## Progress Update` is in comment template example |
+| `skills/git-pr-creator/SKILL.md` | ✅ No action | `## Pull Request Created` is in comment template |
+| `skills/jira-ticket-plan-workflow/SKILL.md` | ✅ No action | Headers are in ticket description template |
+| `skills/opencode-skills-maintainer/SKILL.md` | ✅ No action | Headers are in report template example |
 
-### Step 2: Add MCP Server Configuration to config.json
-- Add a new entry under `mcp` section for Playwright
-- Configuration pattern based on existing MCP servers:
-  ```json
-  "playwright": {
-    "type": "local" or "remote",
-    "command": ["npx", "-y", "@playwright/mcp-server"],
-    "environment": {
-      // Required environment variables
-    },
-    "enabled": true
-  }
-  ```
+## Implementation Phases
 
-### Step 3: Test Configuration
-- Validate the JSON syntax of config.json
-- Ensure the MCP server configuration follows the correct schema
-- Verify that the configuration is properly formatted
+### Phase 1: Analysis ✅ COMPLETE
+- [x] Read all flagged skill files
+- [x] Identify which duplicates are actual duplicates vs template examples
+- [x] Determine that only `nextjs-pr-workflow/SKILL.md` needs fixing
 
-### Step 4: Consider Agent Integration (Optional)
-- Determine which agents should have access to the Playwright MCP server
-- Potential candidates:
-  - `image-analyzer` - for UI screenshot testing
-  - `testing-subagent` - for automated testing workflows
-- Update agent `mcp` sections if needed
+### Phase 2: Fix True Duplicates ✅ COMPLETE
+- [x] Remove duplicate `## When to use me` sections from nextjs-pr-workflow
 
-### Step 5: Documentation Updates (Optional)
-- Update README.md if new capabilities are enabled
-- Document the Playwright MCP server integration
-- Provide usage examples for testing workflows
-
-## Configuration Details
-
-### Playwright MCP Server
-Based on the Microsoft Playwright MCP server, the configuration should include:
-
-**Type**: `local` (npm package) or `remote` (depending on implementation)
-
-**Command**:
-```json
-"command": ["npx", "-y", "@playwright/mcp-server"]
-```
-
-**Environment Variables**:
-- Check if any API keys or configuration are required
-- Document any required environment variables
-
-**Enabled**: `true`
+### Phase 3: Validation ✅ COMPLETE
+- [x] Verify fix applied correctly
+- [x] Confirm template examples are preserved
+- [x] No content loss
 
 ## Success Criteria
-- [ ] Playwright MCP server configuration added to config.json
-- [ ] JSON is valid and follows the schema
-- [ ] Configuration is properly formatted and indented
-- [ ] No syntax errors in config.json
-- [ ] Documentation updated (if applicable)
+- [x] True duplicate sections removed from nextjs-pr-workflow
+- [x] Template examples preserved (intentional "duplicates" in code blocks)
+- [x] No content loss during consolidation
+- [x] All 42 skills scanned and verified
+
+## Conclusion
+
+**Issue #67 is RESOLVED.** After scanning all 42 skill files:
+
+1. **Only 1 true duplicate found**: `nextjs-pr-workflow/SKILL.md` had `## When to use me` repeated 3 times with identical content outside code blocks. **Fixed.**
+
+2. **7 files with intentional "duplicates"**: These contain section headers inside markdown code blocks (template examples showing what generated output should look like). These should NOT be removed as they serve an educational/documentation purpose.
 
 ## Notes
-- The configuration should follow the existing pattern of other MCP servers in config.json
-- Pay attention to indentation and JSON formatting (2 spaces)
-- The `mcp` section currently has: `atlassian`, `web-reader`, `web-search-prime`, `zai-mcp-server`, `zread`, `drawio`
-- Playwright will be added as a new entry in this section
-- Consider whether to enable it globally or only for specific agents
-
-## MCP Server Structure Reference
-```json
-"mcp": {
-  "atlassian": { ... },
-  "web-reader": { ... },
-  "web-search-prime": { ... },
-  "zai-mcp-server": { ... },
-  "zread": { ... },
-  "drawio": { ... },
-  "playwright": {  // Add this
-    "type": "...",
-    "command": [...],
-    "environment": { ... },
-    "enabled": true
-  }
-}
-```
+- The grep-based detection flagged headers inside markdown code blocks (template examples)
+- These are intentional and should NOT be removed
+- Only actual duplicate sections outside code blocks should be removed
+- `nextjs-pr-workflow/SKILL.md` had the same `## When to use me` content repeated 3 times outside code blocks
+- No other skills require changes
