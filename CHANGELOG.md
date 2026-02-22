@@ -1,3 +1,10 @@
+# [1.15.0](https://github.com/darellchua2/opencode-config-template/compare/v1.14.0...v1.15.0) (2026-02-22)
+
+
+### Features
+
+* add error-resolver-subagent with Opus 4.6 model ([#73](https://github.com/darellchua2/opencode-config-template/issues/73)) ([388697a](https://github.com/darellchua2/opencode-config-template/commit/388697a7a4550ab5de526597c9d8a0f8180b256f))
+
 # [1.14.0](https://github.com/darellchua2/opencode-config-template/compare/v1.13.0...v1.14.0) (2026-02-12)
 
 
