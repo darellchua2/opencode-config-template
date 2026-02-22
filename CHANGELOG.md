@@ -169,7 +169,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `python-ruff-linter` - Python linting with Ruff
   - `typescript-dry-principle` - Apply DRY to TypeScript
 
-- `build-with-skills` agent - Primary agent that identifies and uses appropriate skills
+- Default agent - Primary agent that identifies and uses appropriate skills
 - VERSION file for version management
 - GitHub Actions workflow for automated semantic releases
 - Comprehensive README documentation of framework-based architecture

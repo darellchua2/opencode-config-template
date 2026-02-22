@@ -38,8 +38,8 @@ This repository uses a **custom configuration schema** that differs from officia
 This template implements **skill permissions** to control which skills agents can access.
 
 **Current configuration:**
-- **build-with-skills**: All skills enabled, Atlassian MCP enabled
-- **plan-with-skills**: All skills enabled, no MCP (read-only planning)
+- **Default agent**: All skills enabled, full MCP access
+- **Subagents**: Skill-restricted access based on specialization
 
 **Benefits of this approach:**
 - ✅ Predictable behavior - Skills always available in prompts

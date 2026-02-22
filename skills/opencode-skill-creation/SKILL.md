@@ -17,7 +17,6 @@ I guide you through creating a new OpenCode skill from scratch by:
 3. **Structure Content**: Build complete skill documentation following official standards
 4. **Validate**: Ensure skill meets naming rules and documentation guidelines
 5. **Create Files**: Write SKILL.md to appropriate directory structure
-6. **Update Agents**: **CRITICAL FINAL STEP** - Always run opencode-skills-maintainer to update Build-With-Skills and Plan-With-Skills agents
 
 ## When to use me
 
@@ -25,7 +24,6 @@ Use this when:
 - You want to create a new OpenCode skill without manually formatting SKILL.md
 - You need to ensure your skill follows official documentation standards
 - You want to avoid repetitive setup when creating multiple skills
-- You want to ensure agents are automatically updated with new skills
 
 Ask clarifying questions about:
 - Skill's primary purpose and capabilities
@@ -185,8 +183,8 @@ touch skills/python-pytest-creator/SKILL.md
 
 This is especially critical when updating:
 - **PLAN.md** - Always read first to preserve existing task status
-- **README.md** - Always read first to preserve documentation structure
-- **Existing SKILL.md files** - Always read first to avoid overwriting content
+- **README.md** – Always read first to preserve documentation structure
+- **Existing SKILL.md files** – Always read first to avoid overwriting content
 
 **Why Read First?**
 - The `write` tool completely overwrites existing files
@@ -255,32 +253,6 @@ grep -q "^name:" "skills/<skill-name>/SKILL.md" || echo "Warning: Missing 'name'
 grep -q "^description:" "skills/<skill-name>/SKILL.md" || echo "Warning: Missing 'description' field"
 ```
 
-### Step 8: Update Agents (CRITICAL FINAL STEP)
-
-**ALWAYS execute this final step** to ensure agents know about the new skill:
-
-```bash
-# Use Build-With-Skills agent with opencode-skills-maintainer
-opencode --agent build-with-skills "Use opencode-skills-maintainer skill to update Build-With-Skills and Plan-With-Skills agents with the new skill I just created"
-
-# Or manually invoke the skill if already in an agent session
-echo "Running opencode-skills-maintainer to update agents with new skill..."
-# [Agent will execute opencode-skills-maintainer workflow]
-```
-
-**Why This Step is Critical**:
-- Build-With-Skills and Plan-With-Skills use hardcoded skill lists
-- Without this step, agents won't know the new skill exists
-- The skill will be created but unavailable to agents
-- This ensures consistency between skills/ folder and agent prompts
-
-**What opencode-skills-maintainer Does**:
-1. Scans skills/ folder for all SKILL.md files
-2. Extracts skill metadata from frontmatter
-3. Updates both Build-With-Skills and Plan-With-Skills agent prompts
-4. Validates config.json with jq
-5. Generates a maintenance report
-
 ## Best Practices
 
 ### Naming Conventions
@@ -338,7 +310,6 @@ write filePath="PLAN.md" content="full updated content"
 - **Test the skill**: Try using it after creation
 - **Review documentation**: Ensure clarity and completeness
 - **Check naming**: Verify skill follows naming conventions
-- **Update agents**: Never skip Step 8!
 - **Always read before write**: Verify file content before modifying existing files
 
 ## Common Issues
@@ -387,16 +358,6 @@ python_ ✗ (underscore)
 **Bad**: "Create tests for code"
 **Good**: "Generate comprehensive pytest test files for Python using test-generator-framework"
 
-### Agents Can't Find New Skill
-
-**Issue**: New skill created but agents don't recognize it
-
-**Solution**:
-- **Did you run Step 8?** Always run opencode-skills-maintainer as final step
-- Check if config.json was updated: `jq .agent["build-with-skills"].prompt config.json | grep "<skill-name>"`
-- Manually invoke opencode-skills-maintainer if automated step failed
-- Verify skill name matches frontmatter exactly
-
 ### Accidental Data Loss
 
 **Issue**: File content overwritten when using `write` tool without reading first
@@ -423,10 +384,10 @@ edit filePath="PLAN.md" oldString="old text" newString="new text"
 ```
 
 **Common Files Requiring Read First**:
-- **PLAN.md** - Contains task statuses that must be preserved
-- **README.md** - Contains documentation structure
-- **Existing SKILL.md** - Contains complete skill documentation
-- **config.json** - Contains agent and MCP server configurations
+- **PLAN.md** – Contains task statuses that must be preserved
+- **README.md** – Contains documentation structure
+- **Existing SKILL.md** – Contains complete skill documentation
+- **config.json** – Contains agent and MCP server configurations
 
 ## Verification Commands
 
@@ -445,13 +406,6 @@ python3 -c "import yaml; yaml.safe_load(open('skills/<skill-name>/SKILL.md'))" &
 # 4. Check required fields
 grep "^name:" skills/<skill-name>/SKILL.md && echo "✓ Name field present"
 grep "^description:" skills/<skill-name>/SKILL.md && echo "✓ Description field present"
-
-# 5. Verify agents updated (CRITICAL!)
-jq '.agent["build-with-skills"].prompt' config.json | grep -q "<skill-name>" && echo "✓ Build-With-Skills updated" || echo "❌ Build-With-Skills NOT updated"
-jq '.agent["plan-with-skills"].prompt' config.json | grep -q "<skill-name>" && echo "✓ Plan-With-Skills updated" || echo "❌ Plan-With-Skills NOT updated"
-
-# 6. If agents not updated, run maintainer
-opencode --agent build-with-skills "Use opencode-skills-maintainer skill"
 ```
 
 **Verification Checklist**:
@@ -461,9 +415,6 @@ opencode --agent build-with-skills "Use opencode-skills-maintainer skill"
 - [ ] "## What I do" section is present and descriptive
 - [ ] "## When to use me" section is present and specific
 - [ ] Optional sections added based on complexity
-- [ ] **opencode-skills-maintainer was executed as final step**
-- [ ] Build-With-Skills agent prompt includes new skill
-- [ ] Plan-With-Skills agent prompt includes new skill
 - [ ] Skill can be invoked and executes correctly
 - [ ] **Read tool was used before modifying any existing files** (PLAN.md, README.md, etc.)
 
@@ -490,14 +441,9 @@ metadata:
 - ✓ What I do (5 capabilities listed)
 - ✓ When to use me (4 scenarios described)
 - ✓ Prerequisites (3 requirements)
-- ✓ Steps (8 detailed steps)
+- ✓ Steps (7 detailed steps)
 - ✓ Best Practices (5 guidelines)
-- ✓ Verification Commands (6 commands)
-
-**Agent Updates**:
-- ✓ Build-With-Skills updated with python-pytest-creator
-- ✓ Plan-With-Skills updated with python-pytest-creator
-- ✓ Both agents have identical skill entries
+- ✓ Verification Commands (4 commands)
 
 **Validation**:
 - ✓ YAML valid
@@ -507,6 +453,6 @@ metadata:
 
 ## Related Skills
 
-- **opencode-skills-maintainer**: Used as final step to update agents with new skills
+- **opencode-skills-maintainer**: For validating skill consistency and generating reports
 - **opencode-agent-creation**: For creating new agents with similar best practices
 - **opencode-skill-auditor**: For auditing and modularizing existing skills
