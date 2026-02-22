@@ -420,10 +420,10 @@ OPTIONS:
      ./setup.sh -C             # Check for updates without installing
 
  
- CONFIGURED FEATURES:
+  CONFIGURED FEATURES:
   Agents (4):
-    - build-with-skills (default): Skill-aware coding agent that identifies and uses appropriate skills
-      Automatically ensures best practices: testing, linting, PR workflows, JIRA integration
+    - build (default): Default coding agent with full tool access
+    - plan: Planning agent with read-only access (file edits/bash require approval)
     - explore: Codebase exploration and analysis
     - image-analyzer: Image/screenshot analysis (UI to code, OCR, error diagnosis)
     - diagram-creator: Draw.io diagram creation (architecture, flowcharts, UML)
@@ -1204,8 +1204,9 @@ setup_config() {
             log_success "config.json copied successfully"
 
             echo ""
-            echo "✓ Configured 4 agents:"
-            echo "    - build-with-skills (default) - Skill-aware coding agent"
+            echo "✓ Configured 5 agents:"
+            echo "    - build (default) - Full-featured coding agent"
+            echo "    - plan - Planning agent (read-only)"
             echo "    - explore - Codebase exploration and analysis"
             echo "    - image-analyzer - Image/screenshot analysis"
             echo "    - diagram-creator - Draw.io diagram creation"
@@ -1611,15 +1612,16 @@ print_summary() {
     if [ -f "$CONFIG_FILE" ]; then
         echo "✓ config.json: Copied to ${CONFIG_DIR}/"
         echo "    - Model: zai-coding-plan/glm-4.7"
-        echo "    - Default agent: build-with-skills"
+        echo "    - Default agent: build"
     else
         echo "✗ config.json: Not copied"
     fi
 
     # Agents configured
     if [ -f "$CONFIG_FILE" ]; then
-        echo "✓ Configured 4 agents:"
-        echo "    - build-with-skills (default) - Skill-aware coding agent"
+        echo "✓ Configured 5 agents:"
+        echo "    - build (default) - Full-featured coding agent"
+        echo "    - plan - Planning agent (read-only)"
         echo "    - explore - Codebase exploration and analysis"
         echo "    - image-analyzer - Image/screenshot analysis"
         echo "    - diagram-creator - Draw.io diagram creation"
@@ -1716,14 +1718,15 @@ print_next_steps() {
     echo "                        🚀 Quick Start"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "🤖 Agents (4):"
-    echo "  - build-with-skills (default) - Auto-detects and uses best practices"
+    echo "🤖 Agents (5):"
+    echo "  - build (default) - Full-featured coding agent"
+    echo "  - plan - Planning agent (read-only)"
     echo "  - explore - Fast codebase exploration and analysis"
     echo "  - image-analyzer - Images/screenshots to code, OCR, error diagnosis"
     echo "  - diagram-creator - Draw.io diagrams (architecture, flowcharts, UML)"
     echo ""
     echo "  Usage: opencode --agent <name> \"prompt\""
-    echo "         opencode \"prompt\" (uses build-with-skills)"
+    echo "         opencode \"prompt\" (uses build)"
     echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo "                     📦 27 Skills Available"
@@ -1990,10 +1993,10 @@ except:
 # Skills markdown (passed as argument)
 skills_md = """${skills_md}"""
 
-# Update both agents
-for agent in ['build-with-skills', 'plan-with-skills']:
+# Update standard agents if they exist in config
+for agent in ['build', 'plan']:
     if agent in config.get('agent', {}):
-        old_prompt = config['agent'][agent]['prompt']
+        old_prompt = config['agent'][agent].get('prompt', '')
         placeholder = '{{SKILLS_SECTION_PLACEHOLDER}}'
         
         if placeholder in old_prompt:
