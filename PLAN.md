@@ -1,61 +1,49 @@
-# Plan: Remove duplicated sections from skill files
-
-## Overview
-Clean up duplicate section headers in SKILL.md files to improve consistency and readability.
+# Plan: Update .AGENTS.md with default subagent delegation policy
 
 ## Issue Reference
-- Issue: #67
-- URL: https://github.com/darellchua2/opencode-config-template/issues/67
-- Labels: enhancement, documentation
-- Branch: issue-67
+- **Number**: #70
+- **URL**: https://github.com/darellchua2/opencode-config-template/issues/70
+- **Labels**: enhancement, documentation
+- **Branch**: issue-70-update-agents-delegation-policy
 
-## Analysis Results
+## Overview
+Add a default subagent delegation policy section to `.AGENTS.md` that instructs the primary agent to always delegate tasks to appropriate subagents when the user prompt matches a subagent's specialization.
 
-After reviewing all 8 flagged files, only **1 file** had true duplicates:
+## Acceptance Criteria
+- [x] Default subagent delegation policy documented at top of file
+- [x] Delegation decision tree clearly defined
+- [x] Example delegation scenarios table provided
+- [x] Emphasis on consistent behavior through specialized skills
 
-| File | Status | Action |
-|------|--------|--------|
-| `skills/nextjs-pr-workflow/SKILL.md` | ✅ FIXED | Removed 2 duplicate `## When to use me` sections |
-| `skills/opencode-skill-creation/SKILL.md` | ✅ No action | "Duplicates" are in template examples (intentional) |
-| `skills/coverage-readme-workflow/SKILL.md` | ✅ No action | `## Test Coverage` is in README template example |
-| `skills/git-issue-plan-workflow/SKILL.md` | ✅ No action | Headers are in issue body template example |
-| `skills/git-issue-updater/SKILL.md` | ✅ No action | `## Progress Update` is in comment template example |
-| `skills/git-pr-creator/SKILL.md` | ✅ No action | `## Pull Request Created` is in comment template |
-| `skills/jira-ticket-plan-workflow/SKILL.md` | ✅ No action | Headers are in ticket description template |
-| `skills/opencode-skills-maintainer/SKILL.md` | ✅ No action | Headers are in report template example |
+## Scope
+- `.AGENTS.md` - Added delegation policy section
+
+---
 
 ## Implementation Phases
 
 ### Phase 1: Analysis ✅ COMPLETE
-- [x] Read all flagged skill files
-- [x] Identify which duplicates are actual duplicates vs template examples
-- [x] Determine that only `nextjs-pr-workflow/SKILL.md` needs fixing
+- [x] Review existing .AGENTS.md structure
+- [x] Identify optimal placement for delegation policy
+- [x] Determine content structure based on git-issue-plan-workflow skill
 
-### Phase 2: Fix True Duplicates ✅ COMPLETE
-- [x] Remove duplicate `## When to use me` sections from nextjs-pr-workflow
+### Phase 2: Implementation ✅ COMPLETE
+- [x] Add "Default Subagent Delegation Policy" section
+- [x] Include delegation decision tree
+- [x] Add example delegation scenarios table
 
-### Phase 3: Validation ✅ COMPLETE
-- [x] Verify fix applied correctly
-- [x] Confirm template examples are preserved
-- [x] No content loss
+### Phase 3: Validation
+- [ ] Verify formatting is correct
+- [ ] Commit with semantic message
+- [ ] Push to remote
+- [ ] Update issue with progress
 
-## Success Criteria
-- [x] True duplicate sections removed from nextjs-pr-workflow
-- [x] Template examples preserved (intentional "duplicates" in code blocks)
-- [x] No content loss during consolidation
-- [x] All 42 skills scanned and verified
+## Technical Notes
+- Placement: Top of file, before Task Type → Agent table
+- Ensures agents read delegation policy first
+- Aligns with git-issue-plan-workflow best practices
 
-## Conclusion
-
-**Issue #67 is RESOLVED.** After scanning all 42 skill files:
-
-1. **Only 1 true duplicate found**: `nextjs-pr-workflow/SKILL.md` had `## When to use me` repeated 3 times with identical content outside code blocks. **Fixed.**
-
-2. **7 files with intentional "duplicates"**: These contain section headers inside markdown code blocks (template examples showing what generated output should look like). These should NOT be removed as they serve an educational/documentation purpose.
-
-## Notes
-- The grep-based detection flagged headers inside markdown code blocks (template examples)
-- These are intentional and should NOT be removed
-- Only actual duplicate sections outside code blocks should be removed
-- `nextjs-pr-workflow/SKILL.md` had the same `## When to use me` content repeated 3 times outside code blocks
-- No other skills require changes
+## Success Metrics
+- Primary agents consistently delegate to specialized subagents
+- Reduced code duplication across agent implementations
+- Improved maintainability through modular task handling
