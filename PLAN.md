@@ -1,61 +1,31 @@
-# Plan: Remove duplicated sections from skill files
+# Plan: Add default subagent delegation policy to .AGENTS.md
 
 ## Overview
-Clean up duplicate section headers in SKILL.md files to improve consistency and readability.
+Add a default subagent delegation policy section to `.AGENTS.md` that instructs the primary agent to always delegate tasks to appropriate subagents when the user prompt matches a subagent's specialization.
 
 ## Issue Reference
-- Issue: #67
-- URL: https://github.com/darellchua2/opencode-config-template/issues/67
+- Issue: #68
+- URL: https://github.com/darellchua2/opencode-config-template/issues/68
 - Labels: enhancement, documentation
-- Branch: issue-67
+- Branch: issue-68-add-subagent-delegation-policy
 
-## Analysis Results
+## Files to Modify
+1. `.AGENTS.md` - Add default subagent delegation policy section at the top
 
-After reviewing all 8 flagged files, only **1 file** had true duplicates:
-
-| File | Status | Action |
-|------|--------|--------|
-| `skills/nextjs-pr-workflow/SKILL.md` | ✅ FIXED | Removed 2 duplicate `## When to use me` sections |
-| `skills/opencode-skill-creation/SKILL.md` | ✅ No action | "Duplicates" are in template examples (intentional) |
-| `skills/coverage-readme-workflow/SKILL.md` | ✅ No action | `## Test Coverage` is in README template example |
-| `skills/git-issue-plan-workflow/SKILL.md` | ✅ No action | Headers are in issue body template example |
-| `skills/git-issue-updater/SKILL.md` | ✅ No action | `## Progress Update` is in comment template example |
-| `skills/git-pr-creator/SKILL.md` | ✅ No action | `## Pull Request Created` is in comment template |
-| `skills/jira-ticket-plan-workflow/SKILL.md` | ✅ No action | Headers are in ticket description template |
-| `skills/opencode-skills-maintainer/SKILL.md` | ✅ No action | Headers are in report template example |
-
-## Implementation Phases
-
-### Phase 1: Analysis ✅ COMPLETE
-- [x] Read all flagged skill files
-- [x] Identify which duplicates are actual duplicates vs template examples
-- [x] Determine that only `nextjs-pr-workflow/SKILL.md` needs fixing
-
-### Phase 2: Fix True Duplicates ✅ COMPLETE
-- [x] Remove duplicate `## When to use me` sections from nextjs-pr-workflow
-
-### Phase 3: Validation ✅ COMPLETE
-- [x] Verify fix applied correctly
-- [x] Confirm template examples are preserved
-- [x] No content loss
+## Approach
+1. **Add Policy Section**: Insert new "Default Subagent Delegation Policy" section at the beginning of `.AGENTS.md`
+2. **Define Decision Tree**: Create clear decision tree for delegation routing
+3. **Add Examples**: Provide example scenarios showing when to delegate
+4. **Commit Changes**: Use semantic commit format (docs: add default subagent delegation policy)
 
 ## Success Criteria
-- [x] True duplicate sections removed from nextjs-pr-workflow
-- [x] Template examples preserved (intentional "duplicates" in code blocks)
-- [x] No content loss during consolidation
-- [x] All 42 skills scanned and verified
-
-## Conclusion
-
-**Issue #67 is RESOLVED.** After scanning all 42 skill files:
-
-1. **Only 1 true duplicate found**: `nextjs-pr-workflow/SKILL.md` had `## When to use me` repeated 3 times with identical content outside code blocks. **Fixed.**
-
-2. **7 files with intentional "duplicates"**: These contain section headers inside markdown code blocks (template examples showing what generated output should look like). These should NOT be removed as they serve an educational/documentation purpose.
+- [x] Default subagent delegation policy documented
+- [x] Delegation decision tree clearly defined
+- [x] Example delegation scenarios provided
+- [x] File updated and committed
 
 ## Notes
-- The grep-based detection flagged headers inside markdown code blocks (template examples)
-- These are intentional and should NOT be removed
-- Only actual duplicate sections outside code blocks should be removed
-- `nextjs-pr-workflow/SKILL.md` had the same `## When to use me` content repeated 3 times outside code blocks
-- No other skills require changes
+- This ensures consistent behavior through specialized skills
+- Enables proper tool isolation and access control
+- Maintains modular, maintainable task handling
+- Enforces best practices by domain experts
