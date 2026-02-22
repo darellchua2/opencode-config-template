@@ -2,7 +2,7 @@
 
 ## Summary
 
-Successfully implemented automatic skills discovery for Build-With-Skills and Plan-With-Skills agents. Skills are now dynamically generated from the skills folder at setup time and injected into agent prompts.
+Successfully implemented automatic skills discovery. Skills are now dynamically generated from the skills folder at setup time and available to the default agent.
 
 ## Changes Made
 
@@ -19,7 +19,7 @@ Features:
 ### 2. Updated config.json Template
 **Changes**:
 - Replaced hardcoded skills list with placeholder: `{{SKILLS_SECTION_PLACEHOLDER}}`
-- Both `build-with-skills` and `plan-with-skills` agents updated
+- Default agent prompt updated
 - Placeholder preserves rest of agent prompt structure
 
 ### 3. Modified setup.sh
@@ -39,8 +39,7 @@ graph LR
     B --> C[Generate Skills Markdown]
     C --> D[Inject into config.json]
     D --> E[Deploy to ~/.config/opencode/]
-    E --> F[Build-With-Skills Agent]
-    E --> G[Plan-With-Skills Agent]
+    E --> F[Default Agent]
 ```
 
 **Steps**:
@@ -148,10 +147,10 @@ python3 scripts/generate-skills.py markdown
 
 ```bash
 # Check config.json has skills section
-jq '.agent["build-with-skills"].prompt' ~/.config/opencode/config.json | grep "Auto-Generated"
+jq '.agent.default.prompt' ~/.config/opencode/config.json | grep "Auto-Generated"
 
 # Test agent invocation
-opencode --agent build-with-skills "test prompt"
+opencode "test prompt"
 
 # Verify skills are accessible
 opencode --list-skills
@@ -202,7 +201,7 @@ EOF
 **Option 2: Using Skill Generator Tools**
 ```bash
 # Use opencode-skill-creation skill
-opencode --agent build-with-skills "Use opencode-skill-creation to create a new skill called my-new-skill"
+opencode "Use opencode-skill-creation to create a new skill called my-new-skill"
 ```
 
 ## Comparison: Hardcoded vs Auto-Discovery
@@ -240,10 +239,10 @@ ls -la skills/
 python3 scripts/generate-skills.py markdown | head -20
 
 # 4. Verify config.json updated
-jq '.agent["build-with-skills"].prompt' ~/.config/opencode/config.json | grep "Auto-Generated"
+jq '.agent.default.prompt' ~/.config/opencode/config.json | grep "Auto-Generated"
 
 # 5. Test agent
-opencode --agent build-with-skills "list skills"
+opencode "list skills"
 ```
 
 ### Issue: Wrong Category
@@ -305,7 +304,7 @@ chmod +x scripts/generate-skills.py
 opencode --list-skills
 
 # 4. Test agent with skills
-opencode --agent build-with-skills "Create a simple Python script"
+opencode "Create a simple Python script"
 ```
 
 ### Future Enhancements
