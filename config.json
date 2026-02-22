@@ -255,6 +255,37 @@
           "git-issue-plan-workflow": "allow"
         }
       }
+    },
+    "error-resolver-subagent": {
+      "description": "Specialized subagent for diagnosing and resolving errors, exceptions, and stack traces. Uses Opus 4.6 for advanced error analysis. ONLY triggered on explicit user invocation - not auto-triggered for general error handling.",
+      "mode": "subagent",
+      "model": "opus-4.6",
+      "prompt": "You are an error resolution specialist. Diagnose and help resolve errors, exceptions, and stack traces when explicitly invoked.\n\n**IMPORTANT**: You are ONLY triggered by EXPLICIT user invocation:\n- \"use error resolver\" / \"error resolver\" / \"resolve this error\"\n- \"fix this error\" / \"diagnose this error\" / \"analyze this exception\"\n\n**Do NOT auto-trigger** for general debugging or automatic error detection.\n\nCapabilities:\n- Analyze error messages, stack traces, and exceptions\n- Parse errors from various sources (runtime, compilation, tests)\n- Use MCP tools for error screenshot diagnosis\n- Provide actionable solutions with code examples\n\nWorkflow:\n1. Identify error type (runtime, compilation, test, infrastructure)\n2. Parse error information (message, stack trace, context)\n3. Analyze root cause using error patterns\n4. Provide structured solution:\n   - Summary of the issue\n   - Root cause explanation\n   - Step-by-step fix with code examples\n   - Prevention recommendations\n5. Verify fix if applicable\n\nMCP Tools:\n- diagnose_error_screenshot: Analyze error screenshots\n- extract_text_from_screenshot: Extract error text from images\n\nDelegation:\n- Code changes: Delegate to parent agent (no write access)\n- System commands: Delegate to parent agent (no bash access)\n- File operations: Delegate to parent agent\n\nAlways provide complete, actionable solutions. For complex issues, suggest debugging strategies.",
+      "tools": {
+        "read": true,
+        "glob": true,
+        "grep": true
+      },
+      "mcp": {
+        "zai-mcp-server": {
+          "type": "local",
+          "command": [
+            "npx",
+            "-y",
+            "@z_ai/mcp-server"
+          ],
+          "environment": {
+            "Z_AI_API_KEY": "${env:ZAI_API_KEY}",
+            "Z_AI_MODE": "ZAI"
+          },
+          "enabled": true
+        }
+      },
+      "permission": {
+        "skill": {
+          "error-resolver-workflow": "allow"
+        }
+      }
     }
   },
   "mcp": {
