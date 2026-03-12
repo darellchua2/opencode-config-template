@@ -1,3 +1,10 @@
+## [1.16.2](https://github.com/darellchua2/opencode-config-template/compare/v1.16.1...v1.16.2) (2026-03-12)
+
+
+### Bug Fixes
+
+* update setup.sh ([4b69284](https://github.com/darellchua2/opencode-config-template/commit/4b6928430d9fdd1d756329aa057c162fb2481069))
+
 ## [1.16.1](https://github.com/darellchua2/opencode-config-template/compare/v1.16.0...v1.16.1) (2026-03-12)
 
 
