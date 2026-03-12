@@ -1,55 +1,234 @@
-# Plan: Create Error Resolver Subagent and Skill
+# Plan: Implement Context Compaction for Subagents
+
+## Issue Reference
+- **Number**: #77
+- **URL**: https://github.com/darellchua2/opencode-config-template/issues/77
+- **Labels**: enhancement
 
 ## Overview
-Create a new error resolver subagent and associated skill that can diagnose and help resolve errors, exceptions, and stack traces when explicitly invoked by users.
+Add automatic context compaction capability to subagents when they reach configurable context limits. This will prevent subagents from hitting context window limits during long-running tasks and improve overall efficiency.
 
-## Ticket Reference
-- Issue: #73
-- URL: https://github.com/darellchua2/opencode-config-template/issues/73
-- Labels: enhancement, good first issue
+## Acceptance Criteria
+- [ ] Subagents can monitor their context usage
+- [ ] Configurable context limit thresholds per subagent type
+- [ ] Automatic compaction triggers when threshold is reached
+- [ ] Compaction preserves critical information (task state, recent context)
+- [ ] No data loss during compaction process
+- [ ] Tests for compaction functionality
+- [ ] Documentation for configuration options
 
-## Files to Modify
-1. `config.json` - Add error-resolver-subagent configuration
-2. `skills/error-resolver-workflow/SKILL.md` - Create new skill file
-3. `.AGENTS.md` - Update routing rules
-4. `README.md` - Add documentation for usage (optional)
+## Scope
+- `agents/` - Subagent definitions and configurations
+- `config.json` - Context limit configuration
+- Documentation in README or AGENTS.md
 
-## Approach
-### Phase 1: Configuration Setup
-1. Create the error-resolver-subagent configuration in config.json
-2. Configure with Opus 4.6 model
-3. Set up tool access for error analysis (zai-mcp-server)
-4. Configure permission restrictions
+---
 
-### Phase 2: Skill Implementation
-1. Create error-resolver-workflow/SKILL.md
-2. Define error analysis workflow
-3. Document MCP tool integration
-4. Add examples and use cases
+## Sub-issues
 
-### Phase 3: Documentation
-1. Update .AGENTS.md with routing rules
-2. Document explicit invocation requirement
-3. Add usage examples
-4. Update main README.md if needed
+| # | Title | Description |
+|---|-------|-------------|
+| #79 | Context usage monitoring | Track token usage in subagents |
+| #80 | Compaction strategy | Implement compaction mechanism |
+| #82 | Configuration | Per-subagent context limits |
+| #81 | Documentation | Update docs with compaction info |
 
-### Phase 4: Testing
-1. Test subagent configuration loading
-2. Verify routing rules work correctly
-3. Test error analysis capabilities
-4. Validate MCP tool integration
+---
 
-## Success Criteria
-- [x] Subagent is properly configured with Opus 4.6 model
-- [x] Skill workflow implements error analysis capabilities
-- [x] Routing rules are added to AGENTS.md
-- [x] Documentation explains explicit invocation requirement
-- [x] MCP tools for error analysis are properly integrated
-- [x] Subagent only triggers on explicit user request
+## Implementation Phases
 
-## Notes
-- The error-resolver-subagent should NOT be automatically triggered
-- Must use explicit invocation phrases: "error resolver", "resolve error", "fix error"
-- MCP tool access should include zai-mcp-server for error screenshot diagnosis
-- Tool restrictions should prevent access to bash/task tools (delegation required)
-- Skill should handle various error types: runtime errors, compilation errors, stack traces
+### Phase 1: Research & Design ✅
+- [x] Investigate OpenCode API for context usage metrics
+- [x] Research token counting approaches (approximate vs exact)
+- [x] Design configuration schema for context limits
+- [x] Evaluate compaction strategies (summarization, sliding window, priority-based)
+- [x] Document design decisions in technical spec
+
+**Key Discovery**: OpenCode has **built-in context compaction** at the global level.
+
+#### Existing OpenCode Compaction Feature
+
+OpenCode already implements context compaction with these configuration options:
+
+```json
+{
+  "compaction": {
+    "auto": true,      // Automatically compact when context is full (default: true)
+    "prune": true,     // Remove old tool outputs to save tokens (default: true)
+    "reserved": 10000  // Token buffer for compaction
+  }
+}
+```
+
+OpenCode also has a built-in **compaction agent** (hidden, runs automatically):
+- Compacts long context into smaller summaries
+- Runs automatically when needed
+- Not selectable in UI
+
+#### Research Conclusions
+
+1. **Global compaction exists**: OpenCode handles context compaction at the session level
+2. **Subagents inherit**: Subagents likely inherit compaction from parent session
+3. **Gap**: No per-subagent compaction configuration currently exists
+4. **Recommendation**: Document existing feature and propose per-subagent extensions if needed
+
+#### Revised Scope
+
+Based on research, the implementation should focus on:
+1. **Document existing compaction** - Add README section explaining global compaction
+2. **Test subagent compaction** - Verify subagents benefit from global compaction
+3. **Propose per-subagent config** (if needed) - Optional per-agent compaction settings
+4. **Close sub-issues** - May not need separate implementations
+
+### Phase 2: Context Monitoring (#79)
+- [ ] Implement token counting utility
+- [ ] Add context tracking to subagent execution
+- [ ] Expose context usage as metric
+- [ ] Implement warning threshold detection
+- [ ] Add logging for context usage
+
+### Phase 3: Compaction Strategy (#80)
+- [ ] Implement base compaction interface
+- [ ] Implement sliding window strategy
+- [ ] Implement summarization strategy (optional, may need LLM)
+- [ ] Implement priority-based retention
+- [ ] Add compaction trigger logic
+- [ ] Ensure critical state preservation
+
+### Phase 4: Configuration (#82)
+- [ ] Add context limit fields to config.json schema
+- [ ] Implement default limits
+- [ ] Add per-subagent override capability
+- [ ] Add configuration validation
+- [ ] Test configuration loading
+
+### Phase 5: Testing
+- [ ] Unit tests for token counting
+- [ ] Unit tests for compaction strategies
+- [ ] Integration tests for end-to-end flow
+- [ ] Edge case tests (empty context, max size)
+- [ ] Performance tests for large contexts
+
+### Phase 6: Documentation (#81)
+- [ ] Update README.md with feature overview
+- [ ] Add configuration examples
+- [ ] Update AGENTS.md with best practices
+- [ ] Add troubleshooting guide
+- [ ] Create migration guide (if needed)
+
+---
+
+## Technical Notes
+
+### Context Compaction Approaches
+
+**1. Sliding Window**
+- Keep last N messages
+- Simple and predictable
+- May lose important early context
+
+**2. Summarization**
+- Use LLM to summarize old messages
+- Preserves semantic information
+- Requires additional LLM call
+
+**3. Priority-Based Retention**
+- Tag messages with priority levels
+- Keep high-priority messages longer
+- More complex to implement
+
+### Token Counting
+
+**Approximate Method:**
+- 4 characters ≈ 1 token (rough estimate)
+- Fast but imprecise
+- Good for threshold detection
+
+**Exact Method:**
+- Use tiktoken or similar library
+- Accurate but slower
+- Better for critical applications
+
+### Critical Information to Preserve
+
+During compaction, always retain:
+1. Current task description
+2. Most recent 3-5 messages
+3. Tool results that are still relevant
+4. State variables and context
+
+---
+
+## Dependencies
+- OpenCode API capabilities for context introspection
+- Token counting library (if exact counting needed)
+- LLM access for summarization (if that strategy is chosen)
+
+## Risks & Mitigation
+
+| Risk | Impact | Mitigation |
+|------|--------|------------|
+| Context loss during compaction | High | Preserve critical info, test thoroughly |
+| Performance overhead | Medium | Use approximate counting, async compaction |
+| Configuration complexity | Low | Sensible defaults, clear documentation |
+| LLM summarization cost | Medium | Make summarization optional, use cheaper models |
+
+## Success Metrics
+- Subagents can complete long-running tasks without context errors
+- Compaction overhead < 5% of total execution time
+- Zero data loss in production use
+- Clear configuration and documentation
+
+---
+
+## Research Findings (Phase 1 Complete)
+
+### OpenCode Built-in Compaction
+
+OpenCode already provides context compaction at the global level:
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| `compaction.auto` | ✅ Exists | Auto-compact when context full |
+| `compaction.prune` | ✅ Exists | Remove old tool outputs |
+| `compaction.reserved` | ✅ Exists | Token buffer for compaction |
+| Compaction Agent | ✅ Exists | Hidden system agent for compaction |
+| Per-subagent config | ❌ Missing | No per-agent compaction settings |
+
+### Configuration Example
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "compaction": {
+    "auto": true,
+    "prune": true,
+    "reserved": 10000
+  }
+}
+```
+
+### Updated Implementation Approach
+
+Since global compaction exists, the scope changes to:
+
+1. **Documentation** (Primary)
+   - Add compaction section to README.md
+   - Explain how global compaction affects subagents
+   - Provide configuration examples
+
+2. **Verification** (Secondary)
+   - Test that subagents benefit from global compaction
+   - Verify no context errors in long-running subagent tasks
+
+3. **Enhancement Proposal** (Optional)
+   - Propose per-subagent compaction config if needed
+   - Consider adding `agent.*.compaction` to config schema
+
+### Recommendation
+
+**Close sub-issues #79, #80, #82** - Global compaction handles these concerns.
+
+**Keep #81** - Documentation still needed.
+
+**New approach**: Document existing feature rather than re-implement.
