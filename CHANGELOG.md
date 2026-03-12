@@ -1,3 +1,11 @@
+# [1.16.0](https://github.com/darellchua2/opencode-config-template/compare/v1.15.0...v1.16.0) (2026-03-12)
+
+
+### Features
+
+* **skills:** add PLANS directory for organized PLAN storage ([414dcaa](https://github.com/darellchua2/opencode-config-template/commit/414dcaa8f66ef9e7f4b3cb5a9de5133855199c76)), closes [#76](https://github.com/darellchua2/opencode-config-template/issues/76)
+* **skills:** update PLAN naming to include ticket key ([42b2089](https://github.com/darellchua2/opencode-config-template/commit/42b208942511d63c57c5c1cb8019246f2d465d00)), closes [#76](https://github.com/darellchua2/opencode-config-template/issues/76)
+
 # [1.15.0](https://github.com/darellchua2/opencode-config-template/compare/v1.14.0...v1.15.0) (2026-02-22)
 
 
