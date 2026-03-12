@@ -37,12 +37,48 @@ Add automatic context compaction capability to subagents when they reach configu
 
 ## Implementation Phases
 
-### Phase 1: Research & Design
-- [ ] Investigate OpenCode API for context usage metrics
-- [ ] Research token counting approaches (approximate vs exact)
-- [ ] Design configuration schema for context limits
-- [ ] Evaluate compaction strategies (summarization, sliding window, priority-based)
-- [ ] Document design decisions in technical spec
+### Phase 1: Research & Design ✅
+- [x] Investigate OpenCode API for context usage metrics
+- [x] Research token counting approaches (approximate vs exact)
+- [x] Design configuration schema for context limits
+- [x] Evaluate compaction strategies (summarization, sliding window, priority-based)
+- [x] Document design decisions in technical spec
+
+**Key Discovery**: OpenCode has **built-in context compaction** at the global level.
+
+#### Existing OpenCode Compaction Feature
+
+OpenCode already implements context compaction with these configuration options:
+
+```json
+{
+  "compaction": {
+    "auto": true,      // Automatically compact when context is full (default: true)
+    "prune": true,     // Remove old tool outputs to save tokens (default: true)
+    "reserved": 10000  // Token buffer for compaction
+  }
+}
+```
+
+OpenCode also has a built-in **compaction agent** (hidden, runs automatically):
+- Compacts long context into smaller summaries
+- Runs automatically when needed
+- Not selectable in UI
+
+#### Research Conclusions
+
+1. **Global compaction exists**: OpenCode handles context compaction at the session level
+2. **Subagents inherit**: Subagents likely inherit compaction from parent session
+3. **Gap**: No per-subagent compaction configuration currently exists
+4. **Recommendation**: Document existing feature and propose per-subagent extensions if needed
+
+#### Revised Scope
+
+Based on research, the implementation should focus on:
+1. **Document existing compaction** - Add README section explaining global compaction
+2. **Test subagent compaction** - Verify subagents benefit from global compaction
+3. **Propose per-subagent config** (if needed) - Optional per-agent compaction settings
+4. **Close sub-issues** - May not need separate implementations
 
 ### Phase 2: Context Monitoring (#79)
 - [ ] Implement token counting utility
@@ -142,3 +178,57 @@ During compaction, always retain:
 - Compaction overhead < 5% of total execution time
 - Zero data loss in production use
 - Clear configuration and documentation
+
+---
+
+## Research Findings (Phase 1 Complete)
+
+### OpenCode Built-in Compaction
+
+OpenCode already provides context compaction at the global level:
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| `compaction.auto` | ✅ Exists | Auto-compact when context full |
+| `compaction.prune` | ✅ Exists | Remove old tool outputs |
+| `compaction.reserved` | ✅ Exists | Token buffer for compaction |
+| Compaction Agent | ✅ Exists | Hidden system agent for compaction |
+| Per-subagent config | ❌ Missing | No per-agent compaction settings |
+
+### Configuration Example
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "compaction": {
+    "auto": true,
+    "prune": true,
+    "reserved": 10000
+  }
+}
+```
+
+### Updated Implementation Approach
+
+Since global compaction exists, the scope changes to:
+
+1. **Documentation** (Primary)
+   - Add compaction section to README.md
+   - Explain how global compaction affects subagents
+   - Provide configuration examples
+
+2. **Verification** (Secondary)
+   - Test that subagents benefit from global compaction
+   - Verify no context errors in long-running subagent tasks
+
+3. **Enhancement Proposal** (Optional)
+   - Propose per-subagent compaction config if needed
+   - Consider adding `agent.*.compaction` to config schema
+
+### Recommendation
+
+**Close sub-issues #79, #80, #82** - Global compaction handles these concerns.
+
+**Keep #81** - Documentation still needed.
+
+**New approach**: Document existing feature rather than re-implement.
