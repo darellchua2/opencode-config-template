@@ -1,3 +1,10 @@
+# [1.17.0](https://github.com/darellchua2/opencode-config-template/compare/v1.16.2...v1.17.0) (2026-03-12)
+
+
+### Features
+
+* **agents:** add 6 new subagents for context optimization ([85f2eae](https://github.com/darellchua2/opencode-config-template/commit/85f2eaeb7eeb8075e5d8728e2786d585c625b829)), closes [#84](https://github.com/darellchua2/opencode-config-template/issues/84)
+
 ## [1.16.2](https://github.com/darellchua2/opencode-config-template/compare/v1.16.1...v1.16.2) (2026-03-12)
 
 
