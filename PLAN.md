@@ -1,234 +1,114 @@
-# Plan: Implement Context Compaction for Subagents
+# Plan: Add new subagents to reduce primary agent context bloat
 
 ## Issue Reference
-- **Number**: #77
-- **URL**: https://github.com/darellchua2/opencode-config-template/issues/77
+- **Number**: #84
+- **URL**: https://github.com/darellchua2/opencode-config-template/issues/84
 - **Labels**: enhancement
 
 ## Overview
-Add automatic context compaction capability to subagents when they reach configurable context limits. This will prevent subagents from hitting context window limits during long-running tasks and improve overall efficiency.
+Add 6 new specialized subagents to offload 13 skills (~6,390 lines) from the primary agent context. This will improve performance and reduce token usage for common tasks.
 
 ## Acceptance Criteria
-- [ ] Subagents can monitor their context usage
-- [ ] Configurable context limit thresholds per subagent type
-- [ ] Automatic compaction triggers when threshold is reached
-- [ ] Compaction preserves critical information (task state, recent context)
-- [ ] No data loss during compaction process
-- [ ] Tests for compaction functionality
-- [ ] Documentation for configuration options
+- [ ] Create `nextjs-setup-subagent` for Next.js project setup skills
+- [ ] Create `coverage-subagent` for test coverage documentation
+- [ ] Create `opencode-tooling-subagent` for skill/agent meta-operations
+- [ ] Create `refactoring-subagent` for code refactoring and DRY principle
+- [ ] Create `tdd-subagent` for TDD methodology guidance
+- [ ] Create `diagram-subagent` for visual documentation generation
+- [ ] Update AGENTS.md with new routing patterns
+- [ ] Update config.json with new agent definitions
+- [ ] Verify skill-to-subagent mappings are correct
 
 ## Scope
-- `agents/` - Subagent definitions and configurations
-- `config.json` - Context limit configuration
-- Documentation in README or AGENTS.md
-
----
-
-## Sub-issues
-
-| # | Title | Description |
-|---|-------|-------------|
-| #79 | Context usage monitoring | Track token usage in subagents |
-| #80 | Compaction strategy | Implement compaction mechanism |
-| #82 | Configuration | Per-subagent context limits |
-| #81 | Documentation | Update docs with compaction info |
+- `.AGENTS.md` - Add routing patterns for new subagents
+- `config.json` - Add agent definitions with tool restrictions
 
 ---
 
 ## Implementation Phases
 
-### Phase 1: Research & Design ✅
-- [x] Investigate OpenCode API for context usage metrics
-- [x] Research token counting approaches (approximate vs exact)
-- [x] Design configuration schema for context limits
-- [x] Evaluate compaction strategies (summarization, sliding window, priority-based)
-- [x] Document design decisions in technical spec
+### Phase 1: Define Subagent Specifications
+- [ ] Document skill groupings for each new subagent
+- [ ] Define tool access levels for each subagent
+- [ ] Define routing patterns (regex patterns for task matching)
+- [ ] Estimate context savings per subagent
 
-**Key Discovery**: OpenCode has **built-in context compaction** at the global level.
+### Phase 2: Create config.json Agent Definitions
+- [ ] Add `nextjs-setup-subagent` definition
+- [ ] Add `coverage-subagent` definition
+- [ ] Add `opencode-tooling-subagent` definition
+- [ ] Add `refactoring-subagent` definition
+- [ ] Add `tdd-subagent` definition
+- [ ] Add `diagram-subagent` definition
 
-#### Existing OpenCode Compaction Feature
+### Phase 3: Update AGENTS.md Routing Rules
+- [ ] Add routing patterns for `nextjs-setup-subagent`
+- [ ] Add routing patterns for `coverage-subagent`
+- [ ] Add routing patterns for `opencode-tooling-subagent`
+- [ ] Add routing patterns for `refactoring-subagent`
+- [ ] Add routing patterns for `tdd-subagent`
+- [ ] Add routing patterns for `diagram-subagent`
+- [ ] Update "Task Type → Subagent" table
+- [ ] Update "Automatic Routing Patterns" section
+- [ ] Update "Subagent Tool Restrictions" table
 
-OpenCode already implements context compaction with these configuration options:
-
-```json
-{
-  "compaction": {
-    "auto": true,      // Automatically compact when context is full (default: true)
-    "prune": true,     // Remove old tool outputs to save tokens (default: true)
-    "reserved": 10000  // Token buffer for compaction
-  }
-}
-```
-
-OpenCode also has a built-in **compaction agent** (hidden, runs automatically):
-- Compacts long context into smaller summaries
-- Runs automatically when needed
-- Not selectable in UI
-
-#### Research Conclusions
-
-1. **Global compaction exists**: OpenCode handles context compaction at the session level
-2. **Subagents inherit**: Subagents likely inherit compaction from parent session
-3. **Gap**: No per-subagent compaction configuration currently exists
-4. **Recommendation**: Document existing feature and propose per-subagent extensions if needed
-
-#### Revised Scope
-
-Based on research, the implementation should focus on:
-1. **Document existing compaction** - Add README section explaining global compaction
-2. **Test subagent compaction** - Verify subagents benefit from global compaction
-3. **Propose per-subagent config** (if needed) - Optional per-agent compaction settings
-4. **Close sub-issues** - May not need separate implementations
-
-### Phase 2: Context Monitoring (#79)
-- [ ] Implement token counting utility
-- [ ] Add context tracking to subagent execution
-- [ ] Expose context usage as metric
-- [ ] Implement warning threshold detection
-- [ ] Add logging for context usage
-
-### Phase 3: Compaction Strategy (#80)
-- [ ] Implement base compaction interface
-- [ ] Implement sliding window strategy
-- [ ] Implement summarization strategy (optional, may need LLM)
-- [ ] Implement priority-based retention
-- [ ] Add compaction trigger logic
-- [ ] Ensure critical state preservation
-
-### Phase 4: Configuration (#82)
-- [ ] Add context limit fields to config.json schema
-- [ ] Implement default limits
-- [ ] Add per-subagent override capability
-- [ ] Add configuration validation
-- [ ] Test configuration loading
-
-### Phase 5: Testing
-- [ ] Unit tests for token counting
-- [ ] Unit tests for compaction strategies
-- [ ] Integration tests for end-to-end flow
-- [ ] Edge case tests (empty context, max size)
-- [ ] Performance tests for large contexts
-
-### Phase 6: Documentation (#81)
-- [ ] Update README.md with feature overview
-- [ ] Add configuration examples
-- [ ] Update AGENTS.md with best practices
-- [ ] Add troubleshooting guide
-- [ ] Create migration guide (if needed)
+### Phase 4: Validation
+- [ ] Verify all routing patterns are non-overlapping
+- [ ] Verify tool restrictions are appropriate
+- [ ] Verify skill-to-subagent mappings complete
+- [ ] Test routing logic with sample prompts
 
 ---
 
 ## Technical Notes
 
-### Context Compaction Approaches
+### Subagent Definitions
 
-**1. Sliding Window**
-- Keep last N messages
-- Simple and predictable
-- May lose important early context
+| Subagent | Skills | Lines Saved | Tools |
+|----------|--------|-------------|-------|
+| `nextjs-setup-subagent` | nextjs-standard-setup, nextjs-complete-setup, nextjs-image-usage | ~2,400 | read, write, edit, glob, grep, bash (delegated) |
+| `coverage-subagent` | coverage-readme-workflow, coverage-framework | ~800 | read, write, edit, glob, grep, bash (delegated) |
+| `opencode-tooling-subagent` | opencode-agent-creation, opencode-skill-creation, opencode-skill-auditor, opencode-skills-maintainer, opencode-tooling-framework | ~1,200 | read, write, edit, glob, grep |
+| `refactoring-subagent` | typescript-dry-principle | ~940 | read, write, edit, glob, grep, bash (delegated) |
+| `tdd-subagent` | tdd-workflow | ~650 | read, glob, grep, bash (delegated, read-only) |
+| `diagram-subagent` | ascii-diagram-creator | ~400 | read, write, glob, bash (delegated) |
 
-**2. Summarization**
-- Use LLM to summarize old messages
-- Preserves semantic information
-- Requires additional LLM call
+### Routing Patterns
 
-**3. Priority-Based Retention**
-- Tag messages with priority levels
-- Keep high-priority messages longer
-- More complex to implement
+```
+nextjs-setup-subagent:
+  - nextjs*setup*, create*nextjs*, init*nextjs*, new*nextjs*, setup*nextjs*
 
-### Token Counting
+coverage-subagent:
+  - coverage*, badge*update*, test*coverage*, readme*badge*, update*coverage*
 
-**Approximate Method:**
-- 4 characters ≈ 1 token (rough estimate)
-- Fast but imprecise
-- Good for threshold detection
+opencode-tooling-subagent:
+  - opencode*skill*, opencode*agent*, create*skill*, audit*skill*, maintain*skill*
 
-**Exact Method:**
-- Use tiktoken or similar library
-- Accurate but slower
-- Better for critical applications
+refactoring-subagent:
+  - refactor*, dry*, duplicate*, cleanup*code*, remove*duplication*, eliminate*duplicate*
 
-### Critical Information to Preserve
+tdd-subagent:
+  - tdd*, red*green*, test*first*, test*driven*
 
-During compaction, always retain:
-1. Current task description
-2. Most recent 3-5 messages
-3. Tool results that are still relevant
-4. State variables and context
-
----
+diagram-subagent:
+  - diagram*, flowchart*, architecture*diagram*, ascii*diagram*, create*diagram*
+```
 
 ## Dependencies
-- OpenCode API capabilities for context introspection
-- Token counting library (if exact counting needed)
-- LLM access for summarization (if that strategy is chosen)
+- None - standalone configuration update
 
 ## Risks & Mitigation
 
 | Risk | Impact | Mitigation |
 |------|--------|------------|
-| Context loss during compaction | High | Preserve critical info, test thoroughly |
-| Performance overhead | Medium | Use approximate counting, async compaction |
-| Configuration complexity | Low | Sensible defaults, clear documentation |
-| LLM summarization cost | Medium | Make summarization optional, use cheaper models |
+| Overlapping patterns cause routing conflicts | Medium | Use specific patterns with clear precedence |
+| Tool restrictions too restrictive | Low | Follow existing subagent patterns |
+| Breaking existing routing | High | Test thoroughly before merging |
 
 ## Success Metrics
-- Subagents can complete long-running tasks without context errors
-- Compaction overhead < 5% of total execution time
-- Zero data loss in production use
-- Clear configuration and documentation
-
----
-
-## Research Findings (Phase 1 Complete)
-
-### OpenCode Built-in Compaction
-
-OpenCode already provides context compaction at the global level:
-
-| Feature | Status | Description |
-|---------|--------|-------------|
-| `compaction.auto` | ✅ Exists | Auto-compact when context full |
-| `compaction.prune` | ✅ Exists | Remove old tool outputs |
-| `compaction.reserved` | ✅ Exists | Token buffer for compaction |
-| Compaction Agent | ✅ Exists | Hidden system agent for compaction |
-| Per-subagent config | ❌ Missing | No per-agent compaction settings |
-
-### Configuration Example
-
-```json
-{
-  "$schema": "https://opencode.ai/config.json",
-  "compaction": {
-    "auto": true,
-    "prune": true,
-    "reserved": 10000
-  }
-}
-```
-
-### Updated Implementation Approach
-
-Since global compaction exists, the scope changes to:
-
-1. **Documentation** (Primary)
-   - Add compaction section to README.md
-   - Explain how global compaction affects subagents
-   - Provide configuration examples
-
-2. **Verification** (Secondary)
-   - Test that subagents benefit from global compaction
-   - Verify no context errors in long-running subagent tasks
-
-3. **Enhancement Proposal** (Optional)
-   - Propose per-subagent compaction config if needed
-   - Consider adding `agent.*.compaction` to config schema
-
-### Recommendation
-
-**Close sub-issues #79, #80, #82** - Global compaction handles these concerns.
-
-**Keep #81** - Documentation still needed.
-
-**New approach**: Document existing feature rather than re-implement.
+- 6 new subagents operational
+- 13 skills offloaded from primary agent
+- ~6,390 lines of skill content removed from primary context
+- All routing patterns functional
+- No regression in existing subagent routing
