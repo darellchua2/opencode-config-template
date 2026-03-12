@@ -187,9 +187,11 @@ echo "✓ Created branch: $TICKET_KEY"
 
 Create comprehensive PLAN file with ticket-specific naming:
 
+**File Location**: All PLAN files are stored in the `PLANS/` directory at the project root.
+
 **Filename Pattern**:
-- **JIRA tickets**: `PLAN-{TICKET_KEY}.md` (e.g., `PLAN-PROJ-123.md`, `PLAN-IBIS-456.md`)
-- **GitHub issues**: `PLAN-GIT-{ISSUE_NUMBER}.md` (e.g., `PLAN-GIT-76.md`)
+- **JIRA tickets**: `PLANS/PLAN-{TICKET_KEY}.md` (e.g., `PLANS/PLAN-PROJ-123.md`, `PLANS/PLAN-IBIS-456.md`)
+- **GitHub issues**: `PLANS/PLAN-GIT-{ISSUE_NUMBER}.md` (e.g., `PLANS/PLAN-GIT-76.md`)
 
 **Template**:
 ```markdown
@@ -265,7 +267,7 @@ _How will we measure success?_
 
 ```bash
 # Stage PLAN file
-git add "PLAN-${TICKET_KEY}.md"
+git add "PLANS/PLAN-${TICKET_KEY}.md"
 
 # Commit with semantic message
 git commit -m "docs(plan): add PLAN-${TICKET_KEY}.md for ${TICKET_KEY}"
@@ -273,7 +275,7 @@ git commit -m "docs(plan): add PLAN-${TICKET_KEY}.md for ${TICKET_KEY}"
 # Push to remote
 git push -u origin "$TICKET_KEY"
 
-echo "✓ Committed and pushed PLAN-${TICKET_KEY}.md"
+echo "✓ Committed and pushed PLANS/PLAN-${TICKET_KEY}.md"
 ```
 
 ### Step 8: Update JIRA with Initial Progress
@@ -284,11 +286,11 @@ Add comment to JIRA ticket:
 COMMENT="**Planning Complete**
 
 - Branch created: \`$TICKET_KEY\`
-- PLAN-${TICKET_KEY}.md committed with implementation phases
+- PLANS/PLAN-${TICKET_KEY}.md committed with implementation phases
 - Ready to begin execution
 
 **Next Steps**:
-1. Review PLAN-${TICKET_KEY}.md
+1. Review PLANS/PLAN-${TICKET_KEY}.md
 2. Begin Phase 1: Setup & Analysis"
 
 atlassian_addCommentToJiraIssue \
@@ -304,13 +306,13 @@ Ask user if they want to proceed:
 ```
 ✓ JIRA ticket created: $TICKET_KEY
 ✓ Branch created and checked out: $TICKET_KEY
-✓ PLAN-${TICKET_KEY}.md committed and pushed
+✓ PLANS/PLAN-${TICKET_KEY}.md committed and pushed
 
 Would you like to proceed with executing the plan?
 - Yes: Start with Phase 1 tasks
 - No: Stop here and execute manually later
 
-[If Yes]: Begin executing todo items from PLAN-${TICKET_KEY}.md
+[If Yes]: Begin executing todo items from PLANS/PLAN-${TICKET_KEY}.md
 [If No]: Workflow complete. Run tasks manually when ready.
 ```
 
@@ -327,12 +329,13 @@ Would you like to proceed with executing the plan?
 - Keep it short and descriptive
 - Use lowercase with hyphens
 
-### PLAN-{TICKET_KEY}.md Structure
+### PLANS/PLAN-{TICKET_KEY}.md Structure
 - Start with phases for large work
 - Each phase has clear todo items
 - Todos are actionable and verifiable
 - Include success criteria
 - Use ticket-specific filename for traceability
+- Store in PLANS/ directory for organization
 
 ### Commit Messages
 - Use semantic commits: `docs(plan):`, `feat:`, `fix:`
@@ -395,14 +398,15 @@ git push -u origin "$TICKET_KEY"
 - [ ] Branch name matches ticket key
 - [ ] Branch checked out successfully
 
-**After PLAN-{TICKET_KEY}.md**:
+**After PLANS/PLAN-{TICKET_KEY}.md**:
 - [ ] All sections populated
 - [ ] Phases have actionable todos
 - [ ] Acceptance criteria listed
 - [ ] Filename includes ticket key
+- [ ] File stored in PLANS/ directory
 
 **After commit/push**:
-- [ ] PLAN-{TICKET_KEY}.md committed with semantic message
+- [ ] PLANS/PLAN-{TICKET_KEY}.md committed with semantic message
 - [ ] Branch pushed to remote
 - [ ] JIRA ticket updated with progress
 
@@ -454,7 +458,7 @@ User: IBIS
 Agent: 
 ✓ Created JIRA ticket: IBIS-456
 ✓ Created branch: IBIS-456
-✓ Created PLAN-IBIS-456.md with 5 phases
+✓ Created PLANS/PLAN-IBIS-456.md with 5 phases
 ✓ Committed and pushed to remote
 
 Proceed with plan execution? (yes/no)
