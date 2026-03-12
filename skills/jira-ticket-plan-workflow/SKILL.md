@@ -16,8 +16,8 @@ I implement a standardized JIRA ticket creation and planning workflow:
 2. **Determine Ticket Scope**: Ask if ticket is a Story (with subtasks) or a single Task
 3. **Create JIRA Ticket**: Use Atlassian MCP server to create ticket in specified project
 4. **Create Git Branch**: Generate branch from ticket key (e.g., `PROJ-123`)
-5. **Generate PLAN.md**: Create comprehensive plan with phases and todo list
-6. **Commit and Push**: Commit PLAN.md with semantic formatting and push to remote
+5. **Generate PLAN-{TICKET_KEY}.md**: Create comprehensive plan with phases and todo list
+6. **Commit and Push**: Commit PLAN-{TICKET_KEY}.md with semantic formatting and push to remote
 7. **Prompt Execution**: Ask user if they want to proceed with plan execution
 
 ## When to use me
@@ -183,9 +183,13 @@ git checkout -b "$TICKET_KEY"
 echo "✓ Created branch: $TICKET_KEY"
 ```
 
-### Step 6: Generate PLAN.md
+### Step 6: Generate PLAN-{TICKET_KEY}.md
 
-Create comprehensive PLAN.md with phases and todos:
+Create comprehensive PLAN file with ticket-specific naming:
+
+**Filename Pattern**:
+- **JIRA tickets**: `PLAN-{TICKET_KEY}.md` (e.g., `PLAN-PROJ-123.md`, `PLAN-IBIS-456.md`)
+- **GitHub issues**: `PLAN-GIT-{ISSUE_NUMBER}.md` (e.g., `PLAN-GIT-76.md`)
 
 **Template**:
 ```markdown
@@ -257,19 +261,19 @@ _Identify potential risks and how to mitigate them_
 _How will we measure success?_
 ```
 
-### Step 7: Commit and Push PLAN.md
+### Step 7: Commit and Push PLAN-{TICKET_KEY}.md
 
 ```bash
-# Stage PLAN.md
-git add PLAN.md
+# Stage PLAN file
+git add "PLAN-${TICKET_KEY}.md"
 
 # Commit with semantic message
-git commit -m "docs(plan): add PLAN.md for $TICKET_KEY"
+git commit -m "docs(plan): add PLAN-${TICKET_KEY}.md for ${TICKET_KEY}"
 
 # Push to remote
 git push -u origin "$TICKET_KEY"
 
-echo "✓ Committed and pushed PLAN.md"
+echo "✓ Committed and pushed PLAN-${TICKET_KEY}.md"
 ```
 
 ### Step 8: Update JIRA with Initial Progress
@@ -280,11 +284,11 @@ Add comment to JIRA ticket:
 COMMENT="**Planning Complete**
 
 - Branch created: \`$TICKET_KEY\`
-- PLAN.md committed with implementation phases
+- PLAN-${TICKET_KEY}.md committed with implementation phases
 - Ready to begin execution
 
 **Next Steps**:
-1. Review PLAN.md
+1. Review PLAN-${TICKET_KEY}.md
 2. Begin Phase 1: Setup & Analysis"
 
 atlassian_addCommentToJiraIssue \
@@ -300,13 +304,13 @@ Ask user if they want to proceed:
 ```
 ✓ JIRA ticket created: $TICKET_KEY
 ✓ Branch created and checked out: $TICKET_KEY
-✓ PLAN.md committed and pushed
+✓ PLAN-${TICKET_KEY}.md committed and pushed
 
 Would you like to proceed with executing the plan?
 - Yes: Start with Phase 1 tasks
 - No: Stop here and execute manually later
 
-[If Yes]: Begin executing todo items from PLAN.md
+[If Yes]: Begin executing todo items from PLAN-${TICKET_KEY}.md
 [If No]: Workflow complete. Run tasks manually when ready.
 ```
 
@@ -323,11 +327,12 @@ Would you like to proceed with executing the plan?
 - Keep it short and descriptive
 - Use lowercase with hyphens
 
-### PLAN.md Structure
+### PLAN-{TICKET_KEY}.md Structure
 - Start with phases for large work
 - Each phase has clear todo items
 - Todos are actionable and verifiable
 - Include success criteria
+- Use ticket-specific filename for traceability
 
 ### Commit Messages
 - Use semantic commits: `docs(plan):`, `feat:`, `fix:`
@@ -390,13 +395,14 @@ git push -u origin "$TICKET_KEY"
 - [ ] Branch name matches ticket key
 - [ ] Branch checked out successfully
 
-**After PLAN.md**:
+**After PLAN-{TICKET_KEY}.md**:
 - [ ] All sections populated
 - [ ] Phases have actionable todos
 - [ ] Acceptance criteria listed
+- [ ] Filename includes ticket key
 
 **After commit/push**:
-- [ ] PLAN.md committed with semantic message
+- [ ] PLAN-{TICKET_KEY}.md committed with semantic message
 - [ ] Branch pushed to remote
 - [ ] JIRA ticket updated with progress
 
@@ -448,7 +454,7 @@ User: IBIS
 Agent: 
 ✓ Created JIRA ticket: IBIS-456
 ✓ Created branch: IBIS-456
-✓ Created PLAN.md with 5 phases
+✓ Created PLAN-IBIS-456.md with 5 phases
 ✓ Committed and pushed to remote
 
 Proceed with plan execution? (yes/no)
