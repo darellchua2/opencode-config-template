@@ -1,3 +1,10 @@
+## [1.16.1](https://github.com/darellchua2/opencode-config-template/compare/v1.16.0...v1.16.1) (2026-03-12)
+
+
+### Bug Fixes
+
+* **config:** remove non-working drawio MCP server and diagram-creator subagent ([9b5ad23](https://github.com/darellchua2/opencode-config-template/commit/9b5ad2380a2fb4b908e1f0cec9dbad77a0629095))
+
 # [1.16.0](https://github.com/darellchua2/opencode-config-template/compare/v1.15.0...v1.16.0) (2026-03-12)
 
 
