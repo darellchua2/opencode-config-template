@@ -24,14 +24,31 @@
 #
 # Usage: ./setup.sh [OPTIONS]
 #
-# Options:
-#   -h, --help          Show this help message
-#   -q, --quick         Quick setup (copy config.json and skills only)
-#   -s, --skills-only    Skills-only setup (copy skills folder only, validate OpenCode installed)
-#   -d, --dry-run       Show what would be done without making changes
-#   -y, --yes           Auto-accept all prompts (use with caution)
-#   -v, --verbose       Enable verbose output
-#   -u, --update        Update OpenCode CLI only
+# SETUP MODES:
+#   ./setup.sh                    Interactive menu (recommended for first-time setup)
+#   ./setup.sh --quick            Quick setup (config + skills only, no dependencies)
+#   ./setup.sh --skills-only      Skills deployment only (requires opencode-ai installed)
+#   ./setup.sh --update           Update OpenCode CLI to latest version
+#
+# OPTIONS:
+#   -h, --help          Show detailed help with all options and examples
+#   -q, --quick         Quick setup: copy config.json + AGENTS.md + skills/ folder
+#   -s, --skills-only   Skills-only: deploy skills/ folder (validates opencode-ai installed)
+#   -d, --dry-run       Preview all actions without making changes
+#   -y, --yes           Auto-accept all prompts (non-interactive mode)
+#   -v, --verbose       Enable detailed debug output
+#   -u, --update        Update OpenCode CLI only (skip config/skills)
+#   -A, --enable-auto-update    Enable automatic opencode-ai updates
+#   -D, --disable-auto-update   Disable automatic updates
+#   -S, --schedule-update <schedule>  Set update schedule: daily|weekly|monthly|manual
+#   -C, --check-update  Check for available updates without installing
+#
+# REQUIREMENTS (for full setup):
+#   - curl (for downloading)
+#   - Node.js v20+ and npm (for opencode-ai and MCP servers)
+#   - nvm recommended (for Node.js version management on macOS/Linux)
+#   - ZAI_API_KEY (required for web-reader, web-search-prime, zread MCP servers)
+#   - LM Studio running on http://127.0.0.1:1234/v1 (local LLM inference)
 #
 ################################################################################
 
@@ -383,78 +400,186 @@ trap 'echo ""; log_warn "Setup interrupted by user"; exit 130' INT
 # Show usage information
 show_help() {
     cat << EOF
-OpenCode Configuration Setup Script v${SCRIPT_VERSION}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    OpenCode Configuration Setup v${SCRIPT_VERSION}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 USAGE:
     ./setup.sh [OPTIONS]
 
-OPTIONS:
-    -h, --help          Show this help message
-    -q, --quick         Quick setup (copy config.json and skills only)
-    -s, --skills-only    Skills-only setup (copy skills folder only, validate OpenCode installed)
-    -d, --dry-run       Show what would be done without making changes
-    -y, --yes           Auto-accept all prompts (use with caution)
-    -v, --verbose       Enable verbose output
-    -u, --update        Update OpenCode CLI only
-    -A, --enable-auto-update
-                        Enable automatic opencode-ai updates
-    -D, --disable-auto-update
-                        Disable automatic opencode-ai updates
-    -S, --schedule-update <daily|weekly|monthly>
-                        Set update schedule (default: manual)
-    -C, --check-update
-                        Check for updates without installing
- 
- EXAMPLES:
-     ./setup.sh              # Interactive full setup
-     ./setup.sh --quick      # Quick setup (config and skills only)
-     ./setup.sh --skills-only # Skills-only setup (copy skills only)
-     ./setup.sh --dry-run    # Preview changes
-     ./setup.sh -y -q        # Quick setup with auto-accept
-     ./setup.sh --update     # Update OpenCode CLI only
-     ./setup.sh -A             # Enable automatic updates (default schedule: manual)
-     ./setup.sh -S daily     # Enable automatic updates with daily schedule
-     ./setup.sh -S weekly    # Enable automatic updates with weekly schedule
-     ./setup.sh -S monthly    # Enable automatic updates with monthly schedule
-     ./setup.sh -D             # Disable automatic updates
-     ./setup.sh -C             # Check for updates without installing
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                            SETUP MODES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
- 
-  CONFIGURED FEATURES:
-  Agents (4):
-    - build (default): Default coding agent with full tool access
-    - plan: Planning agent with read-only access (file edits/bash require approval)
-    - explore: Codebase exploration and analysis
-    - image-analyzer: Image/screenshot analysis (UI to code, OCR, error diagnosis)
-    - diagram-creator: Draw.io diagram creation (architecture, flowcharts, UML)
+  MODE                    WHAT IT DOES                          WHEN TO USE
+  ─────────────────────────────────────────────────────────────────────────────
+  Interactive (default)   Full setup with guided prompts       First-time setup
+                          1. GitHub PAT setup (optional)
+                          2. Z.AI API key setup
+                          3. nvm installation/update
+                          4. Node.js v24 installation
+                          5. opencode-ai installation
+                          6. config.json deployment
+                          7. skills/ deployment
+                          8. Environment variable persistence
 
-  MCP Servers (6):
-    - atlassian: JIRA and Confluence integration (auto-start with npx)
-    - drawio: Draw.io MCP server (requires local instance on port 41033)
-    - web-reader: Web page reading (requires ZAI_API_KEY)
-    - web-search-prime: Web search (requires ZAI_API_KEY)
-    - zai-mcp-server: Image analysis and video processing (auto-start with npx)
-    - zread: GitHub repo search and file reading (requires ZAI_API_KEY)
+  --quick                 Copy config files only                Already have
+                          1. config.json → ~/.config/opencode/  dependencies installed
+                          2. AGENTS.md → ~/.config/opencode/
+                          3. skills/* → ~/.config/opencode/skills/
+                          (Skips all dependency checks)
 
-   Skills (27):
-    Framework (5): test-generator-framework, jira-git-integration, pr-creation-workflow, ticket-branch-workflow, linting-workflow
-    Language-Specific (3): python-pytest-creator, python-ruff-linter, javascript-eslint-linter
-    Framework-Specific (4): nextjs-pr-workflow, nextjs-unit-test-creator, nextjs-standard-setup, typescript-dry-principle
-    OpenCode Meta (3): opencode-agent-creation, opencode-skill-creation, opencode-skill-auditor
-    OpenTofu (6): opentofu-aws-explorer, opentofu-keycloak-explorer, opentofu-kubernetes-explorer, opentofu-neon-explorer, opentofu-provider-setup, opentofu-provisioning-workflow
-    Git/Workflow (3): ascii-diagram-creator, git-issue-creator, git-pr-creator
-    Documentation (2): coverage-readme-workflow, docstring-generator
-    JIRA (1): jira-git-workflow
+  --skills-only           Deploy skills only                    opencode-ai already
+                          1. Validates opencode-ai installed    installed, just need
+                          2. Copies skills/* to config dir      updated skills
 
-   Run 'opencode --list-skills' for detailed descriptions
+  --update                Update opencode-ai CLI only           Keep CLI current
+                          (No config changes)
 
-REQUIREMENTS:
-  - Node.js v20+ (required for Draw.io MCP server)
-  - LM Studio running on http://127.0.0.1:1234/v1
-  - ZAI_API_KEY (for web-reader, web-search-prime, zread MCP servers)
-  - Draw.io MCP server instance on http://localhost:41033/mcp (optional)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                            OPTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-For more information, visit: https://opencode.ai
+  SETUP OPTIONS:
+    -q, --quick           Quick setup mode (config + skills only, no dependencies)
+    -s, --skills-only     Skills-only deployment mode
+    -u, --update          Update OpenCode CLI to latest version
+
+  UPDATE MANAGEMENT:
+    -A, --enable-auto-update      Enable automatic opencode-ai updates
+    -D, --disable-auto-update     Disable automatic updates
+    -S, --schedule-update <schedule>  Set update check frequency:
+                                      daily, weekly, monthly, manual (default)
+    -C, --check-update    Check for updates without installing
+
+  UTILITY OPTIONS:
+    -h, --help            Show this detailed help message
+    -d, --dry-run         Preview all actions without making changes
+    -y, --yes             Auto-accept all prompts (non-interactive)
+    -v, --verbose         Enable detailed debug logging
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                            EXAMPLES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  First-time setup:
+    ./setup.sh                      # Interactive full setup with menu
+    ./setup.sh -y                   # Full setup, auto-accept all prompts
+
+  Quick deployment:
+    ./setup.sh --quick              # Copy config and skills (no deps)
+    ./setup.sh --skills-only        # Deploy skills only
+    ./setup.sh -y -q                # Quick setup, non-interactive
+
+  Preview and update:
+    ./setup.sh --dry-run            # Preview what would be done
+    ./setup.sh --update             # Update opencode-ai CLI
+    ./setup.sh -C                   # Check for available updates
+
+  Auto-update management:
+    ./setup.sh -A                   # Enable auto-updates (manual schedule)
+    ./setup.sh -A -S daily          # Enable with daily checks
+    ./setup.sh -A -S weekly         # Enable with weekly checks
+    ./setup.sh -D                   # Disable auto-updates
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                         CONFIGURED FEATURES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  AGENTS (5):
+    build (default)      Full-featured coding agent with all tools
+    plan                 Planning agent (read-only, edits need approval)
+    explore              Fast codebase exploration and analysis
+    image-analyzer       Images/screenshots → code, OCR, error diagnosis
+    diagram-creator      Draw.io diagrams (architecture, flowcharts, UML)
+
+    Usage: opencode --agent build "implement auth feature"
+           opencode --agent explore "find all API routes"
+
+  MCP SERVERS (6):
+    Auto-start (npx):
+      atlassian          JIRA and Confluence integration
+      zai-mcp-server     Image analysis and video processing
+
+    Remote (requires ZAI_API_KEY):
+      web-reader         Web page content extraction
+      web-search-prime   Web search capabilities
+      zread              GitHub repository search and file reading
+
+    Local instance required:
+      drawio             Draw.io MCP server (http://localhost:41033/mcp)
+
+  SKILLS (27):
+    Framework (5):        test-generator-framework, jira-git-integration,
+                           pr-creation-workflow, ticket-branch-workflow,
+                           linting-workflow
+
+    Language-Specific (3): python-pytest-creator, python-ruff-linter,
+                           javascript-eslint-linter
+
+    Framework-Specific (4): nextjs-pr-workflow, nextjs-unit-test-creator,
+                           nextjs-standard-setup, typescript-dry-principle
+
+    OpenCode Meta (3):    opencode-agent-creation, opencode-skill-creation,
+                           opencode-skill-auditor
+
+    OpenTofu (6):         opentofu-aws-explorer, opentofu-keycloak-explorer,
+                           opentofu-kubernetes-explorer, opentofu-neon-explorer,
+                           opentofu-provider-setup, opentofu-provisioning-workflow
+
+    Git/Workflow (3):     ascii-diagram-creator, git-issue-creator,
+                           git-pr-creator
+
+    Documentation (2):    coverage-readme-workflow, docstring-generator
+
+    JIRA (1):             jira-git-workflow
+
+    Run 'opencode --list-skills' for detailed descriptions
+    Run 'opencode --skill <name> "prompt"' to invoke a skill
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                           REQUIREMENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Required (for full setup):
+    curl                  For downloading files
+    Node.js v20+          For opencode-ai and MCP servers
+    npm                   Comes with Node.js
+
+  Recommended:
+    nvm                   Node Version Manager (macOS/Linux)
+    git                   For version control integration
+
+  API Keys (prompted during setup):
+    ZAI_API_KEY           Required for: web-reader, web-search-prime, zread
+                          Get from: https://z.ai
+
+    GITHUB_PAT            Optional for GitHub MCP features
+                          Or use OAuth: opencode mcp auth github
+
+  Local Services:
+    LM Studio             Running on http://127.0.0.1:1234/v1
+                          Local LLM inference server
+
+    Draw.io MCP (optional) For diagram-creator agent
+                          Clone: https://github.com/scholtzm/mcp-drawio
+                          Run on: http://localhost:41033/mcp
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                           FILE LOCATIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Configuration:        ~/.config/opencode/config.json
+  Agents config:        ~/.config/opencode/AGENTS.md
+  Skills directory:     ~/.config/opencode/skills/
+  Setup log:            ~/.opencode-setup.log
+  Update log:           ~/.config/opencode/update.log
+  Backups:              ~/.opencode-backup-YYYYMMDD_HHMMSS/
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For more information: https://opencode.ai
+Report issues: https://github.com/anomalyco/opencode/issues
 
 EOF
 }
