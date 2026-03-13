@@ -79,6 +79,41 @@ Use this workflow when:
    - Testing performed
    - Screenshots/diagrams (as references)
 
+### Step 4.5: Apply Semantic Versioning Label
+
+After PR creation, automatically apply version label based on PR title:
+```bash
+# Get PR number from last created PR
+PR_NUMBER=$(gh pr list --head "$(git branch --show-current)" --json number --jq '.[0].number')
+
+# Detect version bump type from PR title
+PR_TITLE="<PR Title>"
+
+if [[ "$PR_TITLE" =~ ^[^:]+\! ]]; then
+  # Breaking change (e.g., "feat!:" or "feat(scope)!")
+  VERSION_LABEL="major"
+elif [[ "$PR_TITLE" =~ ^feat ]]; then
+  # New feature
+  VERSION_LABEL="minor"
+elif [[ "$PR_TITLE" =~ ^fix ]]; then
+  # Bug fix
+  VERSION_LABEL="patch"
+else
+  # Default to patch for docs, refactor, style, test, chore
+  VERSION_LABEL="patch"
+fi
+
+# Apply the label
+gh pr edit "$PR_NUMBER" --add-label "$VERSION_LABEL"
+
+echo "Applied '$VERSION_LABEL' label to PR #$PR_NUMBER"
+```
+
+**Label mapping**:
+- `feat!` or `feat(scope)!` → `major` (breaking changes)
+- `feat` → `minor` (new features)
+- `fix`, `docs`, `refactor`, `style`, `test`, `chore` → `patch` (bug fixes/improvements)
+
 ### Step 5: Scan for Diagrams and Images
 - Search for image files in the repository:
   ```bash

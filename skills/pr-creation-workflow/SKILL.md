@@ -147,6 +147,45 @@ gh pr create \
   --body "$(cat pr-body.md)"
 ```
 
+### Step 5.5: Apply Semantic Versioning Label
+
+**Detect version bump type from PR title**:
+```bash
+PR_TITLE="feat: add user authentication [IBIS-123]"
+
+# Detect breaking change (major)
+if [[ "$PR_TITLE" =~ ^[^:]+\! ]]; then
+  VERSION_LABEL="major"
+# Detect new feature (minor)
+elif [[ "$PR_TITLE" =~ ^feat ]]; then
+  VERSION_LABEL="minor"
+# Detect bug fix (patch)
+elif [[ "$PR_TITLE" =~ ^fix ]]; then
+  VERSION_LABEL="patch"
+# Default to patch for other types
+else
+  VERSION_LABEL="patch"
+fi
+```
+
+**Apply label to PR**:
+```bash
+# Get PR number from last created PR
+PR_NUMBER=$(gh pr list --head "$(git branch --show-current)" --json number --jq '.[0].number')
+
+# Apply the detected label
+gh pr edit "$PR_NUMBER" --add-label "$VERSION_LABEL"
+```
+
+**Label mapping table**:
+
+| PR Title Pattern | Label | Version Bump |
+|------------------|-------|--------------|
+| `feat!` or `feat(scope)!` | `major` | X.0.0 |
+| `feat` | `minor` | 0.X.0 |
+| `fix` | `patch` | 0.0.X |
+| `refactor`, `docs`, `style`, `test`, `chore` | `patch` | 0.0.X |
+
 ### Step 6: Handle Images
 
 **Detection**:

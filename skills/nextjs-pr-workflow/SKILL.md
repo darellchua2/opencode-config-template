@@ -136,6 +136,31 @@ Use `pr-creation-workflow` framework with Next.js-specific configuration:
   - Use scope: `feat(api): add authentication`, `fix(ui): resolve layout issue`
   - Breaking changes: `feat!: breaking API change` or `feat(api)!: breaking change to authentication`
 - PR body should include test results summary
+- **Apply semantic versioning label automatically**:
+  - `feat!` → `major` label (breaking change)
+  - `feat` → `minor` label (new feature)
+  - `fix` → `patch` label (bug fix)
+
+### Step 5.5: Apply Semantic Versioning Label
+
+After PR creation, apply the appropriate version label:
+```bash
+# Get PR number
+PR_NUMBER=$(gh pr list --head "$(git branch --show-current)" --json number --jq '.[0].number')
+
+# Detect and apply label based on PR title
+PR_TITLE=$(gh pr view "$PR_NUMBER" --json title --jq '.title')
+
+if [[ "$PR_TITLE" =~ ^[^:]+\! ]]; then
+  gh pr edit "$PR_NUMBER" --add-label "major"
+elif [[ "$PR_TITLE" =~ ^feat ]]; then
+  gh pr edit "$PR_NUMBER" --add-label "minor"
+elif [[ "$PR_TITLE" =~ ^fix ]]; then
+  gh pr edit "$PR_NUMBER" --add-label "patch"
+else
+  gh pr edit "$PR_NUMBER" --add-label "patch"
+fi
+```
 
 ### Step 6: Handle JIRA Integration via Git Issue Updater
 
