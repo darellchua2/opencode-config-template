@@ -1,3 +1,10 @@
+# [1.18.0](https://github.com/darellchua2/opencode-config-template/compare/v1.17.0...v1.18.0) (2026-03-13)
+
+
+### Features
+
+* **skills:** add automatic semantic versioning label application to PRs ([34d201a](https://github.com/darellchua2/opencode-config-template/commit/34d201a258cd56da16dd78e0179e522b570e29ff)), closes [#87](https://github.com/darellchua2/opencode-config-template/issues/87)
+
 # [1.17.0](https://github.com/darellchua2/opencode-config-template/compare/v1.16.2...v1.17.0) (2026-03-12)
 
 
