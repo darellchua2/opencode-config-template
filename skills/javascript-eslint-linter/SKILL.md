@@ -309,10 +309,3 @@ npm install --save-dev eslint-plugin-react eslint-plugin-react-hooks eslint-plug
 npm install --save-dev eslint-config-prettier eslint-plugin-prettier
 ```
 
-## Related Skills
-
-- `nextjs-standard-setup`: For creating standardized Next.js 16 applications with proper component architecture
-- `linting-workflow`: Core linting framework
-- `nextjs-unit-test-creator`: JavaScript/TypeScript test generation
-- `nextjs-pr-workflow`: Next.js PR workflow with linting
-- `typescript-dry-principle`: TypeScript code refactoring

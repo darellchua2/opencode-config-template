@@ -849,10 +849,3 @@ extensions = ['sphinx.ext.autodoc', 'sphinx.ext.napoleon']
 make html
 ```
 
-## Related Skills
-
-- `docstring-generator`: Generate docstrings for multiple languages
-- `python-ruff-linter`: Ensure code quality with Ruff
-- `python-pytest-creator`: Add unit tests to Python functions
-- `linting-workflow`: Enforce code quality and documentation standards
-- `test-generator-framework`: Generate tests for documented functions

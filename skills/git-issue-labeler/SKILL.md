@@ -422,13 +422,6 @@ echo "Labels: $(gh issue view <issue-number> --jq '.labels | map(.name) | join(\
 - Scheduled for team review
 ```
 
-## Related Skills
-
-- **git-issue-creator**: For creating GitHub issues with intelligent tag detection
-- **ticket-branch-workflow**: Framework for ticket-to-branch workflows
-- **jira-git-integration**: For JIRA + GitHub workflows
-- **pr-creation-workflow**: For creating pull requests after resolving issues
-
 ## Automation Example
 
 Assess multiple issues at once:

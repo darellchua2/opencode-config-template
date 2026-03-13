@@ -651,12 +651,3 @@ git commit -m "feat: add tests and coverage badge (85%)"
 opencode --agent nextjs-pr-workflow "create PR with test coverage"
 ```
 
-## Related Skills
-
-- `nextjs-standard-setup`: For creating standardized Next.js 16 applications with proper component architecture
-- `test-generator-framework`: Core test generation framework
-- `nextjs-unit-test-creator`: Next.js test generation
-- `python-pytest-creator`: Python test generation
-- `pr-creation-workflow`: PR creation with quality checks
-- `nextjs-pr-workflow`: Next.js PR workflow
-- `linting-workflow`: Code quality checks before testing

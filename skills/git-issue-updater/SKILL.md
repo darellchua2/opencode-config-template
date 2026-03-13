@@ -817,16 +817,6 @@ gh issue view "$ISSUE_NUM" --json updatedAt --jq '.updatedAt'
 gh issue view "$ISSUE_NUM" --json timeline --jq '.timeline'
 ```
 
-## Related Skills
-
-- **git-semantic-commits**: For formatting commit messages that are referenced in updates
-- **git-issue-labeler**: For labeling issues before updates are added
-- **git-issue-creator**: For creating issues that receive progress updates
-- **ticket-branch-workflow`: For JIRA tickets that receive progress updates
-- **jira-git-integration**: For JIRA API operations used by this skill
-- **jira-status-updater**: For automated JIRA ticket status transitions after PR merge
-- **pr-creation-workflow**: For PR creation that triggers issue updates
-
 ## References
 
 - [GitHub CLI Documentation](https://cli.github.com/manual/)

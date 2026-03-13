@@ -857,12 +857,3 @@ const config: Config = {
 };
 ```
 
-## Related Skills
-
-- `nextjs-standard-setup`: Base project setup without TSDoc focus
-- `nextjs-tsdoc-documentor`: TSDoc documentation standards and implementation
-- `nextjs-unit-test-creator`: Generate unit tests for components
-- `javascript-eslint-linter`: Ensure code quality with ESLint
-- `nextjs-pr-workflow`: Create PRs after development
-- `typescript-dry-principle`: Eliminate code duplication
-- `linting-workflow`: Enforce code quality and documentation standards

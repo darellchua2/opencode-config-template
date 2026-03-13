@@ -157,7 +157,6 @@ Structure the skill documentation with the following sections:
 **"## Best Practices"**: Recommended approaches
 **"## Common Issues"**: Troubleshooting guide
 **"## Verification Commands"**: Commands to validate results
-**"## Related Skills"**: Other skills that work well together
 
 ### Step 5: Create Directory and File
 
@@ -451,8 +450,3 @@ metadata:
 - ✓ Naming conventions followed
 - ✓ Description is specific (78 characters)
 
-## Related Skills
-
-- **opencode-skills-maintainer**: For validating skill consistency and generating reports
-- **opencode-agent-creation**: For creating new agents with similar best practices
-- **opencode-skill-auditor**: For auditing and modularizing existing skills

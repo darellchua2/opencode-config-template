@@ -1271,11 +1271,3 @@ npm run lint
 npm run typecheck
 ```
 
-## Related Skills
-
-- `nextjs-standard-setup`: For creating standardized Next.js 16 applications with proper component architecture
-- `test-generator-framework`: Core test generation framework
-- `nextjs-pr-workflow`: For creating PRs after completing tests
-- `coverage-readme-workflow`: For updating README with coverage badges
-- `git-issue-creator`: For creating issues and branches for new features
-- `linting-workflow`: For ensuring code quality before testing

@@ -645,10 +645,3 @@ def test_email_edge_cases(email, expected):
 
 **Continue until all behaviors are tested!**
 
-## Related Skills
-
-- **test-generator-framework**: Generic test generation patterns that complement TDD workflow
-- **python-pytest-creator**: Python-specific test generation for TDD
-- **nextjs-unit-test-creator**: Next.js/React test generation for TDD
-- **linting-workflow**: Code quality checks after TDD implementation
-- **typescript-dry-principle**: Refactoring guidance for TDD refactor step

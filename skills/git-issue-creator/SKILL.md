@@ -367,17 +367,3 @@ git-semantic-commits --type docs --scope plan --subject "Add PLAN.md for #123"
 git-issue-updater --issue 123 --platform github
 ```
 
-## Related Skills
-
-- **Frameworks**:
-  - `ticket-branch-workflow` - Provides core workflow (branch creation, PLAN.md, commit, push)
-  - `git-issue-labeler` - Provides GitHub default label assignment (bug, enhancement, documentation, duplicate, good first issue, help wanted, invalid, question, wontfix)
-  - `git-semantic-commits` - Provides semantic commit message formatting (Conventional Commits specification)
-  - `git-issue-updater` - Provides issue progress updates with user, date, time
-- `jira-git-integration` - Provides JIRA-specific operations when working with JIRA tickets
-
-- **Related Workflows**:
-  - `nextjs-pr-workflow`: For creating PRs after completing the issue
-  - `jira-git-workflow`: For JIRA-integrated workflows (uses same ticket-branch-workflow framework)
-  - `git-pr-creator`: For creating PRs with optional JIRA integration
-  - `pr-creation-workflow`: For generic PR creation with configurable quality checks

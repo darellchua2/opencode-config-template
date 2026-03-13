@@ -195,7 +195,3 @@ ruff check --select E,F,W .
 ruff check --ignore E501 .
 ```
 
-## Related Skills
-
-- `linting-workflow`: Core linting framework
-- `python-pytest-creator`: Python test generation

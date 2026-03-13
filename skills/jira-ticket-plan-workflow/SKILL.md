@@ -410,18 +410,6 @@ git push -u origin "$TICKET_KEY"
 - [ ] Branch pushed to remote
 - [ ] JIRA ticket updated with progress
 
-## Related Skills
-
-**Frameworks used**:
-- `git-semantic-commits` - Semantic commit formatting
-- `git-issue-updater` - Issue progress updates
-- `jira-git-integration` - JIRA utilities
-
-**Companion workflows**:
-- `git-issue-plan-workflow` - GitHub issue equivalent
-- `pr-creation-workflow` - Create PR after work complete
-- `jira-status-updater` - Update ticket status on PR merge
-
 ## Example Usage
 
 ```

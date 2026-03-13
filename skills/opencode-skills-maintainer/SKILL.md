@@ -331,8 +331,3 @@ done
 ✓ All YAML frontmatter valid
 ✓ All skills categorized correctly
 
-## Related Skills
-
-- `opencode-agent-creation`: For creating new agents
-- `opencode-skill-creation`: For creating new skills
-- `opencode-skill-auditor`: For auditing skill redundancy

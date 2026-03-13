@@ -739,10 +739,3 @@ After generating docstrings:
 - [ ] Examples are included (if applicable)
 - [ ] Docstrings are formatted correctly
 
-## Related Skills
-
-- `nextjs-standard-setup`: For creating standardized Next.js 16 applications with proper documentation standards
-- `opencode-skill-creation`: For creating OpenCode skills
-- `pr-creation-workflow`: For adding docstring validation to PR workflow
-- `linting-workflow`: For enforcing docstring presence in code
-- `python-pytest-creator`: For generating Python tests with docstrings

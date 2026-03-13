@@ -933,11 +933,3 @@ After refactoring:
 - [ ] Shared modules are properly exported
 - [ ] Documentation is updated if needed
 
-## Related Skills
-
-- `nextjs-standard-setup`: For creating standardized Next.js 16 applications with proper component architecture
-- `linting-workflow`: Ensure code quality during refactoring
-- `docstring-generator`: Add documentation to refactored code
-- `typescript-dry-principle`: This skill
-- `nextjs-pr-workflow`: Create PR after completing refactoring
-- `test-generator-framework`: Generate tests for refactored code

@@ -394,8 +394,3 @@ convert diagrams/workflow.png diagrams/workflow.pdf
 convert diagrams/workflow.png -resize 800x600 diagrams/workflow-thumb.png
 ```
 
-## Related Skills
-
-- `diagram-creator`: For creating Draw.io diagrams
-- `nextjs-pr-workflow`: For creating PRs with diagram attachments
-- `git-pr-creator`: For PR creation with JIRA integration

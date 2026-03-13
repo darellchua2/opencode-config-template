@@ -738,14 +738,6 @@ git log -1 --pretty=%s | grep -oE '^[a-z]+'
 git log --pretty=%s | grep -oE '^[a-z]+' | sort | uniq -c | sort -rn
 ```
 
-## Related Skills
-
-- **git-issue-labeler**: For labeling GitHub issues with semantic labels
-- **git-issue-creator**: For creating GitHub issues with proper commit references
-- **ticket-branch-workflow**: For ticket-to-branch workflows with semantic commits
-- **pr-creation-workflow**: For creating PRs with semantic titles
-- **nextjs-pr-workflow**: For Next.js-specific workflows with semantic commits
-
 ## References
 
 - [Conventional Commits Specification](https://www.conventionalcommits.org/)

@@ -228,20 +228,4 @@ Before creating PR:
 - [ ] JIRA ticket or git issue reference is identified
 - [ ] PR body includes all necessary documentation
 
-## Related Skills
-
-- **Next.js Specific**:
-  - `nextjs-standard-setup`: For creating standardized Next.js 16 applications with proper component architecture
-  - `nextjs-unit-test-creator`: For generating comprehensive unit tests for Next.js applications
-- **Git Frameworks**:
-  - `git-semantic-commits`: For semantic commit message formatting and PR title conventions
-  - `git-issue-updater`: For consistent issue/ticket update functionality with user, date, time
-- **JIRA Integration**:
-  - `jira-git-workflow`: For creating JIRA tickets and initial PLAN.md setup
-- **Quality Assurance**:
-  - `linting-workflow`: For code quality checks (ESLint, Pylint, etc.)
-  - `coverage-readme-workflow`: For updating README with coverage badges before PR creation
-- **PR Workflows**:
-  - `pr-creation-workflow`: For generic PR creation workflow
-  - `git-pr-creator`: For creating Git pull requests with JIRA integration
 
