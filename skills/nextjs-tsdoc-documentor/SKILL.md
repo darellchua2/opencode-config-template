@@ -665,10 +665,3 @@ npm install --save-dev @microsoft/api-extractor
 npx api-extractor run
 ```
 
-## Related Skills
-
-- `docstring-generator`: Generate docstrings for multiple languages
-- `javascript-eslint-linter`: Ensure code quality with ESLint
-- `nextjs-pr-workflow`: Integrate TSDoc validation into PR workflow
-- `nextjs-standard-setup`: Create Next.js projects with TSDoc documentation standards
-- `linting-workflow`: Enforce code quality and documentation standards

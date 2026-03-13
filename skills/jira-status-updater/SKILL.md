@@ -616,17 +616,6 @@ Target status: Done
 ==========================================
 ```
 
-## Related Skills
-
-- **JIRA Integration**:
-  - `jira-git-integration` - Provides JIRA utilities and API tools
-- **Git Frameworks**:
-  - `pr-creation-workflow` - PR creation framework (uses jira-status-updater)
-  - `git-pr-creator` - PR creation with JIRA (uses jira-status-updater)
-  - `git-issue-updater` - Adds progress comments to JIRA
-- **JIRA Workflows**:
-  - `jira-git-workflow` - Complete JIRA ticket creation and branching workflow
-
 ## References
 
 - [Atlassian JIRA API - Issue Transitions](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#transition-issue)

@@ -599,6 +599,3 @@ Skills that use this JIRA integration framework:
 - `nextjs-pr-workflow`: Next.js PR workflow with JIRA integration
 - `jira-status-updater`: Automated JIRA ticket status transitions after PR merge
 
-Additional related skills:
-- `pr-creation-workflow`: Generic PR creation workflow
-- `ticket-branch-workflow`: Ticket-to-branch-to-PLAN workflow

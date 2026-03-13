@@ -175,9 +175,3 @@ grep '"exports"' package.json
 ### Tests Not Discovered
 Verify correct naming and location per framework patterns
 
-## Related Skills
-
-- `nextjs-unit-test-creator`: Next.js/React testing (Jest/Vitest)
-- `python-pytest-creator`: Python testing (Pytest)
-- `tdd-workflow`: Test Driven Development methodology
-- `linting-workflow`: Code quality before testing

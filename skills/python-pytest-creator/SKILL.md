@@ -504,10 +504,4 @@ python -m pytest
 export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 ```
 
-## Related Skills
-
-- `test-generator-framework`: Core test generation framework
-- `coverage-readme-workflow`: For updating README with coverage badges
-- `python-ruff-linter`: Python code quality before testing
-- `linting-workflow`: Generic linting workflow
 

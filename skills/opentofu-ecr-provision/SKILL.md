@@ -687,8 +687,3 @@ jobs:
 - **OpenTofu Documentation**: https://opentofu.org/docs/
 - **BETEKK Reference**: ecr/betekk_probe_engine_main/
 
-## Related Skills
-
-- **opentofu-aws-explorer**: For managing other AWS resources
-- **opentofu-provider-setup**: For configuring AWS authentication and backends
-- **opentofu-provisioning-workflow**: For general infrastructure provisioning patterns

@@ -665,18 +665,3 @@ file workflow.png
 identify workflow.png
 ```
 
-## Related Skills
-
-- **JIRA Integration**:
-  - `jira-git-integration`: For JIRA utilities, comments, and image uploads
-  - `jira-status-updater`: For automated JIRA ticket status transitions after PR merge
-- **Git Frameworks**:
-  - `git-semantic-commits`: For semantic commit message formatting and PR title conventions
-  - `git-issue-updater`: For consistent issue/ticket update functionality with user, date, time
-- **PR Workflows**:
-  - `pr-creation-workflow`: For generic PR creation workflow
-  - `nextjs-pr-workflow`: For Next.js-specific PR workflows
-- **Issue Management**:
-  - `git-issue-creator`: For creating GitHub issues with branches
-- **Diagram Creation**:
-  - `ascii-diagram-creator`: For creating workflow diagrams

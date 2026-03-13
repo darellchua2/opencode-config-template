@@ -427,18 +427,6 @@ git push -u origin "issue-$ISSUE_NUMBER"
 - [ ] Branch pushed to remote
 - [ ] GitHub issue updated with progress
 
-## Related Skills
-
-**Frameworks used**:
-- `git-issue-labeler` - Automatic label assignment
-- `git-semantic-commits` - Semantic commit formatting
-- `git-issue-updater` - Issue progress updates
-
-**Companion workflows**:
-- `jira-ticket-plan-workflow` - JIRA ticket equivalent
-- `pr-creation-workflow` - Create PR after work complete
-- `git-pr-creator` - PR creation with issue linking
-
 ## Example Usage
 
 ```

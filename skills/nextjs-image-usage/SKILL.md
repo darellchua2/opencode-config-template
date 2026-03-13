@@ -1287,10 +1287,3 @@ After implementation, verify:
 - [ ] Custom loaders properly typed
 - [ ] Fill props used correctly in TypeScript
 
-## Related Skills
-
-- `nextjs-standard-setup`: Set up Next.js 16 project structure
-- `nextjs-complete-setup`: Complete setup with documentation standards
-- `nextjs-unit-test-creator`: Test image components
-- `javascript-eslint-linter`: Ensure code quality
-- `nextjs-pr-workflow`: Create PRs after implementation

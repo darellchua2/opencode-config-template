@@ -166,9 +166,3 @@ When resolution requires:
 - **File operations**: Delegate to parent agent (no write access)
 - **System commands**: Delegate to parent agent (no bash access)
 
-## Related Skills
-
-- `image-analyzer`: General image analysis (includes error screenshots)
-- `linting-workflow`: Fix linting-related errors
-- `testing-subagent`: Fix test failures
-- `opentofu-explorer-subagent`: Infrastructure error resolution

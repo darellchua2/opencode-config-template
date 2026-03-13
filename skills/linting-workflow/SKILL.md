@@ -143,9 +143,3 @@ pip install ruff                # Ruff
 - Review error messages
 - Check if rule supports auto-fix
 
-## Related Skills
-
-- `python-ruff-linter`: Python-specific Ruff linting
-- `javascript-eslint-linter`: JavaScript/TypeScript-specific ESLint linting
-- `pr-creation-workflow`: Run linting before PRs
-- `test-generator-framework`: Code quality before testing
