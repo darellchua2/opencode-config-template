@@ -1,6 +1,6 @@
 ---
 name: git-issue-labeler
-description: Assess GitHub issues and assign appropriate labels using GitHub default labels (bug, enhancement, documentation, duplicate, good first issue, help wanted, invalid, question, wontfix) with detailed descriptions
+description: Assess GitHub issues and assign labels using GitHub defaults (bug, enhancement) and semantic versioning labels (major, minor, patch) with detailed descriptions
 license: Apache-2.0
 compatibility: opencode
 metadata:
@@ -16,7 +16,8 @@ I provide intelligent GitHub issue label assessment by:
 - Using keyword and pattern matching to identify issue types
 - Assigning single or multiple labels based on issue complexity
 - Providing label descriptions for clarity and consistency
-- Supporting the 9 GitHub default labels: bug, enhancement, documentation, duplicate, good first issue, help wanted, invalid, question, wontfix
+- Supporting GitHub default labels: bug, enhancement, documentation, duplicate, good first issue, help wanted, invalid, question, wontfix
+- Supporting semantic versioning labels: major, minor, patch
 - Using GitHub CLI (`gh`) to query available repository labels
 - Generating label assignment reports for review
 
@@ -128,6 +129,46 @@ Use this when:
 - "Technical limitations prevent implementation"
 - "Not aligned with project goals"
 
+## Semantic Versioning Labels
+
+These labels indicate the version bump type for releases:
+
+### major
+**Description**: Breaking changes requiring major version bump (X.0.0)
+
+**Keywords**: breaking, major change, api change, incompatible, removal, deprecate, breaking change
+
+**Color**: #d73a4a (red)
+
+**Examples**:
+- "Remove deprecated API endpoints"
+- "Breaking change to authentication flow"
+- "Major refactor of data layer"
+
+### minor
+**Description**: New features requiring minor version bump (0.X.0)
+
+**Keywords**: new feature, add, implement, introduce, new api, new component
+
+**Color**: #fbca04 (yellow)
+
+**Examples**:
+- "Add user dashboard feature"
+- "Implement new export functionality"
+- "Introduce dark mode support"
+
+### patch
+**Description**: Bug fixes requiring patch version bump (0.0.X)
+
+**Keywords**: fix, bug, patch, correct, resolve, repair, typo, small fix
+
+**Color**: #0e8a16 (green)
+
+**Examples**:
+- "Fix login validation bug"
+- "Correct typo in error message"
+- "Patch memory leak in handler"
+
 ## Steps
 
 ### Step 1: Query Available Labels
@@ -218,6 +259,29 @@ fi
 ```bash
 if [[ "$issue_content" =~ (wontfix|out of scope|not feasible|declined|rejected|wont do|never) ]]; then
   labels+=("wontfix")
+fi
+```
+
+**Semantic Versioning Label Detection** (for PRs):
+
+**Major Version Detection**:
+```bash
+if [[ "$issue_content" =~ (breaking|major change|api change|incompatible|removal|deprecate|breaking change) ]]; then
+  labels+=("major")
+fi
+```
+
+**Minor Version Detection**:
+```bash
+if [[ "$issue_content" =~ (new feature|add|implement new|introduce new|new api|new component) ]]; then
+  labels+=("minor")
+fi
+```
+
+**Patch Version Detection**:
+```bash
+if [[ "$issue_content" =~ (fix|bug|patch|correct|resolve|repair|typo|small fix) ]]; then
+  labels+=("patch")
 fi
 ```
 

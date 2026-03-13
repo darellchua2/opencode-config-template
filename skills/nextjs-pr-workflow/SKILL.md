@@ -1,6 +1,6 @@
 ---
 name: nextjs-pr-workflow
-description: Complete Next.js PR workflow using pr-creation-workflow, jira-git-integration, and linting-workflow frameworks
+description: Next.js PR workflow with quality checks (lint/build/test), semantic versioning labels (major/minor/patch), coverage badges, and JIRA integration via pr-creation-workflow framework
 license: Apache-2.0
 compatibility: opencode
 metadata:
@@ -227,5 +227,31 @@ Before creating PR:
 - [ ] PLAN.md is updated if implementation changed
 - [ ] JIRA ticket or git issue reference is identified
 - [ ] PR body includes all necessary documentation
+
+## Semantic Versioning Labels
+
+Add version bump labels to indicate release impact:
+
+| Label | Color | Description | Version Bump | Examples |
+|-------|-------|-------------|--------------|----------|
+| `major` | #d73a4a (red) | Breaking changes | X.0.0 | API removal, breaking refactor |
+| `minor` | #fbca04 (yellow) | New features | 0.X.0 | New API, new component |
+| `patch` | #0e8a16 (green) | Bug fixes | 0.0.X | Bug fix, typo correction |
+
+**Label Mapping from Commit Type**:
+- `feat!` or `feat(scope)!` → `major` (breaking change)
+- `feat` → `minor` (new feature)
+- `fix` → `patch` (bug fix)
+- `refactor` → `patch` (code improvement)
+- `docs` → `patch` (documentation)
+
+**Usage in Next.js PRs**:
+```bash
+# Add version label to PR
+gh pr edit <PR_NUMBER> --add-label "minor"
+
+# During PR creation with Next.js feature
+gh pr create --title "feat: add user dashboard" --add-label "minor"
+```
 
 

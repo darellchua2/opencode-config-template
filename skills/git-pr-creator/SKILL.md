@@ -1,6 +1,6 @@
 ---
 name: git-pr-creator
-description: Create Git pull requests and optionally update JIRA tickets with comments and image attachments
+description: Create Git PRs with semantic versioning labels (major/minor/patch), JIRA ticket updates, and image attachments using git-semantic-commits formatting
 license: Apache-2.0
 compatibility: opencode
 metadata:
@@ -664,4 +664,39 @@ file workflow.png
 # Get image dimensions
 identify workflow.png
 ```
+
+## Semantic Versioning Labels
+
+Add version bump labels to indicate release impact:
+
+| Label | Color | Description | Version Bump | Examples |
+|-------|-------|-------------|--------------|----------|
+| `major` | #d73a4a (red) | Breaking changes | X.0.0 | API removal, breaking refactor |
+| `minor` | #fbca04 (yellow) | New features | 0.X.0 | New API, new component |
+| `patch` | #0e8a16 (green) | Bug fixes | 0.0.X | Bug fix, typo correction |
+
+**Label Mapping from Commit Type**:
+- `feat!` or `feat(scope)!` → `major` (breaking change)
+- `feat` → `minor` (new feature)
+- `fix` → `patch` (bug fix)
+- `refactor` → `patch` (code improvement)
+- `docs` → `patch` (documentation)
+
+**Usage with JIRA Integration**:
+```bash
+# Add version label to PR during creation
+gh pr create --title "feat: add user auth [IBIS-123]" --add-label "minor"
+
+# Add label to existing PR
+gh pr edit <PR_NUMBER> --add-label "minor"
+
+# Remove incorrect label
+gh pr edit <PR_NUMBER> --remove-label "patch" --add-label "minor"
+```
+
+**Automated Labeling**:
+When creating PRs with semantic commit messages, automatically apply version labels:
+- PR title starts with `feat:` → suggest `minor` label
+- PR title starts with `fix:` → suggest `patch` label
+- PR title contains `!` → suggest `major` label
 

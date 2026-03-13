@@ -1,6 +1,6 @@
 ---
 name: pr-creation-workflow
-description: Generic PR creation workflow with configurable quality checks and multi-platform integration
+description: Framework for creating PRs with configurable quality checks, multi-platform integration, semantic versioning labels (major/minor/patch), and JIRA/git issue tracking
 license: Apache-2.0
 compatibility: opencode
 metadata:
@@ -252,6 +252,35 @@ git push -u origin $(git branch --show-current)
 - [ ] Quality check status included
 - [ ] Images properly referenced
 - [ ] Tracking reference included
+
+## Semantic Versioning Labels
+
+Add version bump labels to indicate release impact:
+
+| Label | Color | Description | Version Bump | Examples |
+|-------|-------|-------------|--------------|----------|
+| `major` | #d73a4a (red) | Breaking changes | X.0.0 | API removal, breaking refactor |
+| `minor` | #fbca04 (yellow) | New features | 0.X.0 | New API, new component |
+| `patch` | #0e8a16 (green) | Bug fixes | 0.0.X | Bug fix, typo correction |
+
+**Label Mapping from Commit Type**:
+- `feat!` or `feat(scope)!` → `major` (breaking change)
+- `feat` → `minor` (new feature)
+- `fix` → `patch` (bug fix)
+- `refactor` → `patch` (code improvement)
+- `docs` → `patch` (documentation)
+- `style` → `patch` (formatting)
+- `test` → `patch` (tests)
+- `chore` → `patch` (maintenance)
+
+**Usage**:
+```bash
+# Add version label to PR
+gh pr edit <PR_NUMBER> --add-label "minor"
+
+# Or during PR creation
+gh pr create --title "feat: add user auth" --add-label "minor"
+```
 
 ## Relevant Skills
 
