@@ -364,14 +364,16 @@
       "url": "https://api.z.ai/api/mcp/web_reader/mcp",
       "headers": {
         "Authorization": "Bearer {env:ZAI_API_KEY}"
-      }
+      },
+      "enabled": false
     },
     "web-search-prime": {
       "type": "remote",
       "url": "https://api.z.ai/api/mcp/web_search_prime/mcp",
       "headers": {
         "Authorization": "Bearer {env:ZAI_API_KEY}"
-      }
+      },
+      "enabled": false
     },
     "zai-mcp-server": {
       "type": "local",
@@ -383,14 +385,16 @@
       "environment": {
         "Z_AI_API_KEY": "${env:ZAI_API_KEY}",
         "Z_AI_MODE": "ZAI"
-      }
+      },
+      "enabled": false
     },
     "zread": {
       "type": "remote",
       "url": "https://api.z.ai/api/mcp/zread/mcp",
       "headers": {
         "Authorization": "Bearer {env:ZAI_API_KEY}"
-      }
+      },
+      "enabled": false
     }
   }
 }
