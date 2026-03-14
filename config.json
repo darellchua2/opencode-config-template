@@ -2,10 +2,17 @@
   "$schema": "https://opencode.ai/config.json",
   "model": "zai-coding-plan/glm-5",
   "default_agent": "build",
-  "plugin": ["opencode-md-table-formatter"],
+  "plugin": [
+    "opencode-md-table-formatter",
+    "opencode-dynamic-context-pruning",
+    "opencode-supermemory",
+    "opencode-notificator",
+    "opencode-pty",
+    "opencode-vibeguard"
+  ],
   "instructions": [
-    "~/.config/opencode/AGENTS.md",
-    ".AGENTS.md"
+    "${env:HOME}/.config/opencode/AGENTS.md",
+    "AGENTS.md"
   ],
   "provider": {
     "lmstudio": {
