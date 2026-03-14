@@ -1,3 +1,10 @@
+# [1.20.0](https://github.com/darellchua2/opencode-config-template/compare/v1.19.0...v1.20.0) (2026-03-14)
+
+
+### Features
+
+* add JIRA OAuth2 workflow skill with setup.sh integration ([98394c3](https://github.com/darellchua2/opencode-config-template/commit/98394c35d16f073b3b83326b90ecc44d40f60491))
+
 # [1.19.0](https://github.com/darellchua2/opencode-config-template/compare/v1.18.0...v1.19.0) (2026-03-14)
 
 
