@@ -297,6 +297,13 @@ CHECK_UPDATE_ONLY=false
 GITHUB_PAT="${GITHUB_PAT:-}"
 ZAI_API_KEY="${ZAI_API_KEY:-}"
 
+# JIRA OAuth2 credentials
+JIRA_CLIENT_ID="${JIRA_CLIENT_ID:-}"
+JIRA_CLIENT_SECRET="${JIRA_CLIENT_SECRET:-}"
+JIRA_ACCESS_TOKEN="${JIRA_ACCESS_TOKEN:-}"
+JIRA_REFRESH_TOKEN="${JIRA_REFRESH_TOKEN:-}"
+JIRA_CLOUD_ID="${JIRA_CLOUD_ID:-}"
+
 # Colors for output
 readonly RED='\033[0;31m'
 readonly GREEN='\033[0;32m'
@@ -926,6 +933,113 @@ setup_zai_api_key() {
     fi
 }
 
+# Setup JIRA OAuth2 credentials
+setup_jira_oauth() {
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "              🔑 JIRA OAuth2 Setup"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    echo "Prerequisites:"
+    echo "  1. Create OAuth2 app at: https://developer.atlassian.com/console/myapps/"
+    echo "  2. Add callback URL: http://localhost:8085/callback"
+    echo "  3. Enable scopes: read:jira-work, write:jira-work, offline_access"
+    echo ""
+
+    # Check if already configured
+    if [ -n "$JIRA_CLIENT_ID" ] && [ -n "$JIRA_ACCESS_TOKEN" ]; then
+        echo "JIRA OAuth2 is already configured."
+        echo "  Client ID: ${JIRA_CLIENT_ID:0:8}..."
+        echo "  Access Token: ${JIRA_ACCESS_TOKEN:0:8}...${JIRA_ACCESS_TOKEN: -4}"
+        echo ""
+        if prompt_yes_no "Reconfigure?" "n"; then
+            log_info "Reconfiguring..."
+        else
+            log_info "Keeping existing configuration"
+            return 0
+        fi
+    fi
+
+    # Step 1: Client ID
+    echo "Step 1/4: Enter your OAuth2 Client ID"
+    read -p "JIRA Client ID: " JIRA_CLIENT_ID
+    
+    if [ -z "$JIRA_CLIENT_ID" ]; then
+        log_warn "No Client ID provided, skipping"
+        return 1
+    fi
+
+    # Step 2: Client Secret
+    echo ""
+    echo "Step 2/4: Enter your OAuth2 Client Secret"
+    read -s -p "JIRA Client Secret: " JIRA_CLIENT_SECRET
+    echo ""
+
+    if [ -z "$JIRA_CLIENT_SECRET" ]; then
+        log_warn "No Client Secret provided, skipping"
+        return 1
+    fi
+
+    # Step 3: Authorize
+    echo ""
+    echo "Step 3/4: Open this URL in your browser and authorize:"
+    echo ""
+    echo "  https://auth.atlassian.com/authorize?audience=api.atlassian.com&client_id=${JIRA_CLIENT_ID}&scope=read%3Ajira-work%20write%3Ajira-work%20offline_access&redirect_uri=http%3A%2F%2Flocalhost%3A8085%2Fcallback&response_type=code&prompt=consent"
+    echo ""
+    echo "After authorization, browser redirects to localhost:8085/callback?code=XXXXX"
+    echo "Copy the 'code' value from the URL."
+    echo ""
+
+    # Step 4: Enter code
+    echo "Step 4/4: Paste the authorization code"
+    read -p "Authorization code: " auth_code
+
+    if [ -z "$auth_code" ]; then
+        log_error "No authorization code provided"
+        return 1
+    fi
+
+    # Exchange code for tokens
+    echo ""
+    log_info "Exchanging code for tokens..."
+    
+    local token_response
+    token_response=$(curl -s -X POST "https://auth.atlassian.com/oauth/token" \
+        -H "Content-Type: application/json" \
+        -d "{
+            \"grant_type\": \"authorization_code\",
+            \"client_id\": \"${JIRA_CLIENT_ID}\",
+            \"client_secret\": \"${JIRA_CLIENT_SECRET}\",
+            \"code\": \"${auth_code}\",
+            \"redirect_uri\": \"http://localhost:8085/callback\"
+        }")
+    
+    JIRA_ACCESS_TOKEN=$(echo "$token_response" | grep -o '"access_token":"[^"]*"' | cut -d'"' -f4)
+    JIRA_REFRESH_TOKEN=$(echo "$token_response" | grep -o '"refresh_token":"[^"]*"' | cut -d'"' -f4)
+    
+    if [ -z "$JIRA_ACCESS_TOKEN" ] || [ "$JIRA_ACCESS_TOKEN" = "null" ]; then
+        log_error "Failed to obtain tokens"
+        echo "Response: $token_response"
+        return 1
+    fi
+
+    log_success "Tokens obtained"
+    
+    # Get cloud ID
+    log_info "Fetching Cloud ID..."
+    JIRA_CLOUD_ID=$(curl -s -H "Authorization: Bearer ${JIRA_ACCESS_TOKEN}" \
+        "https://api.atlassian.com/oauth/token/accessible-resources" | \
+        grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
+    
+    log_success "JIRA OAuth2 configured"
+    echo ""
+    echo "Summary:"
+    echo "  Client ID: ${JIRA_CLIENT_ID:0:8}..."
+    echo "  Access Token: ${JIRA_ACCESS_TOKEN:0:8}...${JIRA_ACCESS_TOKEN: -4}"
+    echo "  Cloud ID: ${JIRA_CLOUD_ID:-<not set>}"
+    echo ""
+}
+
 # Setup nvm
 setup_nvm() {
     echo ""
@@ -1464,6 +1578,63 @@ setup_shell_vars() {
         fi
     fi
 
+    # Add JIRA OAuth2 credentials to shell config
+    if [ -n "$JIRA_CLIENT_ID" ]; then
+        local jira_vars_missing=false
+        
+        # Check if JIRA variables are already configured
+        if ! grep -q "JIRA_CLIENT_ID" "$SHELL_CONFIG_FILE" 2>/dev/null; then
+            jira_vars_missing=true
+        fi
+        
+        if [ "$jira_vars_missing" = true ]; then
+            if prompt_yes_no "Add JIRA OAuth2 credentials to $(basename ${SHELL_CONFIG_FILE})?" "y"; then
+                create_backup "$SHELL_CONFIG_FILE"
+                
+                # Add JIRA OAuth2 section
+                run_cmd "echo '' >> ${SHELL_CONFIG_FILE}"
+                run_cmd "echo '# JIRA OAuth2 Configuration' >> ${SHELL_CONFIG_FILE}"
+                run_cmd "echo 'export JIRA_CLIENT_ID=\"${JIRA_CLIENT_ID}\"' >> ${SHELL_CONFIG_FILE}"
+                run_cmd "echo 'export JIRA_CLIENT_SECRET=\"${JIRA_CLIENT_SECRET}\"' >> ${SHELL_CONFIG_FILE}"
+                run_cmd "echo 'export JIRA_ACCESS_TOKEN=\"${JIRA_ACCESS_TOKEN}\"' >> ${SHELL_CONFIG_FILE}"
+                run_cmd "echo 'export JIRA_REFRESH_TOKEN=\"${JIRA_REFRESH_TOKEN}\"' >> ${SHELL_CONFIG_FILE}"
+                
+                if [ -n "$JIRA_CLOUD_ID" ]; then
+                    run_cmd "echo 'export JIRA_CLOUD_ID=\"${JIRA_CLOUD_ID}\"' >> ${SHELL_CONFIG_FILE}"
+                fi
+                
+                log_success "JIRA OAuth2 credentials added to ${SHELL_CONFIG_FILE}"
+            else
+                log_info "Skipping shell config update for JIRA OAuth2"
+            fi
+        else
+            log_info "JIRA OAuth2 credentials already exist in ${SHELL_CONFIG_FILE}"
+            
+            # Update tokens if they've changed
+            if prompt_yes_no "Update existing JIRA tokens?" "n"; then
+                create_backup "$SHELL_CONFIG_FILE"
+                
+                # Remove old JIRA exports and add new ones
+                local temp_file="${SHELL_CONFIG_FILE}.tmp"
+                grep -v "^export JIRA_" "$SHELL_CONFIG_FILE" > "$temp_file" 2>/dev/null || true
+                
+                echo '' >> "$temp_file"
+                echo '# JIRA OAuth2 Configuration' >> "$temp_file"
+                echo "export JIRA_CLIENT_ID=\"${JIRA_CLIENT_ID}\"" >> "$temp_file"
+                echo "export JIRA_CLIENT_SECRET=\"${JIRA_CLIENT_SECRET}\"" >> "$temp_file"
+                echo "export JIRA_ACCESS_TOKEN=\"${JIRA_ACCESS_TOKEN}\"" >> "$temp_file"
+                echo "export JIRA_REFRESH_TOKEN=\"${JIRA_REFRESH_TOKEN}\"" >> "$temp_file"
+                
+                if [ -n "$JIRA_CLOUD_ID" ]; then
+                    echo "export JIRA_CLOUD_ID=\"${JIRA_CLOUD_ID}\"" >> "$temp_file"
+                fi
+                
+                mv "$temp_file" "$SHELL_CONFIG_FILE"
+                log_success "JIRA OAuth2 tokens updated in ${SHELL_CONFIG_FILE}"
+            fi
+        fi
+    fi
+
     return 0
 }
 
@@ -1981,6 +2152,7 @@ main() {
         echo "  2) Skills-only setup"
         echo "  3) Full setup (API keys, Node.js, OpenCode)"
         echo "  4) Update OpenCode CLI only"
+        echo "  5) Configure JIRA OAuth2"
         echo ""
 
         local setup_option
@@ -2021,6 +2193,16 @@ main() {
                 update_opencode_cli
                 echo ""
                 echo "Update complete!"
+                exit 0
+                ;;
+            5)
+                echo ""
+                log_info "JIRA OAuth2 Configuration"
+                setup_jira_oauth || true
+                setup_shell_vars || true
+                print_summary
+                echo ""
+                echo "JIRA OAuth2 configuration complete!"
                 exit 0
                 ;;
             *)
