@@ -1,3 +1,10 @@
+## [1.20.1](https://github.com/darellchua2/opencode-config-template/compare/v1.20.0...v1.20.1) (2026-03-14)
+
+
+### Bug Fixes
+
+* update config.json ([06f8fc1](https://github.com/darellchua2/opencode-config-template/commit/06f8fc10d8f320ef0c2ddd621aa9932df739576d))
+
 # [1.20.0](https://github.com/darellchua2/opencode-config-template/compare/v1.19.0...v1.20.0) (2026-03-14)
 
 
