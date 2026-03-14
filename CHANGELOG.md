@@ -1,3 +1,10 @@
+# [1.19.0](https://github.com/darellchua2/opencode-config-template/compare/v1.18.0...v1.19.0) (2026-03-14)
+
+
+### Features
+
+* add plugin ([3f162fe](https://github.com/darellchua2/opencode-config-template/commit/3f162fede669e8b04b181e786310bba4cc7f8f9b))
+
 # [1.18.0](https://github.com/darellchua2/opencode-config-template/compare/v1.17.0...v1.18.0) (2026-03-13)
 
 
