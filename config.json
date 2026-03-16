@@ -14,6 +14,11 @@
     "${env:HOME}/.config/opencode/AGENTS.md",
     "AGENTS.md"
   ],
+  "hooks": {
+    "session_start": "bash ${env:HOME}/.claude/hooks/peon-ping/adapters/opencode.sh session_start",
+    "stop": "bash ${env:HOME}/.claude/hooks/peon-ping/adapters/opencode.sh stop",
+    "permission": "bash ${env:HOME}/.claude/hooks/peon-ping/adapters/opencode.sh permission"
+  },
   "provider": {
     "lmstudio": {
       "npm": "@ai-sdk/openai-compatible",

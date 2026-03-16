@@ -933,6 +933,197 @@ setup_zai_api_key() {
     fi
 }
 
+# Setup PeonPing (AI agent sound notifications)
+setup_peonping() {
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "              🔊 PeonPing Sound Notifications Setup"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    echo "PeonPing plays game character voice lines when your AI agent"
+    echo "finishes work or needs permission. Works with OpenCode!"
+    echo ""
+    echo "Features:"
+    echo "  - Voice notifications from Warcraft, StarCraft, Portal, and more"
+    echo "  - Desktop notifications when agent needs attention"
+    echo "  - 160+ sound packs available"
+    echo ""
+
+    if ! prompt_yes_no "Install PeonPing?" "y"; then
+        log_info "Skipping PeonPing installation"
+        return 0
+    fi
+
+    # Check if peon command exists
+    if command_exists peon; then
+        log_info "PeonPing is already installed"
+        if prompt_yes_no "Reinstall/update PeonPing?" "n"; then
+            log_info "Updating PeonPing..."
+        else
+            log_info "Keeping existing PeonPing installation"
+            return 0
+        fi
+    fi
+
+    # Install based on platform
+    case "$DETECTED_OS" in
+        macOS|Linux*|Windows-WSL)
+            log_info "Installing PeonPing via Homebrew or curl..."
+            
+            if command_exists brew; then
+                log_info "Using Homebrew..."
+                run_cmd "brew install PeonPing/tap/peon-ping"
+            else
+                log_info "Using curl installer..."
+                run_cmd "curl -fsSL https://peonping.com/install | bash"
+            fi
+            ;;
+        Windows*|Windows-GitBash)
+            log_info "Installing PeonPing via PowerShell..."
+            log_info "Run this in PowerShell as Administrator:"
+            echo "  Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/PeonPing/peon-ping/main/install.ps1' -UseBasicParsing | Invoke-Expression"
+            echo ""
+            if prompt_yes_no "Have you completed the PowerShell installation?" "y"; then
+                log_success "PeonPing installation completed"
+            else
+                log_warn "Please complete PeonPing installation manually"
+                return 0
+            fi
+            ;;
+        *)
+            log_warn "Unsupported platform for automatic PeonPing installation"
+            log_info "Install manually: https://github.com/PeonPing/peon-ping"
+            return 0
+            ;;
+    esac
+
+    # Verify installation
+    if command_exists peon; then
+        log_success "PeonPing installed successfully"
+        
+        # Run setup
+        log_info "Running PeonPing setup..."
+        run_cmd "peon-ping-setup 2>/dev/null || peon packs install peon 2>/dev/null || true"
+        
+        echo ""
+        echo "✓ PeonPing installed successfully!"
+        echo ""
+        echo "Quick commands:"
+        echo "  peon status          - Check if active"
+        echo "  peon preview         - Play test sounds"
+        echo "  peon packs list      - List installed packs"
+        echo "  peon packs list --registry  - Browse 160+ packs"
+        echo "  peon packs install <name>   - Install a pack"
+        echo "  peon volume 0.5      - Set volume (0.0-1.0)"
+        echo "  peon toggle          - Mute/unmute sounds"
+        echo ""
+        
+        # Ask about configuring OpenCode hooks
+        if prompt_yes_no "Configure OpenCode hooks for PeonPing?" "y"; then
+            setup_peonping_hooks
+        fi
+    else
+        log_warn "PeonPing installation may not have completed correctly"
+        log_info "Try: brew install PeonPing/tap/peon-ping"
+    fi
+}
+
+# Setup PeonPing hooks in OpenCode config
+setup_peonping_hooks() {
+    echo ""
+    log_info "Configuring PeonPing hooks for OpenCode..."
+    
+    local peon_adapter=""
+    
+    # Find the PeonPing adapter script
+    if [ -f "${HOME}/.claude/hooks/peon-ping/adapters/opencode.sh" ]; then
+        peon_adapter="${HOME}/.claude/hooks/peon-ping/adapters/opencode.sh"
+    elif [ -f "/opt/homebrew/opt/peon-ping/libexec/adapters/opencode.sh" ]; then
+        peon_adapter="/opt/homebrew/opt/peon-ping/libexec/adapters/opencode.sh"
+    elif [ -f "/usr/local/opt/peon-ping/libexec/adapters/opencode.sh" ]; then
+        peon_adapter="/usr/local/opt/peon-ping/libexec/adapters/opencode.sh"
+    else
+        log_warn "PeonPing adapter script not found"
+        log_info "Please configure hooks manually in config.json"
+        return 1
+    fi
+    
+    log_info "Found adapter: ${peon_adapter}"
+    
+    # Check if config.json exists
+    if [ ! -f "$CONFIG_FILE" ]; then
+        log_warn "config.json not found at ${CONFIG_FILE}"
+        log_info "Hooks will be configured when config.json is copied"
+        return 0
+    fi
+    
+    # Check if hooks already exist
+    if grep -q "peon-ping" "$CONFIG_FILE" 2>/dev/null; then
+        log_info "PeonPing hooks already configured in config.json"
+        return 0
+    fi
+    
+    # Add hooks to config.json
+    if prompt_yes_no "Add PeonPing hooks to config.json?" "y"; then
+        # Create backup
+        create_backup "$CONFIG_FILE"
+        
+        # Use Python to add hooks to config.json
+        if command_exists python3; then
+            python3 << EOF
+import json
+
+try:
+    with open('${CONFIG_FILE}', 'r') as f:
+        config = json.load(f)
+except:
+    print("Error reading config.json")
+    exit(1)
+
+# Add hooks section if not exists
+if 'hooks' not in config:
+    config['hooks'] = {}
+
+# Add PeonPing hooks
+config['hooks']['session_start'] = f'bash ${peon_adapter} session_start'
+config['hooks']['stop'] = f'bash ${peon_adapter} stop'
+config['hooks']['permission'] = f'bash ${peon_adapter} permission'
+
+# Write back
+try:
+    with open('${CONFIG_FILE}', 'w') as f:
+        json.dump(config, f, indent=2)
+    print("PeonPing hooks added to config.json")
+except Exception as e:
+    print(f"Error writing config: {e}")
+    exit(1)
+EOF
+            
+            if [ $? -eq 0 ]; then
+                log_success "PeonPing hooks configured in config.json"
+                echo ""
+                echo "Hooks configured:"
+                echo "  - session_start: Plays greeting when OpenCode starts"
+                echo "  - stop: Plays sound when agent completes"
+                echo "  - permission: Plays sound when agent needs input"
+                echo ""
+            else
+                log_warn "Failed to add hooks to config.json"
+            fi
+        else
+            log_warn "Python 3 required to update config.json"
+            log_info "Add these hooks manually to config.json:"
+            echo ''
+            echo '  "hooks": {'
+            echo '    "session_start": "bash ~/.claude/hooks/peon-ping/adapters/opencode.sh session_start",'
+            echo '    "stop": "bash ~/.claude/hooks/peon-ping/adapters/opencode.sh stop",'
+            echo '    "permission": "bash ~/.claude/hooks/peon-ping/adapters/opencode.sh permission"'
+            echo '  }'
+            echo ''
+        fi
+    fi
+}
+
 # Setup JIRA OAuth2 credentials
 setup_jira_oauth() {
     echo ""
@@ -2153,6 +2344,7 @@ main() {
         echo "  3) Full setup (API keys, Node.js, OpenCode)"
         echo "  4) Update OpenCode CLI only"
         echo "  5) Configure JIRA OAuth2"
+        echo "  6) Install PeonPing (sound notifications)"
         echo ""
 
         local setup_option
@@ -2203,6 +2395,14 @@ main() {
                 print_summary
                 echo ""
                 echo "JIRA OAuth2 configuration complete!"
+                exit 0
+                ;;
+            6)
+                echo ""
+                log_info "PeonPing Sound Notifications"
+                setup_peonping || true
+                echo ""
+                echo "PeonPing setup complete!"
                 exit 0
                 ;;
             *)
