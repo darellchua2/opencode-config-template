@@ -933,6 +933,180 @@ setup_zai_api_key() {
     fi
 }
 
+# Setup PeonPing (AI agent sound notifications)
+setup_peonping() {
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "              🔊 PeonPing Sound Notifications Setup"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    echo "PeonPing plays game character voice lines when your AI agent"
+    echo "finishes work or needs permission. Works with OpenCode!"
+    echo ""
+    echo "Features:"
+    echo "  - Voice notifications from Warcraft, StarCraft, Portal, and more"
+    echo "  - Desktop notifications when agent needs attention"
+    echo "  - 160+ sound packs available"
+    echo ""
+
+    if ! prompt_yes_no "Install PeonPing?" "y"; then
+        log_info "Skipping PeonPing installation"
+        return 0
+    fi
+
+    # Check if peon command exists
+    if command_exists peon; then
+        log_info "PeonPing is already installed"
+        if prompt_yes_no "Reinstall/update PeonPing?" "n"; then
+            log_info "Updating PeonPing..."
+        else
+            log_info "Keeping existing PeonPing installation"
+            return 0
+        fi
+    fi
+
+    # Install based on platform
+    case "$DETECTED_OS" in
+        macOS|Linux*|Windows-WSL)
+            log_info "Installing PeonPing via Homebrew or curl..."
+            
+            if command_exists brew; then
+                log_info "Using Homebrew..."
+                run_cmd "brew install PeonPing/tap/peon-ping"
+            else
+                log_info "Using curl installer..."
+                run_cmd "curl -fsSL https://peonping.com/install | bash"
+            fi
+            ;;
+        Windows*|Windows-GitBash)
+            log_info "Installing PeonPing via PowerShell..."
+            log_info "Run this in PowerShell as Administrator:"
+            echo "  Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/PeonPing/peon-ping/main/install.ps1' -UseBasicParsing | Invoke-Expression"
+            echo ""
+            if prompt_yes_no "Have you completed the PowerShell installation?" "y"; then
+                log_success "PeonPing installation completed"
+            else
+                log_warn "Please complete PeonPing installation manually"
+                return 0
+            fi
+            ;;
+        *)
+            log_warn "Unsupported platform for automatic PeonPing installation"
+            log_info "Install manually: https://github.com/PeonPing/peon-ping"
+            return 0
+            ;;
+    esac
+
+    # Verify installation
+    if command_exists peon; then
+        log_success "PeonPing installed successfully"
+        
+        # Run setup
+        log_info "Running PeonPing setup..."
+        run_cmd "peon-ping-setup 2>/dev/null || peon packs install peon 2>/dev/null || true"
+        
+        echo ""
+        echo "✓ PeonPing installed successfully!"
+        echo ""
+        echo "Quick commands:"
+        echo "  peon status          - Check if active"
+        echo "  peon preview         - Play test sounds"
+        echo "  peon packs list      - List installed packs"
+        echo "  peon packs list --registry  - Browse 160+ packs"
+        echo "  peon packs install <name>   - Install a pack"
+        echo "  peon volume 0.5      - Set volume (0.0-1.0)"
+        echo "  peon toggle          - Mute/unmute sounds"
+        echo ""
+        
+        # Ask about configuring OpenCode plugin
+        if prompt_yes_no "Install PeonPing TypeScript plugin for OpenCode?" "y"; then
+            setup_peonping_hooks
+        fi
+    else
+        log_warn "PeonPing installation may not have completed correctly"
+        log_info "Try: brew install PeonPing/tap/peon-ping"
+    fi
+}
+
+# Setup PeonPing plugin for OpenCode
+# Note: OpenCode uses a TypeScript plugin system, NOT shell hooks.
+# The opencode.sh adapter is an installer script that downloads the TS plugin.
+setup_peonping_hooks() {
+    echo ""
+    log_info "Configuring PeonPing for OpenCode..."
+    
+    local OPENCODE_PLUGINS_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/opencode/plugins"
+    local PEON_PLUGIN="${OPENCODE_PLUGINS_DIR}/peon-ping.ts"
+    
+    # Check if plugin already installed
+    if [ -f "$PEON_PLUGIN" ]; then
+        log_info "PeonPing plugin already installed at ${PEON_PLUGIN}"
+        if prompt_yes_no "Reinstall PeonPing plugin?" "n"; then
+            log_info "Reinstalling..."
+        else
+            log_info "Keeping existing PeonPing plugin"
+            return 0
+        fi
+    fi
+    
+    local peon_adapter=""
+    
+    # Find the PeonPing adapter script (installer)
+    if [ -f "${HOME}/.claude/hooks/peon-ping/adapters/opencode.sh" ]; then
+        peon_adapter="${HOME}/.claude/hooks/peon-ping/adapters/opencode.sh"
+    elif [ -f "/opt/homebrew/opt/peon-ping/libexec/adapters/opencode.sh" ]; then
+        peon_adapter="/opt/homebrew/opt/peon-ping/libexec/adapters/opencode.sh"
+    elif [ -f "/usr/local/opt/peon-ping/libexec/adapters/opencode.sh" ]; then
+        peon_adapter="/usr/local/opt/peon-ping/libexec/adapters/opencode.sh"
+    else
+        log_warn "PeonPing adapter script not found"
+        log_info "Downloading adapter directly..."
+        
+        # Download and run the adapter directly from GitHub
+        mkdir -p "${OPENCODE_PLUGINS_DIR}"
+        local ADAPTER_URL="https://raw.githubusercontent.com/PeonPing/peon-ping/main/adapters/opencode.sh"
+        
+        if command_exists curl; then
+            log_info "Running PeonPing OpenCode adapter installer..."
+            curl -fsSL "$ADAPTER_URL" | bash
+            
+            if [ -f "$PEON_PLUGIN" ]; then
+                log_success "PeonPing plugin installed successfully"
+            else
+                log_error "Failed to install PeonPing plugin"
+                return 1
+            fi
+        else
+            log_error "curl is required to download the adapter"
+            return 1
+        fi
+        return 0
+    fi
+    
+    log_info "Found adapter: ${peon_adapter}"
+    
+    # Run the adapter installer
+    # This downloads peon-ping.ts to ~/.config/opencode/plugins/
+    # And creates config at ~/.config/opencode/peon-ping/config.json
+    log_info "Running PeonPing OpenCode adapter installer..."
+    run_cmd "bash ${peon_adapter}"
+    
+    if [ -f "$PEON_PLUGIN" ]; then
+        log_success "PeonPing plugin installed successfully"
+        echo ""
+        echo "Plugin installed to:"
+        echo "  - Plugin: ${OPENCODE_PLUGINS_DIR}/peon-ping.ts"
+        echo "  - Config: ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/peon-ping/config.json"
+        echo "  - Packs:  ~/.openpeon/packs/"
+        echo ""
+        echo "Restart OpenCode to activate the plugin."
+        echo ""
+    else
+        log_error "PeonPing plugin installation failed"
+        return 1
+    fi
+}
+
 # Setup JIRA OAuth2 credentials
 setup_jira_oauth() {
     echo ""
@@ -2153,6 +2327,7 @@ main() {
         echo "  3) Full setup (API keys, Node.js, OpenCode)"
         echo "  4) Update OpenCode CLI only"
         echo "  5) Configure JIRA OAuth2"
+        echo "  6) Install PeonPing (sound notifications)"
         echo ""
 
         local setup_option
@@ -2203,6 +2378,14 @@ main() {
                 print_summary
                 echo ""
                 echo "JIRA OAuth2 configuration complete!"
+                exit 0
+                ;;
+            6)
+                echo ""
+                log_info "PeonPing Sound Notifications"
+                setup_peonping || true
+                echo ""
+                echo "PeonPing setup complete!"
                 exit 0
                 ;;
             *)
