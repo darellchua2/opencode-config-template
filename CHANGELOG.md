@@ -1,3 +1,10 @@
+# [1.21.0](https://github.com/darellchua2/opencode-config-template/compare/v1.20.2...v1.21.0) (2026-03-16)
+
+
+### Features
+
+* add PeonPing sound notification integration ([714ad15](https://github.com/darellchua2/opencode-config-template/commit/714ad15a396c12caeb3feb98963e8279032339ca))
+
 ## [1.20.2](https://github.com/darellchua2/opencode-config-template/compare/v1.20.1...v1.20.2) (2026-03-14)
 
 
