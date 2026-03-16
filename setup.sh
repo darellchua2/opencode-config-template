@@ -1018,8 +1018,8 @@ setup_peonping() {
         echo "  peon toggle          - Mute/unmute sounds"
         echo ""
         
-        # Ask about configuring OpenCode hooks
-        if prompt_yes_no "Configure OpenCode hooks for PeonPing?" "y"; then
+        # Ask about configuring OpenCode plugin
+        if prompt_yes_no "Install PeonPing TypeScript plugin for OpenCode?" "y"; then
             setup_peonping_hooks
         fi
     else
@@ -1028,14 +1028,30 @@ setup_peonping() {
     fi
 }
 
-# Setup PeonPing hooks in OpenCode config
+# Setup PeonPing plugin for OpenCode
+# Note: OpenCode uses a TypeScript plugin system, NOT shell hooks.
+# The opencode.sh adapter is an installer script that downloads the TS plugin.
 setup_peonping_hooks() {
     echo ""
-    log_info "Configuring PeonPing hooks for OpenCode..."
+    log_info "Configuring PeonPing for OpenCode..."
+    
+    local OPENCODE_PLUGINS_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/opencode/plugins"
+    local PEON_PLUGIN="${OPENCODE_PLUGINS_DIR}/peon-ping.ts"
+    
+    # Check if plugin already installed
+    if [ -f "$PEON_PLUGIN" ]; then
+        log_info "PeonPing plugin already installed at ${PEON_PLUGIN}"
+        if prompt_yes_no "Reinstall PeonPing plugin?" "n"; then
+            log_info "Reinstalling..."
+        else
+            log_info "Keeping existing PeonPing plugin"
+            return 0
+        fi
+    fi
     
     local peon_adapter=""
     
-    # Find the PeonPing adapter script
+    # Find the PeonPing adapter script (installer)
     if [ -f "${HOME}/.claude/hooks/peon-ping/adapters/opencode.sh" ]; then
         peon_adapter="${HOME}/.claude/hooks/peon-ping/adapters/opencode.sh"
     elif [ -f "/opt/homebrew/opt/peon-ping/libexec/adapters/opencode.sh" ]; then
@@ -1044,83 +1060,50 @@ setup_peonping_hooks() {
         peon_adapter="/usr/local/opt/peon-ping/libexec/adapters/opencode.sh"
     else
         log_warn "PeonPing adapter script not found"
-        log_info "Please configure hooks manually in config.json"
-        return 1
+        log_info "Downloading adapter directly..."
+        
+        # Download and run the adapter directly from GitHub
+        mkdir -p "${OPENCODE_PLUGINS_DIR}"
+        local ADAPTER_URL="https://raw.githubusercontent.com/PeonPing/peon-ping/main/adapters/opencode.sh"
+        
+        if command_exists curl; then
+            log_info "Running PeonPing OpenCode adapter installer..."
+            curl -fsSL "$ADAPTER_URL" | bash
+            
+            if [ -f "$PEON_PLUGIN" ]; then
+                log_success "PeonPing plugin installed successfully"
+            else
+                log_error "Failed to install PeonPing plugin"
+                return 1
+            fi
+        else
+            log_error "curl is required to download the adapter"
+            return 1
+        fi
+        return 0
     fi
     
     log_info "Found adapter: ${peon_adapter}"
     
-    # Check if config.json exists
-    if [ ! -f "$CONFIG_FILE" ]; then
-        log_warn "config.json not found at ${CONFIG_FILE}"
-        log_info "Hooks will be configured when config.json is copied"
-        return 0
-    fi
+    # Run the adapter installer
+    # This downloads peon-ping.ts to ~/.config/opencode/plugins/
+    # And creates config at ~/.config/opencode/peon-ping/config.json
+    log_info "Running PeonPing OpenCode adapter installer..."
+    run_cmd "bash ${peon_adapter}"
     
-    # Check if hooks already exist
-    if grep -q "peon-ping" "$CONFIG_FILE" 2>/dev/null; then
-        log_info "PeonPing hooks already configured in config.json"
-        return 0
-    fi
-    
-    # Add hooks to config.json
-    if prompt_yes_no "Add PeonPing hooks to config.json?" "y"; then
-        # Create backup
-        create_backup "$CONFIG_FILE"
-        
-        # Use Python to add hooks to config.json
-        if command_exists python3; then
-            python3 << EOF
-import json
-
-try:
-    with open('${CONFIG_FILE}', 'r') as f:
-        config = json.load(f)
-except:
-    print("Error reading config.json")
-    exit(1)
-
-# Add hooks section if not exists
-if 'hooks' not in config:
-    config['hooks'] = {}
-
-# Add PeonPing hooks
-config['hooks']['session_start'] = f'bash ${peon_adapter} session_start'
-config['hooks']['stop'] = f'bash ${peon_adapter} stop'
-config['hooks']['permission'] = f'bash ${peon_adapter} permission'
-
-# Write back
-try:
-    with open('${CONFIG_FILE}', 'w') as f:
-        json.dump(config, f, indent=2)
-    print("PeonPing hooks added to config.json")
-except Exception as e:
-    print(f"Error writing config: {e}")
-    exit(1)
-EOF
-            
-            if [ $? -eq 0 ]; then
-                log_success "PeonPing hooks configured in config.json"
-                echo ""
-                echo "Hooks configured:"
-                echo "  - session_start: Plays greeting when OpenCode starts"
-                echo "  - stop: Plays sound when agent completes"
-                echo "  - permission: Plays sound when agent needs input"
-                echo ""
-            else
-                log_warn "Failed to add hooks to config.json"
-            fi
-        else
-            log_warn "Python 3 required to update config.json"
-            log_info "Add these hooks manually to config.json:"
-            echo ''
-            echo '  "hooks": {'
-            echo '    "session_start": "bash ~/.claude/hooks/peon-ping/adapters/opencode.sh session_start",'
-            echo '    "stop": "bash ~/.claude/hooks/peon-ping/adapters/opencode.sh stop",'
-            echo '    "permission": "bash ~/.claude/hooks/peon-ping/adapters/opencode.sh permission"'
-            echo '  }'
-            echo ''
-        fi
+    if [ -f "$PEON_PLUGIN" ]; then
+        log_success "PeonPing plugin installed successfully"
+        echo ""
+        echo "Plugin installed to:"
+        echo "  - Plugin: ${OPENCODE_PLUGINS_DIR}/peon-ping.ts"
+        echo "  - Config: ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/peon-ping/config.json"
+        echo "  - Packs:  ~/.openpeon/packs/"
+        echo ""
+        echo "Restart OpenCode to activate the plugin."
+        echo ""
+    else
+        log_error "PeonPing plugin installation failed"
+        return 1
     fi
 }
 
