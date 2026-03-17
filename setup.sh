@@ -299,7 +299,7 @@ CHECK_UPDATE_ONLY=false
 
 # API Keys (initialize to empty to avoid unbound variable errors)
 # Capture from environment if they exist
-GITHUB_PAT="${GITHUB_PAT:-}"
+GITHUB_PAT=""
 ZAI_API_KEY="${ZAI_API_KEY:-}"
 
 # JIRA OAuth2 credentials
@@ -426,8 +426,8 @@ USAGE:
   MODE                    WHAT IT DOES                          WHEN TO USE
   ─────────────────────────────────────────────────────────────────────────────
   Interactive (default)   Full setup with guided prompts       First-time setup
-                          1. GitHub PAT setup (optional)
-                          2. Z.AI API key setup
+                           1. GitHub CLI check
+                           2. Z.AI API key setup
                           3. nvm installation/update
                           4. Node.js v24 installation
                           5. opencode-ai installation
@@ -560,11 +560,13 @@ USAGE:
     git                   For version control integration
 
   API Keys (prompted during setup):
-    ZAI_API_KEY           Required for: web-reader, web-search-prime, zread
-                          Get from: https://z.ai
+     ZAI_API_KEY           Required for: web-reader, web-search-prime, zread
+                           Get from: https://z.ai
 
-    GITHUB_PAT            Optional for GitHub MCP features
-                          Or use OAuth: opencode mcp auth github
+   GitHub Auth:
+     GitHub CLI (gh)      Recommended for GitHub MCP features
+                           Install: https://cli.github.com/
+                           Or use OAuth: opencode mcp auth github
 
   Local Services:
     LM Studio             Running on http://127.0.0.1:1234/v1
@@ -846,54 +848,51 @@ show_progress() {
 # SETUP FUNCTIONS
 ################################################################################
 
-# Setup GitHub PAT
-setup_github_pat() {
+# Check GitHub CLI
+setup_github_cli() {
     echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "              🔑 GitHub Personal Access Token Setup"
+    echo "              🔑 GitHub CLI Setup"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "This setup can use a GitHub Personal Access Token (optional)."
-    echo "If you prefer OAuth authentication, you can skip this."
-    echo ""
 
-    if ! prompt_yes_no "Do you want to use a GitHub PAT?" "n"; then
-        log_info "Skipping GitHub PAT setup. You can authenticate later with: opencode mcp auth github"
-        return 0
-    fi
-
-    # Check if already set
-    # On Windows, also check the registry for setx-persisted values
-    if is_windows && [ -z "$GITHUB_PAT" ]; then
-        local _reg_pat
-        _reg_pat=$(reg query "HKCU\\Environment" /v GITHUB_PAT 2>/dev/null | grep -oP 'REG_SZ\s+\K.*' || true)
-        if [ -n "$_reg_pat" ]; then
-            GITHUB_PAT="$_reg_pat"
+    if command_exists gh; then
+        if gh auth status >/dev/null 2>&1; then
+            local gh_user
+            gh_user=$(gh api user --jq '.login' 2>/dev/null || echo "unknown")
+            log_success "GitHub CLI is installed and authenticated as: ${gh_user}"
+            log_info "Run 'opencode mcp auth github' to configure GitHub MCP authentication"
+        else
+            log_warn "GitHub CLI is installed but not authenticated."
+            echo ""
+            echo "  To authenticate, run:"
+            echo "    gh auth login"
+            echo ""
+            echo "  Then re-run this setup or run: opencode mcp auth github"
         fi
-    fi
-
-    if [ -n "$GITHUB_PAT" ]; then
-        echo ""
-        echo "GITHUB_PAT is already set in your environment."
-        echo "Current token (masked): ${GITHUB_PAT:0:8}...${GITHUB_PAT: -4}"
-        echo ""
-
-        if prompt_yes_no "Do you want to use the existing token?" "y"; then
-            log_info "Using existing GITHUB_PAT"
-            return 0
-        fi
-    fi
-
-    echo ""
-    echo "Please enter your GitHub Personal Access Token:"
-    read -s GITHUB_PAT
-    echo ""
-
-    if validate_api_key "$GITHUB_PAT" "GITHUB_PAT"; then
-        log_success "GitHub PAT accepted: ${GITHUB_PAT:0:8}...${GITHUB_PAT: -4}"
     else
-        log_warn "Invalid or empty GITHUB_PAT provided"
-        GITHUB_PAT=""
+        log_warn "GitHub CLI (gh) is not installed."
+        echo ""
+        echo "  Install GitHub CLI:"
+        case "$DETECTED_OS" in
+            macOS*)
+                echo "    brew install gh"
+                ;;
+            Windows*|Windows-GitBash)
+                echo "    winget install GitHub.cli"
+                echo "    -- or --"
+                echo "    choco install gh"
+                ;;
+            Linux*)
+                echo "    See: https://cli.github.com/"
+                ;;
+            *)
+                echo "    See: https://cli.github.com/"
+                ;;
+        esac
+        echo ""
+        echo "  After installing, run: gh auth login"
+        echo "  Then re-run this setup or run: opencode mcp auth github"
     fi
 }
 
@@ -1758,26 +1757,6 @@ setup_shell_vars() {
         fi
     fi
 
-    # Add GITHUB_PAT
-    if [ -n "$GITHUB_PAT" ]; then
-        if is_windows; then
-            setx_env "GITHUB_PAT" "${GITHUB_PAT}"
-            export GITHUB_PAT="${GITHUB_PAT}"
-        else
-            if grep -q "GITHUB_PAT" "$SHELL_CONFIG_FILE" 2>/dev/null; then
-                log_info "GITHUB_PAT already exists in ${SHELL_CONFIG_FILE}"
-            else
-                if prompt_yes_no "Add GITHUB_PAT to $(basename ${SHELL_CONFIG_FILE}) for persistent access?" "y"; then
-                    create_backup "$SHELL_CONFIG_FILE"
-                    run_cmd "echo 'export GITHUB_PAT=\"${GITHUB_PAT}\"' >> ${SHELL_CONFIG_FILE}"
-                    log_success "GITHUB_PAT added to ${SHELL_CONFIG_FILE}"
-                else
-                    log_info "Skipping shell config update for GITHUB_PAT"
-                fi
-            fi
-        fi
-    fi
-
     # Add JIRA OAuth2 credentials
     if [ -n "$JIRA_CLIENT_ID" ]; then
         if is_windows; then
@@ -2202,19 +2181,15 @@ print_summary() {
         echo "✗ ZAI_API_KEY: Not configured"
     fi
 
-    # GITHUB_PAT status
-    if is_windows && command_exists setx; then
-        if [ -n "$GITHUB_PAT" ]; then
-            echo "✓ GITHUB_PAT: Set via setx (system-wide)"
+    # GitHub CLI status
+    if command_exists gh; then
+        if gh auth status >/dev/null 2>&1; then
+            echo "✓ GitHub CLI: Installed and authenticated"
         else
-            echo "○ GITHUB_PAT: Not configured (use OAuth with: opencode mcp auth github)"
+            echo "○ GitHub CLI: Installed but not authenticated (run: gh auth login)"
         fi
-    elif grep -q "GITHUB_PAT" "$SHELL_CONFIG_FILE" 2>/dev/null; then
-        echo "✓ GITHUB_PAT: Added to ${SHELL_CONFIG_FILE}"
-    elif [ -n "$GITHUB_PAT" ]; then
-        echo "○ GITHUB_PAT: Set in current session only"
     else
-        echo "○ GITHUB_PAT: Not configured (use OAuth with: opencode mcp auth github)"
+        echo "○ GitHub CLI: Not installed (https://cli.github.com/)"
     fi
 
     echo ""
@@ -2448,7 +2423,7 @@ main() {
 
     # Execute setup steps
     if [ "$QUICK_SETUP" = false ] && [ "$SKILLS_ONLY" = false ]; then
-        setup_github_pat || true
+        setup_github_cli || true
         setup_zai_api_key || true
         setup_nvm || true
         setup_nodejs || true

@@ -56,6 +56,23 @@ powershell -ExecutionPolicy Bypass -File .\setup.ps1 -Help
   - On macOS/Linux, nvm is recommended for version management
 - **LM Studio** running locally on port 1234 (for local LLM)
 - **Z.AI API Key** (required for Z.AI MCP services)
+- **GitHub CLI** (recommended for GitHub MCP authentication)
+
+### Install GitHub CLI
+
+```bash
+# macOS
+brew install gh
+
+# Windows
+winget install GitHub.cli
+# or: choco install gh
+
+# Linux - see https://cli.github.com/
+
+# After installing, authenticate:
+gh auth login
+```
 
 ### Install Node.js
 
