@@ -1,3 +1,10 @@
+# [1.23.0](https://github.com/darellchua2/opencode-config-template/compare/v1.22.0...v1.23.0) (2026-03-17)
+
+
+### Features
+
+* add PowerShell setup script and fix cross-platform setup scripts ([f6bc4c4](https://github.com/darellchua2/opencode-config-template/commit/f6bc4c4417f07739f98e7dee3c48c6306f4eb2ed))
+
 # [1.22.0](https://github.com/darellchua2/opencode-config-template/compare/v1.21.0...v1.22.0) (2026-03-17)
 
 
