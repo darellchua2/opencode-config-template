@@ -61,7 +61,6 @@ $LogFile = Join-Path $HOME ".opencode-setup.log"
 $LastUpdateCheck = Join-Path $ConfigDir ".last-update-check"
 $UpdateLog = Join-Path $ConfigDir "update.log"
 
-$GitHubPAT = $env:GITHUB_PAT
 $ZaiApiKey = $env:ZAI_API_KEY
 $JiraClientId = $env:JIRA_CLIENT_ID
 $JiraClientSecret = $env:JIRA_CLIENT_SECRET
@@ -300,7 +299,11 @@ USAGE:
 
   API Keys (prompted during setup):
     ZAI_API_KEY           Required for web-reader, web-search-prime, zread
-    GITHUB_PAT            Optional for GitHub MCP features
+
+  GitHub Auth:
+    GitHub CLI (gh)      Recommended for GitHub MCP features
+                         Install: https://cli.github.com/
+                         Or use OAuth: opencode mcp auth github
 
   Local Services:
     LM Studio             Running on http://127.0.0.1:1234/v1
@@ -368,58 +371,45 @@ function Test-Network {
 }
 
 ################################################################################
-# SETUP: GitHub PAT
+# SETUP: GitHub CLI
 ################################################################################
 
-function Set-GitHubPAT {
+function Set-GitHubCLI {
     Write-Host ""
     Write-Host "=====================================================================" -ForegroundColor White
-    Write-Host "              GitHub Personal Access Token Setup" -ForegroundColor White
+    Write-Host "              GitHub CLI Setup" -ForegroundColor White
     Write-Host "=====================================================================" -ForegroundColor White
     Write-Host ""
-    Write-Host "This setup can use a GitHub Personal Access Token (optional)."
-    Write-Host "If you prefer OAuth authentication, you can skip this."
-    Write-Host ""
 
-    if (-not (Read-YesNo "Do you want to use a GitHub PAT?" $false)) {
-        Write-LogInfo "Skipping GitHub PAT setup. You can authenticate later with: opencode mcp auth github"
-        return
-    }
+    if (Test-CommandExists "gh") {
+        $ghAuthResult = $null
+        try {
+            $ghAuthResult = & gh auth status 2>&1
+            if ($LASTEXITCODE -eq 0) {
+                $ghUser = (& gh api user --jq '.login' 2>$null)
+                if ([string]::IsNullOrWhiteSpace($ghUser)) { $ghUser = "unknown" }
+                Write-LogSuccess "GitHub CLI is installed and authenticated as: $ghUser"
+                Write-LogInfo "Run 'opencode mcp auth github' to configure GitHub MCP authentication"
+                return
+            }
+        } catch {}
 
-    $patFromRegistry = $null
-    try {
-        $patFromRegistry = (Get-ItemPropertyValue -Path "HKCU:\Environment" -Name "GITHUB_PAT" -ErrorAction SilentlyContinue)
-    } catch {}
-
-    if ($patFromRegistry -and [string]::IsNullOrWhiteSpace($GitHubPAT)) {
-        $GitHubPAT = $patFromRegistry
-    }
-
-    if (-not [string]::IsNullOrWhiteSpace($GitHubPAT)) {
+        Write-LogWarn "GitHub CLI is installed but not authenticated."
         Write-Host ""
-        Write-Host "GITHUB_PAT is already set in your environment."
-        Write-Host "Current token (masked): $(Get-MaskedValue $GitHubPAT)"
+        Write-Host "  To authenticate, run:" -ForegroundColor Yellow
+        Write-Host "    gh auth login" -ForegroundColor White
         Write-Host ""
-
-        if (Read-YesNo "Do you want to use the existing token?" $true) {
-            Write-LogInfo "Using existing GITHUB_PAT"
-            return
-        }
-    }
-
-    Write-Host ""
-    Write-Host "Please enter your GitHub Personal Access Token:"
-    $secureInput = Read-Host -AsSecureString
-    $GitHubPAT = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
-        [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureInput)
-    )
-    Write-Host ""
-
-    if (Test-ApiKey -Key $GitHubPAT -KeyName "GITHUB_PAT") {
-        Write-LogSuccess "GitHub PAT accepted: $(Get-MaskedValue $GitHubPAT)"
+        Write-Host "  Then re-run this setup or run: opencode mcp auth github"
     } else {
-        Write-LogWarn "Invalid or empty GITHUB_PAT provided"
-        $GitHubPAT = ""
+        Write-LogWarn "GitHub CLI (gh) is not installed."
+        Write-Host ""
+        Write-Host "  Install GitHub CLI:" -ForegroundColor Yellow
+        Write-Host "    winget install GitHub.cli"
+        Write-Host "    -- or --"
+        Write-Host "    choco install gh"
+        Write-Host ""
+        Write-Host "  After installing, run: gh auth login"
+        Write-Host "  Then re-run this setup or run: opencode mcp auth github"
     }
 }
 
@@ -1167,24 +1157,6 @@ function Set-ShellVariables {
         }
     }
 
-    if (-not [string]::IsNullOrWhiteSpace($GitHubPAT)) {
-        $profileContent = Get-Content $PROFILE -Raw -ErrorAction SilentlyContinue
-        if ($profileContent -match "GITHUB_PAT") {
-            Write-LogInfo "GITHUB_PAT already exists in $PROFILE"
-        } else {
-            if (Read-YesNo "Add GITHUB_PAT to your PowerShell profile for persistent access?" $true) {
-                New-FileBackup $PROFILE
-                if (-not $DryRun) {
-                    Add-Content -Path $PROFILE -Value "`n# GitHub PAT (added by opencode setup)"
-                    Add-Content -Path $PROFILE -Value "`$env:GITHUB_PAT = `"$GitHubPAT`""
-                }
-                Write-LogSuccess "GITHUB_PAT added to $PROFILE"
-            } else {
-                Write-LogInfo "Skipping profile update for GITHUB_PAT"
-            }
-        }
-    }
-
     if (-not [string]::IsNullOrWhiteSpace($JiraClientId)) {
         $profileContent = Get-Content $PROFILE -Raw -ErrorAction SilentlyContinue
         if ($profileContent -match "JIRA_CLIENT_ID") {
@@ -1429,12 +1401,18 @@ function Show-Summary {
         Write-Host "  [X] ZAI_API_KEY: Not configured"
     }
 
-    if ($profileContent -match "GITHUB_PAT") {
-        Write-Host "  [OK] GITHUB_PAT: Added to profile"
-    } elseif (-not [string]::IsNullOrWhiteSpace($GitHubPAT)) {
-        Write-Host "  [ ] GITHUB_PAT: Set in current session only"
+    if (Test-CommandExists "gh") {
+        $ghSummaryAuth = $null
+        try {
+            $ghSummaryAuth = & gh auth status 2>&1
+        } catch {}
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "  [OK] GitHub CLI: Installed and authenticated"
+        } else {
+            Write-Host "  [ ] GitHub CLI: Installed but not authenticated (run: gh auth login)"
+        }
     } else {
-        Write-Host "  [ ] GITHUB_PAT: Not configured (use OAuth: opencode mcp auth github)"
+        Write-Host "  [ ] GitHub CLI: Not installed (https://cli.github.com/)"
     }
 
     Write-Host ""
@@ -1624,7 +1602,7 @@ function Main {
     }
 
     if (-not $Quick) {
-        Set-GitHubPAT
+        Set-GitHubCLI
         Set-ZaiApiKey
         Set-NodeJS
         Set-OpenCode
