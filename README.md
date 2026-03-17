@@ -2,22 +2,76 @@
 
 This repository contains a pre-configured OpenCode configuration file with support for local LM Studio, Jira/Confluence integration via Atlassian MCP, and Z.AI services. It also includes reusable workflow skills for common development tasks.
 
-## Prerequisites
+## Installation
 
-- **Node.js v24** and **npm** installed (required for MCP servers)
-  - Node.js v20+ is minimum requirement (setup script installs v24)
-- **LM Studio** running locally on port 1234 (for local LLM)
-- **Z.AI API Key** (required for Z.AI MCP services)
-- **Draw.io Browser Extension** (optional, for diagram creation - see Draw.io Integration section)
+Two setup scripts are provided for different platforms:
 
-### Install Node.js using nvm
+| Script | Platform | Features |
+|--------|----------|----------|
+| `setup.sh` | macOS, Linux, WSL, Git Bash | Full feature set including nvm, PeonPing, JIRA OAuth2 |
+| `setup.ps1` | Windows (PowerShell) | Full feature set, env vars persist to `$PROFILE` |
+
+### macOS / Linux / WSL / Git Bash
 
 ```bash
-# Install nvm (Node Version Manager)
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+# Interactive setup (recommended for first-time)
+./setup.sh
 
-# Reload shell configuration
+# Quick setup - config + skills only (skip dependency checks)
+./setup.sh --quick
+
+# Skills-only deployment (requires opencode-ai installed)
+./setup.sh --skills-only
+
+# Non-interactive mode
+./setup.sh --yes
+
+# Preview actions without making changes
+./setup.sh --dry-run
+
+# Update OpenCode CLI only
+./setup.sh --update
+```
+
+### Windows (PowerShell)
+
+```powershell
+# Interactive setup
+powershell -ExecutionPolicy Bypass -File .\setup.ps1
+
+# Quick setup
+powershell -ExecutionPolicy Bypass -File .\setup.ps1 -Quick
+
+# Non-interactive
+powershell -ExecutionPolicy Bypass -File .\setup.ps1 -Quick -Yes
+
+# Show help with all options
+powershell -ExecutionPolicy Bypass -File .\setup.ps1 -Help
+```
+
+## Prerequisites
+
+- **Node.js v20+** and **npm** (required for MCP servers)
+  - Setup scripts can install Node.js for you on all platforms
+  - On macOS/Linux, nvm is recommended for version management
+- **LM Studio** running locally on port 1234 (for local LLM)
+- **Z.AI API Key** (required for Z.AI MCP services)
+
+### Install Node.js
+
+```bash
+# macOS / Linux - using nvm (recommended)
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
 source ~/.bashrc
+nvm install 24
+
+# Windows - options:
+# 1. nvm-windows (recommended): https://github.com/coreybutler/nvm-windows/releases
+#    Then: nvm install 24 && nvm use 24
+# 2. winget: winget install OpenJS.NodeJS.LTS
+# 3. chocolatey: choco install nodejs
+# 4. Direct download: https://nodejs.org/
+```
 
 ## Configuration Overview
 
@@ -104,12 +158,21 @@ Skills follow a modular architecture:
 
 ### Configuration Files
 
-The setup script automatically:
+The setup scripts automatically:
 - Copies `.AGENTS.md` to `~/.config/opencode/AGENTS.md` (renaming it)
 - Copies `skills/` folder to `~/.config/opencode/skills/`
 - Copies `config.json` to `~/.config/opencode/config.json`
+- Backs up existing files before overwriting
+
+### Environment Variable Persistence
+
+| Platform | Method | Location |
+|----------|--------|----------|
+| macOS / Linux / WSL | Shell rc file | `~/.bashrc` or `~/.zshrc` |
+| Windows (Git Bash) | `setx` (registry) | Available in new sessions |
+| Windows PowerShell | `$PROFILE` | `~\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1` |
 
 ### Template Files
 
-This repository includes inline default configurations in setup.sh. No external template files are required.
+This repository includes inline default configurations in all setup scripts. No external template files are required.
 
