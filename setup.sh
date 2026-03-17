@@ -119,6 +119,11 @@ detect_platform() {
 DETECTED_OS=$(detect_platform)
 OS_VERSION=$(sw_vers 2>/dev/null || uname -r)
 
+# Check if a command exists (defined early, used by detect_package_manager)
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
+}
+
 # Detect package manager and distribution based on platform
 detect_package_manager() {
     local platform="$1"
@@ -225,7 +230,7 @@ DISTRIBUTION_NAME=$(get_distribution_name "$PACKAGE_MANAGER")
 
 # Detect shell (bash, zsh, or powershell)
 detect_shell() {
-    if [ -n "$ZSH_VERSION" ]; then
+    if [ -n "${ZSH_VERSION:-}" ]; then
         echo "zsh"
     elif [ -n "$BASH_VERSION" ]; then
         echo "bash"
@@ -326,7 +331,7 @@ init_logging() {
 
     log "INFO" "=== OpenCode Setup Started at $(date) ==="
     log "INFO" "Script version: ${SCRIPT_VERSION}"
-    log "INFO" "User: ${USER}"
+    log "INFO" "User: ${USER:-${LOGNAME:-unknown}}"
     log "INFO" "Working directory: ${PWD}"
 }
 
@@ -498,7 +503,7 @@ USAGE:
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
     image-analyzer       Images/screenshots → code, OCR, error diagnosis
-    diagram-creator      Draw.io diagrams (architecture, flowcharts, UML)
+    diagram-creator      Diagrams (architecture, flowcharts, UML)
 
     Usage: opencode --agent build "implement auth feature"
            opencode --agent explore "find all API routes"
@@ -512,9 +517,6 @@ USAGE:
       web-reader         Web page content extraction
       web-search-prime   Web search capabilities
       zread              GitHub repository search and file reading
-
-    Local instance required:
-      drawio             Draw.io MCP server (http://localhost:41033/mcp)
 
   SKILLS (27):
     Framework (5):        test-generator-framework, jira-git-integration,
@@ -566,14 +568,10 @@ USAGE:
 
   Local Services:
     LM Studio             Running on http://127.0.0.1:1234/v1
-                          Local LLM inference server
+                           Local LLM inference server
 
-    Draw.io MCP (optional) For diagram-creator agent
-                          Clone: https://github.com/scholtzm/mcp-drawio
-                          Run on: http://localhost:41033/mcp
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-                           FILE LOCATIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                            FILE LOCATIONS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   Configuration:        ~/.config/opencode/config.json
@@ -768,11 +766,6 @@ check_network() {
     return 0
 }
 
-# Check if a command exists
-command_exists() {
-    command -v "$1" >/dev/null 2>&1
-}
-
 # Check dependencies
 check_dependencies() {
     log_info "Checking basic dependencies..."
@@ -870,6 +863,15 @@ setup_github_pat() {
     fi
 
     # Check if already set
+    # On Windows, also check the registry for setx-persisted values
+    if is_windows && [ -z "$GITHUB_PAT" ]; then
+        local _reg_pat
+        _reg_pat=$(reg query "HKCU\\Environment" /v GITHUB_PAT 2>/dev/null | grep -oP 'REG_SZ\s+\K.*' || true)
+        if [ -n "$_reg_pat" ]; then
+            GITHUB_PAT="$_reg_pat"
+        fi
+    fi
+
     if [ -n "$GITHUB_PAT" ]; then
         echo ""
         echo "GITHUB_PAT is already set in your environment."
@@ -906,6 +908,15 @@ setup_zai_api_key() {
     echo ""
 
     # Check if already set
+    # On Windows, also check the registry for setx-persisted values
+    if is_windows && [ -z "$ZAI_API_KEY" ]; then
+        local _reg_key
+        _reg_key=$(reg query "HKCU\\Environment" /v ZAI_API_KEY 2>/dev/null | grep -oP 'REG_SZ\s+\K.*' || true)
+        if [ -n "$_reg_key" ]; then
+            ZAI_API_KEY="$_reg_key"
+        fi
+    fi
+
     if [ -n "$ZAI_API_KEY" ]; then
         echo "ZAI_API_KEY is already set in your environment."
         echo "Current key (masked): ${ZAI_API_KEY:0:8}...${ZAI_API_KEY: -4}"
@@ -1288,22 +1299,6 @@ setup_nodejs() {
             # Windows: Check if Node.js is already installed
             if command_exists node; then
                 log_info "Node.js is already installed ($(node --version))"
-                log_info "Node.js v20+ is required for Draw.io MCP server integration"
-                echo ""
-                echo "=== Draw.io MCP Server Setup ==="
-                echo "To use the diagram-creator agent with Draw.io MCP server on Windows:"
-                echo "1. Clone and build Draw.io MCP server:"
-                echo "   git clone https://github.com/scholtzm/mcp-drawio.git"
-                echo "   cd mcp-drawio"
-                echo "   npm install"
-                echo "   npm run build"
-                echo ""
-                echo "2. Start the server:"
-                echo "   npm start"
-                echo ""
-                echo "3. Ensure it's running on: http://localhost:41033/mcp"
-                echo ""
-                log_info "Diagram-creator agent requires Draw.io MCP server for diagram creation"
 
                 if prompt_yes_no "Install a newer version of Node.js?" "n"; then
                     log_info "To install/update Node.js on Windows:"
@@ -1357,29 +1352,12 @@ setup_nodejs() {
 
         if command_exists node; then
             log_success "Node.js $(node --version) installed and active"
-            log_info "Node.js v20+ is required for Draw.io MCP server integration"
-            echo ""
-            echo "=== Draw.io MCP Server Setup ==="
-            echo "To use the diagram-creator agent with Draw.io MCP server:"
-            echo "1. Clone and build Draw.io MCP server:"
-            echo "   git clone https://github.com/scholtzm/mcp-drawio.git"
-            echo "   cd mcp-drawio"
-            echo "   npm install"
-            echo "   npm run build"
-            echo ""
-            echo "2. Start the server:"
-            echo "   npm start"
-            echo ""
-            echo "3. Ensure it's running on: http://localhost:41033/mcp"
-            echo ""
-            log_info "Diagram-creator agent requires Draw.io MCP server for diagram creation"
         else
             log_error "Node.js installation failed"
             return 1
         fi
         else
             log_info "Skipping Node.js v24 installation"
-            log_warn "Node.js v20+ is recommended for Draw.io MCP server integration"
         fi
         ;;
     esac
@@ -1622,11 +1600,11 @@ setup_config() {
             echo "    - plan - Planning agent (read-only)"
             echo "    - explore - Codebase exploration and analysis"
             echo "    - image-analyzer - Image/screenshot analysis"
-            echo "    - diagram-creator - Draw.io diagram creation"
+            echo "    - diagram-creator - Diagram creation"
             echo ""
-            echo "✓ Configured 6 MCP servers:"
+            echo "✓ Configured 5 MCP servers:"
             echo "    Local (auto-start): atlassian, zai-mcp-server"
-            echo "    Remote (needs key): web-reader, web-search-prime, zread, drawio"
+            echo "    Remote (needs key): web-reader, web-search-prime, zread"
             echo ""
         else
             log_error "config.json not found in ${SCRIPT_DIR}"
@@ -1711,6 +1689,35 @@ setup_config() {
     return 0
 }
 
+# Check if running on Windows (native or Git Bash)
+is_windows() {
+    case "$DETECTED_OS" in
+        Windows*|Windows-GitBash) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
+# Set a user-level environment variable on Windows using setx
+# Falls back gracefully if setx is not available
+setx_env() {
+    local key="$1"
+    local value="$2"
+
+    if ! command_exists setx; then
+        log_warn "setx not found - skipping system env var for ${key}"
+        return 1
+    fi
+
+    log_debug "Setting Windows env var: ${key} via setx"
+    setx "$key" "$value" > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        log_success "${key} set via setx (available in new terminals)"
+    else
+        log_warn "setx failed for ${key}"
+        return 1
+    fi
+}
+
 # Setup environment variables in shell config (bashrc, zshrc, etc.)
 setup_shell_vars() {
     echo ""
@@ -1720,91 +1727,121 @@ setup_shell_vars() {
     echo ""
     echo "Detected shell: ${DETECTED_SHELL}"
     echo "Config file: ${SHELL_CONFIG_FILE}"
+    if is_windows; then
+        echo "Platform: Windows (using setx for system-wide env vars)"
+    fi
     echo ""
 
-    # Add ZAI_API_KEY to shell config
+    # On Windows, use setx for system-wide access (all shells + opencode)
+    # On non-Windows, use shell config file (bashrc/zshrc)
+    if is_windows; then
+        log_info "Windows detected: setting env vars via setx (available in all terminals)"
+    fi
+
+    # Add ZAI_API_KEY
     if [ -n "$ZAI_API_KEY" ]; then
-        if grep -q "ZAI_API_KEY" "$SHELL_CONFIG_FILE" 2>/dev/null; then
-            log_info "ZAI_API_KEY already exists in ${SHELL_CONFIG_FILE}"
+        if is_windows; then
+            setx_env "ZAI_API_KEY" "${ZAI_API_KEY}"
+            export ZAI_API_KEY="${ZAI_API_KEY}"
         else
-            if prompt_yes_no "Add ZAI_API_KEY to $(basename ${SHELL_CONFIG_FILE}) for persistent access?" "y"; then
-                create_backup "$SHELL_CONFIG_FILE"
-                run_cmd "echo 'export ZAI_API_KEY=\"${ZAI_API_KEY}\"' >> ${SHELL_CONFIG_FILE}"
-                log_success "ZAI_API_KEY added to ${SHELL_CONFIG_FILE}"
+            if grep -q "ZAI_API_KEY" "$SHELL_CONFIG_FILE" 2>/dev/null; then
+                log_info "ZAI_API_KEY already exists in ${SHELL_CONFIG_FILE}"
             else
-                log_info "Skipping shell config update for ZAI_API_KEY"
+                if prompt_yes_no "Add ZAI_API_KEY to $(basename ${SHELL_CONFIG_FILE}) for persistent access?" "y"; then
+                    create_backup "$SHELL_CONFIG_FILE"
+                    run_cmd "echo 'export ZAI_API_KEY=\"${ZAI_API_KEY}\"' >> ${SHELL_CONFIG_FILE}"
+                    log_success "ZAI_API_KEY added to ${SHELL_CONFIG_FILE}"
+                else
+                    log_info "Skipping shell config update for ZAI_API_KEY"
+                fi
             fi
         fi
     fi
 
-    # Add GITHUB_PAT to shell config
+    # Add GITHUB_PAT
     if [ -n "$GITHUB_PAT" ]; then
-        if grep -q "GITHUB_PAT" "$SHELL_CONFIG_FILE" 2>/dev/null; then
-            log_info "GITHUB_PAT already exists in ${SHELL_CONFIG_FILE}"
+        if is_windows; then
+            setx_env "GITHUB_PAT" "${GITHUB_PAT}"
+            export GITHUB_PAT="${GITHUB_PAT}"
         else
-            if prompt_yes_no "Add GITHUB_PAT to $(basename ${SHELL_CONFIG_FILE}) for persistent access?" "y"; then
-                create_backup "$SHELL_CONFIG_FILE"
-                run_cmd "echo 'export GITHUB_PAT=\"${GITHUB_PAT}\"' >> ${SHELL_CONFIG_FILE}"
-                log_success "GITHUB_PAT added to ${SHELL_CONFIG_FILE}"
+            if grep -q "GITHUB_PAT" "$SHELL_CONFIG_FILE" 2>/dev/null; then
+                log_info "GITHUB_PAT already exists in ${SHELL_CONFIG_FILE}"
             else
-                log_info "Skipping shell config update for GITHUB_PAT"
+                if prompt_yes_no "Add GITHUB_PAT to $(basename ${SHELL_CONFIG_FILE}) for persistent access?" "y"; then
+                    create_backup "$SHELL_CONFIG_FILE"
+                    run_cmd "echo 'export GITHUB_PAT=\"${GITHUB_PAT}\"' >> ${SHELL_CONFIG_FILE}"
+                    log_success "GITHUB_PAT added to ${SHELL_CONFIG_FILE}"
+                else
+                    log_info "Skipping shell config update for GITHUB_PAT"
+                fi
             fi
         fi
     fi
 
-    # Add JIRA OAuth2 credentials to shell config
+    # Add JIRA OAuth2 credentials
     if [ -n "$JIRA_CLIENT_ID" ]; then
-        local jira_vars_missing=false
-        
-        # Check if JIRA variables are already configured
-        if ! grep -q "JIRA_CLIENT_ID" "$SHELL_CONFIG_FILE" 2>/dev/null; then
-            jira_vars_missing=true
-        fi
-        
-        if [ "$jira_vars_missing" = true ]; then
-            if prompt_yes_no "Add JIRA OAuth2 credentials to $(basename ${SHELL_CONFIG_FILE})?" "y"; then
-                create_backup "$SHELL_CONFIG_FILE"
-                
-                # Add JIRA OAuth2 section
-                run_cmd "echo '' >> ${SHELL_CONFIG_FILE}"
-                run_cmd "echo '# JIRA OAuth2 Configuration' >> ${SHELL_CONFIG_FILE}"
-                run_cmd "echo 'export JIRA_CLIENT_ID=\"${JIRA_CLIENT_ID}\"' >> ${SHELL_CONFIG_FILE}"
-                run_cmd "echo 'export JIRA_CLIENT_SECRET=\"${JIRA_CLIENT_SECRET}\"' >> ${SHELL_CONFIG_FILE}"
-                run_cmd "echo 'export JIRA_ACCESS_TOKEN=\"${JIRA_ACCESS_TOKEN}\"' >> ${SHELL_CONFIG_FILE}"
-                run_cmd "echo 'export JIRA_REFRESH_TOKEN=\"${JIRA_REFRESH_TOKEN}\"' >> ${SHELL_CONFIG_FILE}"
-                
-                if [ -n "$JIRA_CLOUD_ID" ]; then
-                    run_cmd "echo 'export JIRA_CLOUD_ID=\"${JIRA_CLOUD_ID}\"' >> ${SHELL_CONFIG_FILE}"
-                fi
-                
-                log_success "JIRA OAuth2 credentials added to ${SHELL_CONFIG_FILE}"
-            else
-                log_info "Skipping shell config update for JIRA OAuth2"
+        if is_windows; then
+            setx_env "JIRA_CLIENT_ID" "${JIRA_CLIENT_ID}"
+            setx_env "JIRA_CLIENT_SECRET" "${JIRA_CLIENT_SECRET}"
+            setx_env "JIRA_ACCESS_TOKEN" "${JIRA_ACCESS_TOKEN}"
+            setx_env "JIRA_REFRESH_TOKEN" "${JIRA_REFRESH_TOKEN}"
+            if [ -n "$JIRA_CLOUD_ID" ]; then
+                setx_env "JIRA_CLOUD_ID" "${JIRA_CLOUD_ID}"
             fi
+            export JIRA_CLIENT_ID="${JIRA_CLIENT_ID}"
+            export JIRA_CLIENT_SECRET="${JIRA_CLIENT_SECRET}"
+            export JIRA_ACCESS_TOKEN="${JIRA_ACCESS_TOKEN}"
+            export JIRA_REFRESH_TOKEN="${JIRA_REFRESH_TOKEN}"
+            export JIRA_CLOUD_ID="${JIRA_CLOUD_ID:-}"
         else
-            log_info "JIRA OAuth2 credentials already exist in ${SHELL_CONFIG_FILE}"
+            local jira_vars_missing=false
             
-            # Update tokens if they've changed
-            if prompt_yes_no "Update existing JIRA tokens?" "n"; then
-                create_backup "$SHELL_CONFIG_FILE"
-                
-                # Remove old JIRA exports and add new ones
-                local temp_file="${SHELL_CONFIG_FILE}.tmp"
-                grep -v "^export JIRA_" "$SHELL_CONFIG_FILE" > "$temp_file" 2>/dev/null || true
-                
-                echo '' >> "$temp_file"
-                echo '# JIRA OAuth2 Configuration' >> "$temp_file"
-                echo "export JIRA_CLIENT_ID=\"${JIRA_CLIENT_ID}\"" >> "$temp_file"
-                echo "export JIRA_CLIENT_SECRET=\"${JIRA_CLIENT_SECRET}\"" >> "$temp_file"
-                echo "export JIRA_ACCESS_TOKEN=\"${JIRA_ACCESS_TOKEN}\"" >> "$temp_file"
-                echo "export JIRA_REFRESH_TOKEN=\"${JIRA_REFRESH_TOKEN}\"" >> "$temp_file"
-                
-                if [ -n "$JIRA_CLOUD_ID" ]; then
-                    echo "export JIRA_CLOUD_ID=\"${JIRA_CLOUD_ID}\"" >> "$temp_file"
+            if ! grep -q "JIRA_CLIENT_ID" "$SHELL_CONFIG_FILE" 2>/dev/null; then
+                jira_vars_missing=true
+            fi
+            
+            if [ "$jira_vars_missing" = true ]; then
+                if prompt_yes_no "Add JIRA OAuth2 credentials to $(basename ${SHELL_CONFIG_FILE})?" "y"; then
+                    create_backup "$SHELL_CONFIG_FILE"
+                    
+                    run_cmd "echo '' >> ${SHELL_CONFIG_FILE}"
+                    run_cmd "echo '# JIRA OAuth2 Configuration' >> ${SHELL_CONFIG_FILE}"
+                    run_cmd "echo 'export JIRA_CLIENT_ID=\"${JIRA_CLIENT_ID}\"' >> ${SHELL_CONFIG_FILE}"
+                    run_cmd "echo 'export JIRA_CLIENT_SECRET=\"${JIRA_CLIENT_SECRET}\"' >> ${SHELL_CONFIG_FILE}"
+                    run_cmd "echo 'export JIRA_ACCESS_TOKEN=\"${JIRA_ACCESS_TOKEN}\"' >> ${SHELL_CONFIG_FILE}"
+                    run_cmd "echo 'export JIRA_REFRESH_TOKEN=\"${JIRA_REFRESH_TOKEN}\"' >> ${SHELL_CONFIG_FILE}"
+                    
+                    if [ -n "$JIRA_CLOUD_ID" ]; then
+                        run_cmd "echo 'export JIRA_CLOUD_ID=\"${JIRA_CLOUD_ID}\"' >> ${SHELL_CONFIG_FILE}"
+                    fi
+                    
+                    log_success "JIRA OAuth2 credentials added to ${SHELL_CONFIG_FILE}"
+                else
+                    log_info "Skipping shell config update for JIRA OAuth2"
                 fi
+            else
+                log_info "JIRA OAuth2 credentials already exist in ${SHELL_CONFIG_FILE}"
                 
-                mv "$temp_file" "$SHELL_CONFIG_FILE"
-                log_success "JIRA OAuth2 tokens updated in ${SHELL_CONFIG_FILE}"
+                if prompt_yes_no "Update existing JIRA tokens?" "n"; then
+                    create_backup "$SHELL_CONFIG_FILE"
+                    
+                    local temp_file="${SHELL_CONFIG_FILE}.tmp"
+                    grep -v "^export JIRA_" "$SHELL_CONFIG_FILE" > "$temp_file" 2>/dev/null || true
+                    
+                    echo '' >> "$temp_file"
+                    echo '# JIRA OAuth2 Configuration' >> "$temp_file"
+                    echo "export JIRA_CLIENT_ID=\"${JIRA_CLIENT_ID}\"" >> "$temp_file"
+                    echo "export JIRA_CLIENT_SECRET=\"${JIRA_CLIENT_SECRET}\"" >> "$temp_file"
+                    echo "export JIRA_ACCESS_TOKEN=\"${JIRA_ACCESS_TOKEN}\"" >> "$temp_file"
+                    echo "export JIRA_REFRESH_TOKEN=\"${JIRA_REFRESH_TOKEN}\"" >> "$temp_file"
+                    
+                    if [ -n "$JIRA_CLOUD_ID" ]; then
+                        echo "export JIRA_CLOUD_ID=\"${JIRA_CLOUD_ID}\"" >> "$temp_file"
+                    fi
+                    
+                    mv "$temp_file" "$SHELL_CONFIG_FILE"
+                    log_success "JIRA OAuth2 tokens updated in ${SHELL_CONFIG_FILE}"
+                fi
             fi
         fi
     fi
@@ -2094,14 +2131,13 @@ print_summary() {
         echo "    - plan - Planning agent (read-only)"
         echo "    - explore - Codebase exploration and analysis"
         echo "    - image-analyzer - Image/screenshot analysis"
-        echo "    - diagram-creator - Draw.io diagram creation"
+        echo "    - diagram-creator - Diagram creation"
     fi
 
     # MCP servers configured
     if [ -f "$CONFIG_FILE" ]; then
-        echo "✓ Configured 6 MCP servers:"
+        echo "✓ Configured 5 MCP servers:"
         echo "    - atlassian - JIRA and Confluence integration (auto-start)"
-        echo "    - drawio - Draw.io diagram server (needs local instance)"
         echo "    - web-reader - Web page reading (needs ZAI_API_KEY)"
         echo "    - web-search-prime - Web search (needs ZAI_API_KEY)"
         echo "    - zai-mcp-server - Image analysis (auto-start)"
@@ -2152,7 +2188,13 @@ print_summary() {
     fi
 
     # ZAI_API_KEY status
-    if grep -q "ZAI_API_KEY" "$SHELL_CONFIG_FILE" 2>/dev/null; then
+    if is_windows && command_exists setx; then
+        if [ -n "$ZAI_API_KEY" ]; then
+            echo "✓ ZAI_API_KEY: Set via setx (system-wide)"
+        else
+            echo "✗ ZAI_API_KEY: Not configured"
+        fi
+    elif grep -q "ZAI_API_KEY" "$SHELL_CONFIG_FILE" 2>/dev/null; then
         echo "✓ ZAI_API_KEY: Added to ${SHELL_CONFIG_FILE}"
     elif [ -n "$ZAI_API_KEY" ]; then
         echo "○ ZAI_API_KEY: Set in current session only"
@@ -2161,7 +2203,13 @@ print_summary() {
     fi
 
     # GITHUB_PAT status
-    if grep -q "GITHUB_PAT" "$SHELL_CONFIG_FILE" 2>/dev/null; then
+    if is_windows && command_exists setx; then
+        if [ -n "$GITHUB_PAT" ]; then
+            echo "✓ GITHUB_PAT: Set via setx (system-wide)"
+        else
+            echo "○ GITHUB_PAT: Not configured (use OAuth with: opencode mcp auth github)"
+        fi
+    elif grep -q "GITHUB_PAT" "$SHELL_CONFIG_FILE" 2>/dev/null; then
         echo "✓ GITHUB_PAT: Added to ${SHELL_CONFIG_FILE}"
     elif [ -n "$GITHUB_PAT" ]; then
         echo "○ GITHUB_PAT: Set in current session only"
@@ -2181,6 +2229,9 @@ print_next_steps() {
     echo ""
     echo "📋 Next Steps:"
     echo "  1. Restart terminal or run: source ${SHELL_CONFIG_FILE}"
+    if is_windows; then
+        echo "     (Environment variables were set via setx - open a NEW terminal to use them)"
+    fi
     echo "  2. Start LM Studio: http://127.0.0.1:1234/v1"
     echo "  3. Verify installation: opencode --version"
     echo ""
@@ -2193,7 +2244,7 @@ print_next_steps() {
     echo "  - plan - Planning agent (read-only)"
     echo "  - explore - Fast codebase exploration and analysis"
     echo "  - image-analyzer - Images/screenshots to code, OCR, error diagnosis"
-    echo "  - diagram-creator - Draw.io diagrams (architecture, flowcharts, UML)"
+    echo "  - diagram-creator - Diagrams (architecture, flowcharts, UML)"
     echo ""
     echo "  Usage: opencode --agent <name> \"prompt\""
     echo "         opencode \"prompt\" (uses build)"
@@ -2210,11 +2261,11 @@ print_next_steps() {
     echo "  Run 'opencode --skill <name> \"prompt\"' to use a skill"
     echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "                     🔌 MCP Servers (6)"
+    echo "                     🔌 MCP Servers (5)"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
     echo "  Local (auto-start): atlassian, zai-mcp-server"
-    echo "  Remote (needs key): web-reader, web-search-prime, zread, drawio"
+    echo "  Remote (needs key): web-reader, web-search-prime, zread"
     echo ""
     echo "  Auth: opencode mcp auth atlassian / opencode mcp auth github"
     echo ""

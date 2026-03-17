@@ -10,8 +10,8 @@ Create a new OpenCode skill (`docx-creation`) and corresponding subagent (`docx-
 
 ## Acceptance Criteria
 - [x] `skills/docx-creation/SKILL.md` created with proper OpenCode format
-- [ ] `docx-creation-subagent` added to `config.json`
-- [ ] `.AGENTS.md` updated with new subagent domain
+- [x] `docx-creation-subagent` added to `config.json`
+- [x] `.AGENTS.md` updated with new subagent domain
 
 ## Scope
 - `skills/docx-creation/SKILL.md` (new)
@@ -27,10 +27,10 @@ Create a new OpenCode skill (`docx-creation`) and corresponding subagent (`docx-
 - [x] Create `SKILL.md` with proper YAML frontmatter
 
 ### Phase 2: Add Subagent to config.json
-- [ ] Add `docx-creation-subagent` entry
+- [x] Add `docx-creation-subagent` entry
 
 ### Phase 3: Update .AGENTS.md
-- [ ] Add docx-creation-subagent to subagent domains table
+- [x] Add docx-creation-subagent to subagent domains table
 
 ---
 
