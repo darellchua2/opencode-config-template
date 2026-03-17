@@ -1,3 +1,10 @@
+# [1.22.0](https://github.com/darellchua2/opencode-config-template/compare/v1.21.0...v1.22.0) (2026-03-17)
+
+
+### Features
+
+* **skill:** add docx-creation skill and subagent ([4bc6688](https://github.com/darellchua2/opencode-config-template/commit/4bc66886572523086f29f992b35d588178f0aea5)), closes [#93](https://github.com/darellchua2/opencode-config-template/issues/93)
+
 # [1.21.0](https://github.com/darellchua2/opencode-config-template/compare/v1.20.2...v1.21.0) (2026-03-16)
 
 
