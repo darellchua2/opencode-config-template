@@ -1,3 +1,10 @@
+# [1.24.0](https://github.com/darellchua2/opencode-config-template/compare/v1.23.0...v1.24.0) (2026-03-19)
+
+
+### Features
+
+* **skills:** add code quality skills and subagents ([#99](https://github.com/darellchua2/opencode-config-template/issues/99)) ([f45fb25](https://github.com/darellchua2/opencode-config-template/commit/f45fb25d3eb69da309281e628d73e4bd7b7a74b0)), closes [#98](https://github.com/darellchua2/opencode-config-template/issues/98)
+
 # [1.23.0](https://github.com/darellchua2/opencode-config-template/compare/v1.22.0...v1.23.0) (2026-03-17)
 
 
