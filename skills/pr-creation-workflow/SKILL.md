@@ -1,18 +1,20 @@
 ---
 name: pr-creation-workflow
-description: Framework for creating PRs with configurable quality checks, multi-platform integration, semantic versioning labels (major/minor/patch), and JIRA/git issue tracking
+description: Framework for creating PRs with automatic framework/language detection, configurable quality checks, multi-platform integration, semantic versioning labels (major/minor/patch), and JIRA/git issue tracking
 license: Apache-2.0
 compatibility: opencode
 metadata:
   audience: developers
   workflow: pr-creation
+  languages: [language-agnostic]
 ---
 
 ## What I do
 
 I provide a generic PR creation workflow:
+- **Detect framework/language** automatically from project files
 - Identify target branch (configurable, not hardcoded)
-- Run quality checks (linting, build, test, type check, docstrings)
+- Run quality checks (linting, build, test, type check) appropriate for detected framework
 - Detect tracking (JIRA tickets or git issues)
 - Create PR with comprehensive description linked to tracking
 - Handle images (upload local, embed URLs)
@@ -43,17 +45,226 @@ This is a **framework skill** - provides PR creation logic that other skills ext
 
 **Important**: Don't hardcode to `dev` - different projects use different conventions!
 
-### Step 2: Run Quality Checks
+### Step 2: Detect Framework and Run Quality Checks
 
-**Configurable checks**:
+#### 2.1: Detect Framework/Language
 
-| Check | JS/TS | Python | Java | C# |
-|-------|--------|--------|-----|-----|
-| Linting | `npm run lint` | `poetry run ruff check` | `mvn checkstyle` | `dotnet format` |
-| Build | `npm run build` | N/A | `mvn compile` | `dotnet build` |
-| Test | `npm run test` | `poetry run pytest` | `mvn test` | `dotnet test` |
-| Type check | `npm run typecheck` | `mypy .` | N/A | N/A |
-| Docstrings | `docstring-generator` | `docstring-generator` | `docstring-generator` | `docstring-generator` |
+**Detection Logic**:
+
+```bash
+# JavaScript/TypeScript detection
+if [ -f "package.json" ]; then
+  if grep -q '"next"' package.json 2>/dev/null; then
+    FRAMEWORK="nextjs"
+  elif grep -q '"@nestjs/core"' package.json 2>/dev/null; then
+    FRAMEWORK="nestjs"
+  elif grep -q '"vue"' package.json 2>/dev/null; then
+    FRAMEWORK="vue"
+  elif grep -q '"@angular/core"' package.json 2>/dev/null; then
+    FRAMEWORK="angular"
+  elif grep -q '"react"' package.json 2>/dev/null; then
+    FRAMEWORK="react"
+  elif grep -q '"express"' package.json 2>/dev/null; then
+    FRAMEWORK="express"
+  else
+    FRAMEWORK="node"
+  fi
+# Python detection
+elif [ -f "pyproject.toml" ] || [ -f "setup.py" ] || [ -f "requirements.txt" ]; then
+  if grep -q "django" pyproject.toml 2>/dev/null || grep -q "django" requirements.txt 2>/dev/null; then
+    FRAMEWORK="django"
+  elif grep -q "fastapi" pyproject.toml 2>/dev/null || grep -q "fastapi" requirements.txt 2>/dev/null; then
+    FRAMEWORK="fastapi"
+  elif grep -q "flask" pyproject.toml 2>/dev/null || grep -q "flask" requirements.txt 2>/dev/null; then
+    FRAMEWORK="flask"
+  else
+    FRAMEWORK="python"
+  fi
+# Java detection
+elif [ -f "pom.xml" ]; then
+  if grep -q "spring-boot" pom.xml 2>/dev/null; then
+    FRAMEWORK="spring-boot"
+  else
+    FRAMEWORK="java-maven"
+  fi
+elif [ -f "build.gradle" ] || [ -f "build.gradle.kts" ]; then
+  if grep -q "spring-boot" build.gradle* 2>/dev/null; then
+    FRAMEWORK="spring-boot-gradle"
+  else
+    FRAMEWORK="java-gradle"
+  fi
+# .NET detection
+elif ls *.csproj 1>/dev/null 2>&1 || ls *.sln 1>/dev/null 2>&1; then
+  FRAMEWORK="dotnet"
+# Go detection
+elif [ -f "go.mod" ]; then
+  FRAMEWORK="go"
+# Rust detection
+elif [ -f "Cargo.toml" ]; then
+  FRAMEWORK="rust"
+# PHP detection
+elif [ -f "composer.json" ]; then
+  if grep -q "laravel" composer.json 2>/dev/null; then
+    FRAMEWORK="laravel"
+  elif grep -q "symfony" composer.json 2>/dev/null; then
+    FRAMEWORK="symfony"
+  else
+    FRAMEWORK="php"
+  fi
+# Ruby detection
+elif [ -f "Gemfile" ]; then
+  if grep -q "rails" Gemfile 2>/dev/null; then
+    FRAMEWORK="rails"
+  else
+    FRAMEWORK="ruby"
+  fi
+else
+  FRAMEWORK="unknown"
+fi
+
+echo "Detected framework: $FRAMEWORK"
+```
+
+#### 2.2: Framework Detection Table
+
+| Framework | Detection File | Detection Pattern |
+|-----------|---------------|-------------------|
+| **nextjs** | `package.json` | `"next"` in dependencies |
+| **nestjs** | `package.json` | `"@nestjs/core"` in dependencies |
+| **vue** | `package.json` | `"vue"` in dependencies |
+| **angular** | `package.json` | `"@angular/core"` in dependencies |
+| **react** | `package.json` | `"react"` in dependencies |
+| **express** | `package.json` | `"express"` in dependencies |
+| **node** | `package.json` | (default if no framework match) |
+| **django** | `pyproject.toml`/`requirements.txt` | `django` in dependencies |
+| **fastapi** | `pyproject.toml`/`requirements.txt` | `fastapi` in dependencies |
+| **flask** | `pyproject.toml`/`requirements.txt` | `flask` in dependencies |
+| **python** | `pyproject.toml`/`setup.py` | (default if no framework match) |
+| **spring-boot** | `pom.xml` | `spring-boot` in dependencies |
+| **java-maven** | `pom.xml` | (default if no spring) |
+| **java-gradle** | `build.gradle` | (any gradle project) |
+| **dotnet** | `*.csproj`/`*.sln` | File exists |
+| **go** | `go.mod` | File exists |
+| **rust** | `Cargo.toml` | File exists |
+| **laravel** | `composer.json` | `laravel` in dependencies |
+| **symfony** | `composer.json` | `symfony` in dependencies |
+| **rails** | `Gemfile` | `rails` in dependencies |
+
+#### 2.3: Run Quality Checks Based on Framework
+
+**Command Mapping Table**:
+
+| Framework | Lint Command | Build Command | Test Command | Type Check |
+|-----------|-------------|---------------|--------------|------------|
+| **nextjs** | `npm run lint` | `npm run build` | `npm run test` | `npm run typecheck` |
+| **nestjs** | `npm run lint` | `npm run build` | `npm run test` | `npm run typecheck` |
+| **vue** | `npm run lint` | `npm run build` | `npm run test` | `npm run typecheck` |
+| **angular** | `npm run lint` | `npm run build` | `npm run test` | `npm run typecheck` |
+| **react** | `npm run lint` | `npm run build` | `npm run test` | `npm run typecheck` |
+| **express** | `npm run lint` | N/A | `npm run test` | `npm run typecheck` |
+| **node** | `npm run lint` | N/A | `npm run test` | `npm run typecheck` |
+| **django** | `ruff check .` | N/A | `pytest` | `mypy .` |
+| **fastapi** | `ruff check .` | N/A | `pytest` | `mypy .` |
+| **flask** | `ruff check .` | N/A | `pytest` | `mypy .` |
+| **python** | `ruff check .` | N/A | `pytest` | `mypy .` |
+| **spring-boot** | `mvn checkstyle:check` | `mvn compile` | `mvn test` | N/A |
+| **java-maven** | `mvn checkstyle:check` | `mvn compile` | `mvn test` | N/A |
+| **java-gradle** | `./gradlew checkstyleMain` | `./gradlew build` | `./gradlew test` | N/A |
+| **dotnet** | `dotnet format --verify-no-changes` | `dotnet build` | `dotnet test` | N/A |
+| **go** | `golangci-lint run` | `go build ./...` | `go test ./...` | N/A |
+| **rust** | `cargo clippy` | `cargo build` | `cargo test` | N/A |
+| **laravel** | `./vendor/bin/pint --test` | N/A | `php artisan test` | N/A |
+| **symfony** | `php ./vendor/bin/phpcs` | N/A | `php ./bin/phpunit` | N/A |
+| **rails** | `bundle exec rubocop` | N/A | `bundle exec rspec` | N/A |
+
+#### 2.4: Execute Quality Checks
+
+```bash
+# Get commands for detected framework
+case "$FRAMEWORK" in
+  nextjs|nestjs|vue|angular|react)
+    LINT_CMD="npm run lint"
+    BUILD_CMD="npm run build"
+    TEST_CMD="npm run test"
+    TYPECHECK_CMD="npm run typecheck"
+    ;;
+  express|node)
+    LINT_CMD="npm run lint"
+    BUILD_CMD=""
+    TEST_CMD="npm run test"
+    TYPECHECK_CMD="npm run typecheck"
+    ;;
+  django|fastapi|flask|python)
+    LINT_CMD="ruff check ."
+    BUILD_CMD=""
+    TEST_CMD="pytest"
+    TYPECHECK_CMD="mypy ."
+    ;;
+  spring-boot|java-maven)
+    LINT_CMD="mvn checkstyle:check"
+    BUILD_CMD="mvn compile"
+    TEST_CMD="mvn test"
+    TYPECHECK_CMD=""
+    ;;
+  java-gradle|spring-boot-gradle)
+    LINT_CMD="./gradlew checkstyleMain"
+    BUILD_CMD="./gradlew build"
+    TEST_CMD="./gradlew test"
+    TYPECHECK_CMD=""
+    ;;
+  dotnet)
+    LINT_CMD="dotnet format --verify-no-changes"
+    BUILD_CMD="dotnet build"
+    TEST_CMD="dotnet test"
+    TYPECHECK_CMD=""
+    ;;
+  go)
+    LINT_CMD="golangci-lint run"
+    BUILD_CMD="go build ./..."
+    TEST_CMD="go test ./..."
+    TYPECHECK_CMD=""
+    ;;
+  rust)
+    LINT_CMD="cargo clippy"
+    BUILD_CMD="cargo build"
+    TEST_CMD="cargo test"
+    TYPECHECK_CMD=""
+    ;;
+  *)
+    # Fallback: Ask user
+    read -p "Framework not detected. Enter lint command: " LINT_CMD
+    read -p "Enter build command (or press Enter to skip): " BUILD_CMD
+    read -p "Enter test command: " TEST_CMD
+    ;;
+esac
+
+# Run checks with error handling
+run_check() {
+  local name="$1"
+  local cmd="$2"
+  
+  if [ -z "$cmd" ]; then
+    echo "[$name] Skipped (no command configured)"
+    return 0
+  fi
+  
+  echo "[$name] Running: $cmd"
+  if eval "$cmd"; then
+    echo "[$name] ✓ Passed"
+    return 0
+  else
+    echo "[$name] ✗ Failed"
+    read -p "[$name] Failed. Continue anyway? (y/n): " CONTINUE
+    [ "$CONTINUE" = "y" ] && return 0 || return 1
+  fi
+}
+
+# Execute all checks
+run_check "Lint" "$LINT_CMD" || exit 1
+[ -n "$BUILD_CMD" ] && run_check "Build" "$BUILD_CMD" || exit 1
+run_check "Test" "$TEST_CMD" || exit 1
+[ -n "$TYPECHECK_CMD" ] && run_check "TypeCheck" "$TYPECHECK_CMD"
+```
 
 **Error handling**: If check fails, ask user to fix, continue, or cancel
 
@@ -325,7 +536,12 @@ gh pr create --title "feat: add user auth" --add-label "minor"
 
 **Skills using this framework**:
 - `git-pr-creator` - PR creation with JIRA integration
-- `nextjs-pr-workflow` - Next.js-specific PR workflow
+- `nextjs-pr-workflow` - Next.js-specific extension (example of framework-specific extension)
+
+**Framework-specific extensions** (can be created for other frameworks):
+- Follow `nextjs-pr-workflow` pattern for other frameworks
+- Extend with framework-specific quality checks
+- Add framework-specific PR templates
 
 **Supporting frameworks**:
 - `git-semantic-commits` - Semantic commit formatting
