@@ -193,3 +193,52 @@ The setup scripts automatically:
 
 This repository includes inline default configurations in all setup scripts. No external template files are required.
 
+## Code Quality Skills
+
+This repository includes 7 new code quality skills for writing senior-engineer quality code:
+
+### Foundation Skills
+| Skill | Description |
+|------|-------------|
+| `solid-principles` | Enforce SOLID principles (SRP, OCP, LSP, ISP, DIP) - language-agnostic |
+| `clean-code` | Naming, small functions, self-documenting code - language-agnostic |
+
+### Architecture Skills
+| Skill | Description |
+|------|-------------|
+| `clean-architecture` | Vertical slicing, dependency rule, layers - language-agnostic |
+| `design-patterns` | GoF patterns (Creational, Structural, Behavioral) - language-agnostic |
+| `object-design` | Object stereotypes, value objects, aggregates - language-agnostic |
+
+### Analysis Skills
+| Skill | Description |
+|------|-------------|
+| `code-smells` | Detection and refactoring of common smells - language-agnostic |
+| `complexity-management` | Essential vs accidental complexity - language-agnostic |
+
+### Code Quality Subagents
+3 new subagents provide specialized code quality analysis:
+
+| Subagent | Purpose | Skills Used |
+|----------|---------|-------------|
+| `code-quality-subagent` | SOLID principles, clean code, code smells | solid-principles, clean-code, code-smells |
+| `architecture-review-subagent` | Architecture review and design patterns | clean-architecture, design-patterns, complexity-management |
+| `code-review-subagent` | Comprehensive code review (all quality skills) | All 7 quality skills |
+
+### Enhanced Subagent
+The `refactoring-subagent` has been enhanced with new skills:
+
+| Subagent | New Skills Added |
+|----------|------------------|
+| `refactoring-subagent` | solid-principles, code-smells, clean-code |
+
+### Related Existing Skills
+| New Skill | Related Existing Skills |
+|-----------|------------------------|
+| `solid-principles` | typescript-dry-principle |
+| `clean-code` | typescript-dry-principle, docstring-generator |
+| `code-smells` | linting-workflow, python-ruff-linter, javascript-eslint-linter |
+| `design-patterns` | refactoring-subagent |
+| `object-design` | test-generator-framework (value objects) |
+| `complexity-management` | tdd-workflow |
+
