@@ -1,3 +1,10 @@
+# [1.25.0](https://github.com/darellchua2/opencode-config-template/compare/v1.24.0...v1.25.0) (2026-03-21)
+
+
+### Features
+
+* add OpenCode Anthropic authentication ([#102](https://github.com/darellchua2/opencode-config-template/issues/102)) ([9ccbeca](https://github.com/darellchua2/opencode-config-template/commit/9ccbecaa86a12bb19fefa73919170072bc701c6a))
+
 # [1.24.0](https://github.com/darellchua2/opencode-config-template/compare/v1.23.0...v1.24.0) (2026-03-19)
 
 
