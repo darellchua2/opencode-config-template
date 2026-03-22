@@ -8,6 +8,7 @@ tools:
   edit: true
   glob: true
   grep: true
+  atlassian*: true
 permission:
   skill:
     git-issue-creator: allow
@@ -42,13 +43,22 @@ Workflow Integration:
 
 Workflow:
 1. Understand the task and determine appropriate workflow
-2. For JIRA integration: Use jira-ticket-oauth-workflow or jira-ticket-oauth-plan-workflow
+2. For JIRA integration:
+   - Primary: Use atlassian MCP tools (atlassian_jira_create_issue, atlassian_jira_add_comment, etc.)
+   - Fallback: Use jira-ticket-oauth-workflow skill with direct OAuth2 API calls
 3. For GitHub-only: Use git-issue-creator with git-semantic-commits
 4. Create branch using git-issue-plan-workflow
 5. Generate PR with git-pr-creator when ready
 6. Update JIRA/GitHub issues with progress using git-issue-updater
 
-JIRA OAuth2 API Usage:
+JIRA MCP Tools (Primary):
+- atlassian_jira_create_issue: Create new JIRA tickets
+- atlassian_jira_add_comment: Add comments to tickets
+- atlassian_jira_update_issue: Update ticket fields
+- atlassian_jira_search_issues: Search with JQL
+- atlassian_jira_transitions: Transition ticket status
+
+JIRA OAuth2 API Fallback (when MCP unavailable):
 - Prerequisites: JIRA_CLIENT_ID, JIRA_ACCESS_TOKEN, JIRA_CLOUD_ID env vars
 - Create ticket: curl POST to api.atlassian.com/ex/jira/{cloudId}/rest/api/3/issue
 - Add comment: curl POST to .../issue/{key}/comment
