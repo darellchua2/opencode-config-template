@@ -11,7 +11,10 @@ The current workflow for creating PLAN files and git branches from GitHub issues
 
 ## Acceptance Criteria
 - [ ] Git branches created from issues use `GIT-{issue_number}` naming
-- [ ] PLAN files follow a consistent naming pattern
+- [ ] PLAN files are placed in `PLANS/` folder at repository root
+- [ ] Workflow checks if `PLANS/` folder exists before creating PLAN file
+- [ ] Workflow auto-creates `PLANS/` folder if it doesn't exist
+- [ ] PLAN file naming pattern: `PLANS/PLAN-GIT-{issue_number}.md`
 - [ ] All related skills are updated and synchronized
 
 ## Scope
@@ -38,12 +41,15 @@ The current workflow for creating PLAN files and git branches from GitHub issues
 
 ### Phase 2: Core Implementation
 - [ ] Update branch naming convention to `GIT-{issue_number}` across all skills
-- [ ] Ensure PLAN file naming uses `PLAN-GIT-{issue_number}.md` consistently
-- [ ] Update `git-issue-plan-workflow/SKILL.md` with new branch naming
-- [ ] Update `ticket-branch-workflow/SKILL.md` with new branch naming
+- [ ] Ensure PLAN file is placed in `PLANS/` folder (not root)
+- [ ] Add logic to check if `PLANS/` folder exists before PLAN file creation
+- [ ] Add logic to auto-create `PLANS/` folder if it doesn't exist
+- [ ] Ensure PLAN file naming uses `PLANS/PLAN-GIT-{issue_number}.md` consistently
+- [ ] Update `git-issue-plan-workflow/SKILL.md` with new branch naming and folder logic
+- [ ] Update `ticket-branch-workflow/SKILL.md` with new branch naming and folder logic
 - [ ] Update `git-issue-creator/SKILL.md` with new branch naming
 - [ ] Update `git-workflow-framework/SKILL.md` with new convention
-- [ ] Update `plan-updater/SKILL.md` with consistent naming patterns
+- [ ] Update `plan-updater/SKILL.md` with consistent naming patterns and folder path
 
 ### Phase 3: Documentation & Synchronization
 - [ ] Update `README.md` if it references branch naming conventions
@@ -53,7 +59,9 @@ The current workflow for creating PLAN files and git branches from GitHub issues
 
 ### Phase 4: Validation
 - [ ] Create a test issue and verify branch is named `GIT-{number}`
+- [ ] Verify PLAN file is created in `PLANS/` folder
 - [ ] Verify PLAN file is named `PLAN-GIT-{number}.md`
+- [ ] Verify workflow handles missing `PLANS/` folder gracefully
 - [ ] Verify all related skills produce consistent output
 - [ ] Cross-check all skills for synchronized conventions
 

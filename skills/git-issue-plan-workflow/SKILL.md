@@ -15,7 +15,7 @@ I implement a standardized GitHub issue creation and planning workflow:
 1. **Gather Issue Requirements**: Prompt user for structured issue description following industry best practices
 2. **Determine Issue Scope**: Ask if issue needs to be broken into sub-issues
 3. **Create GitHub Issue**: Use GitHub CLI to create issue with appropriate labels
-4. **Create Git Branch**: Generate branch from issue number (e.g., `issue-123`)
+4. **Create Git Branch**: Generate branch from issue number (e.g., `GIT-123`)
 5. **Generate PLAN file**: Create comprehensive plan with phases and todo list in `PLANS/` directory
 6. **Commit and Push**: Commit PLAN file with semantic formatting and push to remote
 7. **Prompt Execution**: Ask user if they want to proceed with plan execution
@@ -89,14 +89,14 @@ If Parent selected:
    - Sub-issue title
    - Sub-issue description
 3. Create each sub-issue and link to parent
-4. Branch name uses parent issue number (e.g., issue-123)
+4. Branch name uses parent issue number (e.g., GIT-123)
 ```
 
 **Single Issue Flow**:
 ```markdown
 If Single selected:
 1. Create single issue with appropriate labels
-2. Branch name uses issue number (e.g., issue-124)
+2. Branch name uses issue number (e.g., GIT-124)
 ```
 
 ### Step 3: Determine Labels
@@ -179,9 +179,9 @@ $TECHNICAL_NOTES
 ### Step 5: Create Git Branch
 
 **Branch Naming Convention**:
-- Use issue number: `issue-123` or `123`
-- For features, can prefix: `feature/issue-123`
-- All lowercase, no spaces
+- Use issue number: `GIT-123` (required format)
+- All uppercase, no spaces
+- Pattern: `GIT-{ISSUE_NUMBER}`
 
 ```bash
 # Check for uncommitted changes
@@ -192,9 +192,9 @@ if ! git diff-index --quiet HEAD --; then
 fi
 
 # Create and checkout branch
-git checkout -b "issue-$ISSUE_NUMBER"
+git checkout -b "GIT-$ISSUE_NUMBER"
 
-echo "✓ Created branch: issue-$ISSUE_NUMBER"
+echo "✓ Created branch: GIT-$ISSUE_NUMBER"
 ```
 
 ### Step 6: Generate PLAN file
@@ -202,6 +202,15 @@ echo "✓ Created branch: issue-$ISSUE_NUMBER"
 **File Location**: All PLAN files are stored in the `PLANS/` directory at the project root.
 
 - **GitHub issues**: `PLANS/PLAN-GIT-{ISSUE_NUMBER}.md` (e.g., `PLANS/PLAN-GIT-123.md`)
+
+**PLANS Folder Check**:
+```bash
+# Check if PLANS directory exists, create if not
+if [ ! -d "PLANS" ]; then
+  mkdir -p PLANS
+  echo "✓ Created PLANS directory"
+fi
+```
 
 Create comprehensive PLAN file with phases and todos:
 
@@ -277,8 +286,11 @@ _How will we measure success?_
 ### Step 7: Commit and Push PLAN file
 
 ```bash
-# Ensure PLANS directory exists
-mkdir -p PLANS
+# Check if PLANS directory exists, create if not
+if [ ! -d "PLANS" ]; then
+  mkdir -p PLANS
+  echo "Created PLANS directory"
+fi
 
 # Stage PLAN file
 git add "PLANS/PLAN-GIT-${ISSUE_NUMBER}.md"
@@ -287,7 +299,7 @@ git add "PLANS/PLAN-GIT-${ISSUE_NUMBER}.md"
 git commit -m "docs(plan): add PLAN-GIT-${ISSUE_NUMBER}.md for issue #$ISSUE_NUMBER"
 
 # Push to remote
-git push -u origin "issue-$ISSUE_NUMBER"
+git push -u origin "GIT-$ISSUE_NUMBER"
 
 echo "✓ Committed and pushed PLANS/PLAN-GIT-${ISSUE_NUMBER}.md"
 ```
@@ -299,7 +311,7 @@ Add comment to GitHub issue:
 ```bash
 gh issue comment "$ISSUE_NUMBER" --body "## Planning Complete
 
-- ✅ Branch created: \`issue-$ISSUE_NUMBER\`
+- ✅ Branch created: \`GIT-$ISSUE_NUMBER\`
 - ✅ PLAN file committed: \`PLANS/PLAN-GIT-${ISSUE_NUMBER}.md\`
 - ✅ Ready to begin execution
 
@@ -317,7 +329,7 @@ Ask user if they want to proceed:
 
 ```
 ✓ GitHub issue created: #$ISSUE_NUMBER
-✓ Branch created and checked out: issue-$ISSUE_NUMBER
+✓ Branch created and checked out: GIT-$ISSUE_NUMBER
 ✓ PLANS/PLAN-GIT-${ISSUE_NUMBER}.md committed and pushed
 
 Would you like to proceed with executing the plan?
@@ -343,9 +355,8 @@ Would you like to proceed with executing the plan?
 - `good first issue` for newcomers
 
 ### Branch Naming
-- Use issue number for traceability
-- Keep it short and descriptive
-- Use lowercase with hyphens
+- Use `GIT-{number}` format for traceability
+- Keep it consistent with PLAN file naming
 
 ### PLAN File Structure
 - Start with phases for large work
@@ -383,10 +394,10 @@ gh auth status
 **Solution**:
 ```bash
 # Switch to existing branch
-git checkout "issue-$ISSUE_NUMBER"
+git checkout "GIT-$ISSUE_NUMBER"
 
 # Or force create new
-git checkout -B "issue-$ISSUE_NUMBER"
+git checkout -B "GIT-$ISSUE_NUMBER"
 ```
 
 ### Push Rejected
@@ -395,7 +406,7 @@ git checkout -B "issue-$ISSUE_NUMBER"
 **Solution**:
 ```bash
 git pull --rebase origin main
-git push -u origin "issue-$ISSUE_NUMBER"
+git push -u origin "GIT-$ISSUE_NUMBER"
 ```
 
 ### Sub-issue Linking
@@ -465,7 +476,7 @@ Agent: Labels detected: enhancement
 Creating issue...
 
 ✓ Created GitHub issue: #456
-✓ Created branch: issue-456
+✓ Created branch: GIT-456
 ✓ Created PLANS/PLAN-GIT-456.md with 5 phases
 ✓ Committed and pushed to remote
 
@@ -480,4 +491,4 @@ Proceed with plan execution? (yes/no)
 | Hierarchy | Manual linking | Native parent/subtask |
 | Labels | Custom + defaults | Components, Labels |
 | Projects | GitHub Projects | JIRA Boards |
-| Branch naming | `issue-123` | `PROJ-123` |
+| Branch naming | `GIT-123` | `PROJ-123` |

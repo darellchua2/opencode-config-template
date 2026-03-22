@@ -99,11 +99,12 @@ Use this workflow when:
 
 ### Step 4: Execute Ticket-Branch-Workflow
 - Use `ticket-branch-workflow` for the following steps:
-  - Create GitHub branch: `git checkout -b issue-<issue-number>` or `feature/<issue-number>-<short-title>`
+  - Create GitHub branch: `git checkout -b GIT-<issue-number>`
+  - Ensure PLANS directory exists: `mkdir -p PLANS`
   - Create PLAN file: `PLANS/PLAN-GIT-<issue-number>.md` with issue reference
   - Format commit using git-semantic-commits: `docs(plan): add PLAN-GIT-<issue-number>.md for #<issue-number>`
   - Commit PLAN file: `git commit -m "$(git-semantic-commits --type docs --scope plan --subject 'Add PLAN-GIT-<issue-number>.md for #<issue-number>')"`
-  - Push branch: `git push -u origin <branch-name>`
+  - Push branch: `git push -u origin GIT-<issue-number>`
 
 ### Step 5: Update Issue with Commit Progress Using git-issue-updater
 - Use `git-issue-updater` framework to add progress comment to GitHub issue
@@ -128,7 +129,7 @@ git-issue-updater --issue <issue-number> --platform github
   ```
   ✅ GitHub Issue #<issue-number> created successfully!
   ✅ Labels assigned: <labels> (via git-issue-labeler)
-  ✅ Branch created and checked out: <branch-name>
+  ✅ Branch created and checked out: GIT-<issue-number>
   ✅ PLAN file created with semantic commit (via git-semantic-commits)
   ✅ Issue updated with progress comment (via git-issue-updater)
   ✅ Branch pushed to remote (via ticket-branch-workflow)
@@ -140,9 +141,9 @@ git-issue-updater --issue <issue-number> --platform github
   - Assignee: <current-user>
 
   **Branch**:
-  - Name: <branch-name>
+  - Name: GIT-<issue-number>
   - Base Branch: <previous-branch>
-  - Remote: origin/<branch-name>
+  - Remote: origin/GIT-<issue-number>
 
   **PLAN File**:
   - Created at: PLANS/PLAN-GIT-<issue-number>.md
@@ -167,7 +168,7 @@ git-issue-updater --issue <issue-number> --platform github
 **Workflow Execution**:
 1. **git-issue-labeler**: Analyzes statement → assigns `bug` label
 2. **GitHub Issue Creation**: Creates issue #123 with title and bug label
-3. **ticket-branch-workflow**: Creates branch `issue-123`, `PLANS/PLAN-GIT-123.md`
+3. **ticket-branch-workflow**: Creates branch `GIT-123`, `PLANS/PLAN-GIT-123.md`
 4. **git-semantic-commits**: Formats commit as `docs(plan): add PLAN-GIT-123.md for #123`
 5. **git-issue-updater**: Adds progress comment with user, date, time
 6. **Push**: Branch pushed to remote
@@ -176,7 +177,7 @@ git-issue-updater --issue <issue-number> --platform github
 ```
 ✅ GitHub Issue #123 created successfully!
 ✅ Labels assigned: bug (via git-issue-labeler)
-✅ Branch created and checked out: issue-123
+✅ Branch created and checked out: GIT-123
 ✅ PLAN file created with semantic commit: docs(plan): add PLAN-GIT-123.md for #123
 ✅ Issue updated with progress comment (via git-issue-updater)
 ✅ Branch pushed to remote
@@ -201,7 +202,7 @@ Issue Update:
 **Workflow Execution**:
 1. **git-issue-labeler**: Analyzes statement → assigns `enhancement`, `good first issue` labels
 2. **GitHub Issue Creation**: Creates issue #124 with title and labels
-3. **ticket-branch-workflow**: Creates branch `issue-124`, `PLANS/PLAN-GIT-124.md`
+3. **ticket-branch-workflow**: Creates branch `GIT-124`, `PLANS/PLAN-GIT-124.md`
 4. **git-semantic-commits**: Formats commit as `docs(plan): add PLAN-GIT-124.md for #124`
 5. **git-issue-updater**: Adds progress comment with user, date, time
 6. **Push**: Branch pushed to remote
@@ -210,7 +211,7 @@ Issue Update:
 ```
 ✅ GitHub Issue #124 created successfully!
 ✅ Labels assigned: enhancement, good first issue (via git-issue-labeler)
-✅ Branch created and checked out: issue-124
+✅ Branch created and checked out: GIT-124
 ✅ PLAN file created with semantic commit: docs(plan): add PLAN-GIT-124.md for #124
 ✅ Issue updated with progress comment (via git-issue-updater)
 ✅ Branch pushed to remote
@@ -229,7 +230,7 @@ Issue Details:
 **Workflow Execution**:
 1. **git-issue-labeler**: Analyzes statement → assigns `documentation` label
 2. **GitHub Issue Creation**: Creates issue #125 with title and documentation label
-3. **ticket-branch-workflow**: Creates branch `issue-125`, `PLANS/PLAN-GIT-125.md`
+3. **ticket-branch-workflow**: Creates branch `GIT-125`, `PLANS/PLAN-GIT-125.md`
 4. **git-semantic-commits**: Formats commit as `docs(plan): add PLAN-GIT-125.md for #125`
 5. **git-issue-updater**: Adds progress comment with user, date, time
 6. **Push**: Branch pushed to remote
@@ -238,7 +239,7 @@ Issue Details:
 ```
 ✅ GitHub Issue #125 created successfully!
 ✅ Labels assigned: documentation (via git-issue-labeler)
-✅ Branch created and checked out: issue-125
+✅ Branch created and checked out: GIT-125
 ✅ PLAN file created with semantic commit: docs(plan): add PLAN-GIT-125.md for #125
 ✅ Issue updated with progress comment (via git-issue-updater)
 ✅ Branch pushed to remote
