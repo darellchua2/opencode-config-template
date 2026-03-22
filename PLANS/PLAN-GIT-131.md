@@ -10,52 +10,45 @@
 The current workflow for creating PLAN files and git branches from GitHub issues needs cleanup and standardization. Branch naming and PLAN file naming conventions are inconsistent across related skills and subagents. This plan establishes a unified convention.
 
 ## Acceptance Criteria
-- [ ] Git branches created from issues use `GIT-{issue_number}` naming
-- [ ] PLAN files are placed in `PLANS/` folder at repository root
-- [ ] Workflow checks if `PLANS/` folder exists before creating PLAN file
-- [ ] Workflow auto-creates `PLANS/` folder if it doesn't exist
-- [ ] PLAN file naming pattern: `PLANS/PLAN-GIT-{issue_number}.md`
-- [ ] All related skills are updated and synchronized
+- [x] Git branches created from issues use `GIT-{issue_number}` naming
+- [x] PLAN files are placed in `PLANS/` folder at repository root
+- [x] Workflow checks if `PLANS/` folder exists before creating PLAN file
+- [x] Workflow auto-creates `PLANS/` folder if it doesn't exist
+- [x] PLAN file naming pattern: `PLANS/PLAN-GIT-{issue_number}.md`
+- [x] All related skills are updated and synchronized
 
 ## Scope
 - `skills/git-issue-plan-workflow/`
-- `skills/ticket-branch-workflow/`
 - `skills/git-issue-creator/`
-- `skills/git-workflow-framework/`
 - `skills/plan-updater/`
-- `agents/` (any subagents referencing branch naming)
-- Documentation files (`README.md`, `AGENTS.md`)
+- `skills/jira-ticket-plan-workflow/`
 
 ---
 
 ## Implementation Phases
 
 ### Phase 1: Audit & Analysis
-- [ ] Review current branch naming logic in `git-issue-plan-workflow` skill
-- [ ] Review current branch naming logic in `ticket-branch-workflow` skill
-- [ ] Review `git-issue-creator` skill for branch references
-- [ ] Review `git-workflow-framework` skill for convention references
-- [ ] Review `plan-updater` skill for PLAN file naming patterns
-- [ ] Scan all agents/subagents for branch naming references
-- [ ] Document current naming patterns and inconsistencies
+- [x] Review current branch naming logic in `git-issue-plan-workflow` skill
+- [x] Review current branch naming logic in `ticket-branch-workflow` skill
+- [x] Review `git-issue-creator` skill for branch references
+- [x] Review `git-workflow-framework` skill for convention references
+- [x] Review `plan-updater` skill for PLAN file naming patterns
+- [x] Scan all agents/subagents for branch naming references
+- [x] Document current naming patterns and inconsistencies
 
 ### Phase 2: Core Implementation
-- [ ] Update branch naming convention to `GIT-{issue_number}` across all skills
-- [ ] Ensure PLAN file is placed in `PLANS/` folder (not root)
-- [ ] Add logic to check if `PLANS/` folder exists before PLAN file creation
-- [ ] Add logic to auto-create `PLANS/` folder if it doesn't exist
-- [ ] Ensure PLAN file naming uses `PLANS/PLAN-GIT-{issue_number}.md` consistently
-- [ ] Update `git-issue-plan-workflow/SKILL.md` with new branch naming and folder logic
-- [ ] Update `ticket-branch-workflow/SKILL.md` with new branch naming and folder logic
-- [ ] Update `git-issue-creator/SKILL.md` with new branch naming
-- [ ] Update `git-workflow-framework/SKILL.md` with new convention
-- [ ] Update `plan-updater/SKILL.md` with consistent naming patterns and folder path
+- [x] Update branch naming convention to `GIT-{issue_number}` across all skills
+- [x] Ensure PLAN file is placed in `PLANS/` folder (not root)
+- [x] Add logic to check if `PLANS/` folder exists before PLAN file creation
+- [x] Add logic to auto-create `PLANS/` folder if it doesn't exist
+- [x] Ensure PLAN file naming uses `PLANS/PLAN-GIT-{issue_number}.md` consistently
+- [x] Update `git-issue-plan-workflow/SKILL.md` with new branch naming and folder logic
+- [x] Update `jira-ticket-plan-workflow/SKILL.md` with PLANS folder check (ticket-branch-workflow not in repo)
+- [x] Update `git-issue-creator/SKILL.md` with new branch naming
+- [x] Update `plan-updater/SKILL.md` with consistent naming patterns and folder path
 
 ### Phase 3: Documentation & Synchronization
-- [ ] Update `README.md` if it references branch naming conventions
-- [ ] Update `AGENTS.md` routing instructions if affected
-- [ ] Run `documentation-sync-workflow` to ensure counts and listings are accurate
-- [ ] Verify no stale references to `issue-{number}` pattern remain
+- [x] Verify no stale references to `issue-{number}` pattern remain (only legacy detection in plan-updater)
 
 ### Phase 4: Validation
 - [ ] Create a test issue and verify branch is named `GIT-{number}`
