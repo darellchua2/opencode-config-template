@@ -1,3 +1,10 @@
+# [1.27.0](https://github.com/darellchua2/opencode-config-template/compare/v1.26.3...v1.27.0) (2026-03-22)
+
+
+### Features
+
+* **agents:** add autodesk-mcp-specialist subagent for issue [#116](https://github.com/darellchua2/opencode-config-template/issues/116) ([a7b3251](https://github.com/darellchua2/opencode-config-template/commit/a7b32514693867139601bb404058dadcc8aee3f6))
+
 ## [1.26.3](https://github.com/darellchua2/opencode-config-template/compare/v1.26.2...v1.26.3) (2026-03-22)
 
 
