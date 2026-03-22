@@ -1,3 +1,11 @@
+## [1.25.1](https://github.com/darellchua2/opencode-config-template/compare/v1.25.0...v1.25.1) (2026-03-22)
+
+
+### Bug Fixes
+
+* missing quotes ([1286562](https://github.com/darellchua2/opencode-config-template/commit/1286562493d76a5687887a0ae92c6064b85c170d))
+* use opencode-claude-auth plugin ([#104](https://github.com/darellchua2/opencode-config-template/issues/104)) ([#105](https://github.com/darellchua2/opencode-config-template/issues/105)) ([0d08a87](https://github.com/darellchua2/opencode-config-template/commit/0d08a87aaadb631ee91073e0e9c0107827e671c5)), closes [#102](https://github.com/darellchua2/opencode-config-template/issues/102)
+
 # [1.25.0](https://github.com/darellchua2/opencode-config-template/compare/v1.24.0...v1.25.0) (2026-03-21)
 
 
