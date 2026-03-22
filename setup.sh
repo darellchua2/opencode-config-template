@@ -510,7 +510,7 @@ USAGE:
     Usage: opencode --agent build "implement auth feature"
            opencode --agent explore "find all API routes"
 
-  MCP SERVERS (6):
+  MCP SERVERS (15):
     Auto-start (npx):
       atlassian          JIRA and Confluence integration
       zai-mcp-server     Image analysis and video processing
@@ -519,6 +519,17 @@ USAGE:
       web-reader         Web page content extraction
       web-search-prime   Web search capabilities
       zread              GitHub repository search and file reading
+
+    Microsoft 365 (requires M365 Copilot license):
+      microsoft-teams    Teams chats, channels, messages
+      microsoft-mail     Outlook email operations
+      microsoft-calendar Calendar event management
+      microsoft-sharepoint SharePoint files and lists
+      microsoft-onedrive Personal file management
+      microsoft-word     Word document operations
+      microsoft-user     User profile and org info
+      microsoft-copilot  M365 Copilot conversations
+      microsoft-dataverse Business data (Dynamics 365)
 
    SKILLS (50):
      Framework (7):        test-generator-framework, linting-workflow,

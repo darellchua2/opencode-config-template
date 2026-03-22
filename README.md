@@ -143,7 +143,7 @@ This repository implements **skill modularization** with 50 skills organized acr
 
 ### Agents
 
-20 agents provide specialized task handling (2 primary + 18 subagents):
+23 agents provide specialized task handling (2 primary + 21 subagents):
 
 #### Primary Agents
 
@@ -174,6 +174,9 @@ This repository implements **skill modularization** with 50 skills organized acr
 | **docx-creation-subagent** | Word document creation | docx-creation |
 | **diagram-subagent** | ASCII diagrams and images | ascii-diagram-creator |
 | **image-analyzer** | Image analysis and conversion | (built-in capabilities) |
+| **google-mcp-specialist-subagent** | Google Cloud MCP setup and usage | google-bigquery, google-maps, google-gce, google-gke |
+| **autodesk-specialist-subagent** | Autodesk API integration | autodesk-revit, autodesk-model-data, autodesk-fusion |
+| **microsoft-m365-specialist-subagent** | Microsoft 365 MCP setup and usage | microsoft-teams, microsoft-mail, microsoft-calendar, microsoft-sharepoint |
 
 #### Trigger Phrases
 
