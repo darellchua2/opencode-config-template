@@ -1750,17 +1750,19 @@ deploy_agents() {
     log_info "Created ${AGENTS_DEST_DIR} directory"
 
     if [ -d "${AGENTS_SRC_DIR}" ]; then
-        run_cmd "cp -r ${AGENTS_SRC_DIR}/* ${AGENTS_DEST_DIR}/"
-        log_success "Agents copied successfully to ${AGENTS_DEST_DIR}"
+        # Flatten directory structure: OpenCode expects agents/*.md not agents/primary/*.md
+        # The 'mode' in frontmatter determines if it's primary or subagent
+        run_cmd "find ${AGENTS_SRC_DIR} -name '*.md' -exec cp {} ${AGENTS_DEST_DIR}/ \;"
+        log_success "Agents copied successfully to ${AGENTS_DEST_DIR} (flat structure)"
 
-        local primary_count=$(find ${AGENTS_DEST_DIR}/primary -name "*.md" 2>/dev/null | wc -l)
-        local subagent_count=$(find ${AGENTS_DEST_DIR}/subagents -name "*.md" 2>/dev/null | wc -l)
-        local total_count=$((primary_count + subagent_count))
+        local total_count=$(find ${AGENTS_DEST_DIR} -maxdepth 1 -name "*.md" 2>/dev/null | wc -l)
+        local primary_count=$(grep -l "mode: primary" ${AGENTS_DEST_DIR}/*.md 2>/dev/null | wc -l)
+        local subagent_count=$(grep -l "mode: subagent" ${AGENTS_DEST_DIR}/*.md 2>/dev/null | wc -l)
 
         echo ""
-        echo "✓ Deployed ${total_count} agents:"
-        echo "    - ${primary_count} primary agents (in agents/primary/)"
-        echo "    - ${subagent_count} subagents (in agents/subagents/)"
+        echo "✓ Deployed ${total_count} agent files:"
+        echo "    - ${primary_count} primary agents (mode: primary in frontmatter)"
+        echo "    - ${subagent_count} subagents (mode: subagent in frontmatter)"
         echo ""
         echo "  Run 'opencode --list-agents' for details"
         echo ""
