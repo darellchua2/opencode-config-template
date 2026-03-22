@@ -75,7 +75,7 @@ Add the `next-devtools` MCP server to your `opencode.json` in the project root:
 }
 ```
 
-**Note**: OpenCode uses `opencode.json` with the `mcp` key, NOT `.mcp.json` with `mcpServers`. The command is an array format `["npx", "-y", "pkg"]` rather than separate `command` and `args` fields.
+**Note**: OpenCode uses `opencode.json` with the `mcp` key, NOT `.mcp.json` with `mcpServers`. The command is an array format `["npx", "-y", "pkg"]` rather than separate `command` and `args` fields. If `opencode.json` already exists, add the `next-devtools` entry to the existing `mcp` object.
 
 ### Starting the Dev Server
 
