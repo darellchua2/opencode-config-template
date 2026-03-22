@@ -1753,41 +1753,60 @@ deploy_agents() {
     if [ -d "${AGENTS_SRC_DIR}" ]; then
         local primary_count=0
         local subagent_count=0
+        local agent_count=0
 
-        # Copy primary agents (flat into agents/)
+        # Copy all agent markdown files from flat agents/ directory
+        for agent_file in "${AGENTS_SRC_DIR}"/*.md; do
+            if [ -f "$agent_file" ]; then
+                local filename=$(basename "$agent_file")
+                run_cmd "cp ${agent_file} ${AGENTS_DEST_DIR}/${filename}"
+                agent_count=$((agent_count + 1))
+
+                # Count by mode (check frontmatter for mode: primary vs subagent)
+                if grep -q "^mode: primary" "$agent_file" 2>/dev/null; then
+                    primary_count=$((primary_count + 1))
+                elif grep -q "^mode: subagent" "$agent_file" 2>/dev/null; then
+                    subagent_count=$((subagent_count + 1))
+                fi
+            fi
+        done
+
+        # Also support subdirectory layout (agents/primary/ and agents/subagents/)
         if [ -d "${AGENTS_SRC_DIR}/primary" ]; then
             for agent_file in "${AGENTS_SRC_DIR}"/primary/*.md; do
                 if [ -f "$agent_file" ]; then
                     local filename=$(basename "$agent_file")
                     run_cmd "cp ${agent_file} ${AGENTS_DEST_DIR}/${filename}"
                     primary_count=$((primary_count + 1))
+                    agent_count=$((agent_count + 1))
                 fi
             done
         fi
 
-        # Copy subagents (flat into agents/)
         if [ -d "${AGENTS_SRC_DIR}/subagents" ]; then
             for agent_file in "${AGENTS_SRC_DIR}"/subagents/*.md; do
                 if [ -f "$agent_file" ]; then
                     local filename=$(basename "$agent_file")
                     run_cmd "cp ${agent_file} ${AGENTS_DEST_DIR}/${filename}"
                     subagent_count=$((subagent_count + 1))
+                    agent_count=$((agent_count + 1))
                 fi
             done
-        else
-            log_warn "agents/subagents/ directory not found in ${SCRIPT_DIR}"
         fi
 
-        local total_count=$((primary_count + subagent_count))
-        log_success "Agents copied successfully to ${AGENTS_DEST_DIR}"
+        if [ "$agent_count" -eq 0 ]; then
+            log_warn "No agent markdown files found in ${AGENTS_SRC_DIR}"
+        else
+            log_success "Agents copied successfully to ${AGENTS_DEST_DIR}"
 
-        echo ""
-        echo "✓ Deployed ${total_count} agent files:"
-        echo "    - ${primary_count} primary agents"
-        echo "    - ${subagent_count} subagents"
-        echo ""
-        echo "  Run 'opencode --list-agents' for details"
-        echo ""
+            echo ""
+            echo "✓ Deployed ${agent_count} agent files:"
+            echo "    - ${primary_count} primary agents"
+            echo "    - ${subagent_count} subagents"
+            echo ""
+            echo "  Run 'opencode --list-agents' for details"
+            echo ""
+        fi
     else
         log_warn "agents/ folder not found in ${SCRIPT_DIR}"
     fi

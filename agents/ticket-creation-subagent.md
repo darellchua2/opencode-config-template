@@ -1,5 +1,5 @@
 ---
-description: Specialized subagent for GitHub and JIRA ticket creation. Handles issue creation, labeling, branch creation from tickets, and semantic formatting across GitHub and JIRA platforms.
+description: Create and manage GitHub issues and JIRA tickets. Triggers on "create issue", "new issue", "bug report", "feature request", "git issue", "jira ticket", "open issue". Handles issue creation, labeling, branch creation, and semantic formatting.
 mode: subagent
 model: zai-coding-plan/glm-5-turbo
 permission:
