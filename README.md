@@ -131,7 +131,7 @@ This repository implements **skill modularization** with 47 skills organized acr
 
 | Category | Skills | Purpose |
 |-----------|---------|---------|
-| **Framework** (9) | test-generator-framework, linting-workflow, pr-creation-workflow, jira-git-integration, error-resolver-workflow, tdd-workflow, docx-creation, coverage-framework, ticket-branch-workflow | Generic workflows, testing patterns, and document creation |
+| **Framework** (8) | test-generator-framework, linting-workflow, pr-creation-workflow, jira-git-integration, error-resolver-workflow, tdd-workflow, docx-creation, coverage-framework | Generic workflows, testing patterns, and document creation |
 | **Language-Specific** (3) | python-pytest-creator, python-ruff-linter, javascript-eslint-linter | Language-specific test, linting, and documentation |
 | **Framework-Specific** (5) | nextjs-pr-workflow, nextjs-unit-test-creator, nextjs-standard-setup, nextjs-image-usage, typescript-dry-principle | Next.js and TypeScript workflows |
 | **OpenCode Meta** (3) | opencode-agent-creation, opencode-skill-creation, opencode-skills-maintainer | Agent and skill creation/maintenance |

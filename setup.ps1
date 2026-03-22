@@ -302,10 +302,10 @@ USAGE:
            opencode --agent explore 'find all API routes'
 
     SKILLS (46):
-      Framework (8):        test-generator-framework, linting-workflow,
-                            pr-creation-workflow, jira-git-integration,
-                            error-resolver-workflow, tdd-workflow, docx-creation,
-                            coverage-framework, ticket-branch-workflow
+       Framework (8):        test-generator-framework, linting-workflow,
+                             pr-creation-workflow, jira-git-integration,
+                             error-resolver-workflow, tdd-workflow, docx-creation,
+                             coverage-framework
 
       Language-Specific (3): python-pytest-creator, python-ruff-linter,
                             javascript-eslint-linter
@@ -1245,11 +1245,11 @@ function Deploy-Skills {
         Write-Host "Deployed $skillCount skills to $SkillsDir" -ForegroundColor Green
         Write-Host ""
         Write-Host "  Skill Categories:" -ForegroundColor Cyan
-        Write-Host "    Framework (9):"
+        Write-Host "    Framework (8):"
         Write-Host "      - test-generator-framework, linting-workflow"
         Write-Host "      - pr-creation-workflow, jira-git-integration"
-        Write-Host "      - error-resolver-workflow, tdd-workflow, docx-creation"
-        Write-Host "      - coverage-framework, ticket-branch-workflow"
+        Write-Host "      - error-resolver-workflow, tdd-workflow"
+        Write-Host "      - docx-creation, coverage-framework"
         Write-Host "    Language-Specific (3):"
         Write-Host "      - python-pytest-creator, python-ruff-linter"
         Write-Host "      - javascript-eslint-linter"
@@ -1282,11 +1282,11 @@ function Deploy-Skills {
         Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
         Write-Host ""
         Write-Host "  Skill Categories:" -ForegroundColor Cyan
-        Write-Host "    Framework (9):"
+        Write-Host "    Framework (8):"
         Write-Host "      - test-generator-framework, linting-workflow"
         Write-Host "      - pr-creation-workflow, jira-git-integration"
-        Write-Host "      - ticket-branch-workflow, error-resolver-workflow"
-        Write-Host "      - tdd-workflow, coverage-framework, docx-creation"
+        Write-Host "      - error-resolver-workflow, tdd-workflow"
+        Write-Host "      - coverage-framework, docx-creation"
         Write-Host "    Language-Specific (3):"
         Write-Host "      - python-pytest-creator, python-ruff-linter"
         Write-Host "      - javascript-eslint-linter"

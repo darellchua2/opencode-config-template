@@ -76,7 +76,7 @@ The current workflow for creating PLAN files and git branches from GitHub issues
 
 ### Phase 6: Cleanup & Closure
 - [x] Remove "Integration with Other Skills" sections from all skills (not part of OpenCode docs)
-- [x] Clean up remaining phantom `ticket-branch-workflow` references (2 files)
+- [x] Clean up remaining phantom `ticket-branch-workflow` references (setup.sh, setup.ps1, README.md)
 - [x] Final review of all changed files
 - [ ] Close issue #131 upon completion
 
