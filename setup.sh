@@ -76,6 +76,8 @@ LOG_FILE="${HOME}/.opencode-setup.log"
 CONFIG_DIR="${HOME}/.config/opencode"
 CONFIG_FILE="${CONFIG_DIR}/config.json"
 SKILLS_DIR="${CONFIG_DIR}/skills"
+AGENTS_SRC_DIR="${SCRIPT_DIR}/agents"
+AGENTS_DEST_DIR="${CONFIG_DIR}/agents"
 BACKUP_DIR="${HOME}/.opencode-backup-$(date +%Y%m%d_%H%M%S)"
 LAST_UPDATE_CHECK="${CONFIG_DIR}/.last-update-check"
 UPDATE_LOG="${CONFIG_DIR}/update.log"
@@ -1724,6 +1726,49 @@ setup_config() {
     return 0
 }
 
+deploy_agents() {
+    echo ""
+    log_info "Setting up agents directory..."
+
+    if [ -d "${AGENTS_DEST_DIR}" ]; then
+        if [ "$(ls -A ${AGENTS_DEST_DIR} 2>/dev/null)" ]; then
+            log_warn "Agents directory already contains files"
+
+            if prompt_yes_no "Do you want to overwrite existing agents?" "n"; then
+                log_info "Skipping agents deployment. Existing agents preserved."
+                return 0
+            fi
+
+            if [ -d "${BACKUP_DIR}" ]; then
+                run_cmd "cp -r ${AGENTS_DEST_DIR} ${BACKUP_DIR}/agents-backup"
+                log_info "Backed up existing agents to ${BACKUP_DIR}/agents-backup"
+            fi
+        fi
+    fi
+
+    run_cmd "mkdir -p ${AGENTS_DEST_DIR}"
+    log_info "Created ${AGENTS_DEST_DIR} directory"
+
+    if [ -d "${AGENTS_SRC_DIR}" ]; then
+        run_cmd "cp -r ${AGENTS_SRC_DIR}/* ${AGENTS_DEST_DIR}/"
+        log_success "Agents copied successfully to ${AGENTS_DEST_DIR}"
+
+        local primary_count=$(find ${AGENTS_DEST_DIR}/primary -name "*.md" 2>/dev/null | wc -l)
+        local subagent_count=$(find ${AGENTS_DEST_DIR}/subagents -name "*.md" 2>/dev/null | wc -l)
+        local total_count=$((primary_count + subagent_count))
+
+        echo ""
+        echo "✓ Deployed ${total_count} agents:"
+        echo "    - ${primary_count} primary agents (in agents/primary/)"
+        echo "    - ${subagent_count} subagents (in agents/subagents/)"
+        echo ""
+        echo "  Run 'opencode --list-agents' for details"
+        echo ""
+    else
+        log_warn "agents/ folder not found in ${SCRIPT_DIR}"
+    fi
+}
+
 # Check if running on Windows (native or Git Bash)
 is_windows() {
     case "$DETECTED_OS" in
@@ -2497,6 +2542,7 @@ main() {
     fi
 
     setup_config || true
+    deploy_agents || true
     setup_shell_vars || true
 
     # Print summary and next steps
