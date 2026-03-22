@@ -70,6 +70,16 @@ Add the `next-devtools` MCP server to your `opencode.json` in the project root:
       "type": "local",
       "command": ["npx", "-y", "next-devtools-mcp@latest"],
       "enabled": true
+    },
+    "filesystem": {
+      "type": "local",
+      "command": ["npx", "-y", "@anthropic-ai/mcp-server-filesystem@latest"],
+      "enabled": true
+    },
+    "github": {
+      "type": "local",
+      "command": ["npx", "-y", "@anthropic-ai/mcp-server-github@latest"],
+      "enabled": true
     }
   }
 }
