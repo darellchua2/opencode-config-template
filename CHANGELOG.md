@@ -1,3 +1,10 @@
+# [1.30.0](https://github.com/darellchua2/opencode-config-template/compare/v1.29.0...v1.30.0) (2026-03-22)
+
+
+### Features
+
+* **docs:** add documentation-sync-workflow skill and subagent (issue [#120](https://github.com/darellchua2/opencode-config-template/issues/120)) ([cc86840](https://github.com/darellchua2/opencode-config-template/commit/cc86840ddc4c1f8c727aa53909fc0185d53060b1))
+
 # [1.29.0](https://github.com/darellchua2/opencode-config-template/compare/v1.28.0...v1.29.0) (2026-03-22)
 
 
