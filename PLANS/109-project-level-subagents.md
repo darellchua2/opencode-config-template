@@ -54,6 +54,8 @@ Create an `agents/` folder with markdown definitions for all subagents and prima
 - Updated setup.ps1 with Deploy-Agents function and variables
 - Fixed bug where deploy_agents was called inside setup_config (early return issue)
 - Updated .AGENTS.md with subagent routing table
+- Simplified .AGENTS.md: removed redundant domain table (OpenCode auto-discovers subagents)
+- Added explicit subagent discovery process with priority order (1. Subagents → 2. Skills → 3. Direct)
 - Tested with bash -n, --dry-run, --quick, - Verified deployment to ~/.config/opencode/agents/
 - Committed all changes
 
