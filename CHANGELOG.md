@@ -1,3 +1,10 @@
+# [1.33.0](https://github.com/darellchua2/opencode-config-template/compare/v1.32.0...v1.33.0) (2026-03-22)
+
+
+### Features
+
+* **mcp:** add Microsoft 365 Work IQ MCP servers and specialist subagent ([ed685f3](https://github.com/darellchua2/opencode-config-template/commit/ed685f3eb0f7462c6c6ff53cc96efd6ae00a94e0)), closes [#126](https://github.com/darellchua2/opencode-config-template/issues/126)
+
 # [1.32.0](https://github.com/darellchua2/opencode-config-template/compare/v1.31.0...v1.32.0) (2026-03-22)
 
 
