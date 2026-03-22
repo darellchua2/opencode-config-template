@@ -77,5 +77,23 @@
     "web-search-prime*": false,
     "zai-mcp-server*": false,
     "zread*": false
+  },
+  "agent": {
+    "build": {
+      "permission": {
+        "task": {
+          "*": "allow"
+        }
+      }
+    },
+    "plan": {
+      "permission": {
+        "edit": "ask",
+        "bash": "ask",
+        "task": {
+          "*": "allow"
+        }
+      }
+    }
   }
 }

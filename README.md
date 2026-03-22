@@ -109,7 +109,8 @@ This repository uses a **custom configuration schema** that differs from officia
 This template implements **skill permissions** to control which skills agents can access.
 
 **Current configuration:**
-- **Default agent**: All skills enabled, full MCP access
+- **Build agent**: Full access to all tools, skills, and subagents
+- **Plan agent**: Read-only access (`read`, `glob`, `grep`) + subagent delegation (`task`) - no `bash`, `write`, `edit`, or MCP tools
 - **Subagents**: Skill-restricted access based on specialization
 
 **Benefits of this approach:**
@@ -140,21 +141,48 @@ This repository implements **skill modularization** with 49 skills organized acr
 | **JIRA** (4) | jira-ticket-oauth-workflow, jira-ticket-plan-workflow, jira-status-updater, jira-ticket-workflow | JIRA integration workflows |
 | **Code Quality** (7) | solid-principles, clean-code, clean-architecture, design-patterns, object-design, code-smells, complexity-management | Code quality analysis and patterns |
 
-### Subagents
+### Agents
 
-9 subagents provide specialized task handling:
+20 agents provide specialized task handling (2 primary + 18 subagents):
+
+#### Primary Agents
+
+| Agent | Purpose | Permissions |
+|-------|---------|-------------|
+| **build** | Default agent for general tasks | Full access to all tools and subagents |
+| **plan** | Read-only planning and analysis | `task`, `read`, `glob`, `grep` only (no write/execute) |
+
+#### Subagents
 
 | Subagent | Purpose | Skills |
-|-----------|---------|---------|
+|----------|---------|--------|
 | **linting-subagent** | Code quality and style | linting-workflow, python-ruff-linter, javascript-eslint-linter |
 | **testing-subagent** | Test generation and execution | test-generator-framework, python-pytest-creator, nextjs-unit-test-creator |
-| **git-workflow-subagent** | Git operations and version control | ticket-branch-workflow, git-issue-creator, git-pr-creator, git-semantic-commits |
+| **tdd-subagent** | Test-driven development workflow | tdd-workflow, test-generator-framework |
+| **pr-workflow-subagent** | Pull request creation | pr-creation-workflow, nextjs-pr-workflow, git-pr-creator |
+| **ticket-creation-subagent** | Issue/ticket creation | git-issue-creator, jira-ticket-plan-workflow |
 | **documentation-subagent** | Documentation generation | docstring-generator, coverage-readme-workflow |
+| **coverage-subagent** | Coverage reporting | coverage-framework, coverage-readme-workflow |
 | **opentofu-explorer-subagent** | Infrastructure as code | 7 OpenTofu skills (AWS, K8s, Keycloak, Neon, ECR) |
-| **workflow-subagent** | Workflow automation | pr-creation-workflow, jira-git-workflow, jira-status-updater |
 | **code-quality-subagent** | SOLID, clean code, code smells | solid-principles, clean-code, code-smells |
 | **architecture-review-subagent** | Architecture and design patterns | clean-architecture, design-patterns, complexity-management |
 | **code-review-subagent** | Comprehensive code review | All 7 Code Quality skills |
+| **refactoring-subagent** | Code refactoring | solid-principles, code-smells, clean-code |
+| **error-resolver-subagent** | Error diagnosis and resolution | error-resolver-workflow |
+| **nextjs-setup-subagent** | Next.js project setup | nextjs-standard-setup, nextjs-complete-setup |
+| **opencode-tooling-subagent** | Skills and agents creation | opencode-skill-creation, opencode-agent-creation |
+| **docx-creation-subagent** | Word document creation | docx-creation |
+| **diagram-subagent** | ASCII diagrams and images | ascii-diagram-creator |
+| **image-analyzer** | Image analysis and conversion | (built-in capabilities) |
+
+#### Trigger Phrases
+
+Some subagents recognize natural language triggers:
+
+| Subagent | Trigger Phrases |
+|----------|-----------------|
+| **pr-workflow-subagent** | "create pr", "pr merge to [branch]", "merge to main", "pull request" |
+| **ticket-creation-subagent** | "create issue", "new ticket", "jira ticket" |
 
 ### Skill Architecture
 

@@ -2,11 +2,13 @@
 description: Comprehensive code review subagent combining SOLID principles, clean code, code smells, design patterns, and object design for thorough quality analysis. Ideal for pre-commit reviews and quality gates.
 mode: subagent
 model: zai-coding-plan/glm-5
-tools:
-  read: true
-  glob: true
-  grep: true
 permission:
+  read: allow
+  write: deny
+  edit: deny
+  glob: allow
+  grep: allow
+  bash: deny
   skill:
     solid-principles: allow
     clean-code: allow
