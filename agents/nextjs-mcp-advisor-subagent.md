@@ -54,24 +54,28 @@ Invoke this subagent when you encounter:
 
 - **Next.js 16+** (required for MCP endpoint at `/_next/mcp`)
 - Running Next.js development server for live features
-- Project-level `.mcp.json` configuration
+- OpenCode MCP configuration in `opencode.json`
 
 ## Project Configuration
 
-### .mcp.json (Project Level)
+### opencode.json (Project Level)
 
-Create or update `.mcp.json` in your Next.js project root:
+Add the `next-devtools` MCP server to your `opencode.json` in the project root:
 
 ```json
 {
-  "mcpServers": {
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
     "next-devtools": {
-      "command": "npx",
-      "args": ["-y", "next-devtools-mcp@latest"]
+      "type": "local",
+      "command": ["npx", "-y", "next-devtools-mcp@latest"],
+      "enabled": true
     }
   }
 }
 ```
+
+**Note**: OpenCode uses `opencode.json` with the `mcp` key, NOT `.mcp.json` with `mcpServers`. The command is an array format `["npx", "-y", "pkg"]` rather than separate `command` and `args` fields.
 
 ### Starting the Dev Server
 
@@ -315,9 +319,10 @@ Looks up a Server Action by its ID to find the source file and function name.
 
 **Solutions**:
 1. Ensure Next.js dev server is running (`npm run dev`)
-2. Verify `.mcp.json` is in project root
-3. Check Next.js version is 16+
-4. Confirm `next-devtools-mcp@latest` is being used
+2. Verify `opencode.json` contains the `mcp` configuration with `next-devtools`
+3. Check that `enabled: true` is set in the MCP configuration
+4. Check Next.js version is 16+
+5. Confirm `next-devtools-mcp@latest` is being used
 
 ### Issue: No Errors Returned
 
@@ -388,6 +393,6 @@ Use `get_server_action_by_id` to:
 
 - MCP server requires Next.js 16+ with built-in `/_next/mcp` endpoint
 - Dev server must be running for live features to work
-- `next-devtools-mcp` is configured at project level, not global
+- `next-devtools` is configured via `opencode.json` under the `mcp` key
 - Tools are subject to change with new Next.js releases
 - For project scaffolding, delegate to `nextjs-setup-subagent`
