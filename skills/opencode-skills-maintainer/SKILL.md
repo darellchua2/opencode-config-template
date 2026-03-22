@@ -119,7 +119,6 @@ Organize skills into logical categories:
 
 # Project Setup
 - nextjs-standard-setup
-- nextjs-complete-setup
 
 # Git/Workflow
 - git-issue-creator
@@ -154,9 +153,7 @@ Organize skills into logical categories:
 - opentofu-ecr-provision
 
 # Code Quality/Documentation
-- docstring-generator
-- python-docstring-generator
-- nextjs-tsdoc-documentor
+- docstring-generator (covers Python PEP 257, TypeScript TSDoc, Java Javadoc, C# XML docs)
 - typescript-dry-principle
 - coverage-readme-workflow
 

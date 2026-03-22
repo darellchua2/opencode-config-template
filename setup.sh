@@ -531,17 +531,16 @@ USAGE:
       microsoft-copilot  M365 Copilot conversations
       microsoft-dataverse Business data (Dynamics 365)
 
-   SKILLS (50):
-     Framework (7):        test-generator-framework, linting-workflow,
+   SKILLS (47):
+     Framework (8):        test-generator-framework, linting-workflow,
                            pr-creation-workflow, jira-git-integration,
-                           error-resolver-workflow, tdd-workflow, docx-creation
+                           error-resolver-workflow, tdd-workflow, docx-creation,
+                           coverage-framework, ticket-branch-workflow
 
-     Language-Specific (4): python-pytest-creator, python-ruff-linter,
-                           python-docstring-generator, javascript-eslint-linter
-
-     Framework-Specific (7): nextjs-pr-workflow, nextjs-unit-test-creator,
-                           nextjs-standard-setup, nextjs-complete-setup,
-                           nextjs-image-usage, nextjs-tsdoc-documentor,
+     Language-Specific (3): python-pytest-creator, python-ruff-linter,
+                           javascript-eslint-linter
+     Framework-Specific (5): nextjs-pr-workflow, nextjs-unit-test-creator,
+                           nextjs-standard-setup, nextjs-image-usage,
                            typescript-dry-principle
 
      OpenCode Meta (4):    opencode-agent-creation, opencode-skill-creation,
@@ -1661,12 +1660,23 @@ setup_config() {
             fi
         fi
 
-        # Copy skills folder
-        run_cmd "cp -r ${SCRIPT_DIR}/skills/* ${SKILLS_DIR}/"
+        # Copy skills folder (excluding _archived)
+        if command -v rsync &> /dev/null; then
+            run_cmd "rsync -av --exclude='_archived' ${SCRIPT_DIR}/skills/ ${SKILLS_DIR}/"
+        else
+            # Fallback: copy all except _archived
+            mkdir -p "${SKILLS_DIR}"
+            for item in "${SCRIPT_DIR}/skills"/*; do
+                item_name=$(basename "$item")
+                if [[ "$item_name" != "_archived" ]]; then
+                    cp -r "$item" "${SKILLS_DIR}/"
+                fi
+            done
+        fi
         log_success "Skills copied successfully to ${SKILLS_DIR}"
 
         echo ""
-        echo "✓ Deployed 51 skills:"
+        echo "✓ Deployed 47 skills:"
         echo "    - Framework (9):"
         echo "      - test-generator-framework"
         echo "      - linting-workflow"
@@ -1677,18 +1687,15 @@ setup_config() {
         echo "      - tdd-workflow"
         echo "      - coverage-framework"
         echo "      - docx-creation"
-        echo "    - Language-Specific (4):"
+        echo "    - Language-Specific (3):"
         echo "      - python-pytest-creator"
         echo "      - python-ruff-linter"
-        echo "      - python-docstring-generator"
         echo "      - javascript-eslint-linter"
-        echo "    - Framework-Specific (7):"
+        echo "    - Framework-Specific (5):"
         echo "      - nextjs-pr-workflow"
         echo "      - nextjs-unit-test-creator"
         echo "      - nextjs-standard-setup"
-        echo "      - nextjs-complete-setup"
         echo "      - nextjs-image-usage"
-        echo "      - nextjs-tsdoc-documentor"
         echo "      - typescript-dry-principle"
         echo "    - OpenCode Meta (4):"
         echo "      - opencode-agent-creation"
@@ -2273,18 +2280,15 @@ print_summary() {
         echo "      - tdd-workflow"
         echo "      - coverage-framework"
         echo "      - docx-creation"
-        echo "    - Language-Specific (4):"
+        echo "    - Language-Specific (3):"
         echo "      - python-pytest-creator"
         echo "      - python-ruff-linter"
-        echo "      - python-docstring-generator"
         echo "      - javascript-eslint-linter"
-        echo "    - Framework-Specific (7):"
+        echo "    - Framework-Specific (5):"
         echo "      - nextjs-pr-workflow"
         echo "      - nextjs-unit-test-creator"
         echo "      - nextjs-standard-setup"
-        echo "      - nextjs-complete-setup"
         echo "      - nextjs-image-usage"
-        echo "      - nextjs-tsdoc-documentor"
         echo "      - typescript-dry-principle"
         echo "    - OpenCode Meta (4):"
         echo "      - opencode-agent-creation"
