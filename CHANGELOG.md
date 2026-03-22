@@ -1,3 +1,11 @@
+# [1.26.0](https://github.com/darellchua2/opencode-config-template/compare/v1.25.1...v1.26.0) (2026-03-22)
+
+
+### Features
+
+* **agents:** enable atlassian MCP for JIRA subagents as primary approach ([e4d0099](https://github.com/darellchua2/opencode-config-template/commit/e4d0099ad97b57600f7b37464a3d6b7c3e68af37))
+* **agents:** implement project-level subagent support ([#109](https://github.com/darellchua2/opencode-config-template/issues/109)) ([565652c](https://github.com/darellchua2/opencode-config-template/commit/565652cfec73ea8d3167973c5c64c9b7228df4cf))
+
 ## [1.25.1](https://github.com/darellchua2/opencode-config-template/compare/v1.25.0...v1.25.1) (2026-03-22)
 
 
