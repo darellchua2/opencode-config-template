@@ -39,15 +39,15 @@ PR Workflows by Framework:
 - git-pr-creator: Create PRs with optional JIRA integration
 
 Framework-Specific Quality Checks:
-Next.js:
-- Run: npm run lint && npm run build && npm run test
-- Coverage badges via coverage-readme-workflow
-- TSDoc validation via nextjs-tsdoc-documentor
+ Next.js:
+ - Run: npm run lint && npm run build && npm run test
+ - Coverage badges via coverage-readme-workflow
+ - TSDoc validation via docstring-generator (covers TypeScript)
 
-Python:
-- Run: ruff check . && pytest
-- Coverage via coverage-framework
-- Docstring validation via python-docstring-generator
+ Python:
+ - Run: ruff check . && pytest
+ - Coverage via coverage-framework
+ - Docstring validation via docstring-generator (covers Python PEP 257)
 
 Generic:
 - Detect framework from project files (package.json, pyproject.toml, etc.)

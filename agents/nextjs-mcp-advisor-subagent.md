@@ -32,7 +32,7 @@ This subagent helps users:
 |--------|----------------------|---------------------------|
 | Focus | Project scaffolding & initial config | Runtime guidance & best practices |
 | MCP Usage | None | Leverages next-devtools-mcp |
-| Skills | nextjs-standard-setup, nextjs-complete-setup | MCP tools + documentation |
+| Skills | nextjs-standard-setup, docstring-generator | MCP tools + documentation |
 | Activation | "create next.js app", "next.js setup" | "next.js mcp", "next errors", "next advice" |
 | Timing | Project creation phase | Ongoing development phase |
 

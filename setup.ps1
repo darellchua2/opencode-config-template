@@ -301,18 +301,18 @@ USAGE:
     Usage: opencode --agent build 'implement auth feature'
            opencode --agent explore 'find all API routes'
 
-   SKILLS (50):
-    Framework (7):        test-generator-framework, linting-workflow,
-                          pr-creation-workflow, jira-git-integration,
-                          error-resolver-workflow, tdd-workflow, docx-creation
+   SKILLS (47):
+     Framework (8):        test-generator-framework, linting-workflow,
+                           pr-creation-workflow, jira-git-integration,
+                           error-resolver-workflow, tdd-workflow, docx-creation,
+                           coverage-framework, ticket-branch-workflow
 
-    Language-Specific (4): python-pytest-creator, python-ruff-linter,
-                          python-docstring-generator, javascript-eslint-linter
+     Language-Specific (3): python-pytest-creator, python-ruff-linter,
+                           javascript-eslint-linter
 
-    Framework-Specific (7): nextjs-pr-workflow, nextjs-unit-test-creator,
-                          nextjs-standard-setup, nextjs-complete-setup,
-                          nextjs-image-usage, nextjs-tsdoc-documentor,
-                          typescript-dry-principle
+     Framework-Specific (5): nextjs-pr-workflow, nextjs-unit-test-creator,
+                           nextjs-standard-setup, nextjs-image-usage,
+                           typescript-dry-principle
 
     OpenCode Meta (4):    opencode-agent-creation, opencode-skill-creation,
                           opencode-skill-auditor, opencode-skills-maintainer
@@ -1231,7 +1231,13 @@ function Deploy-Skills {
         }
 
         if (-not $DryRun) {
-            Copy-Item (Join-Path $skillsSrc "*") $SkillsDir -Recurse -Force
+            # Copy all skills except _archived
+            Get-ChildItem -Path $skillsSrc -Directory | Where-Object { $_.Name -ne "_archived" } | ForEach-Object {
+                Copy-Item $_.FullName $SkillsDir -Recurse -Force
+            }
+            Get-ChildItem -Path $skillsSrc -File | ForEach-Object {
+                Copy-Item $_.FullName $SkillsDir -Force
+            }
         }
         Write-LogSuccess "Skills copied successfully to $SkillsDir"
 
@@ -1240,17 +1246,17 @@ function Deploy-Skills {
         Write-Host "Deployed $skillCount skills to $SkillsDir" -ForegroundColor Green
         Write-Host ""
         Write-Host "  Skill Categories:" -ForegroundColor Cyan
-        Write-Host "    Framework (7):"
+        Write-Host "    Framework (9):"
         Write-Host "      - test-generator-framework, linting-workflow"
         Write-Host "      - pr-creation-workflow, jira-git-integration"
         Write-Host "      - error-resolver-workflow, tdd-workflow, docx-creation"
-        Write-Host "    Language-Specific (4):"
+        Write-Host "      - coverage-framework, ticket-branch-workflow"
+        Write-Host "    Language-Specific (3):"
         Write-Host "      - python-pytest-creator, python-ruff-linter"
-        Write-Host "      - python-docstring-generator, javascript-eslint-linter"
-        Write-Host "    Framework-Specific (7):"
+        Write-Host "      - javascript-eslint-linter"
+        Write-Host "    Framework-Specific (5):"
         Write-Host "      - nextjs-pr-workflow, nextjs-unit-test-creator"
-        Write-Host "      - nextjs-standard-setup, nextjs-complete-setup"
-        Write-Host "      - nextjs-image-usage, nextjs-tsdoc-documentor"
+        Write-Host "      - nextjs-standard-setup, nextjs-image-usage"
         Write-Host "      - typescript-dry-principle"
         Write-Host "    OpenCode Meta (4):"
         Write-Host "      - opencode-agent-creation, opencode-skill-creation"
@@ -1283,13 +1289,12 @@ function Deploy-Skills {
         Write-Host "      - pr-creation-workflow, jira-git-integration"
         Write-Host "      - ticket-branch-workflow, error-resolver-workflow"
         Write-Host "      - tdd-workflow, coverage-framework, docx-creation"
-        Write-Host "    Language-Specific (4):"
+        Write-Host "    Language-Specific (3):"
         Write-Host "      - python-pytest-creator, python-ruff-linter"
-        Write-Host "      - python-docstring-generator, javascript-eslint-linter"
-        Write-Host "    Framework-Specific (7):"
+        Write-Host "      - javascript-eslint-linter"
+        Write-Host "    Framework-Specific (5):"
         Write-Host "      - nextjs-pr-workflow, nextjs-unit-test-creator"
-        Write-Host "      - nextjs-standard-setup, nextjs-complete-setup"
-        Write-Host "      - nextjs-image-usage, nextjs-tsdoc-documentor"
+        Write-Host "      - nextjs-standard-setup, nextjs-image-usage"
         Write-Host "      - typescript-dry-principle"
         Write-Host "    OpenCode Meta (4):"
         Write-Host "      - opencode-agent-creation, opencode-skill-creation"

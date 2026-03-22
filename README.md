@@ -125,21 +125,23 @@ This template implements **skill permissions** to control which skills agents ca
 
 ## Skill Modularization
 
-This repository implements **skill modularization** with 50 skills organized across 9 categories. Skills are designed with clear separation of concerns and explicit dependencies.
+This repository implements **skill modularization** with 47 skills organized across 9 categories. Skills are designed with clear separation of concerns and explicit dependencies.
 
 ### Skill Categories
 
 | Category | Skills | Purpose |
 |-----------|---------|---------|
-| **Framework** (7) | test-generator-framework, linting-workflow, pr-creation-workflow, jira-git-integration, error-resolver-workflow, tdd-workflow, docx-creation | Generic workflows, testing patterns, and document creation |
-| **Language-Specific** (4) | python-pytest-creator, python-ruff-linter, python-docstring-generator, javascript-eslint-linter | Language-specific test, linting, and documentation |
-| **Framework-Specific** (7) | nextjs-pr-workflow, nextjs-unit-test-creator, nextjs-standard-setup, nextjs-complete-setup, nextjs-image-usage, nextjs-tsdoc-documentor, typescript-dry-principle | Next.js and TypeScript workflows |
+| **Framework** (9) | test-generator-framework, linting-workflow, pr-creation-workflow, jira-git-integration, error-resolver-workflow, tdd-workflow, docx-creation, coverage-framework, ticket-branch-workflow | Generic workflows, testing patterns, and document creation |
+| **Language-Specific** (3) | python-pytest-creator, python-ruff-linter, javascript-eslint-linter | Language-specific test, linting, and documentation |
+| **Framework-Specific** (5) | nextjs-pr-workflow, nextjs-unit-test-creator, nextjs-standard-setup, nextjs-image-usage, typescript-dry-principle | Next.js and TypeScript workflows |
 | **OpenCode Meta** (4) | opencode-agent-creation, opencode-skill-creation, opencode-skill-auditor, opencode-skills-maintainer | Agent and skill creation/maintenance |
 | **OpenTofu** (7) | opentofu-aws-explorer, opentofu-keycloak-explorer, opentofu-kubernetes-explorer, opentofu-neon-explorer, opentofu-provider-setup, opentofu-provisioning-workflow, opentofu-ecr-provision | Infrastructure as code |
 | **Git/Workflow** (8) | ascii-diagram-creator, git-issue-creator, git-pr-creator, git-issue-labeler, git-issue-plan-workflow, git-issue-updater, git-semantic-commits, plan-updater | Git operations and workflows |
 | **Documentation** (3) | coverage-readme-workflow, docstring-generator, documentation-sync-workflow | Documentation generation |
 | **JIRA** (4) | jira-ticket-oauth-workflow, jira-ticket-plan-workflow, jira-status-updater, jira-ticket-workflow | JIRA integration workflows |
 | **Code Quality** (7) | solid-principles, clean-code, clean-architecture, design-patterns, object-design, code-smells, complexity-management | Code quality analysis and patterns |
+
+> **Note**: 3 redundant skills archived to `skills/_archived/`: `nextjs-complete-setup`, `python-docstring-generator`, `nextjs-tsdoc-documentor`. Use `docstring-generator` for all language docstrings (Python PEP 257, TypeScript TSDoc, Java Javadoc, C# XML docs). |
 
 ### Agents
 
@@ -169,7 +171,7 @@ This repository implements **skill modularization** with 50 skills organized acr
 | **code-review-subagent** | Comprehensive code review | All 7 Code Quality skills |
 | **refactoring-subagent** | Code refactoring | solid-principles, code-smells, clean-code |
 | **error-resolver-subagent** | Error diagnosis and resolution | error-resolver-workflow |
-| **nextjs-setup-subagent** | Next.js project setup | nextjs-standard-setup, nextjs-complete-setup |
+| **nextjs-setup-subagent** | Next.js project setup | nextjs-standard-setup (also see docstring-generator for TSDoc) |
 | **opencode-tooling-subagent** | Skills and agents creation | opencode-skill-creation, opencode-agent-creation |
 | **docx-creation-subagent** | Word document creation | docx-creation |
 | **diagram-subagent** | ASCII diagrams and images | ascii-diagram-creator |
