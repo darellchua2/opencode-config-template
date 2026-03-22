@@ -1,3 +1,10 @@
+# [1.32.0](https://github.com/darellchua2/opencode-config-template/compare/v1.31.0...v1.32.0) (2026-03-22)
+
+
+### Features
+
+* **skills:** add plan-updater skill and integrate PLAN.md sync into code-implementing subagents ([26f4339](https://github.com/darellchua2/opencode-config-template/commit/26f4339240b2ac7e110dc4c9446eecf2ab8f0bed)), closes [#124](https://github.com/darellchua2/opencode-config-template/issues/124)
+
 # [1.31.0](https://github.com/darellchua2/opencode-config-template/compare/v1.30.0...v1.31.0) (2026-03-22)
 
 
