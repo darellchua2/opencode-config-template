@@ -1,3 +1,10 @@
+## [1.26.2](https://github.com/darellchua2/opencode-config-template/compare/v1.26.1...v1.26.2) (2026-03-22)
+
+
+### Bug Fixes
+
+* **setup.sh:** flatten agents directory structure for OpenCode discovery ([f7c70d5](https://github.com/darellchua2/opencode-config-template/commit/f7c70d570f9bce55e47796545f07d5067fecd2f5)), closes [#111](https://github.com/darellchua2/opencode-config-template/issues/111)
+
 ## [1.26.1](https://github.com/darellchua2/opencode-config-template/compare/v1.26.0...v1.26.1) (2026-03-22)
 
 
