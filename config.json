@@ -121,6 +121,43 @@
         "GOOGLE_APPLICATION_CREDENTIALS": "${env:GOOGLE_APPLICATION_CREDENTIALS}"
       },
       "enabled": false
+    },
+    "autodesk-revit": {
+      "type": "remote",
+      "url": "https://mcp.autodesk.com/revit/v1",
+      "headers": {
+        "Authorization": "Bearer {env:AUTODESK_API_KEY}"
+      },
+      "enabled": false
+    },
+    "autodesk-model-data": {
+      "type": "remote",
+      "url": "https://mcp.autodesk.com/model-data/v1",
+      "headers": {
+        "Authorization": "Bearer {env:AUTODESK_API_KEY}"
+      },
+      "enabled": false
+    },
+    "autodesk-fusion": {
+      "type": "remote",
+      "url": "https://mcp.autodesk.com/fusion/v1",
+      "headers": {
+        "Authorization": "Bearer {env:AUTODESK_API_KEY}"
+      },
+      "enabled": false
+    },
+    "autodesk-help": {
+      "type": "remote",
+      "url": "https://mcp.autodesk.com/help/v1",
+      "headers": {
+        "Authorization": "Bearer {env:AUTODESK_API_KEY}"
+      },
+      "enabled": false
+    },
+    "next-devtools": {
+      "type": "local",
+      "command": ["npx", "-y", "next-devtools-mcp@latest"],
+      "enabled": false
     }
   },
   "tools": {
@@ -132,7 +169,12 @@
     "google-bigquery*": false,
     "google-maps*": false,
     "google-gce*": false,
-    "google-gke*": false
+    "google-gke*": false,
+    "autodesk-revit*": false,
+    "autodesk-model-data*": false,
+    "autodesk-fusion*": false,
+    "autodesk-help*": false,
+    "next-devtools*": false
   },
   "agent": {
     "build": {

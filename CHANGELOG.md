@@ -1,3 +1,24 @@
+# [1.28.0](https://github.com/darellchua2/opencode-config-template/compare/v1.27.0...v1.28.0) (2026-03-22)
+
+
+### Features
+
+* **agents:** add nextjs-mcp-advisor subagent for issue [#118](https://github.com/darellchua2/opencode-config-template/issues/118) ([e460f38](https://github.com/darellchua2/opencode-config-template/commit/e460f38f77ddaa6f8036f93c8ce25d3d6bae35cf))
+
+# [1.27.0](https://github.com/darellchua2/opencode-config-template/compare/v1.26.3...v1.27.0) (2026-03-22)
+
+
+### Features
+
+* **agents:** add autodesk-mcp-specialist subagent for issue [#116](https://github.com/darellchua2/opencode-config-template/issues/116) ([a7b3251](https://github.com/darellchua2/opencode-config-template/commit/a7b32514693867139601bb404058dadcc8aee3f6))
+
+## [1.26.3](https://github.com/darellchua2/opencode-config-template/compare/v1.26.2...v1.26.3) (2026-03-22)
+
+
+### Bug Fixes
+
+* **plan:** restore default permissions with subagent delegation ([abcc702](https://github.com/darellchua2/opencode-config-template/commit/abcc702603a253d0f5a029fd734134e66a0e04a3))
+
 ## [1.26.2](https://github.com/darellchua2/opencode-config-template/compare/v1.26.1...v1.26.2) (2026-03-22)
 
 
