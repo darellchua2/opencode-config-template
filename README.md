@@ -179,11 +179,38 @@ Skills follow a modular architecture:
 
 ### Configuration Files
 
-The setup scripts automatically:
-- Copies `.AGENTS.md` to `~/.config/opencode/AGENTS.md` (renaming it)
-- Copies `skills/` folder to `~/.config/opencode/skills/`
-- Copies `config.json` to `~/.config/opencode/config.json`
-- Backs up existing files before overwriting
+- **Setup scripts** automatically:
+  - Copies `.AGENTS.md` into `~/.config/opencode/AGENTS.md` (renaming file)
+  - Copies `skills/` folder into `~/.config/opencode/skills/`
+  - Copies `config.json` into `~/.config/opencode/config.json`
+  - Backs up existing files before overwriting
+
+### JIRA OAuth2 Token Auto-Refresh
+
+- **Automatic token refresh**: JIRA OAuth2 tokens now refresh automatically before expiration, See `scripts/jira-token-manager.sh`
+- **Token storage**: `~/.config/opencode/jira-tokens.json` (encrypted, file permissions 600)
+- **Proactive refresh**: Tokens refresh 5 minutes before expiration (configurable)
+- **Environment variables**:
+  - `JIRA_TOKEN_FILE` - Token storage file (default: `~/.config/opencode/jira-tokens.json`)
+  - `JIRA_TOKEN_BUFFER_SECONDS` - Buffer before proactive refresh (default: 300)
+  - `JIRA_TOKEN_MAX_RETRIES` - Max refresh retries (default: 3)
+  - `JIRA_TOKEN_RETRY_DELAY` - Delay between retries (default: 2)
+  - `JIRA_TOKEN_DEBUG` - Enable debug output (set to 'true')
+
+- **Usage**: Source the wrapper script in your shell scripts
+  ```bash
+  # Source the wrapper for easy API access
+  source scripts/jira-token-manager.sh
+  
+  # Check token status
+  scripts/jira-token-manager.sh status
+  
+  # Make API calls with auto-refresh
+  scripts/jira-token-manager.sh api-get "/project"
+  
+  # Create ticket
+  scripts/jira-token-manager.sh api-post "/issue" '{"fields":{...}}'
+  ```
 
 ### Environment Variable Persistence
 

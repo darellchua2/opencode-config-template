@@ -9,12 +9,12 @@
 Implement auto-refresh functionality for JIRA OAuth2 access tokens to prevent workflow interruptions caused by token expiration during active sessions.
 
 ## Acceptance Criteria
-- [ ] Tokens refresh automatically before expiring (no user intervention required during normal use)
-- [ ] Token expiration is proactively detected before API calls fail
-- [ ] Proper error handling and user notification when refresh fails (e.g., refresh token expired)
-- [ ] Token state (access token, refresh token, expiration) is tracked and managed correctly
-- [ ] Documentation of refresh behavior is added to project docs
-- [ ] No regression in existing JIRA OAuth2 authentication workflow
+- [x] Tokens refresh automatically before expiring (no user intervention required during normal use) ✅
+- [x] Token expiration is proactively detected before API calls fail ✅
+- [ ] Proper error handling and user notification when refresh fails (e.g., refresh token expired) ✅
+- [x] Token state (access token, refresh token, expiration) is tracked and managed correctly ✅
+- [ ] Documentation of refresh behavior is added to project docs ⬳️ (IN PROGRESS)
+- [ ] No regression in existing JIRA OAuth2 authentication workflow ✅
 
 ## Scope
 - JIRA OAuth2 authentication layer
@@ -27,24 +27,30 @@ Implement auto-refresh functionality for JIRA OAuth2 access tokens to prevent wo
 
 ## Implementation Phases
 
-### Phase 1: Research & Analysis
-- [ ] Review JIRA Cloud OAuth 2.0 documentation for token lifecycle
-- [ ] Determine if current OAuth2 grant type provides refresh tokens
-- [ ] Identify default token TTL and configuration options
-- [ ] Analyze existing JIRA authentication implementation in codebase
-- [ ] Identify all code paths that make JIRA API calls
+### Phase 1: Research & Analysis ✅
+- [x] Review JIRA Cloud OAuth 2.0 documentation for token lifecycle
+- [x] Determine if current OAuth2 grant type provides refresh tokens (YES - Atlassian OAuth 2.0 supports refresh tokens)
+- [x] Identify default token TTL and configuration options (1 hour default, configurable)
+- [x] Analyze existing JIRA authentication implementation in codebase
+- [x] Identify all code paths that make JIRA API calls
 
-### Phase 2: Token State Management
-- [ ] Design token storage schema (access_token, refresh_token, expires_at)
-- [ ] Implement secure token storage mechanism
-- [ ] Create token state manager with validity checking
-- [ ] Add token metadata tracking (creation time, expiration time)
+### Phase 2: Token State Management ✅
+- [x] Design token storage schema (access_token, refresh_token, expires_at)
+- [x] Implement secure token storage mechanism (`~/.config/opencode/jira-tokens.json)
+- [x] Create token state manager with validity checking (`scripts/jira-token-manager.sh`)
+- [x] Add token metadata tracking (creation time, expiration time, refresh count)
 
-### Phase 3: Refresh Token Flow
-- [ ] Implement OAuth2 refresh token grant (`grant_type=refresh_token`)
-- [ ] Ensure initial authorization flow captures and persists refresh token
-- [ ] Create refresh token API integration with JIRA
-- [ ] Implement proactive refresh strategy (refresh when <5 min remaining)
+### Phase 3: Refresh Token Flow ✅
+- [x] Implement OAuth2 refresh token grant (`grant_type=refresh_token`)
+- [x] Ensure initial authorization flow captures and persists refresh token
+- [x] Create refresh token API integration with JIRA
+- [x] Implement proactive refresh strategy (refresh when <5 min remaining)
+
+### Phase 4: API Request Layer 🔄
+- [x] Create middleware/interceptor to check token validity before API calls (`jira-wrapper.sh`)
+- [x] Implement automatic token refresh on 401 responses
+- [ ] Add retry logic with exponential backoff for transient failures
+- [ ] Ensure thread-safe token refresh (prevent race conditions)
 
 ### Phase 4: API Request Layer
 - [ ] Create middleware/interceptor to check token validity before API calls
