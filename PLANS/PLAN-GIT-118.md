@@ -13,16 +13,16 @@ Create a new subagent called `nextjs-mcp-advisor` that leverages the Next.js MCP
 
 ## Acceptance Criteria
 
-- [ ] Create `agents/nextjs-mcp-advisor-subagent.md` following existing subagent patterns
-- [ ] Include frontmatter with `mode: subagent`, `model: zai-coding-plan/glm-5`, and appropriate permissions
-- [ ] Include trigger phrases for Next.js MCP advisor tasks
-- [ ] Document all available `next-devtools-mcp` tools and their usage patterns
-- [ ] Include configuration instructions for adding `next-devtools-mcp` to project `.mcp.json` files
-- [ ] Add `next-devtools` MCP server entry to `config.json` (disabled by default)
-- [ ] Include tool permissions in subagent frontmatter for `next-devtools*` tools
-- [ ] Provide usage examples for common advisor scenarios
-- [ ] Include a dedicated workflow section for dev server interaction
-- [ ] Reference the official Next.js MCP documentation
+- [x] Create `agents/nextjs-mcp-advisor-subagent.md` following existing subagent patterns
+- [x] Include frontmatter with `mode: subagent`, `model: zai-coding-plan/glm-5`, and appropriate permissions
+- [x] Include trigger phrases for Next.js MCP advisor tasks
+- [x] Document all available `next-devtools-mcp` tools and their usage patterns
+- [x] Include configuration instructions for adding `next-devtools-mcp` to project `.mcp.json` files
+- [x] Add `next-devtools` MCP server entry to `config.json` (disabled by default)
+- [x] Include tool permissions in subagent frontmatter for `next-devtools*` tools
+- [x] Provide usage examples for common advisor scenarios
+- [x] Include a dedicated workflow section for dev server interaction
+- [x] Reference the official Next.js MCP documentation
 
 ## Scope
 
@@ -35,43 +35,43 @@ Create a new subagent called `nextjs-mcp-advisor` that leverages the Next.js MCP
 ## Implementation Phases
 
 ### Phase 1: Research & Pattern Analysis
-- [ ] Review `agents/autodesk-specialist-subagent.md` as the primary reference pattern for MCP-based subagents
-- [ ] Review `agents/nextjs-setup-subagent.md` to understand existing Next.js coverage and avoid overlap
-- [ ] Review Next.js MCP documentation: https://nextjs.org/docs/app/guides/mcp
-- [ ] Identify all trigger phrases and tool permission patterns needed
-- [ ] Determine the boundary between `nextjs-setup-subagent` (scaffolding) and `nextjs-mcp-advisor` (runtime guidance)
+- [x] Review `agents/autodesk-specialist-subagent.md` as the primary reference pattern for MCP-based subagents
+- [x] Review `agents/nextjs-setup-subagent.md` to understand existing Next.js coverage and avoid overlap
+- [x] Review Next.js MCP documentation: https://nextjs.org/docs/app/guides/mcp
+- [x] Identify all trigger phrases and tool permission patterns needed
+- [x] Determine the boundary between `nextjs-setup-subagent` (scaffolding) and `nextjs-mcp-advisor` (runtime guidance)
 
 ### Phase 2: Create Subagent File
-- [ ] Create `agents/nextjs-mcp-advisor-subagent.md`
-- [ ] Add frontmatter with description, mode, model, permissions, and tool grants
-- [ ] Add Purpose section describing the advisor's role and relationship to `nextjs-setup-subagent`
-- [ ] Add Trigger Phrases section covering Next.js MCP, devtools, error diagnosis, and best practices
-- [ ] Add Available MCP Tools section documenting all 6 `next-devtools-mcp` tools
-- [ ] Add Project Configuration section with `.mcp.json` setup instructions
-- [ ] Add Workflow section explaining how the advisor interacts with running Next.js dev servers
-- [ ] Add Usage Examples section with common scenarios (error detection, upgrades, best practices, routing)
-- [ ] Add Troubleshooting section covering common MCP connection issues
-- [ ] Add Notes section with key caveats (Next.js 16+ requirement, project-level config)
+- [x] Create `agents/nextjs-mcp-advisor-subagent.md`
+- [x] Add frontmatter with description, mode, model, permissions, and tool grants
+- [x] Add Purpose section describing the advisor's role and relationship to `nextjs-setup-subagent`
+- [x] Add Trigger Phrases section covering Next.js MCP, devtools, error diagnosis, and best practices
+- [x] Add Available MCP Tools section documenting all 6 `next-devtools-mcp` tools
+- [x] Add Project Configuration section with `.mcp.json` setup instructions
+- [x] Add Workflow section explaining how the advisor interacts with running Next.js dev servers
+- [x] Add Usage Examples section with common scenarios (error detection, upgrades, best practices, routing)
+- [x] Add Troubleshooting section covering common MCP connection issues
+- [x] Add Notes section with key caveats (Next.js 16+ requirement, project-level config)
 
 ### Phase 3: Config Updates
-- [ ] Add `next-devtools` MCP server entry to `config.json` under the `mcp` section (disabled by default)
-- [ ] Add `next-devtools*` tool permission entry to `config.json` under the `tools` section
-- [ ] Verify JSON syntax is valid after changes
-- [ ] Ensure tool permissions in subagent frontmatter match config.json entries
+- [x] Add `next-devtools` MCP server entry to `config.json` under the `mcp` section (disabled by default)
+- [x] Add `next-devtools*` tool permission entry to `config.json` under the `tools` section
+- [x] Verify JSON syntax is valid after changes
+- [x] Ensure tool permissions in subagent frontmatter match config.json entries
 
 ### Phase 4: Routing & Integration
-- [ ] Evaluate if `.AGENTS.md` needs routing updates for Next.js MCP advisor tasks
-- [ ] Verify the subagent can be properly discovered by OpenCode
-- [ ] Ensure no conflicts with existing Next.js-related subagents and skills
+- [x] Evaluate if `.AGENTS.md` needs routing updates for Next.js MCP advisor tasks
+- [x] Verify the subagent can be properly discovered by OpenCode
+- [x] Ensure no conflicts with existing Next.js-related subagents and skills
 
 ### Phase 5: Validation
-- [ ] Verify subagent file follows the same structure as `autodesk-specialist-subagent.md`
-- [ ] Verify frontmatter YAML is valid
-- [ ] Verify all 6 `next-devtools-mcp` tools are documented
-- [ ] Verify trigger phrases cover common user phrases
-- [ ] Verify `.mcp.json` configuration examples are syntactically correct JSON
-- [ ] Cross-check against Next.js MCP documentation for accuracy
-- [ ] Verify config.json is valid after additions
+- [x] Verify subagent file follows the same structure as `autodesk-specialist-subagent.md`
+- [x] Verify frontmatter YAML is valid
+- [x] Verify all 6 `next-devtools-mcp` tools are documented
+- [x] Verify trigger phrases cover common user phrases
+- [x] Verify `.mcp.json` configuration examples are syntactically correct JSON
+- [x] Cross-check against Next.js MCP documentation for accuracy
+- [x] Verify config.json is valid after additions
 
 ---
 
