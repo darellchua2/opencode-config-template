@@ -518,30 +518,40 @@ USAGE:
       web-search-prime   Web search capabilities
       zread              GitHub repository search and file reading
 
-  SKILLS (27):
-    Framework (5):        test-generator-framework, jira-git-integration,
-                           pr-creation-workflow, ticket-branch-workflow,
-                           linting-workflow
+   SKILLS (49):
+     Framework (7):        test-generator-framework, linting-workflow,
+                           pr-creation-workflow, jira-git-integration,
+                           error-resolver-workflow, tdd-workflow, docx-creation
 
-    Language-Specific (3): python-pytest-creator, python-ruff-linter,
-                           javascript-eslint-linter
+     Language-Specific (4): python-pytest-creator, python-ruff-linter,
+                           python-docstring-generator, javascript-eslint-linter
 
-    Framework-Specific (4): nextjs-pr-workflow, nextjs-unit-test-creator,
-                           nextjs-standard-setup, typescript-dry-principle
+     Framework-Specific (7): nextjs-pr-workflow, nextjs-unit-test-creator,
+                           nextjs-standard-setup, nextjs-complete-setup,
+                           nextjs-image-usage, nextjs-tsdoc-documentor,
+                           typescript-dry-principle
 
-    OpenCode Meta (3):    opencode-agent-creation, opencode-skill-creation,
-                           opencode-skill-auditor
+     OpenCode Meta (4):    opencode-agent-creation, opencode-skill-creation,
+                           opencode-skill-auditor, opencode-skills-maintainer
 
-    OpenTofu (6):         opentofu-aws-explorer, opentofu-keycloak-explorer,
+     OpenTofu (7):         opentofu-aws-explorer, opentofu-keycloak-explorer,
                            opentofu-kubernetes-explorer, opentofu-neon-explorer,
-                           opentofu-provider-setup, opentofu-provisioning-workflow
+                           opentofu-provider-setup, opentofu-provisioning-workflow,
+                           opentofu-ecr-provision
 
-    Git/Workflow (3):     ascii-diagram-creator, git-issue-creator,
-                           git-pr-creator
+     Git/Workflow (7):     ascii-diagram-creator, git-issue-creator,
+                           git-pr-creator, git-issue-labeler,
+                           git-issue-plan-workflow, git-issue-updater,
+                           git-semantic-commits
 
-    Documentation (2):    coverage-readme-workflow, docstring-generator
+     Documentation (2):    coverage-readme-workflow, docstring-generator
 
-    JIRA (1):             jira-git-workflow
+     JIRA (4):             jira-ticket-oauth-workflow, jira-ticket-plan-workflow,
+                           jira-status-updater, jira-ticket-workflow
+
+     Code Quality (7):     solid-principles, clean-code, clean-architecture,
+                           design-patterns, object-design, code-smells,
+                           complexity-management
 
     Run 'opencode --list-skills' for detailed descriptions
     Run 'opencode --skill <name> "prompt"' to invoke a skill
@@ -1642,42 +1652,68 @@ setup_config() {
         log_success "Skills copied successfully to ${SKILLS_DIR}"
 
         echo ""
-        echo "✓ Deployed 27 skills:"
-        echo "    - Framework (5):"
+        echo "✓ Deployed 51 skills:"
+        echo "    - Framework (9):"
         echo "      - test-generator-framework"
-        echo "      - jira-git-integration"
-        echo "      - pr-creation-workflow"
-        echo "      - ticket-branch-workflow"
         echo "      - linting-workflow"
-        echo "    - Language-Specific (3):"
+        echo "      - pr-creation-workflow"
+        echo "      - jira-git-integration"
+        echo "      - ticket-branch-workflow"
+        echo "      - error-resolver-workflow"
+        echo "      - tdd-workflow"
+        echo "      - coverage-framework"
+        echo "      - docx-creation"
+        echo "    - Language-Specific (4):"
         echo "      - python-pytest-creator"
         echo "      - python-ruff-linter"
+        echo "      - python-docstring-generator"
         echo "      - javascript-eslint-linter"
-        echo "    - Framework-Specific (4):"
+        echo "    - Framework-Specific (7):"
         echo "      - nextjs-pr-workflow"
         echo "      - nextjs-unit-test-creator"
         echo "      - nextjs-standard-setup"
+        echo "      - nextjs-complete-setup"
+        echo "      - nextjs-image-usage"
+        echo "      - nextjs-tsdoc-documentor"
         echo "      - typescript-dry-principle"
-        echo "    - OpenCode Meta (3):"
+        echo "    - OpenCode Meta (4):"
         echo "      - opencode-agent-creation"
         echo "      - opencode-skill-creation"
         echo "      - opencode-skill-auditor"
-        echo "    - OpenTofu (6):"
+        echo "      - opencode-skills-maintainer"
+        echo "    - OpenTofu (7):"
         echo "      - opentofu-aws-explorer"
         echo "      - opentofu-keycloak-explorer"
         echo "      - opentofu-kubernetes-explorer"
         echo "      - opentofu-neon-explorer"
         echo "      - opentofu-provider-setup"
         echo "      - opentofu-provisioning-workflow"
-        echo "    - Git/Workflow (3):"
+        echo "      - opentofu-ecr-provision"
+        echo "    - Git/Workflow (8):"
         echo "      - ascii-diagram-creator"
         echo "      - git-issue-creator"
         echo "      - git-pr-creator"
+        echo "      - git-issue-labeler"
+        echo "      - git-issue-plan-workflow"
+        echo "      - git-issue-updater"
+        echo "      - git-semantic-commits"
+        echo "      - jira-git-workflow"
         echo "    - Documentation (2):"
         echo "      - coverage-readme-workflow"
         echo "      - docstring-generator"
-        echo "    - JIRA (1):"
-        echo "      - jira-git-workflow"
+        echo "    - JIRA (4):"
+        echo "      - jira-ticket-oauth-workflow"
+        echo "      - jira-ticket-plan-workflow"
+        echo "      - jira-status-updater"
+        echo "      - jira-ticket-workflow"
+        echo "    - Code Quality (7):"
+        echo "      - solid-principles"
+        echo "      - clean-code"
+        echo "      - clean-architecture"
+        echo "      - design-patterns"
+        echo "      - object-design"
+        echo "      - code-smells"
+        echo "      - complexity-management"
         echo ""
         echo "  Run 'opencode --list-skills' for detailed descriptions"
         echo ""
@@ -2127,41 +2163,67 @@ print_summary() {
     if [ -d "$SKILLS_DIR" ] && [ "$(ls -A ${SKILLS_DIR} 2>/dev/null)" ]; then
         local skill_count=$(find ${SKILLS_DIR} -name "SKILL.md" 2>/dev/null | wc -l)
         echo "✓ skills: ${skill_count} skills deployed to ${SKILLS_DIR}/"
-        echo "    - Framework (5):"
+        echo "    - Framework (9):"
         echo "      - test-generator-framework"
-        echo "      - jira-git-integration"
-        echo "      - pr-creation-workflow"
-        echo "      - ticket-branch-workflow"
         echo "      - linting-workflow"
-        echo "    - Language-Specific (3):"
+        echo "      - pr-creation-workflow"
+        echo "      - jira-git-integration"
+        echo "      - ticket-branch-workflow"
+        echo "      - error-resolver-workflow"
+        echo "      - tdd-workflow"
+        echo "      - coverage-framework"
+        echo "      - docx-creation"
+        echo "    - Language-Specific (4):"
         echo "      - python-pytest-creator"
         echo "      - python-ruff-linter"
+        echo "      - python-docstring-generator"
         echo "      - javascript-eslint-linter"
-        echo "    - Framework-Specific (4):"
+        echo "    - Framework-Specific (7):"
         echo "      - nextjs-pr-workflow"
         echo "      - nextjs-unit-test-creator"
         echo "      - nextjs-standard-setup"
+        echo "      - nextjs-complete-setup"
+        echo "      - nextjs-image-usage"
+        echo "      - nextjs-tsdoc-documentor"
         echo "      - typescript-dry-principle"
-        echo "    - OpenCode Meta (3):"
+        echo "    - OpenCode Meta (4):"
         echo "      - opencode-agent-creation"
         echo "      - opencode-skill-creation"
         echo "      - opencode-skill-auditor"
-        echo "    - OpenTofu (6):"
+        echo "      - opencode-skills-maintainer"
+        echo "    - OpenTofu (7):"
         echo "      - opentofu-aws-explorer"
         echo "      - opentofu-keycloak-explorer"
         echo "      - opentofu-kubernetes-explorer"
         echo "      - opentofu-neon-explorer"
         echo "      - opentofu-provider-setup"
         echo "      - opentofu-provisioning-workflow"
-        echo "    - Git/Workflow (3):"
+        echo "      - opentofu-ecr-provision"
+        echo "    - Git/Workflow (8):"
         echo "      - ascii-diagram-creator"
         echo "      - git-issue-creator"
         echo "      - git-pr-creator"
+        echo "      - git-issue-labeler"
+        echo "      - git-issue-plan-workflow"
+        echo "      - git-issue-updater"
+        echo "      - git-semantic-commits"
+        echo "      - jira-git-workflow"
         echo "    - Documentation (2):"
         echo "      - coverage-readme-workflow"
         echo "      - docstring-generator"
-        echo "    - JIRA (1):"
-        echo "      - jira-git-workflow"
+        echo "    - JIRA (4):"
+        echo "      - jira-ticket-oauth-workflow"
+        echo "      - jira-ticket-plan-workflow"
+        echo "      - jira-status-updater"
+        echo "      - jira-ticket-workflow"
+        echo "    - Code Quality (7):"
+        echo "      - solid-principles"
+        echo "      - clean-code"
+        echo "      - clean-architecture"
+        echo "      - design-patterns"
+        echo "      - object-design"
+        echo "      - code-smells"
+        echo "      - complexity-management"
     else
         echo "✗ skills: Not deployed"
     fi
@@ -2225,12 +2287,12 @@ print_next_steps() {
     echo "         opencode \"prompt\" (uses build)"
     echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "                     📦 27 Skills Available"
+    echo "                     📦 49 Skills Available"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "  Framework (5) • Language-Specific (3) • Framework-Specific (4)"
-    echo "  OpenCode Meta (3) • OpenTofu (6) • Git/Workflow (3)"
-    echo "  Documentation (2) • JIRA (1)"
+    echo "  Framework (7) • Language-Specific (4) • Framework-Specific (7)"
+    echo "  OpenCode Meta (4) • OpenTofu (7) • Git/Workflow (7)"
+    echo "  Documentation (2) • JIRA (4) • Code Quality (7)"
     echo ""
     echo "  Run 'opencode --list-skills' for detailed descriptions"
     echo "  Run 'opencode --skill <name> \"prompt\"' to use a skill"

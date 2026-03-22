@@ -246,22 +246,22 @@ USAGE:
   MODE                    WHAT IT DOES                          WHEN TO USE
   ----------------------------------------------------------------------
   Interactive (default)   Full setup with guided prompts       First-time setup
-                          1. GitHub PAT setup (optional)
-                          2. Z.AI API key setup
-                          3. Node.js check/install
-                          4. opencode-ai installation
-                          5. config.json deployment
-                          6. skills/ deployment
-                          7. Environment variable persistence
+                           1. GitHub PAT setup (optional)
+                           2. Z.AI API key setup
+                           3. Node.js check/install
+                           4. opencode-ai installation
+                           5. config.json deployment
+                           6. skills/ deployment
+                           7. Environment variable persistence
 
   -Quick                  Copy config files only                Already have
-                          1. config.json -> ~/.config/opencode/  dependencies
-                          2. AGENTS.md -> ~/.config/opencode/
-                          3. skills/* -> ~/.config/opencode/skills/
+                           1. config.json -> ~/.config/opencode/  dependencies
+                           2. AGENTS.md -> ~/.config/opencode/
+                           3. skills/* -> ~/.config/opencode/skills/
 
   -SkillsOnly             Deploy skills only                    opencode-ai already
-                          1. Validates opencode-ai installed    installed
-                          2. Copies skills/* to config dir
+                           1. Validates opencode-ai installed    installed
+                           2. Copies skills/* to config dir
 
   -Update                 Update opencode-ai CLI only           Keep CLI current
 
@@ -286,6 +286,58 @@ USAGE:
     -Yes                 Auto-accept all prompts (non-interactive)
 
 =======================================================================
+                         CONFIGURED FEATURES
+=======================================================================
+
+  AGENTS (5):
+    build (default)      Full-featured coding agent with all tools
+    plan                 Planning agent (read-only, edits need approval)
+    explore              Fast codebase exploration and analysis
+    image-analyzer       Images/screenshots -> code, OCR, error diagnosis
+    diagram-creator      Diagrams (architecture, flowcharts, UML)
+
+    Usage: opencode --agent build 'implement auth feature'
+           opencode --agent explore 'find all API routes'
+
+  SKILLS (49):
+    Framework (7):        test-generator-framework, linting-workflow,
+                          pr-creation-workflow, jira-git-integration,
+                          error-resolver-workflow, tdd-workflow, docx-creation
+
+    Language-Specific (4): python-pytest-creator, python-ruff-linter,
+                          python-docstring-generator, javascript-eslint-linter
+
+    Framework-Specific (7): nextjs-pr-workflow, nextjs-unit-test-creator,
+                          nextjs-standard-setup, nextjs-complete-setup,
+                          nextjs-image-usage, nextjs-tsdoc-documentor,
+                          typescript-dry-principle
+
+    OpenCode Meta (4):    opencode-agent-creation, opencode-skill-creation,
+                          opencode-skill-auditor, opencode-skills-maintainer
+
+    OpenTofu (7):         opentofu-aws-explorer, opentofu-keycloak-explorer,
+                          opentofu-kubernetes-explorer, opentofu-neon-explorer,
+                          opentofu-provider-setup, opentofu-provisioning-workflow,
+                          opentofu-ecr-provision
+
+    Git/Workflow (7):     ascii-diagram-creator, git-issue-creator,
+                          git-pr-creator, git-issue-labeler,
+                          git-issue-plan-workflow, git-issue-updater,
+                          git-semantic-commits
+
+    Documentation (2):    coverage-readme-workflow, docstring-generator
+
+    JIRA (4):             jira-ticket-oauth-workflow, jira-ticket-plan-workflow,
+                          jira-status-updater, jira-ticket-workflow
+
+    Code Quality (7):     solid-principles, clean-code, clean-architecture,
+                          design-patterns, object-design, code-smells,
+                          complexity-management
+
+    Run 'opencode --list-skills' for detailed descriptions
+    Run 'opencode --skill <name> \"prompt\"' to invoke a skill
+
+=======================================================================
                             REQUIREMENTS
 =======================================================================
 
@@ -299,6 +351,7 @@ USAGE:
 
   API Keys (prompted during setup):
     ZAI_API_KEY           Required for web-reader, web-search-prime, zread
+                          Get from: https://z.ai
 
   GitHub Auth:
     GitHub CLI (gh)      Recommended for GitHub MCP features
@@ -685,91 +738,165 @@ function Set-PeonPing {
 
 function Set-PeonPingPlugin {
     Write-Host ""
-    Write-LogInfo "Configuring PeonPing OpenCode plugin..."
+    Write-LogInfo "Configuring PeonPing for OpenCode..."
 
     $pluginsDir = Join-Path $ConfigDir "plugins"
     $peonPlugin = Join-Path $pluginsDir "peon-ping.ts"
     $peonConfigDir = Join-Path $ConfigDir "peon-ping"
     $peonConfigFile = Join-Path $peonConfigDir "config.json"
-    $pluginUrl = "https://raw.githubusercontent.com/PeonPing/peon-ping/main/adapters/opencode/peon-ping.ts"
 
+    # Check if plugin already installed
     if ((Test-Path $peonPlugin) -and (Test-Path $peonConfigFile)) {
-        Write-LogInfo "PeonPing OpenCode plugin is already installed"
+        Write-LogInfo "PeonPing plugin already installed at $peonPlugin"
         if (-not (Read-YesNo "Reinstall PeonPing plugin?" $false)) {
             Write-LogInfo "Keeping existing PeonPing plugin"
             return
         }
     }
 
-    if ($DryRun) {
-        Write-Host "[DRY-RUN] Would download peon-ping.ts to: $peonPlugin" -ForegroundColor Cyan
-        Write-Host "[DRY-RUN] Would create config at: $peonConfigFile" -ForegroundColor Cyan
-        return
+    $peonAdapter = $null
+
+    # Find the PeonPing adapter script (installer)
+    $possiblePaths = @(
+        (Join-Path $env:USERPROFILE ".claude\hooks\peon-ping\adapters\opencode.sh"),
+        "C:\Program Files\peon-ping\libexec\adapters\opencode.sh",
+        (Join-Path ${env:ProgramFiles} "peon-ping\libexec\adapters\opencode.sh"),
+        (Join-Path ${env:LOCALAPPDATA} "Programs\peon-ping\libexec\adapters\opencode.sh")
+    )
+
+    foreach ($path in $possiblePaths) {
+        if (Test-Path $path) {
+            $peonAdapter = $path
+            break
+        }
     }
 
-    try {
-        if (-not (Test-Path $pluginsDir)) {
-            New-Item -ItemType Directory -Path $pluginsDir -Force | Out-Null
-        }
-
-        Write-LogInfo "Downloading peon-ping.ts OpenCode plugin..."
-        Invoke-WebRequest -Uri $pluginUrl -OutFile $peonPlugin -UseBasicParsing
-        Unblock-File -Path $peonPlugin -ErrorAction SilentlyContinue
-        Write-LogSuccess "Plugin downloaded to: $peonPlugin"
-
-        if (-not (Test-Path $peonConfigDir)) {
-            New-Item -ItemType Directory -Path $peonConfigDir -Force | Out-Null
-        }
-
-        if (-not (Test-Path $peonConfigFile)) {
-            $peonConfig = @{
-                default_pack = "peon"
-                volume = 0.5
-                enabled = $true
-                categories = @{
-                    "session.start" = $true
-                    "session.end" = $true
-                    "task.acknowledge" = $true
-                    "task.complete" = $true
-                    "task.error" = $true
-                    "task.progress" = $true
-                    "input.required" = $true
-                    "resource.limit" = $true
-                    "user.spam" = $true
+    if ($peonAdapter) {
+        Write-LogInfo "Found adapter: $peonAdapter"
+        Write-LogInfo "Running PeonPing OpenCode adapter installer..."
+        
+        if (-not $DryRun) {
+            # Run bash adapter in Git Bash if available, otherwise download TS directly
+            if (Test-CommandExists "bash") {
+                & bash $peonAdapter
+            } else {
+                Write-LogInfo "Git Bash not found, downloading TypeScript plugin directly..."
+                $downloadSuccess = $false
+                
+                # Try primary URL
+                $pluginUrl = "https://raw.githubusercontent.com/PeonPing/peon-ping/main/adapters/opencode/peon-ping.ts"
+                try {
+                    if (-not (Test-Path $pluginsDir)) {
+                        New-Item -ItemType Directory -Path $pluginsDir -Force | Out-Null
+                    }
+                    Invoke-WebRequest -Uri $pluginUrl -OutFile $peonPlugin -UseBasicParsing
+                    Unblock-File -Path $peonPlugin -ErrorAction SilentlyContinue
+                    Write-LogSuccess "Plugin downloaded to: $peonPlugin"
+                    $downloadSuccess = $true
+                } catch {
+                    Write-LogWarn "Primary download failed: $($_.Exception.Message)"
                 }
-                spam_threshold = 3
-                spam_window_seconds = 10
-                pack_rotation = @()
-                debounce_ms = 500
+                
+                # Fallback URL
+                if (-not $downloadSuccess) {
+                    $fallbackUrl = "https://raw.githubusercontent.com/PeonPing/peon-ping/main/plugins/opencode/peon-ping.ts"
+                    try {
+                        Invoke-WebRequest -Uri $fallbackUrl -OutFile $peonPlugin -UseBasicParsing
+                        Unblock-File -Path $peonPlugin -ErrorAction SilentlyContinue
+                        Write-LogSuccess "Plugin downloaded from fallback URL"
+                        $downloadSuccess = $true
+                    } catch {
+                        Write-LogError "Fallback download also failed"
+                    }
+                }
+                
+                if (-not $downloadSuccess) {
+                    Write-LogError "Failed to download PeonPing plugin"
+                    return
+                }
             }
-            $prevCulture = [System.Threading.Thread]::CurrentThread.CurrentCulture
-            try {
-                [System.Threading.Thread]::CurrentThread.CurrentCulture = [System.Globalization.CultureInfo]::InvariantCulture
-                $peonConfig | ConvertTo-Json -Depth 3 | Set-Content -Path $peonConfigFile -Encoding UTF8
-            } finally {
-                [System.Threading.Thread]::CurrentThread.CurrentCulture = $prevCulture
-            }
-            Write-LogSuccess "Config created at: $peonConfigFile"
         } else {
-            Write-LogInfo "Config already exists, preserved."
+            Write-Host "[DRY-RUN] Would run adapter or download plugin" -ForegroundColor Cyan
+        }
+    } else {
+        Write-LogWarn "PeonPing adapter script not found"
+        Write-LogInfo "Downloading TypeScript plugin directly..."
+
+        $pluginUrl = "https://raw.githubusercontent.com/PeonPing/peon-ping/main/adapters/opencode/peon-ping.ts"
+
+        if ($DryRun) {
+            Write-Host "[DRY-RUN] Would download peon-ping.ts to: $peonPlugin" -ForegroundColor Cyan
+            Write-Host "[DRY-RUN] Would create config at: $peonConfigFile" -ForegroundColor Cyan
+            return
         }
 
-        Write-LogSuccess "PeonPing OpenCode plugin installed successfully"
-        Write-Host ""
-        Write-Host "Plugin installed to:"
-        Write-Host "  - Plugin: $peonPlugin"
-        Write-Host "  - Config: $peonConfigFile"
-        Write-Host ""
-        Write-Host "Restart OpenCode to activate the plugin."
-        Write-Host ""
-    } catch {
-        Write-LogError "PeonPing plugin installation failed: $($_.Exception.Message)"
-        Write-Host ""
-        Write-Host "Try installing manually:" -ForegroundColor Yellow
-        Write-Host "  1. Download: https://raw.githubusercontent.com/PeonPing/peon-ping/main/adapters/opencode/peon-ping.ts" -ForegroundColor Yellow
-        Write-Host "  2. Save to: $peonPlugin" -ForegroundColor Yellow
-        Write-Host ""
+        try {
+            if (-not (Test-Path $pluginsDir)) {
+                New-Item -ItemType Directory -Path $pluginsDir -Force | Out-Null
+            }
+
+            Write-LogInfo "Downloading peon-ping.ts OpenCode plugin..."
+            Invoke-WebRequest -Uri $pluginUrl -OutFile $peonPlugin -UseBasicParsing
+            Unblock-File -Path $peonPlugin -ErrorAction SilentlyContinue
+            Write-LogSuccess "Plugin downloaded to: $peonPlugin"
+        } catch {
+            Write-LogError "PeonPing plugin download failed: $($_.Exception.Message)"
+            Write-Host ""
+            Write-Host "Try installing manually:" -ForegroundColor Yellow
+            Write-Host "  1. Download: https://raw.githubusercontent.com/PeonPing/peon-ping/main/adapters/opencode/peon-ping.ts" -ForegroundColor Yellow
+            Write-Host "  2. Save to: $peonPlugin" -ForegroundColor Yellow
+            Write-Host ""
+            return
+        }
     }
+
+    # Create config if it doesn't exist
+    if (-not (Test-Path $peonConfigDir)) {
+        New-Item -ItemType Directory -Path $peonConfigDir -Force | Out-Null
+    }
+
+    if (-not (Test-Path $peonConfigFile)) {
+        $peonConfig = @{
+            default_pack = "peon"
+            volume = 0.5
+            enabled = $true
+            categories = @{
+                "session.start" = $true
+                "session.end" = $true
+                "task.acknowledge" = $true
+                "task.complete" = $true
+                "task.error" = $true
+                "task.progress" = $true
+                "input.required" = $true
+                "resource.limit" = $true
+                "user.spam" = $true
+            }
+            spam_threshold = 3
+            spam_window_seconds = 10
+            pack_rotation = @()
+            debounce_ms = 500
+        }
+        $prevCulture = [System.Threading.Thread]::CurrentThread.CurrentCulture
+        try {
+            [System.Threading.Thread]::CurrentThread.CurrentCulture = [System.Globalization.CultureInfo]::InvariantCulture
+            $peonConfig | ConvertTo-Json -Depth 3 | Set-Content -Path $peonConfigFile -Encoding UTF8
+        } finally {
+            [System.Threading.Thread]::CurrentThread.CurrentCulture = $prevCulture
+        }
+        Write-LogSuccess "Config created at: $peonConfigFile"
+    } else {
+        Write-LogInfo "Config already exists, preserved."
+    }
+
+    Write-LogSuccess "PeonPing OpenCode plugin installed successfully"
+    Write-Host ""
+    Write-Host "Plugin installed to:"
+    Write-Host "  - Plugin: $peonPlugin"
+    Write-Host "  - Config: $peonConfigFile"
+    Write-Host "  - Packs:  $env:USERPROFILE\.openpeon\packs\"
+    Write-Host ""
+    Write-Host "Restart OpenCode to activate the plugin."
+    Write-Host ""
 }
 
 ################################################################################
@@ -1109,6 +1236,81 @@ function Deploy-Skills {
         Write-Host ""
         Write-Host "Deployed $skillCount skills to $SkillsDir" -ForegroundColor Green
         Write-Host ""
+        Write-Host "  Skill Categories:" -ForegroundColor Cyan
+        Write-Host "    Framework (7):"
+        Write-Host "      - test-generator-framework, linting-workflow"
+        Write-Host "      - pr-creation-workflow, jira-git-integration"
+        Write-Host "      - error-resolver-workflow, tdd-workflow, docx-creation"
+        Write-Host "    Language-Specific (4):"
+        Write-Host "      - python-pytest-creator, python-ruff-linter"
+        Write-Host "      - python-docstring-generator, javascript-eslint-linter"
+        Write-Host "    Framework-Specific (7):"
+        Write-Host "      - nextjs-pr-workflow, nextjs-unit-test-creator"
+        Write-Host "      - nextjs-standard-setup, nextjs-complete-setup"
+        Write-Host "      - nextjs-image-usage, nextjs-tsdoc-documentor"
+        Write-Host "      - typescript-dry-principle"
+        Write-Host "    OpenCode Meta (4):"
+        Write-Host "      - opencode-agent-creation, opencode-skill-creation"
+        Write-Host "      - opencode-skill-auditor, opencode-skills-maintainer"
+        Write-Host "    OpenTofu (7):"
+        Write-Host "      - opentofu-aws-explorer, opentofu-keycloak-explorer"
+        Write-Host "      - opentofu-kubernetes-explorer, opentofu-neon-explorer"
+        Write-Host "      - opentofu-provider-setup, opentofu-provisioning-workflow"
+        Write-Host "      - opentofu-ecr-provision"
+        Write-Host "    Git/Workflow (7):"
+        Write-Host "      - ascii-diagram-creator, git-issue-creator"
+        Write-Host "      - git-pr-creator, git-issue-labeler"
+        Write-Host "      - git-issue-plan-workflow, git-issue-updater"
+        Write-Host "      - git-semantic-commits"
+        Write-Host "    Documentation (2):"
+        Write-Host "      - coverage-readme-workflow, docstring-generator"
+        Write-Host "    JIRA (4):"
+        Write-Host "      - jira-ticket-oauth-workflow, jira-ticket-plan-workflow"
+        Write-Host "      - jira-status-updater, jira-ticket-workflow"
+        Write-Host "    Code Quality (7):"
+        Write-Host "      - solid-principles, clean-code, clean-architecture"
+        Write-Host "      - design-patterns, object-design, code-smells"
+        Write-Host "      - complexity-management"
+        Write-Host ""
+        Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
+        Write-Host ""
+        Write-Host "  Skill Categories:" -ForegroundColor Cyan
+        Write-Host "    Framework (9):"
+        Write-Host "      - test-generator-framework, linting-workflow"
+        Write-Host "      - pr-creation-workflow, jira-git-integration"
+        Write-Host "      - ticket-branch-workflow, error-resolver-workflow"
+        Write-Host "      - tdd-workflow, coverage-framework, docx-creation"
+        Write-Host "    Language-Specific (4):"
+        Write-Host "      - python-pytest-creator, python-ruff-linter"
+        Write-Host "      - python-docstring-generator, javascript-eslint-linter"
+        Write-Host "    Framework-Specific (7):"
+        Write-Host "      - nextjs-pr-workflow, nextjs-unit-test-creator"
+        Write-Host "      - nextjs-standard-setup, nextjs-complete-setup"
+        Write-Host "      - nextjs-image-usage, nextjs-tsdoc-documentor"
+        Write-Host "      - typescript-dry-principle"
+        Write-Host "    OpenCode Meta (4):"
+        Write-Host "      - opencode-agent-creation, opencode-skill-creation"
+        Write-Host "      - opencode-skill-auditor, opencode-skills-maintainer"
+        Write-Host "    OpenTofu (7):"
+        Write-Host "      - opentofu-aws-explorer, opentofu-keycloak-explorer"
+        Write-Host "      - opentofu-kubernetes-explorer, opentofu-neon-explorer"
+        Write-Host "      - opentofu-provider-setup, opentofu-provisioning-workflow"
+        Write-Host "      - opentofu-ecr-provision"
+        Write-Host "    Git/Workflow (8):"
+        Write-Host "      - ascii-diagram-creator, git-issue-creator"
+        Write-Host "      - git-pr-creator, git-issue-labeler"
+        Write-Host "      - git-issue-plan-workflow, git-issue-updater"
+        Write-Host "      - git-semantic-commits, jira-git-workflow"
+        Write-Host "    Documentation (2):"
+        Write-Host "      - coverage-readme-workflow, docstring-generator"
+        Write-Host "    JIRA (4):"
+        Write-Host "      - jira-ticket-oauth-workflow, jira-ticket-plan-workflow"
+        Write-Host "      - jira-status-updater, jira-ticket-workflow"
+        Write-Host "    Code Quality (7):"
+        Write-Host "      - solid-principles, clean-code, clean-architecture"
+        Write-Host "      - design-patterns, object-design, code-smells"
+        Write-Host "      - complexity-management"
+        Write-Host ""
         Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
         Write-Host ""
     } else {
@@ -1438,6 +1640,24 @@ function Show-NextSteps {
     Write-Host ""
     Write-Host "  Usage: opencode --agent <name> `"prompt`""
     Write-Host "         opencode `"prompt`" (uses build)"
+    Write-Host ""
+    Write-Host "=====================================================================" -ForegroundColor White
+    Write-Host "                     49 Skills Available" -ForegroundColor White
+    Write-Host "=====================================================================" -ForegroundColor White
+    Write-Host ""
+    Write-Host "  Framework (7) • Language-Specific (4) • Framework-Specific (7)"
+    Write-Host "  OpenCode Meta (4) • OpenTofu (7) • Git/Workflow (7)"
+    Write-Host "  Documentation (2) • JIRA (4) • Code Quality (7)"
+    Write-Host ""
+    Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
+    Write-Host "  Run 'opencode --skill <name> `"prompt`"' to invoke a skill"
+    Write-Host ""
+    Write-Host "  Framework (9) | Language-Specific (4) | Framework-Specific (7)"
+    Write-Host "  OpenCode Meta (4) | OpenTofu (7) | Git/Workflow (8)"
+    Write-Host "  Documentation (2) | JIRA (4) | Code Quality (7)"
+    Write-Host ""
+    Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
+    Write-Host "  Run 'opencode --skill <name> `"prompt`"' to invoke a skill"
     Write-Host ""
     Write-Host "MCP Servers (5):"
     Write-Host "  Local (auto-start): atlassian, zai-mcp-server"
