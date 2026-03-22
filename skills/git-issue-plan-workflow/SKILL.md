@@ -20,6 +20,16 @@ I implement a standardized GitHub issue creation and planning workflow:
 6. **Commit and Push**: Commit PLAN file with semantic formatting and push to remote
 7. **Prompt Execution**: Ask user if they want to proceed with plan execution
 
+## Framework Skills Used
+
+This workflow delegates to these framework skills for specialized functionality:
+
+| Skill | Purpose | Used In |
+|-------|---------|---------|
+| `git-issue-labeler` | Intelligent label assessment and assignment | Step 3 |
+| `git-semantic-commits` | Conventional commit message formatting | Step 7 |
+| `git-issue-updater` | Progress updates to GitHub issues | Step 8 |
+
 ## When to use me
 
 Use this workflow when:
@@ -101,9 +111,15 @@ If Single selected:
 
 ### Step 3: Determine Labels
 
-Automatically assign labels based on issue content using `git-issue-labeler`:
+**Delegate to `git-issue-labeler` skill** for intelligent label assessment:
 
-**Available Labels**:
+```bash
+# Use git-issue-labeler to determine appropriate labels
+# The skill analyzes issue content and assigns GitHub default labels
+# See: skills/git-issue-labeler/SKILL.md
+```
+
+**Available Labels** (handled by `git-issue-labeler`):
 - `bug` - Something isn't working
 - `enhancement` - New feature or request
 - `documentation` - Improvements or additions to documentation
@@ -113,14 +129,14 @@ Automatically assign labels based on issue content using `git-issue-labeler`:
 - `invalid` - This doesn't seem right
 - `wontfix` - This will not be worked on
 - `duplicate` - This issue or pull request already exists
+- `major`, `minor`, `patch` - Semantic versioning labels
 
-**Detection Logic**:
+**Integration Pattern**:
 ```
-Keywords → Labels:
-- "fix", "bug", "error", "crash", "broken" → bug
-- "add", "new", "feature", "implement", "enhance" → enhancement
-- "document", "readme", "doc", "comment" → documentation
-- "how to", "question", "clarify" → question
+After user provides issue description:
+1. Combine title + overview + technical notes into issue content
+2. Invoke git-issue-labeler skill to analyze and assign labels
+3. Use returned labels in gh issue create command
 ```
 
 ### Step 4: Create GitHub Issue(s)
@@ -285,6 +301,8 @@ _How will we measure success?_
 
 ### Step 7: Commit and Push PLAN file
 
+**Use `git-semantic-commits` skill** for proper commit message formatting:
+
 ```bash
 # Check if PLANS directory exists, create if not
 if [ ! -d "PLANS" ]; then
@@ -295,8 +313,14 @@ fi
 # Stage PLAN file
 git add "PLANS/PLAN-GIT-${ISSUE_NUMBER}.md"
 
-# Commit with semantic message
-git commit -m "docs(plan): add PLAN-GIT-${ISSUE_NUMBER}.md for issue #$ISSUE_NUMBER"
+# Format commit message using git-semantic-commits pattern
+# Type: docs (documentation), Scope: plan, Subject: descriptive
+# See: skills/git-semantic-commits/SKILL.md
+COMMIT_MSG="docs(plan): add PLAN-GIT-${ISSUE_NUMBER}.md for issue #$ISSUE_NUMBER
+
+Plan file created for issue #$ISSUE_NUMBER tracking implementation phases."
+
+git commit -m "$COMMIT_MSG"
 
 # Push to remote
 git push -u origin "GIT-$ISSUE_NUMBER"
@@ -304,24 +328,43 @@ git push -u origin "GIT-$ISSUE_NUMBER"
 echo "✓ Committed and pushed PLANS/PLAN-GIT-${ISSUE_NUMBER}.md"
 ```
 
+**Semantic Commit Format**:
+- Type: `docs` (PLAN files are documentation)
+- Scope: `plan` (identifies plan-related commits)
+- Subject: Describes the PLAN file added
+- Body: Optional additional context
+
 ### Step 8: Update Issue with Initial Progress
 
-Add comment to GitHub issue:
+**Use `git-issue-updater` skill** to add progress comment to GitHub issue:
 
 ```bash
-gh issue comment "$ISSUE_NUMBER" --body "## Planning Complete
+# Use git-issue-updater for consistent issue progress updates
+# See: skills/git-issue-updater/SKILL.md
 
-- ✅ Branch created: \`GIT-$ISSUE_NUMBER\`
-- ✅ PLAN file committed: \`PLANS/PLAN-GIT-${ISSUE_NUMBER}.md\`
-- ✅ Ready to begin execution
+# Format progress update following git-issue-updater standards
+gh issue comment "$ISSUE_NUMBER" --body "## Planning Complete - $(date '+%Y-%m-%d %H:%M')
 
-**Next Steps**:
+**Branch**: \`GIT-$ISSUE_NUMBER\`
+**PLAN File**: \`PLANS/PLAN-GIT-${ISSUE_NUMBER}.md\`
+**Status**: Ready to begin execution
+
+### Completed
+- [x] GitHub issue created
+- [x] Branch created and checked out
+- [x] PLAN file generated with implementation phases
+- [x] Initial commit pushed to remote
+
+### Next Steps
 1. Review \`PLANS/PLAN-GIT-${ISSUE_NUMBER}.md\`
 2. Begin Phase 1: Setup & Analysis
 
 ---
 *Tracking progress with git-issue-plan-workflow*"
 ```
+
+**git-issue-updater Integration**:
+For subsequent commits, use `git-issue-updater` skill to maintain consistent progress tracking with user, date, time, and file statistics.
 
 ### Step 9: Prompt for Plan Execution
 

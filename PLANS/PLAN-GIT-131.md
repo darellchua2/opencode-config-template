@@ -16,10 +16,13 @@ The current workflow for creating PLAN files and git branches from GitHub issues
 - [x] Workflow auto-creates `PLANS/` folder if it doesn't exist
 - [x] PLAN file naming pattern: `PLANS/PLAN-GIT-{issue_number}.md`
 - [x] All related skills are updated and synchronized
+- [x] Redundant `git-issue-creator` skill removed (merged into `git-issue-plan-workflow`)
+- [x] `git-issue-plan-workflow` uses framework skills (`git-issue-labeler`, `git-semantic-commits`, `git-issue-updater`)
+- [x] Documentation updated (setup.sh, setup.ps1, README.md)
 
 ## Scope
-- `skills/git-issue-plan-workflow/`
-- `skills/git-issue-creator/`
+- `skills/git-issue-plan-workflow/` - enhanced with framework integration
+- `skills/git-issue-creator/` - **TO BE REMOVED** (redundant)
 - `skills/plan-updater/`
 - `skills/jira-ticket-plan-workflow/`
 
@@ -47,20 +50,34 @@ The current workflow for creating PLAN files and git branches from GitHub issues
 - [x] Update `git-issue-creator/SKILL.md` with new branch naming
 - [x] Update `plan-updater/SKILL.md` with consistent naming patterns and folder path
 
-### Phase 3: Documentation & Synchronization
+### Phase 3: Consolidate Redundant git-issue-creator Skill
+- [x] Enhance `git-issue-plan-workflow` to use framework skills:
+  - [x] Use `git-issue-labeler` for label assignment (replace inline detection logic)
+  - [x] Use `git-semantic-commits` for commit message formatting
+  - [x] Use `git-issue-updater` for progress comments to issues
+- [x] Remove broken `ticket-branch-workflow` dependency reference from `git-issue-creator`
+- [x] Delete `skills/git-issue-creator/` directory
+- [x] Update `setup.sh` - remove from skill listings, decrement count (47→46)
+- [x] Update `setup.ps1` - remove from skill listings, decrement count
+- [x] Update `README.md` - remove from Git/Workflow table, update counts
+- [x] Clean up phantom `jira-git-workflow` references across all files
+
+### Phase 4: Documentation & Synchronization
 - [x] Verify no stale references to `issue-{number}` pattern remain (only legacy detection in plan-updater)
 
-### Phase 4: Validation
-- [ ] Create a test issue and verify branch is named `GIT-{number}`
-- [ ] Verify PLAN file is created in `PLANS/` folder
-- [ ] Verify PLAN file is named `PLAN-GIT-{number}.md`
-- [ ] Verify workflow handles missing `PLANS/` folder gracefully
-- [ ] Verify all related skills produce consistent output
-- [ ] Cross-check all skills for synchronized conventions
+### Phase 5: Validation
+- [x] Create a test issue and verify branch is named `GIT-{number}`
+- [x] Verify PLAN file is created in `PLANS/` folder
+- [x] Verify PLAN file is named `PLAN-GIT-{number}.md`
+- [x] Verify workflow handles missing `PLANS/` folder gracefully
+- [x] Verify all related skills produce consistent output
+- [x] Cross-check all skills for synchronized conventions
+- [x] Verify `git-issue-plan-workflow` uses framework skills correctly
 
-### Phase 5: Cleanup & Closure
-- [ ] Remove any debug or temporary files
-- [ ] Final review of all changed files
+### Phase 6: Cleanup & Closure
+- [x] Remove "Integration with Other Skills" sections from all skills (not part of OpenCode docs)
+- [x] Clean up remaining phantom `ticket-branch-workflow` references (2 files)
+- [x] Final review of all changed files
 - [ ] Close issue #131 upon completion
 
 ---
@@ -72,8 +89,54 @@ The current workflow for creating PLAN files and git branches from GitHub issues
 - Multiple skills reference branch naming conventions — all must be synchronized
 - Consider whether any existing branches need to be renamed (backward compatibility)
 
+### Redundancy Found (Phase 3)
+- `git-issue-creator` and `git-issue-plan-workflow` are **functionally identical**
+- Both create GitHub issues → branch → PLAN file → commit → push → update issue
+- `git-issue-creator` has broken dependency on `ticket-branch-workflow` (not in repo)
+- `git-issue-plan-workflow` has inline label detection that duplicates `git-issue-labeler`
+- Solution: Merge `git-issue-creator` into `git-issue-plan-workflow`, use framework skills
+
 ## Dependencies
 - None (internal refactoring only)
+
+---
+
+## OpenCode Tooling Skills Improvement
+
+### Issues Found
+
+| Skill | Issue |
+|-------|-------|
+| `opencode-tooling-framework` | **MISSING** - Referenced in subagent and maintainer but doesn't exist |
+| `opencode-skill-auditor` | Overlaps with maintainer - both do skill analysis |
+| `opencode-agent-creation` | **Incomplete** - Only 27 lines, missing Steps/Best Practices sections |
+| `opencode-skill-creation` | Well-structured (538 lines) ✓ |
+
+### Phase 7: Consolidate OpenCode Tooling Skills
+- [x] Merge `opencode-skill-auditor` into `opencode-skills-maintainer`
+  - [x] Extract redundancy detection logic from auditor
+  - [x] Add to maintainer as new section "Redundancy & Modularization Analysis"
+  - [x] Delete `skills/opencode-skill-auditor/` directory
+- [x] Remove reference to non-existent `opencode-tooling-framework`
+  - [x] Remove from `opencode-skills-maintainer/SKILL.md` (line 110)
+  - [x] Remove from `agents/opencode-tooling-subagent.md` permissions
+- [x] Expand `opencode-agent-creation` to match `opencode-skill-creation` quality
+  - [x] Add detailed Steps section (7+ steps)
+  - [x] Add Best Practices section
+  - [x] Add Common Issues section
+  - [x] Add Verification Commands section
+  - [x] Add Example Output section
+- [x] Update documentation
+  - [x] Update `setup.sh` - decrement skill count, remove auditor from listings
+  - [x] Update `setup.ps1` - decrement skill count, remove auditor from listings
+  - [x] Update `README.md` - remove auditor from OpenCode Meta table
+
+### Phase 8: Validate OpenCode Tooling Skills
+- [x] Verify `opencode-skills-maintainer` handles both validation and redundancy detection
+- [x] Verify `opencode-agent-creation` has comprehensive documentation
+- [x] Verify no references to deleted `opencode-skill-auditor` remain
+- [x] Verify no references to non-existent `opencode-tooling-framework` remain
+- [x] Test merged maintainer skill
 
 ## Risks & Mitigation
 
@@ -88,3 +151,5 @@ The current workflow for creating PLAN files and git branches from GitHub issues
 - All skills use `PLAN-GIT-{number}.md` for GitHub issue PLAN files
 - Zero references to old `issue-{number}` pattern in skill files
 - Documentation accurately reflects new convention
+- `git-issue-creator` removed, `git-issue-plan-workflow` uses framework skills
+- Skill count reduced from 47 to 46

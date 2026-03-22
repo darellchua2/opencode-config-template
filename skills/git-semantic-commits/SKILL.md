@@ -636,33 +636,6 @@ fix: resolve login timeout issue
 Closes #123
 ```
 
-## Integration with Other Skills
-
-### Skills That Should Use git-semantic-commits
-
-- **git-issue-creator**: Format commit messages for PLAN.md commits
-- **ticket-branch-workflow**: Format commit messages for PLAN.md commits
-- **git-pr-creator**: Format PR titles using semantic format
-- **nextjs-pr-workflow**: Format commit messages for Next.js projects
-- **pr-creation-workflow**: Format PR titles and descriptions
-- **jira-git-workflow**: Format commit messages for JIRA tickets
-
-### Usage Example
-
-```bash
-# Generate commit message using git-semantic-commits
-COMMIT_MSG=$(git-semantic-commits --type feat --scope api --subject "add user registration")
-
-# Add body
-COMMIT_MSG="${COMMIT_MSG}
-
-Implement user registration with email verification.
-Add rate limiting to prevent abuse."
-
-# Commit with formatted message
-git commit -m "$COMMIT_MSG"
-```
-
 ## Automation Tools
 
 ### Commitizen

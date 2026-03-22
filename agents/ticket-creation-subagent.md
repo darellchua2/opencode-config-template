@@ -11,13 +11,12 @@ permission:
   bash: allow
   atlassian*: allow
   skill:
-    git-issue-creator: allow
+    git-issue-plan-workflow: allow
     git-issue-updater: allow
     git-issue-labeler: allow
     git-semantic-commits: allow
     jira-ticket-oauth-workflow: allow
     jira-ticket-plan-workflow: allow
-    git-issue-plan-workflow: allow
     plan-updater: allow
 ---
 
@@ -88,7 +87,8 @@ After execution, this subagent provides:
 |-------|---------|
 | jira-ticket-plan-workflow | Complete JIRA workflow with PLAN.md |
 | git-issue-plan-workflow | Complete GitHub workflow with PLAN.md |
-| git-issue-creator | GitHub issue creation |
+| git-issue-plan-workflow | GitHub issue creation |
+
 | git-issue-labeler | Automatic label assignment |
 | git-issue-updater | Progress updates |
 | git-semantic-commits | Commit message formatting |

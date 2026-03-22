@@ -578,48 +578,6 @@ View commit in repository
 - Code review
 ```
 
-## Integration with Other Skills
-
-### Skills That Should Use git-issue-updater
-
-- **git-issue-creator**: Update issue after creating PLAN.md commit
-- **ticket-branch-workflow**: Update ticket after creating PLAN.md commit
-- **jira-git-workflow**: Update JIRA ticket after creating PLAN.md commit
-- **git-pr-creator**: Update issue when PR is created/merged
-- **nextjs-pr-workflow**: Update issue when Next.js PR is ready
-- **pr-creation-workflow**: Update linked issues after PR creation
-
-### Integration Pattern
-
-```bash
-# After making a commit
-git add .
-git commit -m "feat(api): add user registration"
-
-# Update issue with commit details
-git-issue-updater --platform github --issue #123
-
-# Or for JIRA
-git-issue-updater --platform jira --ticket IBIS-101
-```
-
-### Workflow Integration Example
-
-**git-issue-creator Workflow**:
-1. Create GitHub issue
-2. Create branch
-3. Create PLAN.md
-4. Commit PLAN.md → **CALL git-issue-updater**
-5. Push branch
-
-**ticket-branch-workflow Workflow**:
-1. Identify JIRA project
-2. Create JIRA ticket
-3. Create branch
-4. Create PLAN.md
-5. Commit PLAN.md → **CALL git-issue-updater**
-6. Push branch
-
 ## Best Practices
 
 ### Update Timing
