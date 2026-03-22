@@ -1327,7 +1327,7 @@ function Deploy-Agents {
     Write-LogInfo "Setting up agents directory..."
 
     if (Test-Path $AgentsDestDir) {
-        $existingAgents = @(Get-ChildItem $AgentsDestDir -Recurse -Filter "*.md" -ErrorAction SilentlyContinue)
+        $existingAgents = @(Get-ChildItem $AgentsDestDir -Filter "*.md" -ErrorAction SilentlyContinue)
         if ($existingAgents.Count -gt 0) {
             Write-LogWarn "Agents directory already contains files"
 
@@ -1355,19 +1355,42 @@ function Deploy-Agents {
     Write-LogInfo "Agents directory: $AgentsDestDir"
 
     if (Test-Path $AgentsSrcDir) {
-        if (-not $DryRun) {
-            Copy-Item (Join-Path $AgentsSrcDir "*") $AgentsDestDir -Recurse -Force
-        }
-        Write-LogSuccess "Agents copied successfully to $AgentsDestDir"
+        $primaryCount = 0
+        $subagentCount = 0
 
-        $primaryCount = @(Get-ChildItem (Join-Path $AgentsDestDir "primary") -Filter "*.md" -ErrorAction SilentlyContinue).Count
-        $subagentCount = @(Get-ChildItem (Join-Path $AgentsDestDir "subagents") -Filter "*.md" -ErrorAction SilentlyContinue).Count
+        # Copy primary agents (flat into agents/)
+        $primaryDir = Join-Path $AgentsSrcDir "primary"
+        if (Test-Path $primaryDir) {
+            $primaryFiles = @(Get-ChildItem $primaryDir -Filter "*.md" -ErrorAction SilentlyContinue)
+            foreach ($file in $primaryFiles) {
+                if (-not $DryRun) {
+                    Copy-Item $file.FullName (Join-Path $AgentsDestDir $file.Name) -Force
+                }
+                $primaryCount++
+            }
+        }
+
+        # Copy subagents (flat into agents/)
+        $subagentsDir = Join-Path $AgentsSrcDir "subagents"
+        if (Test-Path $subagentsDir) {
+            $subagentFiles = @(Get-ChildItem $subagentsDir -Filter "*.md" -ErrorAction SilentlyContinue)
+            foreach ($file in $subagentFiles) {
+                if (-not $DryRun) {
+                    Copy-Item $file.FullName (Join-Path $AgentsDestDir $file.Name) -Force
+                }
+                $subagentCount++
+            }
+        } else {
+            Write-LogWarn "agents/subagents/ directory not found in $ScriptDir"
+        }
+
         $totalCount = $primaryCount + $subagentCount
+        Write-LogSuccess "Agents copied successfully to $AgentsDestDir"
 
         Write-Host ""
         Write-Host "Deployed $totalCount agents:" -ForegroundColor Green
-        Write-Host "    - $primaryCount primary agents (in agents/primary/)"
-        Write-Host "    - $subagentCount subagents (in agents/subagents/)"
+        Write-Host "    - $primaryCount primary agents"
+        Write-Host "    - $subagentCount subagents"
         Write-Host ""
         Write-Host "  Run 'opencode --list-agents' for details"
         Write-Host ""

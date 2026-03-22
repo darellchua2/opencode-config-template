@@ -2,13 +2,13 @@
 description: Specialized subagent for documentation generation. Creates docstrings, README coverage badges, and technical documentation following language-specific standards (PEP 257, Javadoc, JSDoc, XML documentation).
 mode: subagent
 model: zai-coding-plan/glm-5-turbo
-tools:
-  read: true
-  write: true
-  edit: true
-  glob: true
-  grep: true
 permission:
+  read: allow
+  write: allow
+  edit: allow
+  glob: allow
+  grep: allow
+  bash: deny
   skill:
     docstring-generator: allow
     coverage-readme-workflow: allow

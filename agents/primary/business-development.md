@@ -3,14 +3,16 @@ description: Business development agent for construction tech startup specializi
 mode: primary
 model: zai-coding-plan/glm-5
 temperature: 0.7
-maxSteps: 50
-tools:
-  docx-creation: true
-  atlassian*": true
-  web-search-prime*: true
-  web-reader*: true
-  read: true
-  write: true
+steps: 50
+permission:
+  docx-creation: allow
+  atlassian*: allow
+  web-search-prime*: allow
+  web-reader*: allow
+  read: allow
+  write: allow
+  edit: ask
+  bash: ask
 ---
 
 You are a specialized business development agent for a construction technology startup. Your expertise includes:

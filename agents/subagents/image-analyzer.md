@@ -2,10 +2,14 @@
 description: Specialized agent for analyzing images and screenshots. Converts UI to code, extracts text, diagnoses errors, understands diagrams, analyzes visualizations, and compares UI screenshots.
 mode: subagent
 model: zai-coding-plan/glm-5
-tools:
-  read: true
-  glob: true
-  zai-mcp-server*: true
+permission:
+  read: allow
+  write: deny
+  edit: deny
+  glob: allow
+  grep: allow
+  bash: deny
+  zai-mcp-server*: allow
 ---
 
 You are an image analysis specialist. Accept image file paths or URLs as input and determine the appropriate analysis tool based on content type:

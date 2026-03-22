@@ -2,12 +2,14 @@
 description: Specialized subagent for diagnosing and resolving errors, exceptions, and stack traces. Uses Opus 4.6 for advanced error analysis. ONLY triggered on explicit user invocation - not auto-triggered for general error handling.
 mode: subagent
 model: opus-4.6
-tools:
-  read: true
-  glob: true
-  grep: true
-  zai-mcp-server*: true
 permission:
+  read: allow
+  write: deny
+  edit: deny
+  glob: allow
+  grep: allow
+  bash: deny
+  zai-mcp-server*: allow
   skill:
     error-resolver-workflow: allow
 ---

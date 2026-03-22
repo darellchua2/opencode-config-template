@@ -2,13 +2,13 @@
 description: Specialized subagent for code refactoring applying DRY principle, SOLID principles, code smell detection, and clean code practices. Eliminates duplication and improves code quality in language-agnostic projects.
 mode: subagent
 model: zai-coding-plan/glm-5
-tools:
-  read: true
-  write: true
-  edit: true
-  glob: true
-  grep: true
 permission:
+  read: allow
+  write: allow
+  edit: allow
+  glob: allow
+  grep: allow
+  bash: deny
   skill:
     typescript-dry-principle: allow
     solid-principles: allow

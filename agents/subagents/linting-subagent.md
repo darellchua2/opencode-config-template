@@ -2,13 +2,13 @@
 description: Specialized subagent for code linting and quality checks. Handles Python Ruff, JavaScript/TypeScript ESLint, and generic linting workflows across multiple programming languages and frameworks.
 mode: subagent
 model: zai-coding-plan/glm-5
-tools:
-  read: true
-  write: true
-  edit: true
-  glob: true
-  grep: true
 permission:
+  read: allow
+  write: allow
+  edit: allow
+  glob: allow
+  grep: allow
+  bash: deny
   skill:
     linting-workflow: allow
     python-ruff-linter: allow

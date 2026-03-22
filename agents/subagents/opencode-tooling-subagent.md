@@ -1,14 +1,14 @@
 ---
 description: Specialized subagent for OpenCode skill and agent creation/maintenance. Handles creating new skills, agents, auditing existing configurations, and maintaining consistency.
 mode: subagent
-model: zai-coding-plan/glm-4.7
-tools:
-  read: true
-  write: true
-  edit: true
-  glob: true
-  grep: true
+model: zai-coding-plan/glm-5-turbo
 permission:
+  read: allow
+  write: allow
+  edit: allow
+  glob: allow
+  grep: allow
+  bash: deny
   skill:
     opencode-agent-creation: allow
     opencode-skill-creation: allow

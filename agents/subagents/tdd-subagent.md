@@ -2,11 +2,13 @@
 description: Specialized subagent for Test Driven Development workflow guidance. Guides through red-green-refactor cycle for multiple languages and frameworks.
 mode: subagent
 model: zai-coding-plan/glm-5-turbo
-tools:
-  read: true
-  glob: true
-  grep: true
 permission:
+  read: allow
+  write: deny
+  edit: deny
+  glob: allow
+  grep: allow
+  bash: deny
   skill:
     tdd-workflow: allow
 ---

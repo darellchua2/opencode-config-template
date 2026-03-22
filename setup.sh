@@ -1734,15 +1734,16 @@ deploy_agents() {
         if [ "$(ls -A ${AGENTS_DEST_DIR} 2>/dev/null)" ]; then
             log_warn "Agents directory already contains files"
 
-            if prompt_yes_no "Do you want to overwrite existing agents?" "n"; then
+            if ! prompt_yes_no "Do you want to overwrite existing agents?" "n"; then
                 log_info "Skipping agents deployment. Existing agents preserved."
                 return 0
             fi
 
-            if [ -d "${BACKUP_DIR}" ]; then
-                run_cmd "cp -r ${AGENTS_DEST_DIR} ${BACKUP_DIR}/agents-backup"
-                log_info "Backed up existing agents to ${BACKUP_DIR}/agents-backup"
+            if [ ! -d "${BACKUP_DIR}" ]; then
+                mkdir -p "${BACKUP_DIR}"
             fi
+            run_cmd "cp -r ${AGENTS_DEST_DIR} ${BACKUP_DIR}/agents-backup"
+            log_info "Backed up existing agents to ${BACKUP_DIR}/agents-backup"
         fi
     fi
 
@@ -1750,19 +1751,40 @@ deploy_agents() {
     log_info "Created ${AGENTS_DEST_DIR} directory"
 
     if [ -d "${AGENTS_SRC_DIR}" ]; then
-        # Flatten directory structure: OpenCode expects agents/*.md not agents/primary/*.md
-        # The 'mode' in frontmatter determines if it's primary or subagent
-        run_cmd "find ${AGENTS_SRC_DIR} -name '*.md' -exec cp {} ${AGENTS_DEST_DIR}/ \;"
-        log_success "Agents copied successfully to ${AGENTS_DEST_DIR} (flat structure)"
+        local primary_count=0
+        local subagent_count=0
 
-        local total_count=$(find ${AGENTS_DEST_DIR} -maxdepth 1 -name "*.md" 2>/dev/null | wc -l)
-        local primary_count=$(grep -l "mode: primary" ${AGENTS_DEST_DIR}/*.md 2>/dev/null | wc -l)
-        local subagent_count=$(grep -l "mode: subagent" ${AGENTS_DEST_DIR}/*.md 2>/dev/null | wc -l)
+        # Copy primary agents (flat into agents/)
+        if [ -d "${AGENTS_SRC_DIR}/primary" ]; then
+            for agent_file in "${AGENTS_SRC_DIR}"/primary/*.md; do
+                if [ -f "$agent_file" ]; then
+                    local filename=$(basename "$agent_file")
+                    run_cmd "cp ${agent_file} ${AGENTS_DEST_DIR}/${filename}"
+                    primary_count=$((primary_count + 1))
+                fi
+            done
+        fi
+
+        # Copy subagents (flat into agents/)
+        if [ -d "${AGENTS_SRC_DIR}/subagents" ]; then
+            for agent_file in "${AGENTS_SRC_DIR}"/subagents/*.md; do
+                if [ -f "$agent_file" ]; then
+                    local filename=$(basename "$agent_file")
+                    run_cmd "cp ${agent_file} ${AGENTS_DEST_DIR}/${filename}"
+                    subagent_count=$((subagent_count + 1))
+                fi
+            done
+        else
+            log_warn "agents/subagents/ directory not found in ${SCRIPT_DIR}"
+        fi
+
+        local total_count=$((primary_count + subagent_count))
+        log_success "Agents copied successfully to ${AGENTS_DEST_DIR}"
 
         echo ""
         echo "✓ Deployed ${total_count} agent files:"
-        echo "    - ${primary_count} primary agents (mode: primary in frontmatter)"
-        echo "    - ${subagent_count} subagents (mode: subagent in frontmatter)"
+        echo "    - ${primary_count} primary agents"
+        echo "    - ${subagent_count} subagents"
         echo ""
         echo "  Run 'opencode --list-agents' for details"
         echo ""

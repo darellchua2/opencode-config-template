@@ -2,11 +2,13 @@
 description: Specialized subagent for code quality analysis using SOLID principles, clean code practices, and code smell detection. Provides actionable recommendations for improving code maintainability.
 mode: subagent
 model: zai-coding-plan/glm-5
-tools:
-  read: true
-  glob: true
-  grep: true
 permission:
+  read: allow
+  write: deny
+  edit: deny
+  glob: allow
+  grep: allow
+  bash: deny
   skill:
     solid-principles: allow
     clean-code: allow

@@ -2,15 +2,14 @@
 description: Specialized subagent for GitHub and JIRA ticket creation. Handles issue creation, labeling, branch creation from tickets, and semantic formatting across GitHub and JIRA platforms.
 mode: subagent
 model: zai-coding-plan/glm-5-turbo
-tools:
-  read: true
-  write: true
-  edit: true
-  glob: true
-  grep: true
-  bash: true
-  atlassian*: true
 permission:
+  read: allow
+  write: allow
+  edit: allow
+  glob: allow
+  grep: allow
+  bash: allow
+  atlassian*: allow
   skill:
     git-issue-creator: allow
     git-issue-updater: allow

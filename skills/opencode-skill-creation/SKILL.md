@@ -132,6 +132,15 @@ metadata:
 ---
 ```
 
+**Important**: Only these frontmatter fields are recognized by OpenCode:
+- `name` (required)
+- `description` (required, 1-1024 characters)
+- `license` (optional)
+- `compatibility` (optional)
+- `metadata` (optional, string-to-string map)
+
+Unknown frontmatter fields are ignored.
+
 ### Step 4: Build Skill Content
 
 Structure the skill documentation with the following sections:
@@ -311,6 +320,46 @@ write filePath="PLAN.md" content="full updated content"
 - **Check naming**: Verify skill follows naming conventions
 - **Always read before write**: Verify file content before modifying existing files
 
+### Configuring Skill Permissions
+
+Skills can be controlled via permissions in agent configurations. Use `permission.skill` in agent frontmatter or config.json:
+
+**For custom agents (markdown frontmatter)**:
+```yaml
+---
+description: My agent description
+mode: subagent
+permission:
+  skill:
+    "documents-*": allow
+    "internal-*": deny
+    "experimental-*": ask
+---
+```
+
+**For built-in agents (config.json)**:
+```json
+{
+  "agent": {
+    "plan": {
+      "permission": {
+        "skill": {
+          "*": "allow",
+          "internal-*": "deny"
+        }
+      }
+    }
+  }
+}
+```
+
+Permission behaviors:
+- `allow`: Skill loads immediately
+- `deny`: Skill hidden from agent, access rejected
+- `ask`: User prompted for approval before loading
+
+Note: The legacy `tools: skill: false` approach is deprecated. Use `permission.skill` instead.
+
 ## Common Issues
 
 ### Invalid Skill Name
@@ -387,6 +436,43 @@ edit filePath="PLAN.md" oldString="old text" newString="new text"
 - **README.md** – Contains documentation structure
 - **Existing SKILL.md** – Contains complete skill documentation
 - **config.json** – Contains agent and MCP server configurations
+
+## Configuring Agent Access to Skills
+
+When creating skills, consider how agents will access them. Use `permission.skill` in agent configurations:
+
+**Pattern-based Permissions**:
+
+| Pattern | Example Matches | Behavior |
+|---------|-----------------|----------|
+| `*` | All skills | Wildcard match |
+| `prefix-*` | `prefix-docs`, `prefix-tools` | Prefix wildcard |
+| `*-suffix` | `docs-suffix`, `tools-suffix` | Suffix wildcard |
+| `exact-name` | `exact-name` only | Exact match |
+
+**Permission Values**:
+- `allow`: Skill loads immediately
+- `deny`: Skill hidden from agent, access rejected
+- `ask`: User prompted for approval before loading
+
+**Example Agent Config**:
+```yaml
+---
+description: Read-only exploration agent
+mode: subagent
+permission:
+  read: allow
+  write: deny
+  edit: deny
+  bash: deny
+  skill:
+    "*": deny
+    "explore-*": allow
+    "code-search": allow
+---
+```
+
+This agent can only access skills matching `explore-*` or `code-search`, all others are denied.
 
 ## Verification Commands
 
