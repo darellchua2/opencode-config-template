@@ -8,7 +8,8 @@
     "opencode-supermemory",
     "opencode-notificator",
     "opencode-pty",
-    "opencode-vibeguard"
+    "opencode-vibeguard",
+    opencode-claude-auth
   ],
   "instructions": ["AGENTS.md"],
   "provider": {
