@@ -327,7 +327,8 @@ USAGE:
                           git-issue-plan-workflow, git-issue-updater,
                           git-semantic-commits
 
-    Documentation (2):    coverage-readme-workflow, docstring-generator
+    Documentation (3):    coverage-readme-workflow, docstring-generator,
+                          documentation-sync-workflow
 
     JIRA (4):             jira-ticket-oauth-workflow, jira-ticket-plan-workflow,
                           jira-status-updater, jira-ticket-workflow
