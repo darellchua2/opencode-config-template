@@ -1,3 +1,10 @@
+## [1.26.1](https://github.com/darellchua2/opencode-config-template/compare/v1.26.0...v1.26.1) (2026-03-22)
+
+
+### Bug Fixes
+
+* update ([a0da92d](https://github.com/darellchua2/opencode-config-template/commit/a0da92dfea383d69850247ef5c442973aa99cea5))
+
 # [1.26.0](https://github.com/darellchua2/opencode-config-template/compare/v1.25.1...v1.26.0) (2026-03-22)
 
 
