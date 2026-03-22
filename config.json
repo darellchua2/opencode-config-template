@@ -88,6 +88,8 @@
     },
     "plan": {
       "permission": {
+        "edit": "ask",
+        "bash": "ask",
         "task": {
           "*": "allow"
         }
