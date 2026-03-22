@@ -1,41 +1,35 @@
 # Plan: Update opencode.json example to include standard MCP servers
 
 ## Overview
-Update the `nextjs-mcp-advisor-subagent.md` documentation to show the complete `opencode.json` configuration including all standard MCP servers (next-devtools, filesystem, github) instead of just next-devtools alone.
+Update the `nextjs-mcp-advisor-subagent.md` documentation to clarify opencode.json format and add filesystem MCP server to config.json.
 
 ## Ticket Reference
 - Issue: #122
 - URL: https://github.com/darellchua2/opencode-config-template/issues/122
 - Labels: documentation, enhancement, next.js
 
-## Files to Modify
-1. `agents/nextjs-mcp-advisor-subagent.md` - Update opencode.json example at lines 65-76
+## Files Modified
+1. `agents/nextjs-mcp-advisor-subagent.md` - Added note about updating existing opencode.json
+2. `config.json` - Added filesystem MCP server (disabled by default)
+3. `agents/explore-primary-agent.md` - Added filesystem MCP documentation
 
-## Approach
+## Implementation Complete
 
-### Phase 1: Analysis
-- Review current opencode.json example (lines 65-76)
-- Identify the correct format with all three MCP servers
-- Ensure note about OpenCode format is preserved
+### Changes Made
+- [x] Updated nextjs-mcp-advisor-subagent.md with note for existing configs
+- [x] Added filesystem MCP server to config.json
+- [x] Documented filesystem MCP in explore-primary-agent.md
 
-### Phase 2: Implementation
-- Update JSON example to include `filesystem` and `github` MCP servers
-- Maintain existing documentation context
-- Keep the explanatory note about OpenCode's config format
+### Subagents/Skills for Filesystem MCP
 
-## Success Criteria
-- [ ] opencode.json example includes all three MCP servers
-- [ ] JSON format is valid
-- [ ] Existing note about format differences is preserved
-- [ ] Documentation is clear and complete
+| Agent/Skill | Use Case |
+|-------------|----------|
+| **explore-primary-agent** | Enhanced codebase search/exploration |
+| documentation-subagent | Batch documentation across directories |
+| docx-creation-subagent | Document file operations |
 
-## Additional Changes
-
-### config.json Updates
-- Added `filesystem` MCP server to config.json (disabled by default)
-- Suitable for: **explore-primary-agent** (enhanced codebase exploration)
-- Also useful for skills: docx-creation, documentation-sync-workflow
-
-## Notes
-- Keep only `next-devtools` in the example (no filesystem/github)
-- Add note: "If `opencode.json` already exists, add the `next-devtools` entry to the existing `mcp` object"
+### Commits
+- \`7a6c786\` - docs(plan): add PLAN for issue #122
+- \`edfe7dc\` - docs(agents): simplify opencode.json example
+- \`25f95a9\` - feat(config): add filesystem MCP server
+- \`d1cfbcd\` - docs(agents): add filesystem MCP option to explore-primary-agent
