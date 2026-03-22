@@ -47,23 +47,29 @@ Use this skill when:
 
 Extract issue/ticket number from branch name:
 
+**Supported Branch Patterns**:
+- `GIT-123` - GitHub issue (preferred)
+- `issue-123` - GitHub issue (legacy)
+- `123` - GitHub issue (legacy)
+- `PROJECT-123` - JIRA ticket
+
 ```bash
 BRANCH_NAME=$(git branch --show-current)
 
-# GitHub pattern: issue-123 or 123
+# GitHub pattern: GIT-123
+if [[ "$BRANCH_NAME" =~ ^GIT-([0-9]+)$ ]]; then
+  ISSUE_NUM="${BASH_REMATCH[1]}"
+  PLAN_TYPE="github"
+  PLAN_ID="$ISSUE_NUM"
+fi
+
+# Legacy GitHub pattern (backwards compatibility): issue-123 or 123
 if [[ "$BRANCH_NAME" =~ ^issue-([0-9]+)$ ]] || [[ "$BRANCH_NAME" =~ ^([0-9]+)$ ]]; then
   ISSUE_NUM="${BASH_REMATCH[1]}"
   PLAN_TYPE="github"
   PLAN_ID="$ISSUE_NUM"
 fi
 
-# JIRA pattern: PROJECT-123
-if [[ "$BRANCH_NAME" =~ ^([A-Z]+)-([0-9]+)$ ]]; then
-  PROJECT_KEY="${BASH_REMATCH[1]}"
-  TICKET_NUM="${BASH_REMATCH[2]}"
-  PLAN_TYPE="jira"
-  PLAN_ID="${PROJECT_KEY}-${TICKET_NUM}"
-fi
 ```
 
 ### Step 2: Find PLAN File
@@ -163,8 +169,8 @@ echo "Committed PLAN update: $PLAN_FILE"
 
 | Source | Branch Pattern | PLAN File |
 |--------|---------------|-----------|
-| GitHub issue | `issue-123` | `PLANS/PLAN-GIT-123.md` |
-| GitHub issue | `123` | `PLANS/PLAN-GIT-123.md` |
+| GitHub issue | `GIT-123` | `PLANS/PLAN-GIT-123.md` |
+| GitHub issue (legacy) | `issue-123` or `123` | `PLANS/PLAN-GIT-123.md` |
 | JIRA ticket | `IBIS-456` | `PLANS/PLAN-IBIS-456.md` |
 | JIRA ticket | `PROJ-789` | `PLANS/PLAN-PROJ-789.md` |
 

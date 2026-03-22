@@ -266,6 +266,12 @@ _How will we measure success?_
 ### Step 7: Commit and Push PLAN-{TICKET_KEY}.md
 
 ```bash
+# Check if PLANS directory exists, create if not
+if [ ! -d "PLANS" ]; then
+  mkdir -p PLANS
+  echo "Created PLANS directory"
+fi
+
 # Stage PLAN file
 git add "PLANS/PLAN-${TICKET_KEY}.md"
 

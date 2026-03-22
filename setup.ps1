@@ -301,41 +301,40 @@ USAGE:
     Usage: opencode --agent build 'implement auth feature'
            opencode --agent explore 'find all API routes'
 
-   SKILLS (47):
-     Framework (8):        test-generator-framework, linting-workflow,
-                           pr-creation-workflow, jira-git-integration,
-                           error-resolver-workflow, tdd-workflow, docx-creation,
-                           coverage-framework, ticket-branch-workflow
+    SKILLS (46):
+       Framework (8):        test-generator-framework, linting-workflow,
+                             pr-creation-workflow, jira-git-integration,
+                             error-resolver-workflow, tdd-workflow, docx-creation,
+                             coverage-framework
 
-     Language-Specific (3): python-pytest-creator, python-ruff-linter,
-                           javascript-eslint-linter
+      Language-Specific (3): python-pytest-creator, python-ruff-linter,
+                            javascript-eslint-linter
 
-     Framework-Specific (5): nextjs-pr-workflow, nextjs-unit-test-creator,
-                           nextjs-standard-setup, nextjs-image-usage,
-                           typescript-dry-principle
+      Framework-Specific (5): nextjs-pr-workflow, nextjs-unit-test-creator,
+                            nextjs-standard-setup, nextjs-image-usage,
+                            typescript-dry-principle
 
-    OpenCode Meta (4):    opencode-agent-creation, opencode-skill-creation,
-                          opencode-skill-auditor, opencode-skills-maintainer
+      OpenCode Meta (3):    opencode-agent-creation, opencode-skill-creation,
+                            opencode-skills-maintainer
 
-    OpenTofu (7):         opentofu-aws-explorer, opentofu-keycloak-explorer,
-                          opentofu-kubernetes-explorer, opentofu-neon-explorer,
-                          opentofu-provider-setup, opentofu-provisioning-workflow,
-                          opentofu-ecr-provision
+     OpenTofu (7):         opentofu-aws-explorer, opentofu-keycloak-explorer,
+                           opentofu-kubernetes-explorer, opentofu-neon-explorer,
+                           opentofu-provider-setup, opentofu-provisioning-workflow,
+                           opentofu-ecr-provision
 
-    Git/Workflow (7):     ascii-diagram-creator, git-issue-creator,
-                          git-pr-creator, git-issue-labeler,
-                          git-issue-plan-workflow, git-issue-updater,
-                          git-semantic-commits
+     Git/Workflow (6):     ascii-diagram-creator, git-pr-creator,
+                           git-issue-labeler, git-issue-plan-workflow,
+                           git-issue-updater, git-semantic-commits
 
-    Documentation (3):    coverage-readme-workflow, docstring-generator,
-                          documentation-sync-workflow
+     Documentation (3):    coverage-readme-workflow, docstring-generator,
+                           documentation-sync-workflow
 
-    JIRA (4):             jira-ticket-oauth-workflow, jira-ticket-plan-workflow,
-                          jira-status-updater, jira-ticket-workflow
+     JIRA (4):             jira-ticket-oauth-workflow, jira-ticket-plan-workflow,
+                           jira-status-updater, jira-ticket-workflow
 
-    Code Quality (7):     solid-principles, clean-code, clean-architecture,
-                          design-patterns, object-design, code-smells,
-                          complexity-management
+     Code Quality (7):     solid-principles, clean-code, clean-architecture,
+                           design-patterns, object-design, code-smells,
+                           complexity-management
 
     Run 'opencode --list-skills' for detailed descriptions
     Run 'opencode --skill <name> \"prompt\"' to invoke a skill
@@ -1246,31 +1245,30 @@ function Deploy-Skills {
         Write-Host "Deployed $skillCount skills to $SkillsDir" -ForegroundColor Green
         Write-Host ""
         Write-Host "  Skill Categories:" -ForegroundColor Cyan
-        Write-Host "    Framework (9):"
+        Write-Host "    Framework (8):"
         Write-Host "      - test-generator-framework, linting-workflow"
         Write-Host "      - pr-creation-workflow, jira-git-integration"
-        Write-Host "      - error-resolver-workflow, tdd-workflow, docx-creation"
-        Write-Host "      - coverage-framework, ticket-branch-workflow"
+        Write-Host "      - error-resolver-workflow, tdd-workflow"
+        Write-Host "      - docx-creation, coverage-framework"
         Write-Host "    Language-Specific (3):"
         Write-Host "      - python-pytest-creator, python-ruff-linter"
         Write-Host "      - javascript-eslint-linter"
         Write-Host "    Framework-Specific (5):"
         Write-Host "      - nextjs-pr-workflow, nextjs-unit-test-creator"
         Write-Host "      - nextjs-standard-setup, nextjs-image-usage"
-        Write-Host "      - typescript-dry-principle"
-        Write-Host "    OpenCode Meta (4):"
-        Write-Host "      - opencode-agent-creation, opencode-skill-creation"
-        Write-Host "      - opencode-skill-auditor, opencode-skills-maintainer"
-        Write-Host "    OpenTofu (7):"
-        Write-Host "      - opentofu-aws-explorer, opentofu-keycloak-explorer"
+         Write-Host "      - typescript-dry-principle"
+         Write-Host "    OpenCode Meta (3):"
+         Write-Host "      - opencode-agent-creation, opencode-skill-creation"
+         Write-Host "      - opencode-skills-maintainer"
+         Write-Host "    OpenTofu (7):"
+         Write-Host "      - opentofu-aws-explorer, opentofu-keycloak-explorer"
         Write-Host "      - opentofu-kubernetes-explorer, opentofu-neon-explorer"
         Write-Host "      - opentofu-provider-setup, opentofu-provisioning-workflow"
         Write-Host "      - opentofu-ecr-provision"
-        Write-Host "    Git/Workflow (7):"
-        Write-Host "      - ascii-diagram-creator, git-issue-creator"
-        Write-Host "      - git-pr-creator, git-issue-labeler"
-        Write-Host "      - git-issue-plan-workflow, git-issue-updater"
-        Write-Host "      - git-semantic-commits"
+        Write-Host "    Git/Workflow (6):"
+        Write-Host "      - ascii-diagram-creator, git-pr-creator"
+        Write-Host "      - git-issue-labeler, git-issue-plan-workflow"
+        Write-Host "      - git-issue-updater, git-semantic-commits"
         Write-Host "    Documentation (2):"
         Write-Host "      - coverage-readme-workflow, docstring-generator"
         Write-Host "    JIRA (4):"
@@ -1284,31 +1282,30 @@ function Deploy-Skills {
         Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
         Write-Host ""
         Write-Host "  Skill Categories:" -ForegroundColor Cyan
-        Write-Host "    Framework (9):"
+        Write-Host "    Framework (8):"
         Write-Host "      - test-generator-framework, linting-workflow"
         Write-Host "      - pr-creation-workflow, jira-git-integration"
-        Write-Host "      - ticket-branch-workflow, error-resolver-workflow"
-        Write-Host "      - tdd-workflow, coverage-framework, docx-creation"
+        Write-Host "      - error-resolver-workflow, tdd-workflow"
+        Write-Host "      - coverage-framework, docx-creation"
         Write-Host "    Language-Specific (3):"
         Write-Host "      - python-pytest-creator, python-ruff-linter"
         Write-Host "      - javascript-eslint-linter"
         Write-Host "    Framework-Specific (5):"
         Write-Host "      - nextjs-pr-workflow, nextjs-unit-test-creator"
         Write-Host "      - nextjs-standard-setup, nextjs-image-usage"
-        Write-Host "      - typescript-dry-principle"
-        Write-Host "    OpenCode Meta (4):"
-        Write-Host "      - opencode-agent-creation, opencode-skill-creation"
-        Write-Host "      - opencode-skill-auditor, opencode-skills-maintainer"
-        Write-Host "    OpenTofu (7):"
-        Write-Host "      - opentofu-aws-explorer, opentofu-keycloak-explorer"
+         Write-Host "      - typescript-dry-principle"
+         Write-Host "    OpenCode Meta (3):"
+         Write-Host "      - opencode-agent-creation, opencode-skill-creation"
+         Write-Host "      - opencode-skills-maintainer"
+         Write-Host "    OpenTofu (7):"
+         Write-Host "      - opentofu-aws-explorer, opentofu-keycloak-explorer"
         Write-Host "      - opentofu-kubernetes-explorer, opentofu-neon-explorer"
         Write-Host "      - opentofu-provider-setup, opentofu-provisioning-workflow"
         Write-Host "      - opentofu-ecr-provision"
-        Write-Host "    Git/Workflow (8):"
-        Write-Host "      - ascii-diagram-creator, git-issue-creator"
-        Write-Host "      - git-pr-creator, git-issue-labeler"
-        Write-Host "      - git-issue-plan-workflow, git-issue-updater"
-        Write-Host "      - git-semantic-commits, jira-git-workflow"
+        Write-Host "    Git/Workflow (6):"
+        Write-Host "      - ascii-diagram-creator, git-pr-creator"
+        Write-Host "      - git-issue-labeler, git-issue-plan-workflow"
+        Write-Host "      - git-issue-updater, git-semantic-commits"
         Write-Host "    Documentation (2):"
         Write-Host "      - coverage-readme-workflow, docstring-generator"
         Write-Host "    JIRA (4):"
@@ -1732,15 +1729,15 @@ function Show-NextSteps {
     Write-Host "                     49 Skills Available" -ForegroundColor White
     Write-Host "=====================================================================" -ForegroundColor White
     Write-Host ""
-    Write-Host "  Framework (7) • Language-Specific (4) • Framework-Specific (7)"
-    Write-Host "  OpenCode Meta (4) • OpenTofu (7) • Git/Workflow (7)"
+     Write-Host "  Framework (7) • Language-Specific (4) • Framework-Specific (7)"
+     Write-Host "  OpenCode Meta (3) • OpenTofu (7) • Git/Workflow (7)"
     Write-Host "  Documentation (2) • JIRA (4) • Code Quality (7)"
     Write-Host ""
     Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
     Write-Host "  Run 'opencode --skill <name> `"prompt`"' to invoke a skill"
     Write-Host ""
-    Write-Host "  Framework (9) | Language-Specific (4) | Framework-Specific (7)"
-    Write-Host "  OpenCode Meta (4) | OpenTofu (7) | Git/Workflow (8)"
+     Write-Host "  Framework (9) | Language-Specific (4) | Framework-Specific (7)"
+     Write-Host "  OpenCode Meta (3) | OpenTofu (7) | Git/Workflow (8)"
     Write-Host "  Documentation (2) | JIRA (4) | Code Quality (7)"
     Write-Host ""
     Write-Host "  Run 'opencode --list-skills' for detailed descriptions"

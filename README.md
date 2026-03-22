@@ -131,12 +131,12 @@ This repository implements **skill modularization** with 47 skills organized acr
 
 | Category | Skills | Purpose |
 |-----------|---------|---------|
-| **Framework** (9) | test-generator-framework, linting-workflow, pr-creation-workflow, jira-git-integration, error-resolver-workflow, tdd-workflow, docx-creation, coverage-framework, ticket-branch-workflow | Generic workflows, testing patterns, and document creation |
+| **Framework** (8) | test-generator-framework, linting-workflow, pr-creation-workflow, jira-git-integration, error-resolver-workflow, tdd-workflow, docx-creation, coverage-framework | Generic workflows, testing patterns, and document creation |
 | **Language-Specific** (3) | python-pytest-creator, python-ruff-linter, javascript-eslint-linter | Language-specific test, linting, and documentation |
 | **Framework-Specific** (5) | nextjs-pr-workflow, nextjs-unit-test-creator, nextjs-standard-setup, nextjs-image-usage, typescript-dry-principle | Next.js and TypeScript workflows |
-| **OpenCode Meta** (4) | opencode-agent-creation, opencode-skill-creation, opencode-skill-auditor, opencode-skills-maintainer | Agent and skill creation/maintenance |
+| **OpenCode Meta** (3) | opencode-agent-creation, opencode-skill-creation, opencode-skills-maintainer | Agent and skill creation/maintenance |
 | **OpenTofu** (7) | opentofu-aws-explorer, opentofu-keycloak-explorer, opentofu-kubernetes-explorer, opentofu-neon-explorer, opentofu-provider-setup, opentofu-provisioning-workflow, opentofu-ecr-provision | Infrastructure as code |
-| **Git/Workflow** (8) | ascii-diagram-creator, git-issue-creator, git-pr-creator, git-issue-labeler, git-issue-plan-workflow, git-issue-updater, git-semantic-commits, plan-updater | Git operations and workflows |
+| **Git/Workflow** (7) | ascii-diagram-creator, git-pr-creator, git-issue-labeler, git-issue-plan-workflow, git-issue-updater, git-semantic-commits, plan-updater | Git operations and workflows |
 | **Documentation** (3) | coverage-readme-workflow, docstring-generator, documentation-sync-workflow | Documentation generation |
 | **JIRA** (4) | jira-ticket-oauth-workflow, jira-ticket-plan-workflow, jira-status-updater, jira-ticket-workflow | JIRA integration workflows |
 | **Code Quality** (7) | solid-principles, clean-code, clean-architecture, design-patterns, object-design, code-smells, complexity-management | Code quality analysis and patterns |
@@ -162,7 +162,7 @@ This repository implements **skill modularization** with 47 skills organized acr
 | **testing-subagent** | Test generation and execution | test-generator-framework, python-pytest-creator, nextjs-unit-test-creator |
 | **tdd-subagent** | Test-driven development workflow | tdd-workflow, test-generator-framework |
 | **pr-workflow-subagent** | Pull request creation | pr-creation-workflow, nextjs-pr-workflow, git-pr-creator |
-| **ticket-creation-subagent** | Issue/ticket creation | git-issue-creator, jira-ticket-plan-workflow |
+| **ticket-creation-subagent** | Issue/ticket creation | git-issue-plan-workflow, jira-ticket-plan-workflow |
 | **documentation-subagent** | Documentation generation | docstring-generator, coverage-readme-workflow |
 | **coverage-subagent** | Coverage reporting | coverage-framework, coverage-readme-workflow |
 | **opentofu-explorer-subagent** | Infrastructure as code | 7 OpenTofu skills (AWS, K8s, Keycloak, Neon, ECR) |
@@ -206,7 +206,7 @@ Skills follow a modular architecture:
                         ↓
 ┌─────────────────────────────────────────────────────┐
 │           Composite Skills (Workflow)               │
-│  jira-git-workflow combines multiple skills        │
+│  jira-ticket-plan-workflow combines multiple skills │
 └─────────────────────────────────────────────────────┘
 ```
 

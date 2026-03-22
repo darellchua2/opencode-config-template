@@ -618,36 +618,5 @@ After running coverage workflow:
 - [ ] Test command documented in README.md
 - [ ] README.md updated in git
 
-## Integration with Other Skills
 
-### After Test Generation:
-
-1. `test-generator-framework` → `coverage-readme-workflow`
-2. `nextjs-unit-test-creator` → `coverage-readme-workflow`
-3. `python-pytest-creator` → `coverage-readme-workflow`
-
-### Before PR Creation:
-
-1. `coverage-readme-workflow` → `pr-creation-workflow`
-2. `coverage-readme-workflow` → `nextjs-pr-workflow`
-
-### Complete Workflow Example:
-
-```bash
-# 1. Generate tests (example: Next.js)
-opencode --agent nextjs-unit-test-creator "generate tests for new components"
-
-# 2. Run tests to verify they pass
-npm run test
-
-# 3. Run coverage and update README
-opencode --agent coverage-readme-workflow "update coverage badge"
-
-# 4. Commit changes
-git add .
-git commit -m "feat: add tests and coverage badge (85%)"
-
-# 5. Create PR
-opencode --agent nextjs-pr-workflow "create PR with test coverage"
-```
 

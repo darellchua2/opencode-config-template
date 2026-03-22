@@ -1,6 +1,6 @@
 ---
 name: opencode-skills-maintainer
-description: Scan and validate skill consistency across the skills/ folder, generating reports on skill metadata, categories, and structure
+description: Scan, validate, and audit OpenCode skills for consistency, redundancy, and modularization opportunities
 license: Apache-2.0
 compatibility: opencode
 metadata:
@@ -10,13 +10,15 @@ metadata:
 
 ## What I do
 
-I maintain skill consistency and quality by:
+I maintain skill consistency, quality, and efficiency by:
 
 1. **Discover All Skills**: Scan the `skills/` folder to discover all available skills
 2. **Extract Skill Metadata**: Read frontmatter from each SKILL.md file (name, description, category)
 3. **Validate Skill Structure**: Ensure all skills have required fields and valid frontmatter
 4. **Categorize Skills**: Organize skills into logical categories (Framework, Test Generators, Linters, etc.)
-5. **Generate Report**: Provide a summary of all skills with metadata validation status
+5. **Detect Redundancy**: Identify overlapping functionality, duplicate capabilities, and consolidation opportunities
+6. **Analyze Modularization**: Recommend skill decomposition and reusable component extraction
+7. **Generate Report**: Provide comprehensive summary with validation status and optimization recommendations
 
 ## When to use me
 
@@ -26,6 +28,9 @@ Use this skill when:
 - You're checking for missing required fields in SKILL.md files
 - You want a categorized list of all available skills
 - You're debugging skill discovery issues
+- You need to identify redundant functionality across multiple skills
+- You're planning to refactor or consolidate the skill library
+- You want to improve maintainability and reduce code duplication in skills
 
 ## Prerequisites
 
@@ -96,73 +101,54 @@ done
 
 ### Step 4: Categorize Skills
 
-Organize skills into logical categories:
+Organize skills into logical categories based on naming patterns:
 
+| Category | Pattern | Examples |
+|----------|---------|----------|
+| Framework | `*-framework`, `*-workflow` | linting-workflow, test-generator-framework |
+| Git/Workflow | `git-*`, `jira-*`, `pr-*`, `ticket-*` | git-issue-plan-workflow, jira-git-integration |
+| OpenTofu/IaC | `opentofu-*` | opentofu-aws-explorer, opentofu-kubernetes-explorer |
+| OpenCode Meta | `opencode-*` | opencode-agent-creation, opencode-skill-creation |
+| Language-Specific | `{lang}-*`, `{framework}-*` | python-pytest-creator, nextjs-unit-test-creator |
+| Code Quality | `*-linter`, `*-principle`, `*-generator` | python-ruff-linter, docstring-generator |
+| Utilities | Other single-purpose | ascii-diagram-creator, tdd-workflow |
+
+**Categorization Rule**: Match skill name against patterns above. First match wins.
+
+### Step 5: Detect Redundancy & Modularization
+
+Analyze skills for overlap and optimization opportunities:
+
+**Redundancy Detection**:
+- Compare skill descriptions for overlapping functionality
+- Identify similar capability patterns across skills
+- Flag skills with near-identical purposes or audiences
+- Map skill interdependencies and coupling relationships
+
+**Granularity Assessment**:
+- Evaluate whether skills can be broken down into smaller, reusable components
+- Identify compound skills that contain multiple distinct capabilities
+- Assess potential for extracting shared functionality into base skills
+
+**Analysis Commands**:
 ```bash
-# Framework Skills (Foundational Workflows)
-- linting-workflow
-- test-generator-framework
-- ticket-branch-workflow
-- pr-creation-workflow
-- coverage-framework
-- jira-workflow-framework
-- opentofu-framework
-- opencode-tooling-framework
+# Find skills with similar descriptions
+grep -h "^description:" skills/*/SKILL.md | sort | uniq -c | sort -nr
 
-# Language-Specific Test Generators
-- python-pytest-creator
-- nextjs-unit-test-creator
+# Analyze skill distribution by workflow type
+grep -A1 "workflow:" skills/*/SKILL.md | grep "workflow:" | sort | uniq -c
 
-# Language-Specific Linters
-- python-ruff-linter
-- javascript-eslint-linter
-
-# Project Setup
-- nextjs-standard-setup
-
-# Git/Workflow
-- git-issue-creator
-- git-pr-creator
-- git-issue-labeler
-- git-issue-updater
-- git-semantic-commits
-- git-pr-creator
-- jira-git-integration
-- jira-git-workflow
-- nextjs-pr-workflow
-- git-issue-plan-workflow
-- jira-ticket-plan-workflow
-- jira-ticket-workflow
-- ticket-branch-workflow
-- pr-creation-workflow
-- jira-status-updater
-
-# OpenCode Meta
-- opencode-agent-creation
-- opencode-skill-creation
-- opencode-skill-auditor
-- opencode-skills-maintainer
-
-# OpenTofu/Infrastructure
-- opentofu-provider-setup
-- opentofu-provisioning-workflow
-- opentofu-aws-explorer
-- opentofu-kubernetes-explorer
-- opentofu-neon-explorer
-- opentofu-keycloak-explorer
-- opentofu-ecr-provision
-
-# Code Quality/Documentation
-- docstring-generator (covers Python PEP 257, TypeScript TSDoc, Java Javadoc, C# XML docs)
-- typescript-dry-principle
-- coverage-readme-workflow
-
-# Utilities
-- ascii-diagram-creator
-- tdd-workflow
+# Check for naming convention compliance
+ls skills/ | grep -E "^[a-z0-9]+(-[a-z0-9]+)*$"
 ```
 
-### Step 5: Generate Report
+**Modularization Opportunities**:
+- Compound skills that can be broken into smaller components
+- Shared functionality that could be extracted into base skills
+- Skills that reference or build upon other skills
+- Consolidation candidates with migration paths
+
+### Step 6: Generate Report
 
 Create a summary of all skills:
 
@@ -201,17 +187,10 @@ Create a summary of all skills:
 
 ### Categorization Logic
 
-**Framework Skills**: Skills that provide foundational workflows used by other skills
-- Test framework, linting framework, PR workflow, ticket workflow
-
-**Language-Specific**: Skills for specific programming languages or frameworks
-- Test generators, linters, project setup
-
-**Meta Skills**: Skills that create/audit other skills or agents
-- opencode-agent-creation, opencode-skill-creation, opencode-skill-auditor
-
-**Domain-Specific**: Skills for specific domains
-- OpenTofu infrastructure, Git/DevOps, documentation
+- **Framework**: Foundational workflows (`*-framework`, `*-workflow`)
+- **Language-Specific**: Skills for specific languages/frameworks (`{lang}-*`, `{framework}-*`)
+- **Meta**: Skills that create/audit other skills or agents (`opencode-*`)
+- **Domain-Specific**: Skills for specific domains (`opentofu-*`, `git-*`, `jira-*`)
 
 ### Validation Rules
 
@@ -219,13 +198,6 @@ Create a summary of all skills:
 2. **YAML Syntax**: Frontmatter must be valid YAML
 3. **File Naming**: Skill directory name should match the skill name (lowercase, hyphens)
 4. **Description Length**: Keep descriptions between 50-150 characters
-
-### Consistency Checks
-
-- Skill names and descriptions should match across all references
-- Maintain alphabetical ordering within categories
-- Use consistent formatting (bold names, descriptions after colon)
-- All skills should have `## What I do` and `## When to use me` sections
 
 ## Common Issues
 
@@ -300,26 +272,23 @@ done
 
 ## Example Output
 
-**Skills Found: 42**
+**Skills Found: 46**
 
 ### Validation Summary
-- ✓ Valid skills: 42
+- ✓ Valid skills: 46
 - ❌ Invalid skills: 0
-- ⚠️ Missing optional fields: 3
+- ⚠️ Missing optional fields: 2
 
 ### Categories
-- Framework Skills: 8
-- Language-Specific Test Generators: 2
-- Language-Specific Linters: 2
-- Project Setup: 2
-- Git/Workflow: 14
-- OpenCode Meta: 4
-- OpenTofu/Infrastructure: 7
-- Code Quality/Documentation: 5
-- Utilities: 2
+- Framework Skills: 7
+- Git/Workflow: 12
+- OpenTofu/IaC: 7
+- OpenCode Meta: 3
+- Language-Specific: 6
+- Code Quality: 8
+- Utilities: 3
 
 ### Skills Missing Optional Fields
-- opencode-skill-auditor: Missing 'audience' metadata
 - ascii-diagram-creator: Missing 'workflow' metadata
 - tdd-workflow: Missing 'audience' metadata
 

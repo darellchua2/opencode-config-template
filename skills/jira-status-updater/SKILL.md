@@ -358,39 +358,6 @@ echo "=========================================="
 echo ""
 ```
 
-## Integration with Other Skills
-
-### Skills That Should Use jira-status-updater
-
-- **pr-creation-workflow**: Update JIRA status after PR merge
-- **git-pr-creator**: Optionally update JIRA status after PR merge
-- **jira-git-workflow**: Document the complete workflow including status updates
-- **nextjs-pr-workflow**: Update JIRA status after Next.js PR merge
-
-### Integration Pattern
-
-```bash
-# In pr-creation-workflow or git-pr-creator
-# After successful PR merge:
-
-# Step 1: Check if JIRA integration is enabled
-if [ "$ENABLE_JIRA_STATUS_UPDATE" = "true" ]; then
-
-  # Step 2: Call jira-status-updater
-  jira-status-updater \
-    --ticket "$JIRA_TICKET" \
-    --cloudId "$CLOUD_ID" \
-    --target-status "Done"
-
-  # Step 3: Check result
-  if [ $? -eq 0 ]; then
-    echo "✅ JIRA ticket status updated successfully"
-  else
-    echo "⚠️  JIRA ticket status update failed"
-  fi
-fi
-```
-
 ## Best Practices
 
 ### Transition Detection

@@ -139,6 +139,6 @@ Then update `~/.bashrc` with the new tokens.
 
 ## Related Skills
 
-- `ticket-branch-workflow` - Branch and PLAN.md creation
+- `jira-ticket-plan-workflow` - Branch and PLAN.md creation
 - `git-semantic-commits` - Commit message formatting
 - `git-issue-updater` - Update tickets with commit info
