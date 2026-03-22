@@ -30,26 +30,5 @@ Update the `nextjs-mcp-advisor-subagent.md` documentation to show the complete `
 - [ ] Documentation is clear and complete
 
 ## Notes
-The updated example should match this format:
-```json
-{
-  "$schema": "https://opencode.ai/config.json",
-  "mcp": {
-    "next-devtools": {
-      "type": "local",
-      "command": ["npx", "-y", "next-devtools-mcp@latest"],
-      "enabled": true
-    },
-    "filesystem": {
-      "type": "local",
-      "command": ["npx", "-y", "@anthropic-ai/mcp-server-filesystem@latest"],
-      "enabled": true
-    },
-    "github": {
-      "type": "local",
-      "command": ["npx", "-y", "@anthropic-ai/mcp-server-github@latest"],
-      "enabled": true
-    }
-  }
-}
-```
+- Keep only `next-devtools` in the example (no filesystem/github)
+- Add note: "If `opencode.json` already exists, add the `next-devtools` entry to the existing `mcp` object"
