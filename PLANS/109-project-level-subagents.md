@@ -9,154 +9,55 @@
 
 ## Overview
 
-Create an `agents/` folder with markdown definitions for all subagents and primary agents, enabling better documentation and future migration to project-level agent support.
+Create an `agents/` folder with markdown definitions for all subagents and primary agents, reducing config.json bloat and enabling per-agent MCP enablement for token optimization.
+
+---
+
+## Summary
+
+| Metric | Before | After |
+|------|--------|-------|
+| config.json lines | 473 | 74 (-84%) |
+| Agent definitions | In config.json | 19 agents | 0 agents |
+| Subagent files | 0 | 19 markdown files |
+| Setup.sh | Added deploy_agents() | +2 variables, +50 lines |
 
 ---
 
 ## Phase 0: Investigation [COMPLETED]
-
-Before creating agent files, verified OpenCode markdown agent capabilities.
-
-### Findings
-
-- ✅ `permission.skill` is officially supported per OpenCode docs
-- ✅ Per-agent MCP enablement via `tools.<mcp*>: true/false` pattern is supported
+- ✅ `permission.skill` is officially supported (OpenCode docs)
+- ✅ Per-agent MCP enablement via `tools.<mcp*>: true/false` pattern
 - ✅ Decision: Proceed with markdown agents + MCP token optimization
 
 ---
 
-## Phase 1: Create `agents/` Folder Structure [COMPLETED]
+## Phase 1: Create Agent Files [COMPLETED]
+- Created `agents/primary/` directory with 1 primary agent (explore.md)
+- Created `agents/subagents/` directory with 18 subagents
+- Created `agents/primary/.gitkeep` for directory persistence
+- Created `agents/subagents/.gitkeep` for directory persistence
 
-### 1.1 Final Directory Structure
+- Refactored subagents for Single Responsibility (split git-workflow into ticket-creation + pr-workflow)
 
-```
-agents/
-├── primary/
-│   └── explore.md
-└── subagents/
-    ├── architecture-review-subagent.md
-    ├── code-quality-subagent.md
-    ├── code-review-subagent.md
-    ├── coverage-subagent.md
-    ├── diagram-subagent.md
-    ├── docx-creation-subagent.md
-    ├── documentation-subagent.md
-    ├── error-resolver-subagent.md
-    ├── image-analyzer.md
-    ├── linting-subagent.md
-    ├── nextjs-setup-subagent.md
-    ├── opencode-tooling-subagent.md
-    ├── opentofu-explorer-subagent.md
-    ├── pr-workflow-subagent.md
-    ├── refactoring-subagent.md
-    ├── tdd-subagent.md
-    ├── testing-subagent.md
-    └── ticket-creation-subagent.md
-```
+- Deleted `git-workflow-subagent.md` and `workflow-subagent.md` (70% overlap)
+- Created `ticket-creation-subagent.md` for GitHub/JIRA tickets, branches
+- Created `pr-workflow-subagent.md` for PRs with framework-specific quality checks
+- Both new subagents have `atlassian*: true` enabled
 
-### 1.2 Agent Files Summary
+- Updated `.AGENTS.md` routing table (git-workflow-subagent → ticket-creation-subagent, pr-workflow-subagent)
 
-| Type | Count |
-|------|-------|
-| Primary agents | 1 |
-| Subagents | 18 |
-| **Total** | **19** |
+- Total: 19 agent markdown files (1 primary + 18 subagents)
 
-### 1.3 Subagent Refactoring
+- Updated config.json to remove agent block, added MCP token optimization pattern
 
-**Original design had overlap:**
-- `git-workflow-subagent` - Git + JIRA integration
-- `workflow-subagent` - PR + JIRA workflows
+- Updated setup.sh with deploy_agents() function and variables
+- Updated setup.ps1 with Deploy-Agents function and variables
+- Fixed bug where deploy_agents was called inside setup_config (early return issue)
+- Updated .AGENTS.md with subagent routing table
+- Tested with bash -n, --dry-run, --quick, - Verified deployment to ~/.config/opencode/agents/
+- Committed all changes
 
-**Refactored for Single Responsibility:**
-- `ticket-creation-subagent` - GitHub/JIRA ticket creation, branches, semantic commits
-- `pr-workflow-subagent` - PRs with framework-specific quality checks (Next.js, Python, generic)
+- Pushed to branch: https://github.com/darellchua2/opencode-config-template/pull/new/109-project-level-subagents
 
-**Rationale:**
-- 70% skill overlap between original subagents
-- PR workflows require framework-specific handling (lint/build/test vary by framework)
-- Ticket creation is framework-agnostic
+- Closes #109
 
----
-
-## Phase 2: Update Setup Scripts [COMPLETED]
-
-### 2.1 setup.sh Changes
-
-- [x] Added `AGENTS_SRC_DIR` and `AGENTS_DEST_DIR` variables
-- [x] Added `deploy_agents()` function
-- [x] **Bug fix**: Moved `deploy_agents` call outside `setup_config()` to prevent early return
-
-### 2.2 setup.ps1 Changes
-
-- [x] Added `$AgentsSrcDir` and `$AgentsDestDir` variables
-- [x] Added `Deploy-Agents` function
-
-### 2.3 config.json Changes
-
-- [x] Removed `agent` block (473 lines → 74 lines, **84% reduction**)
-- [x] Added MCP token optimization pattern
-- [x] MCP servers enabled, but tools disabled globally
-- [x] Per-agent tool enablement in agent markdown files
-
----
-
-## Phase 3: Testing & Validation [COMPLETED]
-
-| Test | Command | Status |
-|------|---------|--------|
-| Directory creation | `ls agents/` | ✅ Verified |
-| File count | `find agents -name "*.md" \| wc -l` → 19 | ✅ Verified |
-| setup.sh syntax | `bash -n setup.sh` | ✅ Passed |
-| setup.sh dry-run | `./setup.sh --dry-run` | ✅ Passed |
-| setup.sh quick | `./setup.sh --quick` | ✅ Passed |
-| Agent deployment | `ls ~/.config/opencode/agents/` | ✅ Verified |
-
----
-
-## MCP Token Optimization Strategy
-
-### Problem
-MCP server tools add to context (500-2000+ tokens per server). Having MCP enabled globally wastes tokens.
-
-### Solution
-Disable MCP tools globally, enable only in subagents that need them.
-
-### MCP Server Assignments
-
-| MCP Server | Subagent | Purpose |
-|------------|----------|---------|
-| `zai-mcp-server` | `image-analyzer` | Image/video analysis, OCR |
-| `zai-mcp-server` | `error-resolver-subagent` | Error screenshot diagnosis |
-| `atlassian` | `ticket-creation-subagent` | JIRA ticket CRUD |
-| `atlassian` | `pr-workflow-subagent` | JIRA PR integration |
-
-### Token Savings
-
-| Agent | MCP Tools in Context | Token Cost |
-|-------|---------------------|------------|
-| `build` (primary) | ❌ None | **0 tokens** |
-| `explore` (primary) | ❌ None | **0 tokens** |
-| `ticket-creation-subagent` (invoked) | ✅ `atlassian` | ~500-1000 tokens |
-| `pr-workflow-subagent` (invoked) | ✅ `atlassian` | ~500-1000 tokens |
-| `image-analyzer` (invoked) | ✅ `zai-mcp-server` | ~500-2000 tokens |
-
----
-
-## Files Modified
-
-| File | Change |
-|------|--------|
-| `config.json` | Removed agent block, added MCP optimization |
-| `setup.sh` | Added `deploy_agents()` function |
-| `setup.ps1` | Added `Deploy-Agents` function |
-| `.AGENTS.md` | Updated subagent routing table |
-| `agents/` | Created 19 agent markdown files |
-
----
-
-## Commits
-
-1. `565652c` - feat(agents): implement project-level subagent support (#109)
-2. `e4d0099` - feat(agents): enable atlassian MCP for JIRA subagents as primary approach
-3. (pending) - refactor(agents): split into ticket-creation and pr-workflow subagents
