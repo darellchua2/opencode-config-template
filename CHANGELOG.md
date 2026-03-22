@@ -1,3 +1,10 @@
+## [1.26.3](https://github.com/darellchua2/opencode-config-template/compare/v1.26.2...v1.26.3) (2026-03-22)
+
+
+### Bug Fixes
+
+* **plan:** restore default permissions with subagent delegation ([abcc702](https://github.com/darellchua2/opencode-config-template/commit/abcc702603a253d0f5a029fd734134e66a0e04a3))
+
 ## [1.26.2](https://github.com/darellchua2/opencode-config-template/compare/v1.26.1...v1.26.2) (2026-03-22)
 
 
