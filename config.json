@@ -69,6 +69,38 @@
         "Authorization": "Bearer {env:ZAI_API_KEY}"
       },
       "enabled": true
+    },
+    "autodesk-revit": {
+      "type": "remote",
+      "url": "https://mcp.autodesk.com/revit/v1",
+      "headers": {
+        "Authorization": "Bearer {env:AUTODESK_API_KEY}"
+      },
+      "enabled": false
+    },
+    "autodesk-model-data": {
+      "type": "remote",
+      "url": "https://mcp.autodesk.com/model-data/v1",
+      "headers": {
+        "Authorization": "Bearer {env:AUTODESK_API_KEY}"
+      },
+      "enabled": false
+    },
+    "autodesk-fusion": {
+      "type": "remote",
+      "url": "https://mcp.autodesk.com/fusion/v1",
+      "headers": {
+        "Authorization": "Bearer {env:AUTODESK_API_KEY}"
+      },
+      "enabled": false
+    },
+    "autodesk-help": {
+      "type": "remote",
+      "url": "https://mcp.autodesk.com/help/v1",
+      "headers": {
+        "Authorization": "Bearer {env:AUTODESK_API_KEY}"
+      },
+      "enabled": false
     }
   },
   "tools": {
@@ -76,7 +108,11 @@
     "web-reader*": false,
     "web-search-prime*": false,
     "zai-mcp-server*": false,
-    "zread*": false
+    "zread*": false,
+    "autodesk-revit*": false,
+    "autodesk-model-data*": false,
+    "autodesk-fusion*": false,
+    "autodesk-help*": false
   },
   "agent": {
     "build": {
