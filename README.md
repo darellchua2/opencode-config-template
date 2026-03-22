@@ -137,7 +137,7 @@ This repository implements **skill modularization** with 49 skills organized acr
 | **OpenCode Meta** (4) | opencode-agent-creation, opencode-skill-creation, opencode-skill-auditor, opencode-skills-maintainer | Agent and skill creation/maintenance |
 | **OpenTofu** (7) | opentofu-aws-explorer, opentofu-keycloak-explorer, opentofu-kubernetes-explorer, opentofu-neon-explorer, opentofu-provider-setup, opentofu-provisioning-workflow, opentofu-ecr-provision | Infrastructure as code |
 | **Git/Workflow** (7) | ascii-diagram-creator, git-issue-creator, git-pr-creator, git-issue-labeler, git-issue-plan-workflow, git-issue-updater, git-semantic-commits | Git operations and workflows |
-| **Documentation** (2) | coverage-readme-workflow, docstring-generator | Documentation generation |
+| **Documentation** (3) | coverage-readme-workflow, docstring-generator, documentation-sync-workflow | Documentation generation |
 | **JIRA** (4) | jira-ticket-oauth-workflow, jira-ticket-plan-workflow, jira-status-updater, jira-ticket-workflow | JIRA integration workflows |
 | **Code Quality** (7) | solid-principles, clean-code, clean-architecture, design-patterns, object-design, code-smells, complexity-management | Code quality analysis and patterns |
 
