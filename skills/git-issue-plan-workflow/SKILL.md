@@ -16,8 +16,8 @@ I implement a standardized GitHub issue creation and planning workflow:
 2. **Determine Issue Scope**: Ask if issue needs to be broken into sub-issues
 3. **Create GitHub Issue**: Use GitHub CLI to create issue with appropriate labels
 4. **Create Git Branch**: Generate branch from issue number (e.g., `issue-123`)
-5. **Generate PLAN.md**: Create comprehensive plan with phases and todo list
-6. **Commit and Push**: Commit PLAN.md with semantic formatting and push to remote
+5. **Generate PLAN file**: Create comprehensive plan with phases and todo list in `PLANS/` directory
+6. **Commit and Push**: Commit PLAN file with semantic formatting and push to remote
 7. **Prompt Execution**: Ask user if they want to proceed with plan execution
 
 ## When to use me
@@ -197,9 +197,13 @@ git checkout -b "issue-$ISSUE_NUMBER"
 echo "✓ Created branch: issue-$ISSUE_NUMBER"
 ```
 
-### Step 6: Generate PLAN.md
+### Step 6: Generate PLAN file
 
-Create comprehensive PLAN.md with phases and todos:
+**File Location**: All PLAN files are stored in the `PLANS/` directory at the project root.
+
+- **GitHub issues**: `PLANS/PLAN-GIT-{ISSUE_NUMBER}.md` (e.g., `PLANS/PLAN-GIT-123.md`)
+
+Create comprehensive PLAN file with phases and todos:
 
 **Template**:
 ```markdown
@@ -270,19 +274,22 @@ _Identify potential risks and how to mitigate them_
 _How will we measure success?_
 ```
 
-### Step 7: Commit and Push PLAN.md
+### Step 7: Commit and Push PLAN file
 
 ```bash
-# Stage PLAN.md
-git add PLAN.md
+# Ensure PLANS directory exists
+mkdir -p PLANS
+
+# Stage PLAN file
+git add "PLANS/PLAN-GIT-${ISSUE_NUMBER}.md"
 
 # Commit with semantic message
-git commit -m "docs(plan): add PLAN.md for issue #$ISSUE_NUMBER"
+git commit -m "docs(plan): add PLAN-GIT-${ISSUE_NUMBER}.md for issue #$ISSUE_NUMBER"
 
 # Push to remote
 git push -u origin "issue-$ISSUE_NUMBER"
 
-echo "✓ Committed and pushed PLAN.md"
+echo "✓ Committed and pushed PLANS/PLAN-GIT-${ISSUE_NUMBER}.md"
 ```
 
 ### Step 8: Update Issue with Initial Progress
@@ -293,11 +300,11 @@ Add comment to GitHub issue:
 gh issue comment "$ISSUE_NUMBER" --body "## Planning Complete
 
 - ✅ Branch created: \`issue-$ISSUE_NUMBER\`
-- ✅ PLAN.md committed with implementation phases
+- ✅ PLAN file committed: \`PLANS/PLAN-GIT-${ISSUE_NUMBER}.md\`
 - ✅ Ready to begin execution
 
 **Next Steps**:
-1. Review PLAN.md
+1. Review \`PLANS/PLAN-GIT-${ISSUE_NUMBER}.md\`
 2. Begin Phase 1: Setup & Analysis
 
 ---
@@ -311,13 +318,13 @@ Ask user if they want to proceed:
 ```
 ✓ GitHub issue created: #$ISSUE_NUMBER
 ✓ Branch created and checked out: issue-$ISSUE_NUMBER
-✓ PLAN.md committed and pushed
+✓ PLANS/PLAN-GIT-${ISSUE_NUMBER}.md committed and pushed
 
 Would you like to proceed with executing the plan?
 - Yes: Start with Phase 1 tasks
 - No: Stop here and execute manually later
 
-[If Yes]: Begin executing todo items from PLAN.md
+[If Yes]: Begin executing todo items from PLANS/PLAN-GIT-${ISSUE_NUMBER}.md
 [If No]: Workflow complete. Run tasks manually when ready.
 ```
 
@@ -340,7 +347,7 @@ Would you like to proceed with executing the plan?
 - Keep it short and descriptive
 - Use lowercase with hyphens
 
-### PLAN.md Structure
+### PLAN File Structure
 - Start with phases for large work
 - Each phase has clear todo items
 - Todos are actionable and verifiable
@@ -417,13 +424,14 @@ git push -u origin "issue-$ISSUE_NUMBER"
 - [ ] Branch name includes issue number
 - [ ] Branch checked out successfully
 
-**After PLAN.md**:
+**After PLAN file**:
+- [ ] File created in PLANS/ directory
 - [ ] All sections populated
 - [ ] Phases have actionable todos
 - [ ] Acceptance criteria listed
 
 **After commit/push**:
-- [ ] PLAN.md committed with semantic message
+- [ ] PLAN file committed with semantic message
 - [ ] Branch pushed to remote
 - [ ] GitHub issue updated with progress
 
@@ -458,7 +466,7 @@ Creating issue...
 
 ✓ Created GitHub issue: #456
 ✓ Created branch: issue-456
-✓ Created PLAN.md with 5 phases
+✓ Created PLANS/PLAN-GIT-456.md with 5 phases
 ✓ Committed and pushed to remote
 
 Proceed with plan execution? (yes/no)
