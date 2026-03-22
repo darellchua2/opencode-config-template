@@ -187,30 +187,133 @@ Skills follow a modular architecture:
 
 ### JIRA OAuth2 Token Auto-Refresh
 
-- **Automatic token refresh**: JIRA OAuth2 tokens now refresh automatically before expiration, See `scripts/jira-token-manager.sh`
-- **Token storage**: `~/.config/opencode/jira-tokens.json` (encrypted, file permissions 600)
-- **Proactive refresh**: Tokens refresh 5 minutes before expiration (configurable)
-- **Environment variables**:
-  - `JIRA_TOKEN_FILE` - Token storage file (default: `~/.config/opencode/jira-tokens.json`)
-  - `JIRA_TOKEN_BUFFER_SECONDS` - Buffer before proactive refresh (default: 300)
-  - `JIRA_TOKEN_MAX_RETRIES` - Max refresh retries (default: 3)
-  - `JIRA_TOKEN_RETRY_DELAY` - Delay between retries (default: 2)
-  - `JIRA_TOKEN_DEBUG` - Enable debug output (set to 'true')
+This feature automatically manages JIRA OAuth2 tokens to prevent workflow interruptions from token expiration.
 
-- **Usage**: Source the wrapper script in your shell scripts
-  ```bash
-  # Source the wrapper for easy API access
-  source scripts/jira-token-manager.sh
-  
-  # Check token status
-  scripts/jira-token-manager.sh status
-  
-  # Make API calls with auto-refresh
-  scripts/jira-token-manager.sh api-get "/project"
-  
-  # Create ticket
-  scripts/jira-token-manager.sh api-post "/issue" '{"fields":{...}}'
-  ```
+#### How It Works
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    Token Auto-Refresh Flow                       │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  1. API Call Requested                                           │
+│     └─→ ensure_valid_token() checks expiration                   │
+│                                                                  │
+│  2. Token Valid?                                                 │
+│     ├─→ YES: Proceed with API call                               │
+│     └─→ NO:  Refresh token automatically                         │
+│              └─→ POST auth.atlassian.com/oauth/token             │
+│                  └─→ Update stored tokens                        │
+│                                                                  │
+│  3. API Call Executed                                            │
+│     └─→ If 401 received: Force refresh & retry once              │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Key Features:**
+- **Proactive Refresh**: Tokens refresh 5 minutes before expiration (configurable)
+- **Automatic Retry**: On 401 errors, token refreshes and API call retries automatically
+- **Secure Storage**: Tokens stored in `~/.config/opencode/jira-tokens.json` (permissions 600)
+- **Fallback**: Uses environment variables if token file not found
+
+#### Setup
+
+After running `./setup.sh` to configure JIRA OAuth2, initialize the token manager:
+
+```bash
+# Initialize with your OAuth2 credentials
+./scripts/jira-token-manager.sh init \
+  "$JIRA_CLIENT_ID" \
+  "$JIRA_CLIENT_SECRET" \
+  "$JIRA_ACCESS_TOKEN" \
+  "$JIRA_REFRESH_TOKEN" \
+  "$JIRA_CLOUD_ID" \
+  3600
+```
+
+#### Usage
+
+**Check token status:**
+```bash
+./scripts/jira-token-manager.sh status
+# Output:
+# Status: CONFIGURED
+# Access Token: abc123...wxyz
+# Cloud ID: your-cloud-id
+# Token Validity: VALID (3420s remaining)
+# Refresh Count: 3
+```
+
+**Make API calls with auto-refresh:**
+```bash
+# GET request - automatically refreshes token if needed
+./scripts/jira-token-manager.sh api-get "/project"
+
+# POST request - create issue
+./scripts/jira-token-manager.sh api-post "/issue" '{
+  "fields": {
+    "project": {"key": "PROJ"},
+    "summary": "New ticket",
+    "issuetype": {"name": "Task"}
+  }
+}'
+
+# PUT request - update issue
+./scripts/jira-token-manager.sh api-put "/issue/PROJ-123" '{"fields":{"summary":"Updated"}}'
+
+# DELETE request
+./scripts/jira-token-manager.sh api-delete "/issue/PROJ-123"
+```
+
+**Manual refresh:**
+```bash
+./scripts/jira-token-manager.sh refresh
+```
+
+**Ensure valid token (useful before scripts):**
+```bash
+./scripts/jira-token-manager.sh ensure-valid
+```
+
+#### Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `JIRA_TOKEN_FILE` | Token storage file | `~/.config/opencode/jira-tokens.json` |
+| `JIRA_TOKEN_BUFFER_SECONDS` | Refresh buffer (seconds before expiry) | `300` (5 min) |
+| `JIRA_TOKEN_MAX_RETRIES` | Max refresh retry attempts | `3` |
+| `JIRA_TOKEN_RETRY_DELAY` | Delay between retries (seconds) | `2` |
+| `JIRA_TOKEN_DEBUG` | Enable debug logging | (unset) |
+
+#### Token Storage Schema
+
+```json
+{
+  "client_id": "your-client-id",
+  "client_secret": "your-client-secret",
+  "access_token": "current-access-token",
+  "refresh_token": "current-refresh-token",
+  "cloud_id": "your-cloud-id",
+  "expires_at": 1711089600,
+  "created_at": 1711086000,
+  "last_refreshed_at": 1711089000,
+  "refresh_count": 5
+}
+```
+
+#### Integration with Skills
+
+JIRA-related skills (`jira-ticket-oauth-workflow`, `jira-status-updater`, etc.) can use the token manager for seamless API access:
+
+```bash
+# Source in your scripts
+source scripts/jira-token-manager.sh
+
+# Use wrapper functions
+jira_get "/project"
+jira_post "/issue" '{"fields":{...}}'
+```
 
 ### Environment Variable Persistence
 
