@@ -101,6 +101,11 @@
         "Authorization": "Bearer {env:AUTODESK_API_KEY}"
       },
       "enabled": false
+    },
+    "next-devtools": {
+      "type": "local",
+      "command": ["npx", "-y", "next-devtools-mcp@latest"],
+      "enabled": false
     }
   },
   "tools": {
@@ -112,7 +117,8 @@
     "autodesk-revit*": false,
     "autodesk-model-data*": false,
     "autodesk-fusion*": false,
-    "autodesk-help*": false
+    "autodesk-help*": false,
+    "next-devtools*": false
   },
   "agent": {
     "build": {
