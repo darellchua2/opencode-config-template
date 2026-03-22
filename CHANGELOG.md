@@ -1,3 +1,10 @@
+# [1.31.0](https://github.com/darellchua2/opencode-config-template/compare/v1.30.0...v1.31.0) (2026-03-22)
+
+
+### Features
+
+* **config:** add filesystem MCP server for enhanced file operations ([25f95a9](https://github.com/darellchua2/opencode-config-template/commit/25f95a9e3766e97a8d8beb13d7b905a69b7abdf2))
+
 # [1.30.0](https://github.com/darellchua2/opencode-config-template/compare/v1.29.0...v1.30.0) (2026-03-22)
 
 
