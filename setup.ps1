@@ -56,6 +56,8 @@ if (Test-Path $VersionFile) {
 $ConfigDir = Join-Path $HOME ".config\opencode"
 $ConfigFile = Join-Path $ConfigDir "config.json"
 $SkillsDir = Join-Path $ConfigDir "skills"
+$AgentsSrcDir = Join-Path $ScriptDir "agents"
+$AgentsDestDir = Join-Path $ConfigDir "agents"
 $BackupDir = Join-Path $HOME ".opencode-backup-$(Get-Date -Format 'yyyyMMdd_HHmmss')"
 $LogFile = Join-Path $HOME ".opencode-setup.log"
 $LastUpdateCheck = Join-Path $ConfigDir ".last-update-check"
@@ -1315,6 +1317,62 @@ function Deploy-Skills {
         Write-Host ""
     } else {
         Write-LogWarn "skills/ folder not found in $ScriptDir"
+    }
+
+    Deploy-Agents
+}
+
+function Deploy-Agents {
+    Write-Host ""
+    Write-LogInfo "Setting up agents directory..."
+
+    if (Test-Path $AgentsDestDir) {
+        $existingAgents = @(Get-ChildItem $AgentsDestDir -Recurse -Filter "*.md" -ErrorAction SilentlyContinue)
+        if ($existingAgents.Count -gt 0) {
+            Write-LogWarn "Agents directory already contains files"
+
+            if (-not (Read-YesNo "Do you want to overwrite existing agents?" $false)) {
+                Write-LogInfo "Skipping agents deployment. Existing agents preserved."
+                return
+            }
+
+            $agentsBackup = Join-Path $BackupDir "agents-backup"
+            if (-not $DryRun) {
+                if (-not (Test-Path $BackupDir)) {
+                    New-Item -ItemType Directory -Path $BackupDir -Force | Out-Null
+                }
+                Copy-Item $AgentsDestDir $agentsBackup -Recurse -Force
+                Write-LogInfo "Backed up existing agents to $agentsBackup"
+            }
+        }
+    }
+
+    if (-not $DryRun) {
+        if (-not (Test-Path $AgentsDestDir)) {
+            New-Item -ItemType Directory -Path $AgentsDestDir -Force | Out-Null
+        }
+    }
+    Write-LogInfo "Agents directory: $AgentsDestDir"
+
+    if (Test-Path $AgentsSrcDir) {
+        if (-not $DryRun) {
+            Copy-Item (Join-Path $AgentsSrcDir "*") $AgentsDestDir -Recurse -Force
+        }
+        Write-LogSuccess "Agents copied successfully to $AgentsDestDir"
+
+        $primaryCount = @(Get-ChildItem (Join-Path $AgentsDestDir "primary") -Filter "*.md" -ErrorAction SilentlyContinue).Count
+        $subagentCount = @(Get-ChildItem (Join-Path $AgentsDestDir "subagents") -Filter "*.md" -ErrorAction SilentlyContinue).Count
+        $totalCount = $primaryCount + $subagentCount
+
+        Write-Host ""
+        Write-Host "Deployed $totalCount agents:" -ForegroundColor Green
+        Write-Host "    - $primaryCount primary agents (in agents/primary/)"
+        Write-Host "    - $subagentCount subagents (in agents/subagents/)"
+        Write-Host ""
+        Write-Host "  Run 'opencode --list-agents' for details"
+        Write-Host ""
+    } else {
+        Write-LogWarn "agents/ folder not found in $ScriptDir"
     }
 }
 
