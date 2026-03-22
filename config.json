@@ -163,6 +163,54 @@
       "type": "local",
       "command": ["npx", "-y", "@modelcontextprotocol/server-filesystem@latest"],
       "enabled": false
+    },
+    "microsoft-teams": {
+      "type": "local",
+      "command": ["npx", "-y", "mcp-remote", "https://mcp.cloud.microsoft/teams/v1/sse"],
+      "enabled": false
+    },
+    "microsoft-mail": {
+      "type": "local",
+      "command": ["npx", "-y", "mcp-remote", "https://mcp.cloud.microsoft/mail/v1/sse"],
+      "enabled": false
+    },
+    "microsoft-calendar": {
+      "type": "local",
+      "command": ["npx", "-y", "mcp-remote", "https://mcp.cloud.microsoft/calendar/v1/sse"],
+      "enabled": false
+    },
+    "microsoft-sharepoint": {
+      "type": "local",
+      "command": ["npx", "-y", "mcp-remote", "https://mcp.cloud.microsoft/sharepoint/v1/sse"],
+      "enabled": false
+    },
+    "microsoft-onedrive": {
+      "type": "local",
+      "command": ["npx", "-y", "mcp-remote", "https://mcp.cloud.microsoft/onedrive/v1/sse"],
+      "enabled": false
+    },
+    "microsoft-user": {
+      "type": "local",
+      "command": ["npx", "-y", "mcp-remote", "https://mcp.cloud.microsoft/me/v1/sse"],
+      "enabled": false
+    },
+    "microsoft-word": {
+      "type": "local",
+      "command": ["npx", "-y", "mcp-remote", "https://mcp.cloud.microsoft/word/v1/sse"],
+      "enabled": false
+    },
+    "microsoft-copilot": {
+      "type": "local",
+      "command": ["npx", "-y", "mcp-remote", "https://mcp.cloud.microsoft/copilot/v1/sse"],
+      "enabled": false
+    },
+    "microsoft-dataverse": {
+      "type": "local",
+      "command": ["npx", "-y", "mcp-remote", "https://mcp.cloud.microsoft/dataverse/v1/sse"],
+      "environment": {
+        "POWER_PLATFORM_ENV_ID": "${env:POWER_PLATFORM_ENV_ID}"
+      },
+      "enabled": false
     }
   },
   "tools": {
@@ -180,7 +228,16 @@
     "autodesk-fusion*": false,
     "autodesk-help*": false,
     "next-devtools*": false,
-    "filesystem*": false
+    "filesystem*": false,
+    "microsoft-teams*": false,
+    "microsoft-mail*": false,
+    "microsoft-calendar*": false,
+    "microsoft-sharepoint*": false,
+    "microsoft-onedrive*": false,
+    "microsoft-user*": false,
+    "microsoft-word*": false,
+    "microsoft-copilot*": false,
+    "microsoft-dataverse*": false
   },
   "agent": {
     "build": {
