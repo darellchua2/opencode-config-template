@@ -17,7 +17,7 @@ I implement GitHub issue creation with automatic label assignment and semantic c
 3. **Format Commits**: Use `git-semantic-commits` framework for semantic commit message formatting (Conventional Commits specification)
 4. **Create GitHub Issue**: Use `gh issue create` with title, description, assigned labels, and assignee
 5. **Update Issue Progress**: Use `git-issue-updater` framework to add progress comments with user, date, time, and commit details
-6. **Delegate to Framework**: Use `ticket-branch-workflow` for branch creation, PLAN.md, commit (using git-semantic-commits), and push
+6. **Delegate to Framework**: Use `ticket-branch-workflow` for branch creation, PLAN file in `PLANS/` directory, commit (using git-semantic-commits), and push
 7. **Display Summary**: Show issue URL, branch name, and framework completion status
 
 ## When to use me
@@ -26,13 +26,13 @@ I implement GitHub issue creation with automatic label assignment and semantic c
 - `git-issue-labeler` - For GitHub default label assignment (bug, enhancement, documentation, duplicate, good first issue, help wanted, invalid, question, wontfix)
 - `git-semantic-commits` - For semantic commit message formatting (Conventional Commits specification)
 - `git-issue-updater` - For updating issues with commit progress including user, date, time
-- `ticket-branch-workflow` - For core workflow (branch creation, PLAN.md, commit, push)
+- `ticket-branch-workflow` - For core workflow (branch creation, PLAN file in PLANS/, commit, push)
 
 Use this workflow when:
 - You need to create a GitHub issue with automatic label assignment
 - You want semantic commit message formatting (Conventional Commits)
 - You want automatic issue progress updates with consistent documentation
-- You want the complete workflow: issue → branch → PLAN.md → commit → issue update → push
+- You want the complete workflow: issue → branch → PLAN file → commit → issue update → push
 - You prefer GitHub CLI (`gh`) for issue creation over manual entry
 
 ## Prerequisites
@@ -100,9 +100,9 @@ Use this workflow when:
 ### Step 4: Execute Ticket-Branch-Workflow
 - Use `ticket-branch-workflow` for the following steps:
   - Create GitHub branch: `git checkout -b issue-<issue-number>` or `feature/<issue-number>-<short-title>`
-  - Create PLAN.md with issue reference
-  - Format commit using git-semantic-commits: `docs(plan): add PLAN.md for #<issue-number>`
-  - Commit PLAN.md: `git commit -m "$(git-semantic-commits --type docs --scope plan --subject 'Add PLAN.md for #<issue-number>')"`
+  - Create PLAN file: `PLANS/PLAN-GIT-<issue-number>.md` with issue reference
+  - Format commit using git-semantic-commits: `docs(plan): add PLAN-GIT-<issue-number>.md for #<issue-number>`
+  - Commit PLAN file: `git commit -m "$(git-semantic-commits --type docs --scope plan --subject 'Add PLAN-GIT-<issue-number>.md for #<issue-number>')"`
   - Push branch: `git push -u origin <branch-name>`
 
 ### Step 5: Update Issue with Commit Progress Using git-issue-updater
@@ -113,7 +113,7 @@ Use this workflow when:
 
 **Issue Update Logic** (Delegated to git-issue-updater):
 ```bash
-# After committing PLAN.md, update issue with progress
+# After committing PLAN file, update issue with progress
 git-issue-updater --issue <issue-number> --platform github
 
 # This will:
@@ -129,7 +129,7 @@ git-issue-updater --issue <issue-number> --platform github
   ✅ GitHub Issue #<issue-number> created successfully!
   ✅ Labels assigned: <labels> (via git-issue-labeler)
   ✅ Branch created and checked out: <branch-name>
-  ✅ PLAN.md created with semantic commit (via git-semantic-commits)
+  ✅ PLAN file created with semantic commit (via git-semantic-commits)
   ✅ Issue updated with progress comment (via git-issue-updater)
   ✅ Branch pushed to remote (via ticket-branch-workflow)
 
@@ -144,9 +144,9 @@ git-issue-updater --issue <issue-number> --platform github
   - Base Branch: <previous-branch>
   - Remote: origin/<branch-name>
 
-  **PLAN.md**:
-  - Created at: ./PLAN.md
-  - Committed with semantic format: docs(plan): add PLAN.md
+  **PLAN File**:
+  - Created at: PLANS/PLAN-GIT-<issue-number>.md
+  - Committed with semantic format: docs(plan): add PLAN-GIT-<issue-number>.md
   - Pushed: Yes
 
   **Issue Update**:
@@ -167,8 +167,8 @@ git-issue-updater --issue <issue-number> --platform github
 **Workflow Execution**:
 1. **git-issue-labeler**: Analyzes statement → assigns `bug` label
 2. **GitHub Issue Creation**: Creates issue #123 with title and bug label
-3. **ticket-branch-workflow**: Creates branch `issue-123`, PLAN.md
-4. **git-semantic-commits**: Formats commit as `docs(plan): add PLAN.md for #123`
+3. **ticket-branch-workflow**: Creates branch `issue-123`, `PLANS/PLAN-GIT-123.md`
+4. **git-semantic-commits**: Formats commit as `docs(plan): add PLAN-GIT-123.md for #123`
 5. **git-issue-updater**: Adds progress comment with user, date, time
 6. **Push**: Branch pushed to remote
 
@@ -177,7 +177,7 @@ git-issue-updater --issue <issue-number> --platform github
 ✅ GitHub Issue #123 created successfully!
 ✅ Labels assigned: bug (via git-issue-labeler)
 ✅ Branch created and checked out: issue-123
-✅ PLAN.md created with semantic commit: docs(plan): add PLAN.md for #123
+✅ PLAN file created with semantic commit: docs(plan): add PLAN-GIT-123.md for #123
 ✅ Issue updated with progress comment (via git-issue-updater)
 ✅ Branch pushed to remote
 
@@ -201,8 +201,8 @@ Issue Update:
 **Workflow Execution**:
 1. **git-issue-labeler**: Analyzes statement → assigns `enhancement`, `good first issue` labels
 2. **GitHub Issue Creation**: Creates issue #124 with title and labels
-3. **ticket-branch-workflow**: Creates branch `issue-124`, PLAN.md
-4. **git-semantic-commits**: Formats commit as `docs(plan): add PLAN.md for #124`
+3. **ticket-branch-workflow**: Creates branch `issue-124`, `PLANS/PLAN-GIT-124.md`
+4. **git-semantic-commits**: Formats commit as `docs(plan): add PLAN-GIT-124.md for #124`
 5. **git-issue-updater**: Adds progress comment with user, date, time
 6. **Push**: Branch pushed to remote
 
@@ -211,7 +211,7 @@ Issue Update:
 ✅ GitHub Issue #124 created successfully!
 ✅ Labels assigned: enhancement, good first issue (via git-issue-labeler)
 ✅ Branch created and checked out: issue-124
-✅ PLAN.md created with semantic commit: docs(plan): add PLAN.md for #124
+✅ PLAN file created with semantic commit: docs(plan): add PLAN-GIT-124.md for #124
 ✅ Issue updated with progress comment (via git-issue-updater)
 ✅ Branch pushed to remote
 
@@ -229,8 +229,8 @@ Issue Details:
 **Workflow Execution**:
 1. **git-issue-labeler**: Analyzes statement → assigns `documentation` label
 2. **GitHub Issue Creation**: Creates issue #125 with title and documentation label
-3. **ticket-branch-workflow**: Creates branch `issue-125`, PLAN.md
-4. **git-semantic-commits**: Formats commit as `docs(plan): add PLAN.md for #125`
+3. **ticket-branch-workflow**: Creates branch `issue-125`, `PLANS/PLAN-GIT-125.md`
+4. **git-semantic-commits**: Formats commit as `docs(plan): add PLAN-GIT-125.md for #125`
 5. **git-issue-updater**: Adds progress comment with user, date, time
 6. **Push**: Branch pushed to remote
 
@@ -239,14 +239,14 @@ Issue Details:
 ✅ GitHub Issue #125 created successfully!
 ✅ Labels assigned: documentation (via git-issue-labeler)
 ✅ Branch created and checked out: issue-125
-✅ PLAN.md created with semantic commit: docs(plan): add PLAN.md for #125
+✅ PLAN file created with semantic commit: docs(plan): add PLAN-GIT-125.md for #125
 ✅ Issue updated with progress comment (via git-issue-updater)
 ✅ Branch pushed to remote
 ```
 
-## PLAN.md Template Structure
+## PLAN File Template Structure
 
-The framework generates PLAN.md with this structure:
+The framework generates PLAN files in the `PLANS/` directory with this structure:
 ```markdown
 # Plan: <Issue Title>
 
@@ -290,7 +290,7 @@ Any additional notes, constraints, or considerations.
 - Let `git-issue-updater` framework handle issue progress updates with user, date, time
 - Use semantic branch names that reference the issue number
 - Confirm the issue URL is accessible
-- The frameworks handle branch creation, PLAN.md, commit, and push automatically
+- The frameworks handle branch creation, PLAN file in PLANS/, commit, and push automatically
 - Keep issue titles concise (under 72 characters preferred)
 - Update the issue with a comment linking to the PR when ready
 - Framework delegation reduces code duplication and improves maintainability
@@ -318,8 +318,8 @@ Any additional notes, constraints, or considerations.
 **Solution**: Default to `enhancement` label (via git-issue-labeler)
 Note: git-issue-labeler should still be called to ensure consistent label assignment even when no keywords match
 
-### PLAN.md Already Exists
-**Issue**: PLAN.md file already exists in the branch
+### PLAN File Already Exists
+**Issue**: PLAN file already exists in the PLANS/ directory
 
 **Solution**: The framework handles this by asking if you want to overwrite or append
 
@@ -337,7 +337,7 @@ After issue creation:
 - [ ] Issue URL is accessible
 - [ ] Labels are correctly applied
 - [ ] Issue is assigned to current user
-- [ ] Framework completes successfully: branch created, PLAN.md committed, branch pushed
+- [ ] Framework completes successfully: branch created, PLAN file committed, branch pushed
 
 ## Related Commands
 
@@ -361,7 +361,7 @@ gh issue edit <issue-number> --add-assignee @me
 gh issue delete <issue-number>
 
 # Format commit message using git-semantic-commits
-git-semantic-commits --type docs --scope plan --subject "Add PLAN.md for #123"
+git-semantic-commits --type docs --scope plan --subject "Add PLAN-GIT-123.md for #123"
 
 # Update issue with commit progress using git-issue-updater
 git-issue-updater --issue 123 --platform github
