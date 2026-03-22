@@ -11,56 +11,57 @@ Create a new subagent (`agents/google-mcp-specialist-subagent.md`) that helps us
 
 ## Acceptance Criteria
 
-- [ ] Create `agents/google-mcp-specialist-subagent.md` following existing subagent patterns
-- [ ] Include frontmatter with proper description, mode, model, and permissions
-- [ ] Document all 4 currently available Google MCP servers with links:
+- [x] Create `agents/google-mcp-specialist-subagent.md` following existing subagent patterns
+- [x] Include frontmatter with proper description, mode, model, and permissions
+- [x] Document all 4 currently available Google MCP servers with links:
   - Google Maps (Grounding Lite): https://developers.google.com/maps/ai/grounding-lite
   - BigQuery: https://docs.cloud.google.com/bigquery/docs/use-bigquery-mcp
   - Google Compute Engine (GCE): https://docs.cloud.google.com/compute/docs/reference/mcp
   - Google Kubernetes Engine (GKE): https://docs.cloud.google.com/kubernetes-engine/docs/reference/mcp
-- [ ] Include trigger phrases for invoking the subagent
-- [ ] Include delegation instructions and expected return values
-- [ ] Include workflow for authentication verification and configuration
-- [ ] Add usage examples for common scenarios
-- [ ] Reference main docs: https://docs.cloud.google.com/mcp/overview and GitHub: https://github.com/google/mcp
+- [x] Include trigger phrases for invoking the subagent
+- [x] Include delegation instructions and expected return values
+- [x] Include workflow for authentication verification and configuration
+- [x] Add usage examples for common scenarios
+- [x] Reference main docs: https://docs.cloud.google.com/mcp/overview and GitHub: https://github.com/google/mcp
 
 ## Scope
 
-- `agents/google-mcp-specialist-subagent.md` (new file)
+- `agents/google-mcp-specialist-subagent.md` (new file) ✅
+- `config.json` (Google MCP server entries) ✅
 
 ---
 
 ## Implementation Phases
 
 ### Phase 1: Research & Analysis
-- [ ] Review existing subagent patterns in `agents/ticket-creation-subagent.md`
-- [ ] Review frontmatter structure across existing subagents
-- [ ] Research Google MCP server documentation and capabilities
-- [ ] Identify all required tools/permissions for the subagent
+- [x] Review existing subagent patterns in `agents/ticket-creation-subagent.md`
+- [x] Review frontmatter structure across existing subagents
+- [x] Research Google MCP server documentation and capabilities
+- [x] Identify all required tools/permissions for the subagent
 
 ### Phase 2: Core Implementation
-- [ ] Create `agents/google-mcp-specialist-subagent.md` with frontmatter
-- [ ] Add proper description, mode (`subagent`), model (`zai-coding-plan/glm-5-turbo`), and permissions
-- [ ] Write trigger phrases section covering Google MCP-related keywords
-- [ ] Write delegation instructions with required/optional input
-- [ ] Document all 4 Google MCP servers with descriptions and links
-- [ ] Include authentication verification workflow (gcloud CLI, ADC, service accounts)
-- [ ] Add configuration examples for `config.json` MCP entries
-- [ ] Write usage examples for common scenarios (setup, auth, troubleshooting)
-- [ ] Add return values section
+- [x] Create `agents/google-mcp-specialist-subagent.md` with frontmatter
+- [x] Add proper description, mode (`subagent`), model (`zai-coding-plan/glm-5-turbo`), and permissions
+- [x] Write trigger phrases section covering Google MCP-related keywords
+- [x] Write delegation instructions with required/optional input
+- [x] Document all 4 Google MCP servers with descriptions and links
+- [x] Include authentication verification workflow (gcloud CLI, ADC, service accounts)
+- [x] Add configuration examples for `config.json` MCP entries
+- [x] Write usage examples for common scenarios (setup, auth, troubleshooting)
+- [x] Add return values section
 
 ### Phase 3: Review & Validation
-- [ ] Verify frontmatter format matches existing subagent conventions
-- [ ] Verify all 4 Google MCP servers are documented with correct URLs
-- [ ] Verify trigger phrases cover common user intents
-- [ ] Verify permissions are appropriate (read, write, edit, bash, glob, grep)
-- [ ] Confirm no local installation steps are needed (remote MCP servers)
-- [ ] Check that main docs references are included
+- [x] Verify frontmatter format matches existing subagent conventions
+- [x] Verify all 4 Google MCP servers are documented with correct URLs
+- [x] Verify trigger phrases cover common user intents
+- [x] Verify permissions are appropriate (read, write, edit, bash, glob, grep)
+- [x] Confirm no local installation steps are needed (remote MCP servers)
+- [x] Check that main docs references are included
 
 ### Phase 4: Documentation & Cleanup
-- [ ] Ensure consistent formatting with other subagent files
-- [ ] Verify all acceptance criteria are met
-- [ ] Final review of the subagent file
+- [x] Ensure consistent formatting with other subagent files
+- [x] Verify all acceptance criteria are met
+- [x] Final review of the subagent file
 
 ---
 
