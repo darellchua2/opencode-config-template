@@ -1,3 +1,10 @@
+# [1.28.0](https://github.com/darellchua2/opencode-config-template/compare/v1.27.0...v1.28.0) (2026-03-22)
+
+
+### Features
+
+* **agents:** add nextjs-mcp-advisor subagent for issue [#118](https://github.com/darellchua2/opencode-config-template/issues/118) ([e460f38](https://github.com/darellchua2/opencode-config-template/commit/e460f38f77ddaa6f8036f93c8ce25d3d6bae35cf))
+
 # [1.27.0](https://github.com/darellchua2/opencode-config-template/compare/v1.26.3...v1.27.0) (2026-03-22)
 
 
