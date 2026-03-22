@@ -158,6 +158,11 @@
       "type": "local",
       "command": ["npx", "-y", "next-devtools-mcp@latest"],
       "enabled": false
+    },
+    "filesystem": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-filesystem@latest"],
+      "enabled": false
     }
   },
   "tools": {
@@ -174,7 +179,8 @@
     "autodesk-model-data*": false,
     "autodesk-fusion*": false,
     "autodesk-help*": false,
-    "next-devtools*": false
+    "next-devtools*": false,
+    "filesystem*": false
   },
   "agent": {
     "build": {

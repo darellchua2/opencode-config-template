@@ -29,6 +29,13 @@ Update the `nextjs-mcp-advisor-subagent.md` documentation to show the complete `
 - [ ] Existing note about format differences is preserved
 - [ ] Documentation is clear and complete
 
+## Additional Changes
+
+### config.json Updates
+- Added `filesystem` MCP server to config.json (disabled by default)
+- Suitable for: **explore-primary-agent** (enhanced codebase exploration)
+- Also useful for skills: docx-creation, documentation-sync-workflow
+
 ## Notes
 - Keep only `next-devtools` in the example (no filesystem/github)
 - Add note: "If `opencode.json` already exists, add the `next-devtools` entry to the existing `mcp` object"
