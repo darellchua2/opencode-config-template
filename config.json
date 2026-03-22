@@ -69,6 +69,58 @@
         "Authorization": "Bearer {env:ZAI_API_KEY}"
       },
       "enabled": true
+    },
+    "google-bigquery": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "mcp-remote",
+        "https://mcp.googleapis.com/bigquery/v1/sse"
+      ],
+      "environment": {
+        "GOOGLE_APPLICATION_CREDENTIALS": "${env:GOOGLE_APPLICATION_CREDENTIALS}"
+      },
+      "enabled": false
+    },
+    "google-maps": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "mcp-remote",
+        "https://mcp.googleapis.com/maps/v1/sse"
+      ],
+      "environment": {
+        "GOOGLE_APPLICATION_CREDENTIALS": "${env:GOOGLE_APPLICATION_CREDENTIALS}"
+      },
+      "enabled": false
+    },
+    "google-gce": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "mcp-remote",
+        "https://mcp.googleapis.com/compute/v1/sse"
+      ],
+      "environment": {
+        "GOOGLE_APPLICATION_CREDENTIALS": "${env:GOOGLE_APPLICATION_CREDENTIALS}"
+      },
+      "enabled": false
+    },
+    "google-gke": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "mcp-remote",
+        "https://mcp.googleapis.com/kubernetes-engine/v1/sse"
+      ],
+      "environment": {
+        "GOOGLE_APPLICATION_CREDENTIALS": "${env:GOOGLE_APPLICATION_CREDENTIALS}"
+      },
+      "enabled": false
     }
   },
   "tools": {
@@ -76,7 +128,11 @@
     "web-reader*": false,
     "web-search-prime*": false,
     "zai-mcp-server*": false,
-    "zread*": false
+    "zread*": false,
+    "google-bigquery*": false,
+    "google-maps*": false,
+    "google-gce*": false,
+    "google-gke*": false
   },
   "agent": {
     "build": {
