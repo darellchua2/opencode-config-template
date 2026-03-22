@@ -301,7 +301,7 @@ USAGE:
     Usage: opencode --agent build 'implement auth feature'
            opencode --agent explore 'find all API routes'
 
-  SKILLS (49):
+   SKILLS (50):
     Framework (7):        test-generator-framework, linting-workflow,
                           pr-creation-workflow, jira-git-integration,
                           error-resolver-workflow, tdd-workflow, docx-creation
