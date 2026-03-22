@@ -1,3 +1,10 @@
+# [1.29.0](https://github.com/darellchua2/opencode-config-template/compare/v1.28.0...v1.29.0) (2026-03-22)
+
+
+### Features
+
+* **agents:** add google-mcp-specialist subagent for Google MCP integration ([6de3589](https://github.com/darellchua2/opencode-config-template/commit/6de35894af46fbb47b9dec45cce4629412b12727)), closes [#114](https://github.com/darellchua2/opencode-config-template/issues/114)
+
 # [1.28.0](https://github.com/darellchua2/opencode-config-template/compare/v1.27.0...v1.28.0) (2026-03-22)
 
 
