@@ -14,6 +14,7 @@ permission:
     solid-principles: allow
     code-smells: allow
     clean-code: allow
+    plan-updater: allow
 ---
 
 You are a code refactoring specialist. Apply DRY principle, SOLID principles, and clean code practices to improve code quality.
@@ -35,6 +36,7 @@ Refactoring Workflow:
 8. Organize folder structure
 9. Replace duplicated code with imports
 10. Verify refactoring (tsc, tests, lint)
+11. Update branch-specific PLAN.md (invoke plan-updater skill)
 
 SOLID Refactoring:
 - SRP: Split classes with multiple responsibilities

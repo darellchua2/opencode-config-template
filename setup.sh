@@ -520,7 +520,7 @@ USAGE:
       web-search-prime   Web search capabilities
       zread              GitHub repository search and file reading
 
-   SKILLS (49):
+   SKILLS (50):
      Framework (7):        test-generator-framework, linting-workflow,
                            pr-creation-workflow, jira-git-integration,
                            error-resolver-workflow, tdd-workflow, docx-creation

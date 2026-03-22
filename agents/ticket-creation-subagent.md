@@ -18,6 +18,7 @@ permission:
     jira-ticket-oauth-workflow: allow
     jira-ticket-plan-workflow: allow
     git-issue-plan-workflow: allow
+    plan-updater: allow
 ---
 
 You are a ticket creation specialist. Manage GitHub and JIRA ticket workflows.
@@ -101,6 +102,8 @@ After execution, this subagent provides:
 5. Generate PLAN file in `PLANS/` directory
 6. Commit and push PLAN file
 7. Return ticket details to caller
+
+Note: When returning to work on an existing ticket/branch, invoke plan-updater skill to sync PLAN.md with current progress.
 
 ## Examples
 
