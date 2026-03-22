@@ -9,7 +9,7 @@
     "opencode-notificator",
     "opencode-pty",
     "opencode-vibeguard",
-    opencode-claude-auth
+    "opencode-claude-auth"
   ],
   "instructions": ["AGENTS.md"],
   "provider": {
