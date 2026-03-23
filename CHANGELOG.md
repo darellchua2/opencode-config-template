@@ -1,3 +1,10 @@
+# [1.34.0](https://github.com/darellchua2/opencode-config-template/compare/v1.33.0...v1.34.0) (2026-03-23)
+
+
+### Features
+
+* **broker:** add skill-broker-subagent with parallel execution workflow ([80a0328](https://github.com/darellchua2/opencode-config-template/commit/80a0328767bc0039cbf6fecdcbc70bb6f2be5744))
+
 # [1.33.0](https://github.com/darellchua2/opencode-config-template/compare/v1.32.0...v1.33.0) (2026-03-22)
 
 
