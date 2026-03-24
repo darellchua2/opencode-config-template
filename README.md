@@ -175,6 +175,7 @@ This repository implements **skill modularization** with 48 skills organized acr
 | **opencode-tooling-subagent** | Skills and agents creation | opencode-skill-creation, opencode-agent-creation |
 | **docx-creation-subagent** | Word document creation | docx-creation |
 | **diagram-subagent** | ASCII diagrams and images | ascii-diagram-creator |
+| **mermaid-diagram-subagent** | Mermaid diagrams with PNG conversion | mermaid-diagram-creator |
 | **image-analyzer** | Image analysis and conversion | (built-in capabilities) |
 | **google-mcp-specialist-subagent** | Google Cloud MCP setup and usage | google-bigquery, google-maps, google-gce, google-gke |
 | **autodesk-specialist-subagent** | Autodesk API integration | autodesk-revit, autodesk-model-data, autodesk-fusion |
