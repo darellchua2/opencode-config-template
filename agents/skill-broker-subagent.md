@@ -3,7 +3,7 @@ description: Finds ALL relevant subagents and skills for a task. Returns JSON ar
 mode: subagent
 model: zai-coding-plan/glm-5-turbo
 temperature: 0.1
-steps: 2
+steps: 15
 hidden: true
 permission:
   read:
