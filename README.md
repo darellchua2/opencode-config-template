@@ -145,7 +145,7 @@ This repository implements **skill modularization** with 48 skills organized acr
 
 ### Agents
 
-24 agents provide specialized task handling (2 primary + 22 subagents):
+28 agents provide specialized task handling (2 primary + 26 subagents):
 
 #### Primary Agents
 
@@ -181,6 +181,7 @@ This repository implements **skill modularization** with 48 skills organized acr
 | **autodesk-specialist-subagent** | Autodesk API integration | autodesk-revit, autodesk-model-data, autodesk-fusion |
 | **civil-3d-specialist-subagent** | Autodesk Civil 3D model modifications and features | (documentation search + version-specific guidance) |
 | **microsoft-m365-specialist-subagent** | Microsoft 365 MCP setup and usage | microsoft-teams, microsoft-mail, microsoft-calendar, microsoft-sharepoint |
+| **open3d-specialist** | Open3D 3D data processing guidance | (documentation search + version-specific guidance) |
 
 #### Trigger Phrases
 

@@ -8,7 +8,7 @@ permission:
   edit: allow
   glob: allow
   grep: allow
-  bash: allow
+  bash: deny
   webfetch: allow
 ---
 
@@ -171,11 +171,18 @@ Invoke this subagent when you encounter:
 
 ### COM API (Python Example)
 
+COM API PROGID version mapping (adjust based on user's Civil 3D version):
+- Civil 3D 2026: AeccXUiLand.AeccApplication.13.6
+- Civil 3D 2025: AeccXUiLand.AeccApplication.13.5
+- Civil 3D 2024: AeccXUiLand.AeccApplication.13.4
+- Civil 3D 2023: AeccXUiLand.AeccApplication.13.3
+
 ```python
 import win32com.client
 
-def create_surface(doc, name):
-    civil = win32com.client.Dispatch("AeccXUiLand.AeccApplication.13.6")
+def create_surface(doc, name, version="13.6"):
+    progid = f"AeccXUiLand.AeccApplication.{version}"
+    civil = win32com.client.Dispatch(progid)
     civil.Documents.Open(doc)
     active_doc = civil.ActiveDocument
     
@@ -196,17 +203,18 @@ def create_surface(doc, name):
 using Autodesk.Civil;
 using Autodesk.Civil.ApplicationServices;
 using Autodesk.Civil.DatabaseServices;
+using Autodesk.AutoCAD.DatabaseServices;
+using Autodesk.AutoCAD.Runtime;
 
 [CommandMethod("CreateSurface")]
 public void CreateSurface()
 {
     var civilDoc = CivilApplication.ActiveDocument;
+    var db = HostApplicationServices.WorkingDatabase;
     
-    var surfaceId = new ObjectId();
-    using (var tr = HostApplicationServices.WorkingDatabase.TransactionManager.StartTransaction())
+    using (var tr = db.TransactionManager.StartTransaction())
     {
-        var surface = civilDoc.SurfaceCollection.Add("My Surface", surfaceId);
-        
+        ObjectId surfaceId = civilDoc.SurfaceCollection.Add("My Surface");
         tr.Commit();
     }
 }

@@ -291,12 +291,13 @@ USAGE:
                          CONFIGURED FEATURES
 =======================================================================
 
-  AGENTS (6):
+  AGENTS (7):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
     image-analyzer       Images/screenshots -> code, OCR, error diagnosis
     diagram-creator      Diagrams (architecture, flowcharts, UML)
+    mermaid-diagram-subagent  Mermaid diagrams with PNG conversion
     civil-3d-specialist-subagent  Autodesk Civil 3D model modifications and features
 
     Usage: opencode --agent build 'implement auth feature'
