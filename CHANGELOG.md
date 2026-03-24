@@ -1,3 +1,10 @@
+# [1.35.0](https://github.com/darellchua2/opencode-config-template/compare/v1.34.0...v1.35.0) (2026-03-24)
+
+
+### Features
+
+* **agents:** update skill-broker steps and explore-primary model ([6607f52](https://github.com/darellchua2/opencode-config-template/commit/6607f52c8eb62df357176332638b901a22a40263))
+
 # [1.34.0](https://github.com/darellchua2/opencode-config-template/compare/v1.33.0...v1.34.0) (2026-03-23)
 
 
