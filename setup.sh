@@ -500,12 +500,13 @@ USAGE:
                          CONFIGURED FEATURES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  AGENTS (5):
+  AGENTS (6):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
     image-analyzer       Images/screenshots → code, OCR, error diagnosis
     diagram-creator      Diagrams (architecture, flowcharts, UML)
+    mermaid-diagram-subagent  Mermaid diagrams with PNG conversion
 
     Usage: opencode --agent build "implement auth feature"
            opencode --agent explore "find all API routes"
@@ -531,7 +532,7 @@ USAGE:
       microsoft-copilot  M365 Copilot conversations
       microsoft-dataverse Business data (Dynamics 365)
 
-   SKILLS (46):
+   SKILLS (47):
        Framework (8):        test-generator-framework, linting-workflow,
                              pr-creation-workflow, jira-git-integration,
                              error-resolver-workflow, tdd-workflow, docx-creation,
@@ -551,9 +552,10 @@ USAGE:
                             opentofu-provider-setup, opentofu-provisioning-workflow,
                             opentofu-ecr-provision
 
-      Git/Workflow (6):     ascii-diagram-creator, git-pr-creator,
-                            git-issue-labeler, git-issue-plan-workflow,
-                            git-issue-updater, git-semantic-commits
+      Git/Workflow (7):     ascii-diagram-creator, mermaid-diagram-creator,
+                            git-pr-creator, git-issue-labeler,
+                            git-issue-plan-workflow, git-issue-updater,
+                            git-semantic-commits
 
       Documentation (3):    coverage-readme-workflow, docstring-generator,
                              documentation-sync-workflow
@@ -580,6 +582,7 @@ USAGE:
   Recommended:
     nvm                   Node Version Manager (macOS/Linux)
     git                   For version control integration
+    Mermaid CLI           For diagram generation (npm install -g @mermaid-js/mermaid-cli)
 
   API Keys (prompted during setup):
      ZAI_API_KEY           Required for: web-reader, web-search-prime, zread
@@ -1448,6 +1451,56 @@ setup_opencode() {
             fi
         else
             log_warn "Skipping opencode-ai installation"
+        fi
+    fi
+
+    return 0
+}
+
+# Setup Mermaid CLI
+setup_mermaid_cli() {
+    echo ""
+    echo "=== Checking Mermaid CLI ==="
+
+    if command_exists mmdc; then
+        local installed_version
+        installed_version=$(mmdc --version 2>/dev/null | grep -oP '\d+\.\d+\.\d+' || echo "unknown")
+        log_info "Mermaid CLI is installed (v${installed_version})"
+
+        local latest_version
+        latest_version=$(npm view @mermaid-js/mermaid-cli version 2>/dev/null || echo "unknown")
+
+        if [ "$latest_version" != "unknown" ]; then
+            log_info "Latest version: v${latest_version}"
+
+            if [ "$installed_version" != "$latest_version" ]; then
+                log_warn "A newer version of Mermaid CLI is available!"
+                if prompt_yes_no "Update Mermaid CLI to v${latest_version}?" "y"; then
+                    run_cmd "npm install -g @mermaid-js/mermaid-cli@latest"
+                    log_success "Mermaid CLI updated successfully"
+                fi
+            else
+                log_success "Mermaid CLI is up to date"
+            fi
+        fi
+    else
+        log_info "Mermaid CLI is not installed"
+        echo ""
+        echo "  Mermaid CLI is required for diagram generation skills."
+        echo "  Alternatively, use npx for zero-install: npx @mermaid-js/mermaid-cli"
+        echo ""
+
+        if prompt_yes_no "Install Mermaid CLI?" "y"; then
+            run_cmd "npm install -g @mermaid-js/mermaid-cli"
+
+            if command_exists mmdc; then
+                log_success "Mermaid CLI installed successfully"
+            else
+                log_error "Mermaid CLI installation failed"
+                log_info "You can use npx as fallback: npx @mermaid-js/mermaid-cli"
+            fi
+        else
+            log_info "Skipping Mermaid CLI installation (npx fallback available)"
         fi
     fi
 
@@ -2589,6 +2642,7 @@ main() {
         setup_nvm || true
         setup_nodejs || true
         setup_opencode || true
+        setup_mermaid_cli || true
     else
         if [ "$QUICK_SETUP" = true ]; then
             log_info "Running quick setup: config.json and skills deployment only"

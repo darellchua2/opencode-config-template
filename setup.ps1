@@ -350,6 +350,7 @@ USAGE:
   Recommended:
     nvm-windows            Node version manager (https://github.com/coreybutler/nvm-windows/releases)
     git                   For version control
+    Mermaid CLI           For diagram generation (npm install -g @mermaid-js/mermaid-cli)
 
   API Keys (prompted during setup):
     ZAI_API_KEY           Required for web-reader, web-search-prime, zread
@@ -1038,6 +1039,91 @@ function Set-OpenCode {
             }
         } else {
             Write-LogWarn "Skipping opencode-ai installation"
+        }
+    }
+}
+
+################################################################################
+# SETUP: Mermaid CLI
+################################################################################
+
+function Set-MermaidCLI {
+    Write-Host ""
+    Write-Host "=== Checking Mermaid CLI ===" -ForegroundColor White
+
+    if (Test-CommandExists "mmdc") {
+        $installedVersion = ((& mmdc --version 2>$null) -split '\n' | Select-Object -First 1) -replace '.*?(\d+\.\d+\.\d+).*', '$1'
+        if ([string]::IsNullOrWhiteSpace($installedVersion)) { $installedVersion = "unknown" }
+        Write-LogInfo "Mermaid CLI is installed (v$installedVersion)"
+
+        $latestVersion = (Invoke-Expression "npm view @mermaid-js/mermaid-cli version" 2>$null).Trim()
+        if (-not [string]::IsNullOrWhiteSpace($latestVersion)) {
+            Write-LogInfo "Latest version: v$latestVersion"
+
+            if ($installedVersion -ne $latestVersion) {
+                Write-LogWarn "A newer version of Mermaid CLI is available!"
+                if (Read-YesNo "Update Mermaid CLI to v$latestVersion?" $true) {
+                    Invoke-WithDryRun "npm install -g @mermaid-js/mermaid-cli@latest"
+                    Write-LogSuccess "Mermaid CLI updated successfully"
+                }
+            } else {
+                Write-LogSuccess "Mermaid CLI is up to date"
+            }
+        }
+    } else {
+        Write-LogInfo "Mermaid CLI is not installed"
+        Write-Host ""
+        Write-Host "  Mermaid CLI is required for diagram generation skills." -ForegroundColor Yellow
+        Write-Host "  Alternatively, use npx for zero-install: npx @mermaid-js/mermaid-cli" -ForegroundColor Yellow
+        Write-Host ""
+
+        if (Read-YesNo "Install Mermaid CLI?" $true) {
+            Invoke-WithDryRun "npm install -g @mermaid-js/mermaid-cli"
+
+            if (Test-CommandExists "mmdc") {
+                Write-LogSuccess "Mermaid CLI installed successfully"
+            } else {
+                Write-LogError "Mermaid CLI installation failed"
+                Write-LogInfo "You can use npx as fallback: npx @mermaid-js/mermaid-cli"
+            }
+        } else {
+            Write-LogInfo "Skipping Mermaid CLI installation (npx fallback available)"
+        }
+    }
+}
+
+        if ($latestVersion -ne "unknown") {
+            Write-LogInfo "Latest version: v$latestVersion"
+
+            if ($installedVersion -ne $latestVersion) {
+                Write-LogWarn "A newer version of Mermaid CLI is available!"
+                if (Read-YesNo "Update Mermaid CLI to v$latestVersion?" $true) {
+                    if (Invoke-WithDryRun "npm install -g @mermaid-js/mermaid-cli@latest") {
+                        Write-LogSuccess "Mermaid CLI updated successfully"
+                    }
+                }
+            } else {
+                Write-LogSuccess "Mermaid CLI is up to date"
+            }
+        }
+    } else {
+        Write-LogInfo "Mermaid CLI is not installed"
+        Write-Host ""
+        Write-Host "  Mermaid CLI is required for diagram generation skills." -ForegroundColor Yellow
+        Write-Host "  Alternatively, use npx for zero-install: npx @mermaid-js/mermaid-cli" -ForegroundColor Yellow
+        Write-Host ""
+
+        if (Read-YesNo "Install Mermaid CLI?" $true) {
+            if (Invoke-WithDryRun "npm install -g @mermaid-js/mermaid-cli") {
+                if (Test-CommandExists "mmdc") {
+                    Write-LogSuccess "Mermaid CLI installed successfully"
+                } else {
+                    Write-LogError "Mermaid CLI installation failed"
+                    Write-LogInfo "You can use npx as fallback: npx @mermaid-js/mermaid-cli"
+                }
+            }
+        } else {
+            Write-LogInfo "Skipping Mermaid CLI installation (npx fallback available)"
         }
     }
 }
@@ -1910,6 +1996,7 @@ function Main {
         Set-ZaiApiKey
         Set-NodeJS
         Set-OpenCode
+        Set-MermaidCLI
     } else {
         Write-LogInfo "Running quick setup: config.json and skills deployment only"
     }
