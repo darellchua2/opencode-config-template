@@ -1,7 +1,7 @@
 ---
 description: Fast agent specialized for exploring codebases. Find files by patterns, search code for keywords, and answer questions about codebase structure.
 mode: primary
-model: zai-coding-plan/glm-4.7
+model: claude-sonnet-4.5
 permission:
   read: allow
   write: deny
