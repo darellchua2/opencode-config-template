@@ -1,3 +1,16 @@
+# [1.36.0](https://github.com/darellchua2/opencode-config-template/compare/v1.35.0...v1.36.0) (2026-03-24)
+
+
+### Bug Fixes
+
+* **civil-3d:** address code review findings for civil-3d-specialist ([70bada5](https://github.com/darellchua2/opencode-config-template/commit/70bada539e6c3e72f134f6d0b8d269c3c663934e))
+
+
+### Features
+
+* **subagent:** add Civil 3D Specialist subagent ([95b02bc](https://github.com/darellchua2/opencode-config-template/commit/95b02bc828714ed456ef0062cfc9acbfb460faf9)), closes [#137](https://github.com/darellchua2/opencode-config-template/issues/137)
+* **subagent:** add Open3D Specialist subagent ([e4fcbbc](https://github.com/darellchua2/opencode-config-template/commit/e4fcbbc274927b55f7e6438ca0ff1f97a024a794)), closes [#138](https://github.com/darellchua2/opencode-config-template/issues/138) [#137](https://github.com/darellchua2/opencode-config-template/issues/137) [#138](https://github.com/darellchua2/opencode-config-template/issues/138)
+
 # [1.35.0](https://github.com/darellchua2/opencode-config-template/compare/v1.34.0...v1.35.0) (2026-03-24)
 
 
