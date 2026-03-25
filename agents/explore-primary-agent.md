@@ -1,7 +1,7 @@
 ---
 description: Fast agent specialized for exploring codebases. Find files by patterns, search code for keywords, and answer questions about codebase structure.
 mode: primary
-model: claude-sonnet-4.5
+model: GLM-5-turbo
 permission:
   read: allow
   write: deny
