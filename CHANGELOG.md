@@ -1,3 +1,12 @@
+# [1.37.0](https://github.com/darellchua2/opencode-config-template/compare/v1.36.1...v1.37.0) (2026-03-25)
+
+
+### Features
+
+* **agents:** add pptx-specialist and startup-ceo subagents ([de90ca7](https://github.com/darellchua2/opencode-config-template/commit/de90ca7ab0a76530ee266552570e0c410675fd9d))
+* **agents:** add startup-founder-primary-agent ([a43a054](https://github.com/darellchua2/opencode-config-template/commit/a43a054b93cd35e0ac3c806f142cf9dcd3c45c14))
+* **skills:** add pptx-specialist skill for PPTX operations ([eb038b4](https://github.com/darellchua2/opencode-config-template/commit/eb038b4d437d583029e1c37cb655d4a9fc855dc6))
+
 ## [1.36.1](https://github.com/darellchua2/opencode-config-template/compare/v1.36.0...v1.36.1) (2026-03-25)
 
 
