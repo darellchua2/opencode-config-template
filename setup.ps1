@@ -304,11 +304,11 @@ USAGE:
     Usage: opencode --agent build 'implement auth feature'
            opencode --agent explore 'find all API routes'
 
-    SKILLS (46):
-       Framework (8):        test-generator-framework, linting-workflow,
+    SKILLS (47):
+       Framework (9):        test-generator-framework, linting-workflow,
                              pr-creation-workflow, jira-git-integration,
                              error-resolver-workflow, tdd-workflow, docx-creation,
-                             coverage-framework
+                             coverage-framework, pptx-specialist
 
       Language-Specific (3): python-pytest-creator, python-ruff-linter,
                             javascript-eslint-linter

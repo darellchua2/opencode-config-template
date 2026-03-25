@@ -125,13 +125,13 @@ This template implements **skill permissions** to control which skills agents ca
 
 ## Skill Modularization
 
-This repository implements **skill modularization** with 48 skills organized across 9 categories. Skills are designed with clear separation of concerns and explicit dependencies.
+This repository implements **skill modularization** with 49 skills organized across 9 categories. Skills are designed with clear separation of concerns and explicit dependencies.
 
 ### Skill Categories
 
 | Category | Skills | Purpose |
 |-----------|---------|---------|
-| **Framework** (8) | test-generator-framework, linting-workflow, pr-creation-workflow, jira-git-integration, error-resolver-workflow, tdd-workflow, docx-creation, coverage-framework | Generic workflows, testing patterns, and document creation |
+| **Framework** (9) | test-generator-framework, linting-workflow, pr-creation-workflow, jira-git-integration, error-resolver-workflow, tdd-workflow, docx-creation, coverage-framework, pptx-specialist | Generic workflows, testing patterns, and document creation |
 | **Language-Specific** (3) | python-pytest-creator, python-ruff-linter, javascript-eslint-linter | Language-specific test, linting, and documentation |
 | **Framework-Specific** (5) | nextjs-pr-workflow, nextjs-unit-test-creator, nextjs-standard-setup, nextjs-image-usage, typescript-dry-principle | Next.js 16 and TypeScript workflows |
 | **OpenCode Meta** (3) | opencode-agent-creation, opencode-skill-creation, opencode-skills-maintainer | Agent and skill creation/maintenance |
@@ -145,7 +145,7 @@ This repository implements **skill modularization** with 48 skills organized acr
 
 ### Agents
 
-29 agents provide specialized task handling (2 primary + 27 subagents):
+30 agents provide specialized task handling (3 primary + 27 subagents):
 
 #### Primary Agents
 
@@ -153,6 +153,7 @@ This repository implements **skill modularization** with 48 skills organized acr
 |-------|---------|-------------|
 | **build** | Default agent for general tasks | Full access to all tools and subagents |
 | **plan** | Read-only planning and analysis | `task`, `read`, `glob`, `grep` only (no write/execute) |
+| **startup-founder-primary-agent** | Business docs - reports, quotations, spreadsheets, presentations | Full access (`read`, `edit`, `bash`, `webfetch`, `task`) |
 
 #### Subagents
 
