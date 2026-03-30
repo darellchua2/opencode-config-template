@@ -1,3 +1,10 @@
+## [1.37.3](https://github.com/darellchua2/opencode-config-template/compare/v1.37.2...v1.37.3) (2026-03-30)
+
+
+### Bug Fixes
+
+* standardize agent models and remove skill-broker-subagent ([51b368e](https://github.com/darellchua2/opencode-config-template/commit/51b368e1f46184d3614ef290f5b5878db593c15e))
+
 ## [1.37.2](https://github.com/darellchua2/opencode-config-template/compare/v1.37.1...v1.37.2) (2026-03-30)
 
 
