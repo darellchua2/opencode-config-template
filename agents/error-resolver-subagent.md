@@ -1,7 +1,7 @@
 ---
 description: Specialized subagent for diagnosing and resolving errors, exceptions, and stack traces. Uses Opus 4.6 for advanced error analysis. ONLY triggered on explicit user invocation - not auto-triggered for general error handling.
 mode: subagent
-model: opus-4.6
+model: anthropic/opus-4.6
 permission:
   read: allow
   write: deny

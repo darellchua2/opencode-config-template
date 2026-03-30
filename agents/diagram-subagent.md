@@ -1,7 +1,7 @@
 ---
 description: Specialized subagent for ASCII diagram creation and image generation. Creates flowcharts, sequence diagrams, architecture diagrams, and converts them to image files.
 mode: subagent
-model: zai-coding-plan/glm-4.7
+model: zai-coding-plan/glm-5
 permission:
   read: allow
   write: allow
