@@ -1,7 +1,7 @@
 ---
 description: Specialized subagent for creating Mermaid diagrams with PNG conversion and PLAN directory integration
 mode: subagent
-model: anthropic/claude-3-opus
+model: zai-coding-plan/glm-5-turbo
 temperature: 0.3
 steps: 5
 hidden: false
