@@ -1,7 +1,7 @@
 ---
 description: Specialized subagent for Autodesk integration - APS APIs, Revit API, Fusion 360 API, AutoCAD API, and MCP servers. Provides code examples, authentication guidance, and implementation patterns for Design and Make workflows.
 mode: subagent
-model: zai-coding-plan/glm-5
+
 permission:
   read: allow
   write: allow

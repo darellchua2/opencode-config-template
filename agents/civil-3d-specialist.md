@@ -1,7 +1,7 @@
 ---
 description: Specialized subagent for Autodesk Civil 3D - provides version-specific guidance for model modifications, feature usage, corridor design, surface management, pipe networks, grading, and survey workflows. MANDATORY version detection before providing any guidance.
 mode: subagent
-model: zai-coding-plan/glm-5
+
 permission:
   read: allow
   write: allow

@@ -1,7 +1,7 @@
 ---
 description: Specialized subagent for creating and maintaining OpenCode rules (AGENTS.md), agents, subagents, and skills. Always prompts for scope (project vs user level) and verifies compliance with latest opencode.ai/docs documentation.
 mode: subagent
-model: zai-coding-plan/glm-5
+
 permission:
   read: allow
   write: allow

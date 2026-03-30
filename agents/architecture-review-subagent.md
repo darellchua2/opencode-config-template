@@ -1,7 +1,7 @@
 ---
 description: Specialized subagent for architecture review using clean architecture principles, design patterns, and complexity management. Evaluates system design and suggests improvements.
 mode: subagent
-model: zai-coding-plan/glm-5
+model: zai-coding-plan/glm-5.1
 permission:
   read: allow
   write: deny

@@ -1,7 +1,7 @@
 ---
 description: Specialized subagent for Next.js project setup and configuration. Handles Next.js 16 setup with shadcn, Tailwind v4, src directory, path aliases, React Compiler, and component architecture.
 mode: subagent
-model: zai-coding-plan/glm-5
+
 permission:
   read: allow
   write: allow

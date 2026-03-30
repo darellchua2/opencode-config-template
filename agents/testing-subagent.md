@@ -1,7 +1,7 @@
 ---
 description: Specialized subagent for test generation across multiple languages and frameworks. Covers Python pytest, Next.js unit tests, and generic test generation following industry best practices.
 mode: subagent
-model: zai-coding-plan/glm-5
+
 permission:
   read: allow
   write: allow

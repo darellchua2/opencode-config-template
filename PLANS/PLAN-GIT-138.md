@@ -50,7 +50,7 @@ This is `opencode-config-template` — a configurator repository that deploys us
 ### Phase 2: Create Subagent Definition
 - [ ] Create `agents/open3d-specialist.md` with proper YAML frontmatter:
   - `mode: subagent`
-  - `model: zai-coding-plan/glm-5`
+  - ``
   - Permissions: read, write, edit, glob, grep, bash, webfetch
 - [ ] Define subagent purpose and capabilities
 - [ ] Implement MANDATORY version detection/prompting logic (following civil-3d-specialist pattern)
@@ -160,7 +160,7 @@ https://www.open3d.org/docs/release/
 ---
 description: Specialized subagent for Open3D - provides version-specific guidance for 3D data processing including point clouds, meshes, visualization, reconstruction, deep learning (Open3D-ML), camera integration, and sensor workflows. MANDATORY version detection before providing any guidance.
 mode: subagent
-model: zai-coding-plan/glm-5
+
 permission:
   read: allow
   write: allow
