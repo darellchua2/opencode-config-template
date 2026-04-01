@@ -311,6 +311,10 @@ JIRA_ACCESS_TOKEN="${JIRA_ACCESS_TOKEN:-}"
 JIRA_REFRESH_TOKEN="${JIRA_REFRESH_TOKEN:-}"
 JIRA_CLOUD_ID="${JIRA_CLOUD_ID:-}"
 
+# JIRA PAT credentials (simpler alternative to OAuth2)
+JIRA_PAT="${JIRA_PAT:-}"
+JIRA_SITE="${JIRA_SITE:-}"
+
 # Colors for output
 readonly RED='\033[0;31m'
 readonly GREEN='\033[0;32m'
@@ -534,7 +538,7 @@ USAGE:
       microsoft-copilot  M365 Copilot conversations
       microsoft-dataverse Business data (Dynamics 365)
 
-   SKILLS (48):
+   SKILLS (49):
        Framework (9):        test-generator-framework, linting-workflow,
                              pr-creation-workflow, jira-git-integration,
                              error-resolver-workflow, tdd-workflow, docx-creation,
@@ -562,8 +566,9 @@ USAGE:
       Documentation (3):    coverage-readme-workflow, docstring-generator,
                              documentation-sync-workflow
 
-      JIRA (4):             jira-ticket-oauth-workflow, jira-ticket-plan-workflow,
-                            jira-status-updater, jira-ticket-workflow
+      JIRA (5):             jira-ticket-oauth-workflow, jira-ticket-pat-workflow,
+                            jira-ticket-plan-workflow, jira-status-updater,
+                            jira-git-integration
 
       Code Quality (7):     solid-principles, clean-code, clean-architecture,
                             design-patterns, object-design, code-smells,
@@ -1251,6 +1256,83 @@ setup_jira_oauth() {
     echo ""
 }
 
+# Setup JIRA PAT credentials (simpler alternative to OAuth2)
+setup_jira_pat() {
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "              🔑 JIRA PAT Setup"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    echo "Personal Access Tokens (PAT) are simpler than OAuth2:"
+    echo "  - No token refresh needed"
+    echo "  - No callback server required"
+    echo "  - Tokens don't expire"
+    echo ""
+    echo "To create a PAT:"
+    echo "  1. Go to: https://id.atlassian.com/manage-profile/security/pat"
+    echo "  2. Click 'Create token'"
+    echo "  3. Select scopes: read:jira-work, write:jira-work"
+    echo "  4. Copy the token"
+    echo ""
+
+    # Check if already configured
+    if [ -n "$JIRA_PAT" ]; then
+        echo "JIRA PAT is already configured."
+        echo "  Site: ${JIRA_SITE:-<not set>}"
+        echo "  Token: ${JIRA_PAT:0:8}...${JIRA_PAT: -4}"
+        echo ""
+        if prompt_yes_no "Reconfigure?" "n"; then
+            log_info "Reconfiguring..."
+        else
+            log_info "Keeping existing configuration"
+            return 0
+        fi
+    fi
+
+    # Step 1: Site
+    echo "Step 1/2: Enter your Atlassian site"
+    echo "Example: your-company.atlassian.net"
+    read -p "JIRA Site: " JIRA_SITE
+    
+    if [ -z "$JIRA_SITE" ]; then
+        log_warn "No site provided, skipping"
+        return 1
+    fi
+
+    # Step 2: PAT
+    echo ""
+    echo "Step 2/2: Enter your Personal Access Token"
+    read -s -p "JIRA PAT: " JIRA_PAT
+    echo ""
+
+    if [ -z "$JIRA_PAT" ]; then
+        log_warn "No PAT provided, skipping"
+        return 1
+    fi
+
+    # Verify token works
+    echo ""
+    log_info "Verifying token..."
+    
+    local verify_response
+    verify_response=$(curl -s -o /dev/null -w "%{http_code}" \
+        -H "Authorization: Bearer ${JIRA_PAT}" \
+        "https://${JIRA_SITE}/rest/api/3/myself" 2>/dev/null)
+    
+    if [ "$verify_response" = "200" ]; then
+        log_success "Token verified successfully"
+    else
+        log_warn "Could not verify token (HTTP ${verify_response}). Token may still be valid."
+    fi
+
+    log_success "JIRA PAT configured"
+    echo ""
+    echo "Summary:"
+    echo "  Site: ${JIRA_SITE}"
+    echo "  Token: ${JIRA_PAT:0:8}...${JIRA_PAT: -4}"
+    echo ""
+}
+
 # Setup nvm
 setup_nvm() {
     echo ""
@@ -1774,11 +1856,12 @@ setup_config() {
         echo "    - Documentation (2):"
         echo "      - coverage-readme-workflow"
         echo "      - docstring-generator"
-        echo "    - JIRA (4):"
+        echo "    - JIRA (5):"
         echo "      - jira-ticket-oauth-workflow"
+        echo "      - jira-ticket-pat-workflow"
         echo "      - jira-ticket-plan-workflow"
         echo "      - jira-status-updater"
-        echo "      - jira-ticket-workflow"
+        echo "      - jira-git-integration"
         echo "    - Code Quality (7):"
         echo "      - solid-principles"
         echo "      - clean-code"
@@ -2015,6 +2098,48 @@ setup_shell_vars() {
                     
                     mv "$temp_file" "$SHELL_CONFIG_FILE"
                     log_success "JIRA OAuth2 tokens updated in ${SHELL_CONFIG_FILE}"
+                fi
+            fi
+        fi
+    fi
+
+    # Add JIRA PAT credentials
+    if [ -n "$JIRA_PAT" ]; then
+        if is_windows; then
+            setx_env "JIRA_PAT" "${JIRA_PAT}"
+            setx_env "JIRA_SITE" "${JIRA_SITE}"
+            export JIRA_PAT="${JIRA_PAT}"
+            export JIRA_SITE="${JIRA_SITE}"
+        else
+            if ! grep -q "JIRA_PAT" "$SHELL_CONFIG_FILE" 2>/dev/null; then
+                if prompt_yes_no "Add JIRA PAT credentials to $(basename ${SHELL_CONFIG_FILE})?" "y"; then
+                    create_backup "$SHELL_CONFIG_FILE"
+                    
+                    run_cmd "echo '' >> ${SHELL_CONFIG_FILE}"
+                    run_cmd "echo '# JIRA PAT Configuration' >> ${SHELL_CONFIG_FILE}"
+                    run_cmd "echo 'export JIRA_PAT=\"${JIRA_PAT}\"' >> ${SHELL_CONFIG_FILE}"
+                    run_cmd "echo 'export JIRA_SITE=\"${JIRA_SITE}\"' >> ${SHELL_CONFIG_FILE}"
+                    
+                    log_success "JIRA PAT credentials added to ${SHELL_CONFIG_FILE}"
+                else
+                    log_info "Skipping shell config update for JIRA PAT"
+                fi
+            else
+                log_info "JIRA PAT credentials already exist in ${SHELL_CONFIG_FILE}"
+                
+                if prompt_yes_no "Update existing JIRA PAT?" "n"; then
+                    create_backup "$SHELL_CONFIG_FILE"
+                    
+                    local temp_file="${SHELL_CONFIG_FILE}.tmp"
+                    grep -v "^export JIRA_PAT\|^export JIRA_SITE\|^# JIRA PAT" "$SHELL_CONFIG_FILE" > "$temp_file" 2>/dev/null || true
+                    
+                    echo '' >> "$temp_file"
+                    echo '# JIRA PAT Configuration' >> "$temp_file"
+                    echo "export JIRA_PAT=\"${JIRA_PAT}\"" >> "$temp_file"
+                    echo "export JIRA_SITE=\"${JIRA_SITE}\"" >> "$temp_file"
+                    
+                    mv "$temp_file" "$SHELL_CONFIG_FILE"
+                    log_success "JIRA PAT credentials updated in ${SHELL_CONFIG_FILE}"
                 fi
             fi
         fi
@@ -2365,11 +2490,12 @@ print_summary() {
         echo "    - Documentation (2):"
         echo "      - coverage-readme-workflow"
         echo "      - docstring-generator"
-        echo "    - JIRA (4):"
+        echo "    - JIRA (5):"
         echo "      - jira-ticket-oauth-workflow"
+        echo "      - jira-ticket-pat-workflow"
         echo "      - jira-ticket-plan-workflow"
         echo "      - jira-status-updater"
-        echo "      - jira-ticket-workflow"
+        echo "      - jira-git-integration"
         echo "    - Code Quality (7):"
         echo "      - solid-principles"
         echo "      - clean-code"
@@ -2441,12 +2567,12 @@ print_next_steps() {
     echo "         opencode \"prompt\" (uses build)"
     echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "                     📦 49 Skills Available"
+    echo "                     📦 50 Skills Available"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
     echo "  Framework (7) • Language-Specific (4) • Framework-Specific (7)"
     echo "  OpenCode Meta (4) • OpenTofu (7) • Git/Workflow (7)"
-    echo "  Documentation (2) • JIRA (4) • Code Quality (7)"
+    echo "  Documentation (2) • JIRA (5) • Code Quality (7)"
     echo ""
     echo "  Run 'opencode --list-skills' for detailed descriptions"
     echo "  Run 'opencode --skill <name> \"prompt\"' to use a skill"
@@ -2569,7 +2695,8 @@ main() {
         echo "  3) Full setup (API keys, Node.js, OpenCode)"
         echo "  4) Update OpenCode CLI only"
         echo "  5) Configure JIRA OAuth2"
-        echo "  6) Install PeonPing (sound notifications)"
+        echo "  6) Configure JIRA PAT (simpler, no refresh needed)"
+        echo "  7) Install PeonPing (sound notifications)"
         echo ""
 
         local setup_option
@@ -2623,6 +2750,16 @@ main() {
                 exit 0
                 ;;
             6)
+                echo ""
+                log_info "JIRA PAT Configuration"
+                setup_jira_pat || true
+                setup_shell_vars || true
+                print_summary
+                echo ""
+                echo "JIRA PAT configuration complete!"
+                exit 0
+                ;;
+            7)
                 echo ""
                 log_info "PeonPing Sound Notifications"
                 setup_peonping || true
