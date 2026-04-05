@@ -16,6 +16,7 @@ permission:
     git-pr-creator: allow
     jira-status-updater: allow
     plan-updater: allow
+    changelog-python-cliff: allow
 ---
 
 You are a pull request workflow specialist. Handle PR creation with framework-specific quality checks.
@@ -45,9 +46,10 @@ Framework-Specific Quality Checks:
  - TSDoc validation via docstring-generator (covers TypeScript)
 
  Python:
- - Run: ruff check . && pytest
- - Coverage via coverage-framework
- - Docstring validation via docstring-generator (covers Python PEP 257)
+  - Run: ruff check . && pytest
+  - Coverage via coverage-framework
+  - Docstring validation via docstring-generator (covers Python PEP 257)
+  - Changelog generation via changelog-python-cliff
 
 Generic:
 - Detect framework from project files (package.json, pyproject.toml, etc.)
