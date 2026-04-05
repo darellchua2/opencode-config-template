@@ -1,3 +1,10 @@
+# [1.38.0](https://github.com/darellchua2/opencode-config-template/compare/v1.37.3...v1.38.0) (2026-04-05)
+
+
+### Features
+
+* **skills:** add changelog-python-cliff skill for Python projects using git-cliff ([529f1ee](https://github.com/darellchua2/opencode-config-template/commit/529f1ee1699b6dece5790b86141d6a9f4ff880ac)), closes [#142](https://github.com/darellchua2/opencode-config-template/issues/142)
+
 ## [1.37.3](https://github.com/darellchua2/opencode-config-template/compare/v1.37.2...v1.37.3) (2026-03-30)
 
 
