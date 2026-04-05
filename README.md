@@ -132,7 +132,7 @@ This repository implements **skill modularization** with 50 skills organized acr
 | Category | Skills | Purpose |
 |-----------|---------|---------|
 | **Framework** (9) | test-generator-framework, linting-workflow, pr-creation-workflow, jira-git-integration, error-resolver-workflow, tdd-workflow, docx-creation, coverage-framework, pptx-specialist | Generic workflows, testing patterns, and document creation |
-| **Language-Specific** (3) | python-pytest-creator, python-ruff-linter, javascript-eslint-linter | Language-specific test, linting, and documentation |
+| **Language-Specific** (4) | python-pytest-creator, python-ruff-linter, javascript-eslint-linter, changelog-python-cliff | Language-specific test, linting, and documentation |
 | **Framework-Specific** (5) | nextjs-pr-workflow, nextjs-unit-test-creator, nextjs-standard-setup, nextjs-image-usage, typescript-dry-principle | Next.js 16 and TypeScript workflows |
 | **OpenCode Meta** (3) | opencode-agent-creation, opencode-skill-creation, opencode-skills-maintainer | Agent and skill creation/maintenance |
 | **OpenTofu** (7) | opentofu-aws-explorer, opentofu-keycloak-explorer, opentofu-kubernetes-explorer, opentofu-neon-explorer, opentofu-provider-setup, opentofu-provisioning-workflow, opentofu-ecr-provision | Infrastructure as Code |

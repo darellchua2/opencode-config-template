@@ -308,14 +308,14 @@ USAGE:
     Usage: opencode --agent build 'implement auth feature'
            opencode --agent explore 'find all API routes'
 
-    SKILLS (47):
-       Framework (9):        test-generator-framework, linting-workflow,
-                             pr-creation-workflow, jira-git-integration,
-                             error-resolver-workflow, tdd-workflow, docx-creation,
-                             coverage-framework, pptx-specialist
+     SKILLS (50):
+        Framework (9):        test-generator-framework, linting-workflow,
+                              pr-creation-workflow, jira-git-integration,
+                              error-resolver-workflow, tdd-workflow, docx-creation,
+                              coverage-framework, pptx-specialist
 
-      Language-Specific (3): python-pytest-creator, python-ruff-linter,
-                            javascript-eslint-linter
+       Language-Specific (4): python-pytest-creator, python-ruff-linter,
+                             javascript-eslint-linter, changelog-python-cliff
 
       Framework-Specific (5): nextjs-pr-workflow, nextjs-unit-test-creator,
                             nextjs-standard-setup, nextjs-image-usage,
@@ -1423,9 +1423,9 @@ function Deploy-Skills {
         Write-Host "      - pr-creation-workflow, jira-git-integration"
         Write-Host "      - error-resolver-workflow, tdd-workflow"
         Write-Host "      - docx-creation, coverage-framework"
-        Write-Host "    Language-Specific (3):"
+        Write-Host "    Language-Specific (4):"
         Write-Host "      - python-pytest-creator, python-ruff-linter"
-        Write-Host "      - javascript-eslint-linter"
+        Write-Host "      - javascript-eslint-linter, changelog-python-cliff"
         Write-Host "    Framework-Specific (5):"
         Write-Host "      - nextjs-pr-workflow, nextjs-unit-test-creator"
         Write-Host "      - nextjs-standard-setup, nextjs-image-usage"
@@ -1461,9 +1461,9 @@ function Deploy-Skills {
         Write-Host "      - pr-creation-workflow, jira-git-integration"
         Write-Host "      - error-resolver-workflow, tdd-workflow"
         Write-Host "      - coverage-framework, docx-creation"
-        Write-Host "    Language-Specific (3):"
+        Write-Host "    Language-Specific (4):"
         Write-Host "      - python-pytest-creator, python-ruff-linter"
-        Write-Host "      - javascript-eslint-linter"
+        Write-Host "      - javascript-eslint-linter, changelog-python-cliff"
         Write-Host "    Framework-Specific (5):"
         Write-Host "      - nextjs-pr-workflow, nextjs-unit-test-creator"
         Write-Host "      - nextjs-standard-setup, nextjs-image-usage"
@@ -1933,17 +1933,17 @@ function Show-NextSteps {
     Write-Host "         opencode `"prompt`" (uses build)"
     Write-Host ""
     Write-Host "=====================================================================" -ForegroundColor White
-    Write-Host "                     49 Skills Available" -ForegroundColor White
+     Write-Host "                     50 Skills Available" -ForegroundColor White
     Write-Host "=====================================================================" -ForegroundColor White
     Write-Host ""
-     Write-Host "  Framework (7) • Language-Specific (4) • Framework-Specific (7)"
+     Write-Host "  Framework (7) • Language-Specific (5) • Framework-Specific (7)"
      Write-Host "  OpenCode Meta (3) • OpenTofu (7) • Git/Workflow (7)"
     Write-Host "  Documentation (2) • JIRA (4) • Code Quality (7)"
     Write-Host ""
     Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
     Write-Host "  Run 'opencode --skill <name> `"prompt`"' to invoke a skill"
     Write-Host ""
-     Write-Host "  Framework (9) | Language-Specific (4) | Framework-Specific (7)"
+     Write-Host "  Framework (9) | Language-Specific (5) | Framework-Specific (7)"
      Write-Host "  OpenCode Meta (3) | OpenTofu (7) | Git/Workflow (8)"
     Write-Host "  Documentation (2) | JIRA (4) | Code Quality (7)"
     Write-Host ""
