@@ -1,3 +1,11 @@
+# [1.39.0](https://github.com/darellchua2/opencode-config-template/compare/v1.38.0...v1.39.0) (2026-04-07)
+
+
+### Features
+
+* **plugins:** add opencode-gemini-auth and fix md-table-formatter scope ([a3698cc](https://github.com/darellchua2/opencode-config-template/commit/a3698ccfcf6c0837351078457d8a3c12e6b4d23e)), closes [#144](https://github.com/darellchua2/opencode-config-template/issues/144)
+* **plugins:** remove opencode-claude-auth ([2e42868](https://github.com/darellchua2/opencode-config-template/commit/2e428680959b148fa92640a67ded46053068f56c))
+
 # [1.38.0](https://github.com/darellchua2/opencode-config-template/compare/v1.37.3...v1.38.0) (2026-04-05)
 
 
