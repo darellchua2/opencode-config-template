@@ -51,14 +51,14 @@ Update the numbered workflow section to reference the enhanced Python workflow w
 
 ## Success Criteria
 
-- [ ] `python-ruff-linter` skill is added to skill permissions in frontmatter
-- [ ] `python-pytest-creator` skill is added to skill permissions in frontmatter
-- [ ] `test-generator-framework` skill is added to skill permissions in frontmatter
-- [ ] Python linting uses `python-ruff-linter` skill instead of raw `ruff check` command
-- [ ] Breaking change detection with user prompting is documented in the workflow
-- [ ] Pytest is a mandatory quality gate with test generation fallback
-- [ ] All quality gates must pass before PR creation
-- [ ] Updated workflow steps are clear and sequential
+- [x] `python-ruff-linter` skill is added to skill permissions in frontmatter
+- [x] `python-pytest-creator` skill is added to skill permissions in frontmatter
+- [x] `test-generator-framework` skill is added to skill permissions in frontmatter
+- [x] Python linting uses `python-ruff-linter` skill instead of raw `ruff check` command
+- [x] Breaking change detection with user prompting is documented in the workflow
+- [x] Pytest is a mandatory quality gate with test generation fallback
+- [x] All quality gates must pass before PR creation
+- [x] Updated workflow steps are clear and sequential
 
 ## Notes
 
