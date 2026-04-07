@@ -9,7 +9,6 @@
     "opencode-notificator",
     "opencode-pty",
     "opencode-vibeguard",
-    "opencode-claude-auth",
     "opencode-gemini-auth@latest"
   ],
   "instructions": ["AGENTS.md"],
