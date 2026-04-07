@@ -3,13 +3,13 @@
   "model": "zai-coding-plan/glm-5.1",
   "default_agent": "build",
   "plugin": [
-    "opencode-md-table-formatter",
+    "@franlol/opencode-md-table-formatter@latest",
     "opencode-dynamic-context-pruning",
     "opencode-supermemory",
     "opencode-notificator",
     "opencode-pty",
     "opencode-vibeguard",
-    "opencode-claude-auth"
+    "opencode-gemini-auth@latest"
   ],
   "instructions": ["AGENTS.md"],
   "provider": {
