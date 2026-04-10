@@ -1,3 +1,10 @@
+## [1.39.1](https://github.com/darellchua2/opencode-config-template/compare/v1.39.0...v1.39.1) (2026-04-10)
+
+
+### Bug Fixes
+
+* **mcp:** migrate Atlassian MCP endpoint from /v1/sse to /v1/mcp ([23913d5](https://github.com/darellchua2/opencode-config-template/commit/23913d52e468a34c79fb6dbf6a7fb697f1e86a8b)), closes [#148](https://github.com/darellchua2/opencode-config-template/issues/148)
+
 # [1.39.0](https://github.com/darellchua2/opencode-config-template/compare/v1.38.0...v1.39.0) (2026-04-07)
 
 
