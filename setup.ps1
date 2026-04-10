@@ -348,41 +348,44 @@ USAGE:
     Usage: opencode --agent build 'implement auth feature'
            opencode --agent explore 'find all API routes'
 
-     SKILLS (50):
-        Framework (9):        test-generator-framework, linting-workflow,
-                              pr-creation-workflow, jira-git-integration,
-                              error-resolver-workflow, tdd-workflow, docx-creation,
-                              coverage-framework, pptx-specialist
+      SKILLS (53):
+          Framework (7):        test-generator-framework, linting-workflow,
+                                pr-creation-workflow, error-resolver-workflow,
+                                tdd-workflow, docx-creation, pptx-specialist
 
-       Language-Specific (4): python-pytest-creator, python-ruff-linter,
-                             javascript-eslint-linter, changelog-python-cliff
+         Language-Specific (4): python-pytest-creator, python-ruff-linter,
+                               javascript-eslint-linter, changelog-python-cliff
 
-      Framework-Specific (5): nextjs-pr-workflow, nextjs-unit-test-creator,
-                            nextjs-standard-setup, nextjs-image-usage,
-                            typescript-dry-principle
+        Framework-Specific (5): nextjs-pr-workflow, nextjs-unit-test-creator,
+                              nextjs-standard-setup, nextjs-image-usage,
+                              typescript-dry-principle
 
-      OpenCode Meta (3):    opencode-agent-creation, opencode-skill-creation,
-                            opencode-skills-maintainer
+        OpenCode Meta (3):    opencode-agent-creation, opencode-skill-creation,
+                              opencode-skills-maintainer
 
-     OpenTofu (7):         opentofu-aws-explorer, opentofu-keycloak-explorer,
-                           opentofu-kubernetes-explorer, opentofu-neon-explorer,
-                           opentofu-provider-setup, opentofu-provisioning-workflow,
-                           opentofu-ecr-provision
+       OpenTofu (7):         opentofu-aws-explorer, opentofu-keycloak-explorer,
+                             opentofu-kubernetes-explorer, opentofu-neon-explorer,
+                             opentofu-provider-setup, opentofu-provisioning-workflow,
+                             opentofu-ecr-provision
 
-     Git/Workflow (6):     ascii-diagram-creator, git-pr-creator,
-                           git-issue-labeler, git-issue-plan-workflow,
-                           git-issue-updater, git-semantic-commits
+       Git/Workflow (8):     ascii-diagram-creator, mermaid-diagram-creator,
+                             git-pr-creator, git-issue-labeler,
+                             git-issue-plan-workflow, git-issue-updater,
+                             git-semantic-commits, plan-updater
 
-     Documentation (3):    coverage-readme-workflow, docstring-generator,
-                           documentation-sync-workflow
+       Documentation (3):    coverage-readme-workflow, docstring-generator,
+                             documentation-sync-workflow
 
-      JIRA (5):             jira-ticket-oauth-workflow, jira-ticket-pat-workflow,
-                            jira-ticket-plan-workflow, jira-status-updater,
-                            jira-git-integration
+        JIRA (5):             jira-ticket-oauth-workflow, jira-ticket-pat-workflow,
+                              jira-ticket-plan-workflow, jira-status-updater,
+                              jira-git-integration
 
-     Code Quality (7):     solid-principles, clean-code, clean-architecture,
-                           design-patterns, object-design, code-smells,
-                           complexity-management
+       Code Quality (7):     solid-principles, clean-code, clean-architecture,
+                             design-patterns, object-design, code-smells,
+                             complexity-management
+
+   Agent Optimization (4):  continuous-learning, eval-harness,
+                             strategic-compact, verification-loop
 
     Run 'opencode --list-skills' for detailed descriptions
     Run 'opencode --skill <name> \"prompt\"' to invoke a skill
