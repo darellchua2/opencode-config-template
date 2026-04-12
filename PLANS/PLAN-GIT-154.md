@@ -68,19 +68,19 @@ Comprehensive audit and enhancement of all **48 active skills** and **27 global 
 - [x] Update skills identified during quality review
 - [ ] Create new skills/agents for identified gaps (deferred — tracked in backlog)
 - [x] Archive or remove deprecated/redundant skills
-- [ ] Update setup.sh with corrected skill listings and counts
-- [ ] Update setup.ps1 with corrected skill listings and counts
-- [ ] Update README.md skill categories and subagents tables
+- [x] Update setup.sh with corrected skill listings and counts
+- [x] Update setup.ps1 with corrected skill listings and counts
+- [x] Update README.md skill categories and subagents tables
 - [x] Update AGENTS.md routing as needed
-- [ ] Run opencode-skills-maintainer validation on all updated skills
-- [ ] Run documentation-sync-workflow for final synchronization
+- [x] Run opencode-skills-maintainer validation on all updated skills
+- [x] Run documentation-sync-workflow for final synchronization
 
 ### Phase 5: Final Validation
-- [ ] Verify all skills deploy correctly via setup.sh
-- [ ] Verify Windows deployment via setup.ps1
-- [ ] Test agent routing with updated skills
-- [ ] Confirm PLANS and documentation are synchronized
-- [ ] Final review of all changes before merge
+- [x] Verify all skills deploy correctly via setup.sh
+- [x] Verify Windows deployment via setup.ps1
+- [x] Test agent routing with updated skills
+- [x] Confirm PLANS and documentation are synchronized
+- [x] Final review of all changes before merge
 
 ---
 
