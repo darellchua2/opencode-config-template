@@ -250,8 +250,7 @@ cat > .eslintrc.json <<EOF
   "extends": ["prettier"],
   "plugins": ["prettier"],
   "rules": {
-    "prettier/prettier": "error",
-    "prettier/prettier": "off"
+    "prettier/prettier": "error"
   }
 }
 EOF
@@ -296,8 +295,8 @@ npx eslint .
 npx eslint . --fix
 
 # ESLint checks
-npx eslint --select E,F,W .
-npx eslint --fix --select E,F,W .
+npx eslint . --rule 'no-unused-vars: error'
+npx eslint . --fix
 
 # TypeScript ESLint
 npm install --save-dev @typescript-eslint/parser @typescript-eslint/eslint-plugin

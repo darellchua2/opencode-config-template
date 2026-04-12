@@ -40,6 +40,8 @@ Use this skill when you need to:
 - **Basic Postgres Knowledge**: Understanding of Postgres and database concepts
 - **Neon CLI (Optional)**: For additional operations
 
+**Provider Setup**: Complete the `opentofu-provider-setup` skill first for provider authentication and state backend configuration. This skill focuses on Neon resource management, not provider setup.
+
 ## Provider Documentation
 
 - **Terraform Registry (Neon Provider)**: https://registry.terraform.io/providers/kislerdm/neon/latest/docs

@@ -187,19 +187,6 @@ touch skills/python-pytest-creator/SKILL.md
 
 ### Step 6: Write Skill Documentation
 
-**IMPORTANT: Always use `read` tool before using `write` or `edit` on existing files.**
-
-This is especially critical when updating:
-- **PLAN.md** - Always read first to preserve existing task status
-- **README.md** – Always read first to preserve documentation structure
-- **Existing SKILL.md files** – Always read first to avoid overwriting content
-
-**Why Read First?**
-- The `write` tool completely overwrites existing files
-- Prevents accidental data loss of existing content
-- Ensures you have full context before making changes
-- Required for proper file safety in OpenCode workflows
-
 Write the complete SKILL.md file:
 
 ```bash
@@ -288,29 +275,10 @@ grep -q "^description:" "skills/<skill-name>/SKILL.md" || echo "Warning: Missing
 
 ### File Safety
 
-- **ALWAYS read before writing**: Use `read` tool before using `write` or `edit` on any existing file
-- **Never assume content**: Always check current file content before modifying
-- **Preserve existing data**: Read the file first to avoid overwriting content
-- **Check file existence**: Use `glob` or `read` to verify file exists before operations
-
-**Why This is Critical**:
-- The `write` tool completely overwrites existing files
-- Using `read` first prevents accidental data loss
-- Ensures you have the full context before making changes
-- Required when updating PLAN.md, README.md, or any existing documentation
-
-**Example Workflow**:
-```bash
-# WRONG - Direct write without reading
-write filePath="PLAN.md" content="new content"
-
-# CORRECT - Read first, then write/edit
-read filePath="PLAN.md"
-# Now you have the full context
-edit filePath="PLAN.md" oldString="..." newString="..."
-# OR
-write filePath="PLAN.md" content="full updated content"
-```
+- **ALWAYS read before writing**: Use `read` tool before `write` or `edit` on any existing file
+- The `write` tool completely overwrites existing files — reading first prevents data loss
+- Use `edit` for targeted changes; only use `write` when you have the complete file content
+- Common files requiring read-first: PLAN.md, README.md, SKILL.md, config.json
 
 ### Validation
 
@@ -318,7 +286,6 @@ write filePath="PLAN.md" content="full updated content"
 - **Test the skill**: Try using it after creation
 - **Review documentation**: Ensure clarity and completeness
 - **Check naming**: Verify skill follows naming conventions
-- **Always read before write**: Verify file content before modifying existing files
 
 ### Configuring Skill Permissions
 

@@ -71,7 +71,7 @@ Use `linting-workflow` framework with JavaScript/TypeScript language detection:
 - Apply auto-fix with `npm run lint -- --fix`
 - Handle errors with re-running
 
-### Step 3.5: Run Tests (BLOCKING STEP)
+### Step 4: Run Tests (BLOCKING STEP)
 
 Before proceeding to PR creation, **all tests must pass**:
 ```bash
@@ -93,7 +93,7 @@ npm run test -- --coverage
 - No skipped tests (unless documented)
 - Coverage threshold (if configured) must be met
 
-### Step 3.6: Update Coverage Badge in README
+### Step 5: Update Coverage Badge in README
 
 Use `coverage-readme-workflow` to update README with latest coverage:
 - Run tests with coverage
@@ -114,7 +114,7 @@ opencode --agent coverage-readme-workflow "update coverage badge"
 - If coverage badge doesn't exist: Add new badge and section
 - Badge color reflects coverage level (>=80% green, 60-79% yellow, 40-59% orange, <40% red)
 
-### Step 4: Identify Tracking System
+### Step 6: Identify Tracking System
 
 Read PLAN.md for JIRA ticket references:
 ```bash
@@ -122,7 +122,7 @@ Read PLAN.md for JIRA ticket references:
 PLAN_JIRA=$(grep -oE "[A-Z]+-[0-9]+" PLAN.md | head -1)
 ```
 
-### Step 5: Create Pull Request via PR Workflow
+### Step 7: Create Pull Request via PR Workflow
 
 Use `pr-creation-workflow` framework with Next.js-specific configuration:
 - Quality checks: `npm run lint`, `npm run build`, and `npm run test`
@@ -141,7 +141,7 @@ Use `pr-creation-workflow` framework with Next.js-specific configuration:
   - `feat` → `minor` label (new feature)
   - `fix` → `patch` label (bug fix)
 
-### Step 5.5: Apply Semantic Versioning Label
+### Step 8: Apply Semantic Versioning Label
 
 After PR creation, apply the appropriate version label:
 ```bash
@@ -162,7 +162,7 @@ else
 fi
 ```
 
-### Step 6: Handle JIRA Integration via Git Issue Updater
+### Step 9: Handle JIRA Integration via Git Issue Updater
 
 Use `git-issue-updater` framework for:
 - JIRA resource detection (cloud ID, projects)
@@ -170,7 +170,7 @@ Use `git-issue-updater` framework for:
 - Uploading images (if applicable)
 - Consistent progress tracking across all JIRA tickets
 
-### Step 7: Merge Confirmation
+### Step 10: Merge Confirmation
 
 After PR creation, ask user to confirm merge target before proceeding.
 

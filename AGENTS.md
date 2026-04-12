@@ -38,8 +38,6 @@ opencode-config-template/
 | `.opencode/agents/*.md` | Project-only | Stays in repo, not deployed |
 
 **Project-Level Subagents:**
-- `documentation-sync-subagent` - Ensures doc sync when skills/agents change (this repo only)
-- `mermaid-diagram-subagent` - Creates Mermaid diagrams with PNG conversion and integrated with planning workflows
 - `mermaid-diagram-subagent` - Creates Mermaid diagrams with PNG conversion and integrated with planning workflows
 
 ## Adding New Subagents or Skills
@@ -75,7 +73,7 @@ For new **project-level** subagents (in `.opencode/agents/`):
 
 ### Use the Sync Workflow
 
-Invoke the `documentation-sync-workflow` skill or `documentation-sync-subagent` for guided synchronization:
+Invoke the `documentation-sync-workflow` skill or delegate to `opencode-tooling-subagent` for guided synchronization:
 
 ```
 opencode --skill documentation-sync-workflow "sync docs after adding new skill"

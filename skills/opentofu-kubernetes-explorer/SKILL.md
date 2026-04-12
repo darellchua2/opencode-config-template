@@ -42,6 +42,8 @@ Use this skill when you need to:
 - **kubeconfig**: Valid Kubernetes configuration file
 - **Basic Kubernetes Knowledge**: Understanding of pods, services, deployments, and concepts
 
+**Provider Setup**: Complete the `opentofu-provider-setup` skill first for provider authentication and state backend configuration. This skill focuses on Kubernetes resource management, not provider setup.
+
 ## Provider Documentation
 
 - **Terraform Registry (Kubernetes Provider)**: https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs
