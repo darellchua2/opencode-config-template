@@ -33,7 +33,9 @@ param(
 
     [switch]$EnableAutoUpdate,
     [switch]$DisableAutoUpdate,
-    [switch]$CheckUpdate
+    [switch]$CheckUpdate,
+
+    [int]$KeepBackups = 5
 )
 
 $ErrorActionPreference = "Continue"
@@ -207,6 +209,42 @@ function New-FileBackup {
     }
 }
 
+function Remove-OldBackups {
+    if ($KeepBackups -lt 0) {
+        Write-LogDebug "Backup cleanup disabled (KeepBackups=$KeepBackups)"
+        return
+    }
+
+    $allBackups = @(Get-ChildItem $HOME -Directory -Filter ".opencode-backup-*" -ErrorAction SilentlyContinue)
+    $allBackups += @(Get-ChildItem $HOME -Directory -Filter ".opencode-update-backup-*" -ErrorAction SilentlyContinue)
+
+    if ($allBackups.Count -eq 0) {
+        Write-LogDebug "No old backups found"
+        return
+    }
+
+    $allBackups = $allBackups | Sort-Object LastWriteTime -Descending
+
+    if ($allBackups.Count -le $KeepBackups) {
+        Write-LogDebug "Found $($allBackups.Count) backup(s) (within retention limit of $KeepBackups)"
+        return
+    }
+
+    $toDelete = $allBackups | Select-Object -Skip $KeepBackups
+    Write-LogInfo "Cleaning up old backups (keeping $KeepBackups of $($allBackups.Count))..."
+
+    foreach ($dir in $toDelete) {
+        if ($DryRun) {
+            Write-Host "[DRY-RUN] Would remove old backup: $($dir.FullName)" -ForegroundColor Cyan
+        } else {
+            Remove-Item $dir.FullName -Recurse -Force
+            Write-LogInfo "Removed old backup: $($dir.FullName)"
+        }
+    }
+
+    Write-LogSuccess "Cleaned up $($toDelete.Count) old backup(s)"
+}
+
 function Test-ApiKey {
     param(
         [string]$Key,
@@ -290,6 +328,8 @@ USAGE:
     -Help                Show this help message
     -DryRun              Preview all actions without making changes
     -Yes                 Auto-accept all prompts (non-interactive)
+    -KeepBackups <N>     Keep only N most recent backups (default: 5)
+                           0 = delete all old backups, negative = keep all
 
 =======================================================================
                          CONFIGURED FEATURES
@@ -308,41 +348,44 @@ USAGE:
     Usage: opencode --agent build 'implement auth feature'
            opencode --agent explore 'find all API routes'
 
-     SKILLS (50):
-        Framework (9):        test-generator-framework, linting-workflow,
-                              pr-creation-workflow, jira-git-integration,
-                              error-resolver-workflow, tdd-workflow, docx-creation,
-                              coverage-framework, pptx-specialist
+      SKILLS (53):
+          Framework (7):        test-generator-framework, linting-workflow,
+                                pr-creation-workflow, error-resolver-workflow,
+                                tdd-workflow, docx-creation, pptx-specialist
 
-       Language-Specific (4): python-pytest-creator, python-ruff-linter,
-                             javascript-eslint-linter, changelog-python-cliff
+         Language-Specific (4): python-pytest-creator, python-ruff-linter,
+                               javascript-eslint-linter, changelog-python-cliff
 
-      Framework-Specific (5): nextjs-pr-workflow, nextjs-unit-test-creator,
-                            nextjs-standard-setup, nextjs-image-usage,
-                            typescript-dry-principle
+        Framework-Specific (5): nextjs-pr-workflow, nextjs-unit-test-creator,
+                              nextjs-standard-setup, nextjs-image-usage,
+                              typescript-dry-principle
 
-      OpenCode Meta (3):    opencode-agent-creation, opencode-skill-creation,
-                            opencode-skills-maintainer
+        OpenCode Meta (3):    opencode-agent-creation, opencode-skill-creation,
+                              opencode-skills-maintainer
 
-     OpenTofu (7):         opentofu-aws-explorer, opentofu-keycloak-explorer,
-                           opentofu-kubernetes-explorer, opentofu-neon-explorer,
-                           opentofu-provider-setup, opentofu-provisioning-workflow,
-                           opentofu-ecr-provision
+       OpenTofu (7):         opentofu-aws-explorer, opentofu-keycloak-explorer,
+                             opentofu-kubernetes-explorer, opentofu-neon-explorer,
+                             opentofu-provider-setup, opentofu-provisioning-workflow,
+                             opentofu-ecr-provision
 
-     Git/Workflow (6):     ascii-diagram-creator, git-pr-creator,
-                           git-issue-labeler, git-issue-plan-workflow,
-                           git-issue-updater, git-semantic-commits
+       Git/Workflow (8):     ascii-diagram-creator, mermaid-diagram-creator,
+                             git-pr-creator, git-issue-labeler,
+                             git-issue-plan-workflow, git-issue-updater,
+                             git-semantic-commits, plan-updater
 
-     Documentation (3):    coverage-readme-workflow, docstring-generator,
-                           documentation-sync-workflow
+       Documentation (3):    coverage-readme-workflow, docstring-generator,
+                             documentation-sync-workflow
 
-      JIRA (5):             jira-ticket-oauth-workflow, jira-ticket-pat-workflow,
-                            jira-ticket-plan-workflow, jira-status-updater,
-                            jira-git-integration
+        JIRA (5):             jira-ticket-oauth-workflow, jira-ticket-pat-workflow,
+                              jira-ticket-plan-workflow, jira-status-updater,
+                              jira-git-integration
 
-     Code Quality (7):     solid-principles, clean-code, clean-architecture,
-                           design-patterns, object-design, code-smells,
-                           complexity-management
+       Code Quality (7):     solid-principles, clean-code, clean-architecture,
+                             design-patterns, object-design, code-smells,
+                             complexity-management
+
+   Agent Optimization (4):  continuous-learning, eval-harness,
+                             strategic-compact, verification-loop
 
     Run 'opencode --list-skills' for detailed descriptions
     Run 'opencode --skill <name> \"prompt\"' to invoke a skill
@@ -1179,42 +1222,6 @@ function Set-MermaidCLI {
     }
 }
 
-        if ($latestVersion -ne "unknown") {
-            Write-LogInfo "Latest version: v$latestVersion"
-
-            if ($installedVersion -ne $latestVersion) {
-                Write-LogWarn "A newer version of Mermaid CLI is available!"
-                if (Read-YesNo "Update Mermaid CLI to v$latestVersion?" $true) {
-                    if (Invoke-WithDryRun "npm install -g @mermaid-js/mermaid-cli@latest") {
-                        Write-LogSuccess "Mermaid CLI updated successfully"
-                    }
-                }
-            } else {
-                Write-LogSuccess "Mermaid CLI is up to date"
-            }
-        }
-    } else {
-        Write-LogInfo "Mermaid CLI is not installed"
-        Write-Host ""
-        Write-Host "  Mermaid CLI is required for diagram generation skills." -ForegroundColor Yellow
-        Write-Host "  Alternatively, use npx for zero-install: npx @mermaid-js/mermaid-cli" -ForegroundColor Yellow
-        Write-Host ""
-
-        if (Read-YesNo "Install Mermaid CLI?" $true) {
-            if (Invoke-WithDryRun "npm install -g @mermaid-js/mermaid-cli") {
-                if (Test-CommandExists "mmdc") {
-                    Write-LogSuccess "Mermaid CLI installed successfully"
-                } else {
-                    Write-LogError "Mermaid CLI installation failed"
-                    Write-LogInfo "You can use npx as fallback: npx @mermaid-js/mermaid-cli"
-                }
-            }
-        } else {
-            Write-LogInfo "Skipping Mermaid CLI installation (npx fallback available)"
-        }
-    }
-}
-
 ################################################################################
 # UPDATE: OpenCode CLI only
 ################################################################################
@@ -1783,6 +1790,7 @@ function Invoke-AutoUpdate {
             $agentsDest = Join-Path $ConfigDir "AGENTS.md"
             if (Test-Path $agentsDest) { Copy-Item $agentsDest (Join-Path $backupDir "AGENTS.md") }
             if (Test-Path $SkillsDir) { Copy-Item $SkillsDir (Join-Path $backupDir "skills") -Recurse }
+            Remove-OldBackups
         }
 
         Write-LogInfo "Auto-updating opencode-ai to v$latest..."
@@ -2135,6 +2143,8 @@ function Main {
 
     Set-Configuration
     Set-ShellVariables
+
+    Remove-OldBackups
 
     Show-Summary
     Show-NextSteps

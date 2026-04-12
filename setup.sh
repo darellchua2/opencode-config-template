@@ -298,6 +298,7 @@ UPDATE_ONLY=false
 ENABLE_AUTO_UPDATE=false
 UPDATE_SCHEDULE="manual"
 CHECK_UPDATE_ONLY=false
+KEEP_BACKUPS=5
 
 # API Keys (initialize to empty to avoid unbound variable errors)
 # Capture from environment if they exist
@@ -475,6 +476,8 @@ USAGE:
     -d, --dry-run         Preview all actions without making changes
     -y, --yes             Auto-accept all prompts (non-interactive)
     -v, --verbose         Enable detailed debug logging
+    -k, --keep-backups <N>  Keep only N most recent backups (default: 5)
+                            0 = delete all old backups, negative = keep all
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
                             EXAMPLES
@@ -538,41 +541,43 @@ USAGE:
       microsoft-copilot  M365 Copilot conversations
       microsoft-dataverse Business data (Dynamics 365)
 
-   SKILLS (50):
-        Framework (9):        test-generator-framework, linting-workflow,
-                              pr-creation-workflow, jira-git-integration,
-                              error-resolver-workflow, tdd-workflow, docx-creation,
-                              coverage-framework, pptx-specialist
+   SKILLS (53):
+         Framework (7):        test-generator-framework, linting-workflow,
+                               pr-creation-workflow, error-resolver-workflow,
+                               tdd-workflow, docx-creation, pptx-specialist
 
-       Language-Specific (4): python-pytest-creator, python-ruff-linter,
-                             javascript-eslint-linter, changelog-python-cliff
-      Framework-Specific (5): nextjs-pr-workflow, nextjs-unit-test-creator,
-                            nextjs-standard-setup, nextjs-image-usage,
-                            typescript-dry-principle
+        Language-Specific (4): python-pytest-creator, python-ruff-linter,
+                              javascript-eslint-linter, changelog-python-cliff
+       Framework-Specific (5): nextjs-pr-workflow, nextjs-unit-test-creator,
+                             nextjs-standard-setup, nextjs-image-usage,
+                             typescript-dry-principle
 
-      OpenCode Meta (3):    opencode-agent-creation, opencode-skill-creation,
-                            opencode-skills-maintainer
+       OpenCode Meta (3):    opencode-agent-creation, opencode-skill-creation,
+                             opencode-skills-maintainer
 
-      OpenTofu (7):         opentofu-aws-explorer, opentofu-keycloak-explorer,
-                            opentofu-kubernetes-explorer, opentofu-neon-explorer,
-                            opentofu-provider-setup, opentofu-provisioning-workflow,
-                            opentofu-ecr-provision
+       OpenTofu (7):         opentofu-aws-explorer, opentofu-keycloak-explorer,
+                             opentofu-kubernetes-explorer, opentofu-neon-explorer,
+                             opentofu-provider-setup, opentofu-provisioning-workflow,
+                             opentofu-ecr-provision
 
-      Git/Workflow (7):     ascii-diagram-creator, mermaid-diagram-creator,
-                            git-pr-creator, git-issue-labeler,
-                            git-issue-plan-workflow, git-issue-updater,
-                            git-semantic-commits
+       Git/Workflow (8):     ascii-diagram-creator, mermaid-diagram-creator,
+                             git-pr-creator, git-issue-labeler,
+                             git-issue-plan-workflow, git-issue-updater,
+                             git-semantic-commits, plan-updater
 
-      Documentation (3):    coverage-readme-workflow, docstring-generator,
-                             documentation-sync-workflow
+       Documentation (3):    coverage-readme-workflow, docstring-generator,
+                              documentation-sync-workflow
 
-      JIRA (5):             jira-ticket-oauth-workflow, jira-ticket-pat-workflow,
-                            jira-ticket-plan-workflow, jira-status-updater,
-                            jira-git-integration
+       JIRA (5):             jira-ticket-oauth-workflow, jira-ticket-pat-workflow,
+                             jira-ticket-plan-workflow, jira-status-updater,
+                             jira-git-integration
 
-      Code Quality (7):     solid-principles, clean-code, clean-architecture,
-                            design-patterns, object-design, code-smells,
-                            complexity-management
+       Code Quality (7):     solid-principles, clean-code, clean-architecture,
+                             design-patterns, object-design, code-smells,
+                             complexity-management
+
+   Agent Optimization (4):  continuous-learning, eval-harness,
+                             strategic-compact, verification-loop
 
     Run 'opencode --list-skills' for detailed descriptions
     Run 'opencode --skill <name> "prompt"' to invoke a skill
@@ -614,6 +619,7 @@ USAGE:
   Setup log:            ~/.opencode-setup.log
   Update log:           ~/.config/opencode/update.log
   Backups:              ~/.opencode-backup-YYYYMMDD_HHMMSS/
+                         Retention: 5 most recent (configurable with --keep-backups)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -676,6 +682,15 @@ parse_arguments() {
             -C|--check-update)
                 CHECK_UPDATE_ONLY=true
                 shift
+                ;;
+            -k|--keep-backups)
+                if [ -n "$2" ] && [[ "$2" =~ ^-?[0-9]+$ ]]; then
+                    KEEP_BACKUPS="$2"
+                else
+                    log_error "--keep-backups requires a numeric argument"
+                    exit 1
+                fi
+                shift 2
                 ;;
             *)
                 log_error "Unknown option: $1"
@@ -750,6 +765,51 @@ create_backup() {
         run_cmd "cp ${file_to_backup} ${backup_path}"
         log_info "Backed up: ${file_to_backup} -> ${backup_path}"
     fi
+}
+
+cleanup_old_backups() {
+    local keep_count="${KEEP_BACKUPS}"
+
+    if [ "$keep_count" -lt 0 ]; then
+        log_debug "Backup cleanup disabled (KEEP_BACKUPS=$keep_count)"
+        return 0
+    fi
+
+    local all_backups
+    all_backups=$(ls -1d "${HOME}"/.opencode-backup-* "${HOME}"/.opencode-update-backup-* 2>/dev/null | sort -r)
+
+    if [ -z "$all_backups" ]; then
+        log_debug "No old backups found"
+        return 0
+    fi
+
+    local total_count
+    total_count=$(echo "$all_backups" | grep -c . 2>/dev/null || echo 0)
+
+    if [ "$total_count" -le "$keep_count" ]; then
+        log_debug "Found $total_count backup(s) (within retention limit of $keep_count)"
+        return 0
+    fi
+
+    local to_delete
+    to_delete=$(echo "$all_backups" | tail -n +"$((keep_count + 1))")
+    local delete_count
+    delete_count=$(echo "$to_delete" | grep -c . 2>/dev/null || echo 0)
+
+    log_info "Cleaning up old backups (keeping $keep_count of $total_count)..."
+
+    echo "$to_delete" | while read -r dir; do
+        if [ -n "$dir" ] && [ -d "$dir" ]; then
+            if [ "$DRY_RUN" = true ]; then
+                echo "[DRY-RUN] Would remove old backup: ${dir}"
+            else
+                rm -rf "${dir}"
+                log_info "Removed old backup: ${dir}"
+            fi
+        fi
+    done
+
+    log_success "Cleaned up $delete_count old backup(s)"
 }
 
 ################################################################################
@@ -2224,6 +2284,8 @@ create_backup_before_update() {
     log_success "Backup created at: ${backup_dir}"
     echo "" >> "$UPDATE_LOG"
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Backup created: ${backup_dir}" >> "$UPDATE_LOG"
+
+    cleanup_old_backups
 }
 
 # Check for updates only (don't install)
@@ -2794,6 +2856,8 @@ main() {
     deploy_agents || true
     setup_shell_vars || true
 
+    cleanup_old_backups
+
     # Print summary and next steps
     print_summary
     print_next_steps
@@ -2809,8 +2873,10 @@ main() {
     exit 0
 }
 
-# Run main function with all arguments
-main "$@"
+# Run main function with all arguments (guard allows sourcing for testing)
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    main "$@"
+fi
 
 
 # Generate skills section from skills folder
