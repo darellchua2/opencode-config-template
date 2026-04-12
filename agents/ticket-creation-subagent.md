@@ -15,7 +15,6 @@ permission:
     git-issue-updater: allow
     git-issue-labeler: allow
     git-semantic-commits: allow
-    jira-ticket-oauth-workflow: allow
     jira-ticket-plan-workflow: allow
     plan-updater: allow
 ---
@@ -73,8 +72,7 @@ After execution, this subagent provides:
 - Update issues with commit progress
 
 ### JIRA Tickets
-- Create tickets via Atlassian MCP tools (primary)
-- Create tickets via OAuth2 API (fallback)
+- Create tickets via Atlassian MCP tools
 - Support for Stories with Subtasks
 - Support for standalone Tasks
 - Create branches from ticket keys

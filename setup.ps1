@@ -66,15 +66,6 @@ $LastUpdateCheck = Join-Path $ConfigDir ".last-update-check"
 $UpdateLog = Join-Path $ConfigDir "update.log"
 
 $ZaiApiKey = $env:ZAI_API_KEY
-$JiraClientId = $env:JIRA_CLIENT_ID
-$JiraClientSecret = $env:JIRA_CLIENT_SECRET
-$JiraAccessToken = $env:JIRA_ACCESS_TOKEN
-$JiraRefreshToken = $env:JIRA_REFRESH_TOKEN
-$JiraCloudId = $env:JIRA_CLOUD_ID
-
-# JIRA PAT credentials (simpler alternative to OAuth2)
-$JiraPat = $env:JIRA_PAT
-$JiraSite = $env:JIRA_SITE
 
 $SkipConfigCopy = $false
 
@@ -348,7 +339,7 @@ USAGE:
     Usage: opencode --agent build 'implement auth feature'
            opencode --agent explore 'find all API routes'
 
-      SKILLS (53):
+      SKILLS (51):
           Framework (7):        test-generator-framework, linting-workflow,
                                 pr-creation-workflow, error-resolver-workflow,
                                 tdd-workflow, docx-creation, pptx-specialist
@@ -376,8 +367,7 @@ USAGE:
        Documentation (3):    coverage-readme-workflow, docstring-generator,
                              documentation-sync-workflow
 
-        JIRA (5):             jira-ticket-oauth-workflow, jira-ticket-pat-workflow,
-                              jira-ticket-plan-workflow, jira-status-updater,
+       JIRA (3):             jira-ticket-plan-workflow, jira-status-updater,
                               jira-git-integration
 
        Code Quality (7):     solid-principles, clean-code, clean-architecture,
@@ -570,200 +560,6 @@ function Set-ZaiApiKey {
     } else {
         Write-LogSuccess "API Key accepted: $(Get-MaskedValue $ZaiApiKey)"
     }
-}
-
-################################################################################
-# SETUP: JIRA OAuth2
-################################################################################
-
-function Set-JiraOAuth {
-    Write-Host ""
-    Write-Host "=====================================================================" -ForegroundColor White
-    Write-Host "              JIRA OAuth2 Setup" -ForegroundColor White
-    Write-Host "=====================================================================" -ForegroundColor White
-    Write-Host ""
-    Write-Host "Prerequisites:"
-    Write-Host "  1. Create OAuth2 app at: https://developer.atlassian.com/console/myapps/"
-    Write-Host "  2. Add callback URL: http://localhost:8085/callback"
-    Write-Host "  3. Enable scopes: read:jira-work, write:jira-work, offline_access"
-    Write-Host ""
-
-    if (-not [string]::IsNullOrWhiteSpace($JiraClientId) -and -not [string]::IsNullOrWhiteSpace($JiraAccessToken)) {
-        Write-Host "JIRA OAuth2 is already configured."
-        Write-Host "  Client ID: $($JiraClientId.Substring(0, [Math]::Min(8, $JiraClientId.Length)))..."
-        Write-Host "  Access Token: $(Get-MaskedValue $JiraAccessToken)"
-        Write-Host ""
-
-        if (-not (Read-YesNo "Reconfigure?" $false)) {
-            Write-LogInfo "Keeping existing configuration"
-            return
-        }
-    }
-
-    Write-Host "Step 1/4: Enter your OAuth2 Client ID"
-    $JiraClientId = Read-Prompt "JIRA Client ID" ""
-    if ([string]::IsNullOrWhiteSpace($JiraClientId)) {
-        Write-LogWarn "No Client ID provided, skipping"
-        return
-    }
-
-    Write-Host ""
-    Write-Host "Step 2/4: Enter your OAuth2 Client Secret"
-    $secureSecret = Read-Host "JIRA Client Secret" -AsSecureString
-    $JiraClientSecret = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
-        [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureSecret)
-    )
-    Write-Host ""
-
-    if ([string]::IsNullOrWhiteSpace($JiraClientSecret)) {
-        Write-LogWarn "No Client Secret provided, skipping"
-        return
-    }
-
-    Write-Host ""
-    Write-Host "Step 3/4: Open this URL in your browser and authorize:"
-    Write-Host ""
-    $authUrl = "https://auth.atlassian.com/authorize?audience=api.atlassian.com&client_id=$JiraClientId&scope=read%3Ajira-work%20write%3Ajira-work%20offline_access&redirect_uri=http%3A%2F%2Flocalhost%3A8085%2Fcallback&response_type=code&prompt=consent"
-    Write-Host "  $authUrl" -ForegroundColor Cyan
-    Write-Host ""
-    Write-Host "After authorization, browser redirects to localhost:8085/callback?code=XXXXX"
-    Write-Host "Copy the 'code' value from the URL."
-    Write-Host ""
-
-    Write-Host "Step 4/4: Paste the authorization code"
-    $authCode = Read-Prompt "Authorization code" ""
-
-    if ([string]::IsNullOrWhiteSpace($authCode)) {
-        Write-LogError "No authorization code provided"
-        return
-    }
-
-    Write-Host ""
-    Write-LogInfo "Exchanging code for tokens..."
-
-    try {
-        $body = @{
-            grant_type    = "authorization_code"
-            client_id     = $JiraClientId
-            client_secret = $JiraClientSecret
-            code          = $authCode
-            redirect_uri  = "http://localhost:8085/callback"
-        } | ConvertTo-Json
-
-        $tokenResponse = Invoke-RestMethod -Method Post `
-            -Uri "https://auth.atlassian.com/oauth/token" `
-            -ContentType "application/json" `
-            -Body $body
-
-        $JiraAccessToken = $tokenResponse.access_token
-        $JiraRefreshToken = $tokenResponse.refresh_token
-
-        if ([string]::IsNullOrWhiteSpace($JiraAccessToken)) {
-            Write-LogError "Failed to obtain tokens"
-            Write-Host "Response: $($tokenResponse | ConvertTo-Json -Depth 3)"
-            return
-        }
-
-        Write-LogSuccess "Tokens obtained"
-
-        Write-LogInfo "Fetching Cloud ID..."
-        $resources = Invoke-RestMethod -Method Get `
-            -Uri "https://api.atlassian.com/oauth/token/accessible-resources" `
-            -Headers @{ "Authorization" = "Bearer $JiraAccessToken" }
-
-        if ($resources -and $resources.Count -gt 0) {
-            $JiraCloudId = $resources[0].id
-        }
-
-        Write-LogSuccess "JIRA OAuth2 configured"
-        Write-Host ""
-        Write-Host "Summary:"
-        Write-Host "  Client ID: $($JiraClientId.Substring(0, [Math]::Min(8, $JiraClientId.Length)))..."
-        Write-Host "  Access Token: $(Get-MaskedValue $JiraAccessToken)"
-        Write-Host "  Cloud ID: $(if ($JiraCloudId) { $JiraCloudId } else { '<not set>' })"
-        Write-Host ""
-    } catch {
-        Write-LogError "Token exchange failed: $($_.Exception.Message)"
-    }
-}
-
-################################################################################
-# SETUP: JIRA PAT
-################################################################################
-
-function Set-JiraPAT {
-    Write-Host ""
-    Write-Host "=====================================================================" -ForegroundColor White
-    Write-Host "              JIRA PAT Setup" -ForegroundColor White
-    Write-Host "=====================================================================" -ForegroundColor White
-    Write-Host ""
-    Write-Host "Personal Access Tokens (PAT) are simpler than OAuth2:" -ForegroundColor Cyan
-    Write-Host "  - No token refresh needed"
-    Write-Host "  - No callback server required"
-    Write-Host "  - Tokens don't expire"
-    Write-Host ""
-    Write-Host "To create a PAT:" -ForegroundColor Yellow
-    Write-Host "  1. Go to: https://id.atlassian.com/manage-profile/security/pat"
-    Write-Host "  2. Click 'Create token'"
-    Write-Host "  3. Select scopes: read:jira-work, write:jira-work"
-    Write-Host "  4. Copy the token"
-    Write-Host ""
-
-    if (-not [string]::IsNullOrWhiteSpace($JiraPat)) {
-        Write-Host "JIRA PAT is already configured."
-        Write-Host "  Site: $(if ($JiraSite) { $JiraSite } else { '<not set>' })"
-        Write-Host "  Token: $(Get-MaskedValue $JiraPat)"
-        Write-Host ""
-
-        if (-not (Read-YesNo "Reconfigure?" $false)) {
-            Write-LogInfo "Keeping existing configuration"
-            return
-        }
-    }
-
-    Write-Host "Step 1/2: Enter your Atlassian site"
-    Write-Host "Example: your-company.atlassian.net"
-    $JiraSite = Read-Prompt "JIRA Site" ""
-    if ([string]::IsNullOrWhiteSpace($JiraSite)) {
-        Write-LogWarn "No site provided, skipping"
-        return
-    }
-
-    Write-Host ""
-    Write-Host "Step 2/2: Enter your Personal Access Token"
-    $securePat = Read-Host "JIRA PAT" -AsSecureString
-    $JiraPat = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
-        [Runtime.InteropServices.Marshal]::SecureStringToBSTR($securePat)
-    )
-    Write-Host ""
-
-    if ([string]::IsNullOrWhiteSpace($JiraPat)) {
-        Write-LogWarn "No PAT provided, skipping"
-        return
-    }
-
-    Write-Host ""
-    Write-LogInfo "Verifying token..."
-
-    try {
-        $response = Invoke-WebRequest -Method Get `
-            -Uri "https://$JiraSite/rest/api/3/myself" `
-            -Headers @{ "Authorization" = "Bearer $JiraPat" } `
-            -UseBasicParsing -ErrorAction SilentlyContinue
-
-        if ($response.StatusCode -eq 200) {
-            Write-LogSuccess "Token verified successfully"
-        }
-    } catch {
-        Write-LogWarn "Could not verify token. Token may still be valid."
-    }
-
-    Write-LogSuccess "JIRA PAT configured"
-    Write-Host ""
-    Write-Host "Summary:"
-    Write-Host "  Site: $JiraSite"
-    Write-Host "  Token: $(Get-MaskedValue $JiraPat)"
-    Write-Host ""
 }
 
 ################################################################################
@@ -1451,8 +1247,7 @@ function Deploy-Skills {
         Write-Host "      - git-issue-updater, git-semantic-commits"
         Write-Host "    Documentation (2):"
         Write-Host "      - coverage-readme-workflow, docstring-generator"
-        Write-Host "    JIRA (5):"
-        Write-Host "      - jira-ticket-oauth-workflow, jira-ticket-pat-workflow"
+        Write-Host "    JIRA (3):"
         Write-Host "      - jira-ticket-plan-workflow, jira-status-updater"
         Write-Host "      - jira-git-integration"
         Write-Host "    Code Quality (7):"
@@ -1489,8 +1284,7 @@ function Deploy-Skills {
         Write-Host "      - git-issue-updater, git-semantic-commits"
         Write-Host "    Documentation (2):"
         Write-Host "      - coverage-readme-workflow, docstring-generator"
-        Write-Host "    JIRA (5):"
-        Write-Host "      - jira-ticket-oauth-workflow, jira-ticket-pat-workflow"
+        Write-Host "    JIRA (3):"
         Write-Host "      - jira-ticket-plan-workflow, jira-status-updater"
         Write-Host "      - jira-git-integration"
         Write-Host "    Code Quality (7):"
@@ -1621,80 +1415,6 @@ function Set-ShellVariables {
                 Write-LogSuccess "ZAI_API_KEY added to $PROFILE"
             } else {
                 Write-LogInfo "Skipping profile update for ZAI_API_KEY"
-            }
-        }
-    }
-
-    if (-not [string]::IsNullOrWhiteSpace($JiraClientId)) {
-        $profileContent = Get-Content $PROFILE -Raw -ErrorAction SilentlyContinue
-        if ($profileContent -match "JIRA_CLIENT_ID") {
-            Write-LogInfo "JIRA OAuth2 credentials already exist in $PROFILE"
-
-            if (Read-YesNo "Update existing JIRA tokens?" $false) {
-                New-FileBackup $PROFILE
-                if (-not $DryRun) {
-                    $lines = Get-Content $PROFILE | Where-Object { $_ -notmatch "JIRA_" -and $_ -notmatch "JIRA OAuth2" }
-                    Set-Content -Path $PROFILE -Value $lines
-
-                    Add-Content -Path $PROFILE -Value "`n# JIRA OAuth2 Configuration (added by opencode setup)"
-                    Add-Content -Path $PROFILE -Value "`$env:JIRA_CLIENT_ID = `"$JiraClientId`""
-                    Add-Content -Path $PROFILE -Value "`$env:JIRA_CLIENT_SECRET = `"$JiraClientSecret`""
-                    Add-Content -Path $PROFILE -Value "`$env:JIRA_ACCESS_TOKEN = `"$JiraAccessToken`""
-                    Add-Content -Path $PROFILE -Value "`$env:JIRA_REFRESH_TOKEN = `"$JiraRefreshToken`""
-                    if ($JiraCloudId) {
-                        Add-Content -Path $PROFILE -Value "`$env:JIRA_CLOUD_ID = `"$JiraCloudId`""
-                    }
-                }
-                Write-LogSuccess "JIRA OAuth2 tokens updated in $PROFILE"
-            }
-        } else {
-            if (Read-YesNo "Add JIRA OAuth2 credentials to your PowerShell profile?" $true) {
-                New-FileBackup $PROFILE
-                if (-not $DryRun) {
-                    Add-Content -Path $PROFILE -Value "`n# JIRA OAuth2 Configuration (added by opencode setup)"
-                    Add-Content -Path $PROFILE -Value "`$env:JIRA_CLIENT_ID = `"$JiraClientId`""
-                    Add-Content -Path $PROFILE -Value "`$env:JIRA_CLIENT_SECRET = `"$JiraClientSecret`""
-                    Add-Content -Path $PROFILE -Value "`$env:JIRA_ACCESS_TOKEN = `"$JiraAccessToken`""
-                    Add-Content -Path $PROFILE -Value "`$env:JIRA_REFRESH_TOKEN = `"$JiraRefreshToken`""
-                    if ($JiraCloudId) {
-                        Add-Content -Path $PROFILE -Value "`$env:JIRA_CLOUD_ID = `"$JiraCloudId`""
-                    }
-                }
-                Write-LogSuccess "JIRA OAuth2 credentials added to $PROFILE"
-            } else {
-                Write-LogInfo "Skipping profile update for JIRA OAuth2"
-            }
-        }
-    }
-
-    if (-not [string]::IsNullOrWhiteSpace($JiraPat)) {
-        $profileContent = Get-Content $PROFILE -Raw -ErrorAction SilentlyContinue
-        if ($profileContent -match "JIRA_PAT") {
-            Write-LogInfo "JIRA PAT credentials already exist in $PROFILE"
-
-            if (Read-YesNo "Update existing JIRA PAT?" $false) {
-                New-FileBackup $PROFILE
-                if (-not $DryRun) {
-                    $lines = Get-Content $PROFILE | Where-Object { $_ -notmatch "JIRA_PAT" -and $_ -notmatch "JIRA_SITE" -and $_ -notmatch "JIRA PAT" }
-                    Set-Content -Path $PROFILE -Value $lines
-
-                    Add-Content -Path $PROFILE -Value "`n# JIRA PAT Configuration (added by opencode setup)"
-                    Add-Content -Path $PROFILE -Value "`$env:JIRA_PAT = `"$JiraPat`""
-                    Add-Content -Path $PROFILE -Value "`$env:JIRA_SITE = `"$JiraSite`""
-                }
-                Write-LogSuccess "JIRA PAT credentials updated in $PROFILE"
-            }
-        } else {
-            if (Read-YesNo "Add JIRA PAT credentials to your PowerShell profile?" $true) {
-                New-FileBackup $PROFILE
-                if (-not $DryRun) {
-                    Add-Content -Path $PROFILE -Value "`n# JIRA PAT Configuration (added by opencode setup)"
-                    Add-Content -Path $PROFILE -Value "`$env:JIRA_PAT = `"$JiraPat`""
-                    Add-Content -Path $PROFILE -Value "`$env:JIRA_SITE = `"$JiraSite`""
-                }
-                Write-LogSuccess "JIRA PAT credentials added to $PROFILE"
-            } else {
-                Write-LogInfo "Skipping profile update for JIRA PAT"
             }
         }
     }
@@ -2056,9 +1776,7 @@ function Main {
         Write-Host "  2) Skills-only setup"
         Write-Host "  3) Full setup (API keys, Node.js, OpenCode)"
         Write-Host "  4) Update OpenCode CLI only"
-        Write-Host "  5) Configure JIRA OAuth2"
-        Write-Host "  6) Configure JIRA PAT (simpler, no refresh needed)"
-        Write-Host "  7) Install PeonPing (sound notifications)"
+        Write-Host "  5) Install PeonPing (sound notifications)"
         Write-Host ""
 
         $option = Read-Prompt "Select option" "2"
@@ -2097,26 +1815,6 @@ function Main {
                 return
             }
             "5" {
-                Write-Host ""
-                Write-LogInfo "JIRA OAuth2 Configuration"
-                Set-JiraOAuth
-                Set-ShellVariables
-                Show-Summary
-                Write-Host ""
-                Write-Host "JIRA OAuth2 configuration complete!"
-                return
-            }
-            "6" {
-                Write-Host ""
-                Write-LogInfo "JIRA PAT Configuration"
-                Set-JiraPAT
-                Set-ShellVariables
-                Show-Summary
-                Write-Host ""
-                Write-Host "JIRA PAT configuration complete!"
-                return
-            }
-            "7" {
                 Write-Host ""
                 Write-LogInfo "PeonPing Sound Notifications"
                 Set-PeonPing

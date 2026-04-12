@@ -305,16 +305,6 @@ KEEP_BACKUPS=5
 GITHUB_PAT=""
 ZAI_API_KEY="${ZAI_API_KEY:-}"
 
-# JIRA OAuth2 credentials
-JIRA_CLIENT_ID="${JIRA_CLIENT_ID:-}"
-JIRA_CLIENT_SECRET="${JIRA_CLIENT_SECRET:-}"
-JIRA_ACCESS_TOKEN="${JIRA_ACCESS_TOKEN:-}"
-JIRA_REFRESH_TOKEN="${JIRA_REFRESH_TOKEN:-}"
-JIRA_CLOUD_ID="${JIRA_CLOUD_ID:-}"
-
-# JIRA PAT credentials (simpler alternative to OAuth2)
-JIRA_PAT="${JIRA_PAT:-}"
-JIRA_SITE="${JIRA_SITE:-}"
 
 # Colors for output
 readonly RED='\033[0;31m'
@@ -541,7 +531,7 @@ USAGE:
       microsoft-copilot  M365 Copilot conversations
       microsoft-dataverse Business data (Dynamics 365)
 
-   SKILLS (53):
+   SKILLS (51):
          Framework (7):        test-generator-framework, linting-workflow,
                                pr-creation-workflow, error-resolver-workflow,
                                tdd-workflow, docx-creation, pptx-specialist
@@ -568,9 +558,8 @@ USAGE:
        Documentation (3):    coverage-readme-workflow, docstring-generator,
                               documentation-sync-workflow
 
-       JIRA (5):             jira-ticket-oauth-workflow, jira-ticket-pat-workflow,
-                             jira-ticket-plan-workflow, jira-status-updater,
-                             jira-git-integration
+       JIRA (3):             jira-ticket-plan-workflow, jira-status-updater,
+                              jira-git-integration
 
        Code Quality (7):     solid-principles, clean-code, clean-architecture,
                              design-patterns, object-design, code-smells,
@@ -1209,190 +1198,6 @@ setup_peonping_hooks() {
     fi
 }
 
-# Setup JIRA OAuth2 credentials
-setup_jira_oauth() {
-    echo ""
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "              🔑 JIRA OAuth2 Setup"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo ""
-    echo "Prerequisites:"
-    echo "  1. Create OAuth2 app at: https://developer.atlassian.com/console/myapps/"
-    echo "  2. Add callback URL: http://localhost:8085/callback"
-    echo "  3. Enable scopes: read:jira-work, write:jira-work, offline_access"
-    echo ""
-
-    # Check if already configured
-    if [ -n "$JIRA_CLIENT_ID" ] && [ -n "$JIRA_ACCESS_TOKEN" ]; then
-        echo "JIRA OAuth2 is already configured."
-        echo "  Client ID: ${JIRA_CLIENT_ID:0:8}..."
-        echo "  Access Token: ${JIRA_ACCESS_TOKEN:0:8}...${JIRA_ACCESS_TOKEN: -4}"
-        echo ""
-        if prompt_yes_no "Reconfigure?" "n"; then
-            log_info "Reconfiguring..."
-        else
-            log_info "Keeping existing configuration"
-            return 0
-        fi
-    fi
-
-    # Step 1: Client ID
-    echo "Step 1/4: Enter your OAuth2 Client ID"
-    read -p "JIRA Client ID: " JIRA_CLIENT_ID
-    
-    if [ -z "$JIRA_CLIENT_ID" ]; then
-        log_warn "No Client ID provided, skipping"
-        return 1
-    fi
-
-    # Step 2: Client Secret
-    echo ""
-    echo "Step 2/4: Enter your OAuth2 Client Secret"
-    read -s -p "JIRA Client Secret: " JIRA_CLIENT_SECRET
-    echo ""
-
-    if [ -z "$JIRA_CLIENT_SECRET" ]; then
-        log_warn "No Client Secret provided, skipping"
-        return 1
-    fi
-
-    # Step 3: Authorize
-    echo ""
-    echo "Step 3/4: Open this URL in your browser and authorize:"
-    echo ""
-    echo "  https://auth.atlassian.com/authorize?audience=api.atlassian.com&client_id=${JIRA_CLIENT_ID}&scope=read%3Ajira-work%20write%3Ajira-work%20offline_access&redirect_uri=http%3A%2F%2Flocalhost%3A8085%2Fcallback&response_type=code&prompt=consent"
-    echo ""
-    echo "After authorization, browser redirects to localhost:8085/callback?code=XXXXX"
-    echo "Copy the 'code' value from the URL."
-    echo ""
-
-    # Step 4: Enter code
-    echo "Step 4/4: Paste the authorization code"
-    read -p "Authorization code: " auth_code
-
-    if [ -z "$auth_code" ]; then
-        log_error "No authorization code provided"
-        return 1
-    fi
-
-    # Exchange code for tokens
-    echo ""
-    log_info "Exchanging code for tokens..."
-    
-    local token_response
-    token_response=$(curl -s -X POST "https://auth.atlassian.com/oauth/token" \
-        -H "Content-Type: application/json" \
-        -d "{
-            \"grant_type\": \"authorization_code\",
-            \"client_id\": \"${JIRA_CLIENT_ID}\",
-            \"client_secret\": \"${JIRA_CLIENT_SECRET}\",
-            \"code\": \"${auth_code}\",
-            \"redirect_uri\": \"http://localhost:8085/callback\"
-        }")
-    
-    JIRA_ACCESS_TOKEN=$(echo "$token_response" | grep -o '"access_token":"[^"]*"' | cut -d'"' -f4)
-    JIRA_REFRESH_TOKEN=$(echo "$token_response" | grep -o '"refresh_token":"[^"]*"' | cut -d'"' -f4)
-    
-    if [ -z "$JIRA_ACCESS_TOKEN" ] || [ "$JIRA_ACCESS_TOKEN" = "null" ]; then
-        log_error "Failed to obtain tokens"
-        echo "Response: $token_response"
-        return 1
-    fi
-
-    log_success "Tokens obtained"
-    
-    # Get cloud ID
-    log_info "Fetching Cloud ID..."
-    JIRA_CLOUD_ID=$(curl -s -H "Authorization: Bearer ${JIRA_ACCESS_TOKEN}" \
-        "https://api.atlassian.com/oauth/token/accessible-resources" | \
-        grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
-    
-    log_success "JIRA OAuth2 configured"
-    echo ""
-    echo "Summary:"
-    echo "  Client ID: ${JIRA_CLIENT_ID:0:8}..."
-    echo "  Access Token: ${JIRA_ACCESS_TOKEN:0:8}...${JIRA_ACCESS_TOKEN: -4}"
-    echo "  Cloud ID: ${JIRA_CLOUD_ID:-<not set>}"
-    echo ""
-}
-
-# Setup JIRA PAT credentials (simpler alternative to OAuth2)
-setup_jira_pat() {
-    echo ""
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "              🔑 JIRA PAT Setup"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo ""
-    echo "Personal Access Tokens (PAT) are simpler than OAuth2:"
-    echo "  - No token refresh needed"
-    echo "  - No callback server required"
-    echo "  - Tokens don't expire"
-    echo ""
-    echo "To create a PAT:"
-    echo "  1. Go to: https://id.atlassian.com/manage-profile/security/pat"
-    echo "  2. Click 'Create token'"
-    echo "  3. Select scopes: read:jira-work, write:jira-work"
-    echo "  4. Copy the token"
-    echo ""
-
-    # Check if already configured
-    if [ -n "$JIRA_PAT" ]; then
-        echo "JIRA PAT is already configured."
-        echo "  Site: ${JIRA_SITE:-<not set>}"
-        echo "  Token: ${JIRA_PAT:0:8}...${JIRA_PAT: -4}"
-        echo ""
-        if prompt_yes_no "Reconfigure?" "n"; then
-            log_info "Reconfiguring..."
-        else
-            log_info "Keeping existing configuration"
-            return 0
-        fi
-    fi
-
-    # Step 1: Site
-    echo "Step 1/2: Enter your Atlassian site"
-    echo "Example: your-company.atlassian.net"
-    read -p "JIRA Site: " JIRA_SITE
-    
-    if [ -z "$JIRA_SITE" ]; then
-        log_warn "No site provided, skipping"
-        return 1
-    fi
-
-    # Step 2: PAT
-    echo ""
-    echo "Step 2/2: Enter your Personal Access Token"
-    read -s -p "JIRA PAT: " JIRA_PAT
-    echo ""
-
-    if [ -z "$JIRA_PAT" ]; then
-        log_warn "No PAT provided, skipping"
-        return 1
-    fi
-
-    # Verify token works
-    echo ""
-    log_info "Verifying token..."
-    
-    local verify_response
-    verify_response=$(curl -s -o /dev/null -w "%{http_code}" \
-        -H "Authorization: Bearer ${JIRA_PAT}" \
-        "https://${JIRA_SITE}/rest/api/3/myself" 2>/dev/null)
-    
-    if [ "$verify_response" = "200" ]; then
-        log_success "Token verified successfully"
-    else
-        log_warn "Could not verify token (HTTP ${verify_response}). Token may still be valid."
-    fi
-
-    log_success "JIRA PAT configured"
-    echo ""
-    echo "Summary:"
-    echo "  Site: ${JIRA_SITE}"
-    echo "  Token: ${JIRA_PAT:0:8}...${JIRA_PAT: -4}"
-    echo ""
-}
-
 # Setup nvm
 setup_nvm() {
     echo ""
@@ -1917,9 +1722,7 @@ setup_config() {
         echo "    - Documentation (2):"
         echo "      - coverage-readme-workflow"
         echo "      - docstring-generator"
-        echo "    - JIRA (5):"
-        echo "      - jira-ticket-oauth-workflow"
-        echo "      - jira-ticket-pat-workflow"
+        echo "    - JIRA (3):"
         echo "      - jira-ticket-plan-workflow"
         echo "      - jira-status-updater"
         echo "      - jira-git-integration"
@@ -2091,116 +1894,6 @@ setup_shell_vars() {
                     log_success "ZAI_API_KEY added to ${SHELL_CONFIG_FILE}"
                 else
                     log_info "Skipping shell config update for ZAI_API_KEY"
-                fi
-            fi
-        fi
-    fi
-
-    # Add JIRA OAuth2 credentials
-    if [ -n "$JIRA_CLIENT_ID" ]; then
-        if is_windows; then
-            setx_env "JIRA_CLIENT_ID" "${JIRA_CLIENT_ID}"
-            setx_env "JIRA_CLIENT_SECRET" "${JIRA_CLIENT_SECRET}"
-            setx_env "JIRA_ACCESS_TOKEN" "${JIRA_ACCESS_TOKEN}"
-            setx_env "JIRA_REFRESH_TOKEN" "${JIRA_REFRESH_TOKEN}"
-            if [ -n "$JIRA_CLOUD_ID" ]; then
-                setx_env "JIRA_CLOUD_ID" "${JIRA_CLOUD_ID}"
-            fi
-            export JIRA_CLIENT_ID="${JIRA_CLIENT_ID}"
-            export JIRA_CLIENT_SECRET="${JIRA_CLIENT_SECRET}"
-            export JIRA_ACCESS_TOKEN="${JIRA_ACCESS_TOKEN}"
-            export JIRA_REFRESH_TOKEN="${JIRA_REFRESH_TOKEN}"
-            export JIRA_CLOUD_ID="${JIRA_CLOUD_ID:-}"
-        else
-            local jira_vars_missing=false
-            
-            if ! grep -q "JIRA_CLIENT_ID" "$SHELL_CONFIG_FILE" 2>/dev/null; then
-                jira_vars_missing=true
-            fi
-            
-            if [ "$jira_vars_missing" = true ]; then
-                if prompt_yes_no "Add JIRA OAuth2 credentials to $(basename ${SHELL_CONFIG_FILE})?" "y"; then
-                    create_backup "$SHELL_CONFIG_FILE"
-                    
-                    run_cmd "echo '' >> ${SHELL_CONFIG_FILE}"
-                    run_cmd "echo '# JIRA OAuth2 Configuration' >> ${SHELL_CONFIG_FILE}"
-                    run_cmd "echo 'export JIRA_CLIENT_ID=\"${JIRA_CLIENT_ID}\"' >> ${SHELL_CONFIG_FILE}"
-                    run_cmd "echo 'export JIRA_CLIENT_SECRET=\"${JIRA_CLIENT_SECRET}\"' >> ${SHELL_CONFIG_FILE}"
-                    run_cmd "echo 'export JIRA_ACCESS_TOKEN=\"${JIRA_ACCESS_TOKEN}\"' >> ${SHELL_CONFIG_FILE}"
-                    run_cmd "echo 'export JIRA_REFRESH_TOKEN=\"${JIRA_REFRESH_TOKEN}\"' >> ${SHELL_CONFIG_FILE}"
-                    
-                    if [ -n "$JIRA_CLOUD_ID" ]; then
-                        run_cmd "echo 'export JIRA_CLOUD_ID=\"${JIRA_CLOUD_ID}\"' >> ${SHELL_CONFIG_FILE}"
-                    fi
-                    
-                    log_success "JIRA OAuth2 credentials added to ${SHELL_CONFIG_FILE}"
-                else
-                    log_info "Skipping shell config update for JIRA OAuth2"
-                fi
-            else
-                log_info "JIRA OAuth2 credentials already exist in ${SHELL_CONFIG_FILE}"
-                
-                if prompt_yes_no "Update existing JIRA tokens?" "n"; then
-                    create_backup "$SHELL_CONFIG_FILE"
-                    
-                    local temp_file="${SHELL_CONFIG_FILE}.tmp"
-                    grep -v "^export JIRA_" "$SHELL_CONFIG_FILE" > "$temp_file" 2>/dev/null || true
-                    
-                    echo '' >> "$temp_file"
-                    echo '# JIRA OAuth2 Configuration' >> "$temp_file"
-                    echo "export JIRA_CLIENT_ID=\"${JIRA_CLIENT_ID}\"" >> "$temp_file"
-                    echo "export JIRA_CLIENT_SECRET=\"${JIRA_CLIENT_SECRET}\"" >> "$temp_file"
-                    echo "export JIRA_ACCESS_TOKEN=\"${JIRA_ACCESS_TOKEN}\"" >> "$temp_file"
-                    echo "export JIRA_REFRESH_TOKEN=\"${JIRA_REFRESH_TOKEN}\"" >> "$temp_file"
-                    
-                    if [ -n "$JIRA_CLOUD_ID" ]; then
-                        echo "export JIRA_CLOUD_ID=\"${JIRA_CLOUD_ID}\"" >> "$temp_file"
-                    fi
-                    
-                    mv "$temp_file" "$SHELL_CONFIG_FILE"
-                    log_success "JIRA OAuth2 tokens updated in ${SHELL_CONFIG_FILE}"
-                fi
-            fi
-        fi
-    fi
-
-    # Add JIRA PAT credentials
-    if [ -n "$JIRA_PAT" ]; then
-        if is_windows; then
-            setx_env "JIRA_PAT" "${JIRA_PAT}"
-            setx_env "JIRA_SITE" "${JIRA_SITE}"
-            export JIRA_PAT="${JIRA_PAT}"
-            export JIRA_SITE="${JIRA_SITE}"
-        else
-            if ! grep -q "JIRA_PAT" "$SHELL_CONFIG_FILE" 2>/dev/null; then
-                if prompt_yes_no "Add JIRA PAT credentials to $(basename ${SHELL_CONFIG_FILE})?" "y"; then
-                    create_backup "$SHELL_CONFIG_FILE"
-                    
-                    run_cmd "echo '' >> ${SHELL_CONFIG_FILE}"
-                    run_cmd "echo '# JIRA PAT Configuration' >> ${SHELL_CONFIG_FILE}"
-                    run_cmd "echo 'export JIRA_PAT=\"${JIRA_PAT}\"' >> ${SHELL_CONFIG_FILE}"
-                    run_cmd "echo 'export JIRA_SITE=\"${JIRA_SITE}\"' >> ${SHELL_CONFIG_FILE}"
-                    
-                    log_success "JIRA PAT credentials added to ${SHELL_CONFIG_FILE}"
-                else
-                    log_info "Skipping shell config update for JIRA PAT"
-                fi
-            else
-                log_info "JIRA PAT credentials already exist in ${SHELL_CONFIG_FILE}"
-                
-                if prompt_yes_no "Update existing JIRA PAT?" "n"; then
-                    create_backup "$SHELL_CONFIG_FILE"
-                    
-                    local temp_file="${SHELL_CONFIG_FILE}.tmp"
-                    grep -v "^export JIRA_PAT\|^export JIRA_SITE\|^# JIRA PAT" "$SHELL_CONFIG_FILE" > "$temp_file" 2>/dev/null || true
-                    
-                    echo '' >> "$temp_file"
-                    echo '# JIRA PAT Configuration' >> "$temp_file"
-                    echo "export JIRA_PAT=\"${JIRA_PAT}\"" >> "$temp_file"
-                    echo "export JIRA_SITE=\"${JIRA_SITE}\"" >> "$temp_file"
-                    
-                    mv "$temp_file" "$SHELL_CONFIG_FILE"
-                    log_success "JIRA PAT credentials updated in ${SHELL_CONFIG_FILE}"
                 fi
             fi
         fi
@@ -2554,9 +2247,7 @@ print_summary() {
         echo "    - Documentation (2):"
         echo "      - coverage-readme-workflow"
         echo "      - docstring-generator"
-        echo "    - JIRA (5):"
-        echo "      - jira-ticket-oauth-workflow"
-        echo "      - jira-ticket-pat-workflow"
+        echo "    - JIRA (3):"
         echo "      - jira-ticket-plan-workflow"
         echo "      - jira-status-updater"
         echo "      - jira-git-integration"
@@ -2636,7 +2327,7 @@ print_next_steps() {
     echo ""
     echo "  Framework (7) • Language-Specific (5) • Framework-Specific (7)"
     echo "  OpenCode Meta (4) • OpenTofu (7) • Git/Workflow (7)"
-    echo "  Documentation (2) • JIRA (5) • Code Quality (7)"
+    echo "  Documentation (2) • JIRA (3) • Code Quality (7)"
     echo ""
     echo "  Run 'opencode --list-skills' for detailed descriptions"
     echo "  Run 'opencode --skill <name> \"prompt\"' to use a skill"
@@ -2758,9 +2449,7 @@ main() {
         echo "  2) Skills-only setup"
         echo "  3) Full setup (API keys, Node.js, OpenCode)"
         echo "  4) Update OpenCode CLI only"
-        echo "  5) Configure JIRA OAuth2"
-        echo "  6) Configure JIRA PAT (simpler, no refresh needed)"
-        echo "  7) Install PeonPing (sound notifications)"
+        echo "  5) Install PeonPing (sound notifications)"
         echo ""
 
         local setup_option
@@ -2804,26 +2493,6 @@ main() {
                 exit 0
                 ;;
             5)
-                echo ""
-                log_info "JIRA OAuth2 Configuration"
-                setup_jira_oauth || true
-                setup_shell_vars || true
-                print_summary
-                echo ""
-                echo "JIRA OAuth2 configuration complete!"
-                exit 0
-                ;;
-            6)
-                echo ""
-                log_info "JIRA PAT Configuration"
-                setup_jira_pat || true
-                setup_shell_vars || true
-                print_summary
-                echo ""
-                echo "JIRA PAT configuration complete!"
-                exit 0
-                ;;
-            7)
                 echo ""
                 log_info "PeonPing Sound Notifications"
                 setup_peonping || true
