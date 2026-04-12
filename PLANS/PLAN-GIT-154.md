@@ -66,7 +66,7 @@ Comprehensive audit and enhancement of all **48 active skills** and **27 global 
 
 ### Phase 4: Enhancement Implementation
 - [x] Update skills identified during quality review
-- [ ] Create new skills/agents for identified gaps (deferred — tracked in backlog)
+- [x] Create new skills/agents for identified gaps — all backlog items resolved (#111 agent exists, #133 skill-broker consolidated, #141 covered by pptx-specialist)
 - [x] Archive or remove deprecated/redundant skills
 - [x] Update setup.sh with corrected skill listings and counts
 - [x] Update setup.ps1 with corrected skill listings and counts
