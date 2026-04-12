@@ -42,6 +42,8 @@ Use this skill when you need to:
 - **GitHub OIDC Provider**: OIDC provider configured for GitHub Actions (optional, can be created as part of workflow)
 - **Basic OpenTofu/Terraform Knowledge**: Understanding of HCL syntax and provider concepts
 
+**Provider Setup**: Complete the `opentofu-provider-setup` skill first for AWS provider authentication and state backend configuration. This skill focuses on ECR-specific provisioning, not provider setup.
+
 ## BETEKK Standards
 
 ### Variable Naming Convention
@@ -167,9 +169,9 @@ terraform {
   }
 
   backend "s3" {
-    bucket = var.state_management_bucket_name
+    bucket = "your-state-bucket-name"
     key    = "ecr/<service-name>/terraform.tfstate"
-    region = var.aws_region
+    region = "ap-southeast-1"
   }
 }
 ```

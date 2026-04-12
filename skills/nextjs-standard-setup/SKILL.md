@@ -66,53 +66,6 @@ npx -y create-next-app@latest --typescript --tailwind --eslint --app --src-dir -
 - `--src-dir`: Use src/ directory structure
 - `--import-alias "@/*"`: Configure path aliases for clean imports
 
-### Step 2: Configure Tailwind v4 with npx
-
-Update to Tailwind CSS v4 and configure properly:
-
-```bash
-# Install Tailwind v4 with npx -y for zero-install experience
-npx -y tailwindcss@latest init -p
-```
-
-Update `tailwind.config.ts` or `tailwind.config.js`:
-```typescript
-import type { Config } from "tailwindcss"
-
-const config: Config = {
-  content: [
-    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
-  ],
-  theme: {
-    extend: {},
-  },
-  plugins: [],
-}
-
-export default config
-```
-
-Update `tailwind.config.ts` or `tailwind.config.js`:
-```typescript
-import type { Config } from "tailwindcss"
-
-const config: Config = {
-  content: [
-    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
-  ],
-  theme: {
-    extend: {},
-  },
-  plugins: [],
-}
-
-export default config
-```
-
 ### Step 2: Configure Tailwind v4
 
 Update to Tailwind CSS v4 and configure properly:
@@ -236,18 +189,6 @@ Set up TypeScript with @/ path aliases for src/ directory:
   ]
 }
 ```
-- TekkCard (extends shadcn Card)
-- TekkInput (extends shadcn Input)
-- TekkModal (extends shadcn Dialog)
-
-**page-containers Examples**:
-- TekkHomePageContainer (for home page client state)
-- TekkDashboardPageContainer (for dashboard pages)
-
-**sections Examples**:
-- TekkHeroSection (hero section component)
-- TekkFeaturesSection (features section)
-- TekkContactSection (contact form section)
 
 ### Step 6: Setup Documentation Standards
 
@@ -269,7 +210,7 @@ Ensure all components have proper JSDoc docstrings with:
  */
 ```
 
-### Step 6: Enable React Compiler
+### Step 7: Enable React Compiler
 
 Enable React Compiler for optimized reactivity in Next.js 16:
 
@@ -303,15 +244,7 @@ module.exports = nextConfig
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  // React Compiler
   experimental: {
-    reactCompiler: true,
-  },
-  
-  // Optional: Configure React Compiler behavior
-  experimental: {
-    reactCompiler: true,
-    // Enable only for specific paths
     reactCompiler: {
       sources: {
         src: ['src'],
@@ -338,8 +271,8 @@ module.exports = nextConfig
 Set up Next.js configurations using npx -y for zero-install experience:
 
 ```bash
-# Install Next.js 16 and React with npx
-npx -y npm install next@latest react@latest react-dom@latest
+# Install Next.js 16 and React
+npm install next@latest react@latest react-dom@latest
 
 # Set up TypeScript strict mode
 npx -y tsc --init
@@ -350,80 +283,6 @@ npx -y eslint-config-prettier@latest --save-dev
 # Install other dev dependencies with npx
 npx -y install -D typescript @types/node
 npx -y install -D @types/react @types/react-dom
-```
-
-Configure `tsconfig.json` for strict type checking:
-```json
-{
-  "compilerOptions": {
-    "strict": true,
-    "noUncheckedIndexedAccess": true,
-    "noImplicitOverride": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "forceConsistentCasingInFileNames": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true
-    // ...other strict options
-  }
-}
-```
-
-Set up ESLint and Prettier:
-```bash
-# Install ESLint and Prettier with npx
-npx -y eslint-config-prettier@latest --save-dev
-
-# Create .eslintrc.json
-cat > .eslintrc.json <<EOF
-{
-  "extends": ["prettier"],
-  "rules": {
-    "react/react-in-jsx-scope": "off",
-    "react/prop-types": "error"
-  }
-}
-EOF
-
-# Create .prettierrc
-cat > .prettierrc <<EOF
-{
-  "semi": true,
-  "singleQuote": true,
-  "tabWidth": 2,
-  "trailingComma": "es5",
-  "printWidth": 100
-}
-EOF
-```
-
-Add environment variable templates:
-```bash
-# Create .env.local template
-cat > .env.local.example <<EOF
-# Database
-DATABASE_URL=postgresql://user:password@localhost:5432/mydb
-NEXT_PUBLIC_API_URL=http://localhost:3000/api
-
-# Authentication
-NEXTAUTH_SECRET=your-secret-key-here
-
-# Feature Flags
-NEXT_PUBLIC_FEATURE_X=true
-NEXT_PUBLIC_FEATURE_Y=false
-EOF
-```
-
-### Step 8: Configure Next.js Best Practices with npx
-
-Set up Next.js configurations using npx -y for zero-install experience:
-
-```bash
-# Install Next.js 16 and React with npx
-npx -y npm install next@latest react@latest react-dom@latest
-
-# Set up TypeScript strict mode
-npx -y tsc --init
 ```
 
 Configure `tsconfig.json` for strict type checking:

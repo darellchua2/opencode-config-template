@@ -54,6 +54,8 @@ Prompt the user for the following information:
 - **Model**: Provider/model-id (e.g., `zai-coding-plan/glm-5.1`, `openai/gpt-4`)
 - **Temperature**: 0.0-1.0 (default: 0.7)
 - **Steps**: Max agentic iterations (default: 5)
+- **Hidden**: Hide from @ autocomplete (default: false, subagents only)
+- **Color**: UI color — hex or named value (e.g., `primary`, `#FF5733`)
 - **Permissions**: Tool access configuration
 
 **Prompt Template**:
@@ -148,7 +150,7 @@ color: primary
 ---
 description: Review code for quality and security issues
 mode: subagent
-.1
+model: zai-coding-plan/glm-5.1
 temperature: 0.3
 steps: 3
 hidden: true

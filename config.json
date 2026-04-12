@@ -214,7 +214,7 @@
     }
   },
   "tools": {
-    "atlassian*": false,
+    "atlassian*": true,
     "web-reader*": false,
     "web-search-prime*": false,
     "zai-mcp-server*": false,

@@ -39,6 +39,8 @@ Use this skill when you need to:
 - **Keycloak Admin Account**: Credentials with admin privileges
 - **Basic IAM Knowledge**: Understanding of OAuth2, OpenID Connect, and SAML
 
+**Provider Setup**: Complete the `opentofu-provider-setup` skill first for provider authentication and state backend configuration. This skill focuses on Keycloak resource management, not provider setup.
+
 ## Provider Documentation
 
 - **Terraform Registry**: https://registry.terraform.io/providers/keycloak/keycloak/latest/docs
@@ -72,13 +74,12 @@ terraform {
     }
   }
   required_version = ">= 1.0"
-}
 
-# State backend configuration
-backend "s3" {
-  bucket = "keycloak-state"
-  key    = "terraform.tfstate"
-  region = "us-east-1"
+  backend "s3" {
+    bucket = "keycloak-state"
+    key    = "terraform.tfstate"
+    region = "us-east-1"
+  }
 }
 ```
 

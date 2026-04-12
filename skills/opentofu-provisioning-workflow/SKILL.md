@@ -35,7 +35,7 @@ Use this skill when you need to:
 ## Prerequisites
 
 - **OpenTofu CLI installed**: Install from https://opentofu.org/docs/intro/install/
-- **Provider Configured**: Complete `opentofu-provider-setup` skill first
+- **Provider Configured**: Complete `opentofu-provider-setup` skill first for provider authentication and state backend configuration
 - **Provider Authentication**: Valid credentials for your cloud provider
 - **Understanding of HCL**: HashiCorp Configuration Language basics
 - **State Backend**: Remote state backend configured (S3, Azure Storage, GCS)
@@ -490,107 +490,79 @@ resource "aws_instance" "web" {
 tofu apply -auto-parallelism=4 &
 ```
 
-## Reference Documentation
+## Advanced Patterns
 
-- **OpenTofu Documentation**: https://opentofu.org/docs/
-- **Terraform Language**: https://www.terraform.io/docs/language/
-- **Terraform State**: https://www.terraform.io/docs/language/state/
-- **Resource Lifecycle**: https://www.terraform.io/docs/language/meta-arguments/lifecycle.html
-- **Data Sources**: https://www.terraform.io/docs/language/data-sources/index.html
-- **Modules**: https://www.terraform.io/docs/language/modules/develop/index.html
+These patterns work with any provider. For provider-specific examples, see the explorer skills:
+- AWS: `opentofu-aws-explorer`
+- Keycloak: `opentofu-keycloak-explorer`
+- Kubernetes: `opentofu-kubernetes-explorer`
+- Neon: `opentofu-neon-explorer`
 
-## Examples
-
-### Complete Web Application Stack
+### for_each (Map-Based Multiple Resources)
 
 ```hcl
-# main.tf
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.0"
-    }
+variable "buckets" {
+  type = map(object({
+    acl           = string
+    force_destroy = bool
+  }))
+  default = {
+    logs = { acl = "private", force_destroy = false }
+    data = { acl = "private", force_destroy = true }
+    www  = { acl = "public-read", force_destroy = false }
   }
 }
 
-# Provider configuration
-provider "aws" {
-  region = var.aws_region
+resource "aws_s3_bucket" "this" {
+  for_each     = var.buckets
+  bucket       = "${var.project_name}-${each.key}"
+  force_destroy = each.value.force_destroy
+}
+```
+
+### for_each with toset
+
+```hcl
+variable "environments" {
+  type    = set(string)
+  default = ["dev", "staging", "prod"]
 }
 
-# VPC
-resource "aws_vpc" "main" {
-  cidr_block           = var.vpc_cidr
-  enable_dns_hostnames = true
-  enable_dns_support   = true
+resource "aws_s3_bucket" "env" {
+  for_each = var.environments
+  bucket   = "${var.project_name}-${each.value}-state"
+}
+```
 
-  tags = {
-    Name = "${var.project_name}-vpc"
-  }
+### dynamic Blocks
+
+```hcl
+variable "ingress_rules" {
+  type = list(object({
+    port        = number
+    protocol    = string
+    cidr_blocks = list(string)
+    description = string
+  }))
+  default = [
+    { port = 80, protocol = "tcp", cidr_blocks = ["0.0.0.0/0"], description = "HTTP" },
+    { port = 443, protocol = "tcp", cidr_blocks = ["0.0.0.0/0"], description = "HTTPS" },
+  ]
 }
 
-# Internet Gateway
-resource "aws_internet_gateway" "main" {
-  vpc_id = aws_vpc.main.id
-
-  tags = {
-    Name = "${var.project_name}-igw"
-  }
-}
-
-# Public Subnet
-resource "aws_subnet" "public" {
-  vpc_id                  = aws_vpc.main.id
-  cidr_block              = var.public_subnet_cidr
-  map_public_ip_on_launch = true
-  availability_zone       = var.availability_zone
-
-  tags = {
-    Name = "${var.project_name}-public-subnet"
-  }
-}
-
-# Route Table
-resource "aws_route_table" "public" {
-  vpc_id = aws_vpc.main.id
-
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.main.id
-  }
-
-  tags = {
-    Name = "${var.project_name}-public-rt"
-  }
-}
-
-# Route Table Association
-resource "aws_route_table_association" "public" {
-  subnet_id      = aws_subnet.public.id
-  route_table_id = aws_route_table.public.id
-}
-
-# Security Group
 resource "aws_security_group" "web" {
-  name        = "${var.project_name}-web-sg"
-  description = "Allow HTTP/HTTPS inbound"
-  vpc_id      = aws_vpc.main.id
+  name = "${var.project_name}-web-sg"
+  vpc_id = var.vpc_id
 
-  ingress {
-    description = "HTTP from anywhere"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    description = "HTTPS from anywhere"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+  dynamic "ingress" {
+    for_each = var.ingress_rules
+    content {
+      from_port   = ingress.value.port
+      to_port     = ingress.value.port
+      protocol    = ingress.value.protocol
+      cidr_blocks = ingress.value.cidr_blocks
+      description = ingress.value.description
+    }
   }
 
   egress {
@@ -599,110 +571,116 @@ resource "aws_security_group" "web" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-
-  tags = {
-    Name = "${var.project_name}-web-sg"
-  }
-}
-
-# EC2 Instance
-resource "aws_instance" "web_server" {
-  ami           = data.aws_ami.amazon_linux_2.id
-  instance_type = var.instance_type
-  subnet_id     = aws_subnet.public.id
-
-  vpc_security_group_ids = [aws_security_group.web.id]
-
-  tags = {
-    Name        = "${var.project_name}-web-server"
-    Environment = var.environment
-  }
-
-  user_data = <<-EOF
-              #!/bin/bash
-              yum update -y
-              yum install -y httpd
-              systemctl start httpd
-              systemctl enable httpd
-              echo "<h1>Hello from ${var.project_name}!</h1>" > /var/www/html/index.html
-              EOF
-}
-
-# Data Source for AMI
-data "aws_ami" "amazon_linux_2" {
-  most_recent = true
-  owners      = ["amazon"]
-
-  filter {
-    name   = "name"
-    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
-  }
-}
-
-# variables.tf
-variable "aws_region" {
-  description = "AWS region"
-  type        = string
-  default     = "us-east-1"
-}
-
-variable "vpc_cidr" {
-  description = "CIDR block for VPC"
-  type        = string
-  default     = "10.0.0.0/16"
-}
-
-variable "public_subnet_cidr" {
-  description = "CIDR block for public subnet"
-  type        = string
-  default     = "10.0.1.0/24"
-}
-
-variable "availability_zone" {
-  description = "Availability zone"
-  type        = string
-  default     = "us-east-1a"
-}
-
-variable "instance_type" {
-  description = "EC2 instance type"
-  type        = string
-  default     = "t2.micro"
-}
-
-variable "project_name" {
-  description = "Project name"
-  type        = string
-}
-
-variable "environment" {
-  description = "Environment"
-  type        = string
-}
-
-# outputs.tf
-output "vpc_id" {
-  description = "VPC ID"
-  value       = aws_vpc.main.id
-}
-
-output "public_subnet_id" {
-  description = "Public subnet ID"
-  value       = aws_subnet.public.id
-}
-
-output "instance_public_ip" {
-  description = "Web server public IP"
-  value       = aws_instance.web_server.public_ip
-}
-
-output "instance_public_dns" {
-  description = "Web server public DNS"
-  value       = aws_instance.web_server.public_dns
 }
 ```
 
-### Workflow Commands
+### import Block (Bring Existing Resources Under Management)
+
+```hcl
+import {
+  to = aws_instance.web_server
+  id = "i-0123456789abcdef0"
+}
+
+import {
+  to = aws_s3_bucket.logs
+  id = "my-existing-logs-bucket"
+}
+
+resource "aws_instance" "web_server" {
+  ami           = "ami-0c55b159cbfafe1f0"
+  instance_type = "t3.micro"
+}
+
+resource "aws_s3_bucket" "logs" {
+  bucket = "my-existing-logs-bucket"
+}
+```
+
+### moved Block (Safe Resource Renaming)
+
+```hcl
+moved {
+  from = aws_instance.web
+  to   = aws_instance.web_server
+}
+
+moved {
+  from = aws_s3_bucket.old_name
+  to   = aws_s3_bucket.new_name
+}
+```
+
+### removed Block (Remove from State Without Destroying)
+
+```hcl
+removed {
+  from = aws_instance.deprecated_server
+
+  lifecycle {
+    destroy = false
+  }
+}
+
+removed {
+  from = aws_s3_bucket.archived_data
+
+  lifecycle {
+    destroy = false
+  }
+}
+```
+
+### Provider-Agnostic Module Pattern
+
+```hcl
+# modules/compute/main.tf
+resource "aws_instance" "this" {
+  count         = var.instance_count
+  ami           = var.ami_id
+  instance_type = var.instance_type
+
+  tags = merge(var.tags, {
+    Name = "${var.name}-${count.index + 1}"
+  })
+}
+
+# modules/compute/variables.tf
+variable "instance_count" { type = number }
+variable "ami_id" { type = string }
+variable "instance_type" { type = string }
+variable "name" { type = string }
+variable "tags" { type = map(string); default = {} }
+
+# modules/compute/outputs.tf
+output "instance_ids" {
+  value = aws_instance.this[*].id
+}
+
+# Usage in main config
+module "app_servers" {
+  source        = "./modules/compute"
+  instance_count = 3
+  ami_id        = data.aws_ami.latest.id
+  instance_type = var.instance_type
+  name          = "${var.project_name}-app"
+  tags          = var.common_tags
+}
+```
+
+## Reference Documentation
+
+- **OpenTofu Documentation**: https://opentofu.org/docs/
+- **Terraform Language**: https://www.terraform.io/docs/language/
+- **Terraform State**: https://www.terraform.io/docs/language/state/
+- **Resource Lifecycle**: https://www.terraform.io/docs/language/meta-arguments/lifecycle.html
+- **Data Sources**: https://www.terraform.io/docs/language/data-sources/index.html
+- **Modules**: https://www.terraform.io/docs/language/modules/develop/index.html
+- **import Block**: https://developer.hashicorp.com/terraform/language/import
+- **moved Block**: https://developer.hashicorp.com/terraform/language/modules/develop/refactoring
+- **removed Block**: https://developer.hashicorp.com/terraform/language/modules/develop/refactoring
+
+## Workflow Commands
 
 ```bash
 # Complete provisioning workflow
@@ -733,14 +711,14 @@ tofu destroy
 - **Tag resources**: For cost tracking and organization
 - **Use data sources**: Reference existing infrastructure
 - **Import existing resources**: Bring existing resources under management
+- **Use moved/removed blocks**: Safe refactoring without state manipulation
 - **State isolation**: Use separate state files for different environments
 - **Version control**: Store configuration in Git (but not state files!)
 
 ## Next Steps
 
 After mastering provisioning workflows, explore:
+- Provider-specific skills: `opentofu-aws-explorer`, `opentofu-kubernetes-explorer`, etc.
 - **Terraform Modules**: Create reusable infrastructure components
-- **Terraform Workspaces**: Manage multiple environments
 - **CI/CD Integration**: Automate infrastructure provisioning
-- **Terraform Cloud/Enterprise**: Enterprise-grade state management
 - **Infrastructure Testing**: Use tools like terratest for testing

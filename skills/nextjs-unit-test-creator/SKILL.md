@@ -238,16 +238,6 @@ Wait for user response:
 - **n**: Ask for modifications or cancel
 - **suggest**: Ask user to add/remove scenarios
 
-Wait for user response:
-- **y**: Proceed to create test files
-- **n**: Ask for modifications or cancel
-- **suggest**: Ask user to add/remove scenarios
-
-Wait for user response:
-- **y**: Proceed to create test files
-- **n**: Ask for modifications or cancel
-- **suggest**: Ask user to add/remove scenarios
-
 ### Step 5: Delegate to Test Generator Framework
 
 **Note**: Core test generation workflow is provided by `test-generator-framework`. This skill focuses only on Next.js-specific aspects.
@@ -863,99 +853,6 @@ test.describe('File Upload', () => {
   })
 })
 ```
-
-### Step 6: Verify Executability
-- Ensure tests can be run with the appropriate command:
-  ```bash
-  # Run all tests
-  npm run test
-
-  # Run specific test file
-  npm run test <fileName>.test.tsx
-
-  # Run tests in watch mode
-  npm run test:watch
-
-  # Run tests with coverage
-  npm run test:coverage
-
-  # Run tests for specific pattern
-  npm run test -- <pattern>
-  ```
-- Verify no import errors or syntax issues
-- Check that all tests are discoverable
-
-### Step 7: Display Summary
-```
-✅ Test files created successfully!
-
-**Test Files Created:**
-- <ComponentName>.test.tsx (<number> tests)
-- <functionName>.test.ts (<number> tests)
-
-**Total Tests Generated:** <number>
-**Test Framework:** <Jest | Vitest>
-
-**Test Categories:**
-- Rendering tests: <number>
-- User interaction tests: <number>
-- Edge case tests: <number>
-- Accessibility tests: <number>
-- State management tests: <number>
-
-**To run tests:**
-```bash
-# Run all tests
-npm run test
-
-# Run specific test file
-npm run test <fileName>.test.tsx
-
-# Run tests in watch mode
-npm run test:watch
-
-# Run with coverage
-npm run test:coverage
-```
-
-**Next Steps:**
-1. Review generated test files
-2. Update test data and expected values
-3. Run tests to verify they pass
-4. Update coverage badge in README.md using `coverage-readme-workflow`
-5. Add any missing scenarios
-6. Update snapshot tests if needed
-```
-
-## Scenario Generation Rules
-
-### Component Tests
-- **Rendering**: Component renders without errors
-- **Props Display**: Verify props are correctly rendered
-- **User Interactions**: Click events, form submissions, keyboard events
-- **State Management**: State updates correctly after actions
-- **Conditional Rendering**: Elements show/hide based on props/state
-- **Accessibility**: ARIA labels, roles, keyboard navigation
-- **Loading States**: Display during async operations
-- **Empty States**: Display when no data available
-- **Error States**: Display error messages appropriately
-- **Snapshots**: Ensure UI structure consistency
-
-### Utility Function Tests
-- **Happy Path**: Valid inputs return expected outputs
-- **Edge Cases**: Empty strings, null, undefined, zero, negative values
-- **Error Handling**: Invalid types, out of range values
-- **Type Checking**: TypeScript type correctness
-- **Performance**: Large inputs handled efficiently
-- **Async Handling**: Promises resolve/reject correctly
-
-### Custom Hook Tests
-- **Initial State**: Returns correct default values
-- **State Updates**: State changes after actions
-- **Side Effects**: useEffect runs with proper dependencies
-- **Cleanup**: Cleanup functions execute correctly
-- **Multiple Instances**: Multiple hook calls work independently
-- **Dependency Changes**: Responds to prop changes
 
 ## Examples
 

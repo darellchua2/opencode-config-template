@@ -146,7 +146,7 @@ This repository implements **skill modularization** with 51 skills organized acr
 
 ### Agents
 
-30 agents provide specialized task handling (3 primary + 27 subagents):
+30 agents provide specialized task handling (4 primary + 26 subagents):
 
 #### Primary Agents
 
@@ -155,18 +155,19 @@ This repository implements **skill modularization** with 51 skills organized acr
 | **build** | Default agent for general tasks | Full access to all tools and subagents |
 | **plan** | Read-only planning and analysis | `task`, `read`, `glob`, `grep` only (no write/execute) |
 | **startup-founder-primary-agent** | Business docs - reports, quotations, spreadsheets, presentations | Full access (`read`, `edit`, `bash`, `webfetch`, `task`) |
+| **business-development-primary-agent** | Business development and strategy | Full access (`read`, `edit`, `bash`, `webfetch`, `task`) |
 
 #### Subagents
 
 | Subagent | Purpose | Skills |
 |----------|---------|--------|
-| **linting-subagent** | Code quality and style | linting-workflow, python-ruff-linter, javascript-eslint-linter |
+| **linting-subagent** | Code quality and style (Python, JS/TS, Java Spring Boot, C# .NET) | linting-workflow, python-ruff-linter, javascript-eslint-linter |
 | **testing-subagent** | Test generation and execution | test-generator-framework, python-pytest-creator, nextjs-unit-test-creator |
 | **tdd-subagent** | Test-driven development workflow | tdd-workflow, test-generator-framework |
 | **pr-workflow-subagent** | Pull request creation | pr-creation-workflow, nextjs-pr-workflow, git-pr-creator |
 | **ticket-creation-subagent** | Issue/ticket creation | git-issue-plan-workflow, jira-ticket-plan-workflow |
 | **documentation-subagent** | Documentation generation | docstring-generator, coverage-readme-workflow |
-| **coverage-subagent** | Coverage reporting | coverage-framework, coverage-readme-workflow |
+| **coverage-subagent** | Coverage reporting | coverage-readme-workflow |
 | **opentofu-explorer-subagent** | Infrastructure as code | 7 OpenTofu skills (AWS, K8s, Keycloak, Neon, ECR) |
 | **code-quality-subagent** | SOLID, clean code, code smells | solid-principles, clean-code, code-smells |
 | **architecture-review-subagent** | Architecture and design patterns | clean-architecture, design-patterns, complexity-management |
@@ -174,9 +175,9 @@ This repository implements **skill modularization** with 51 skills organized acr
 | **refactoring-subagent** | Code refactoring | solid-principles, code-smells, clean-code |
 | **error-resolver-subagent** | Error diagnosis and resolution | error-resolver-workflow |
 | **nextjs-setup-subagent** | Next.js project setup | nextjs-standard-setup (also see docstring-generator for TSDoc) |
-| **opencode-tooling-subagent** | Skills and agents creation | opencode-skill-creation, opencode-agent-creation |
+| **opencode-tooling-subagent** | Skills, agents, and rules creation + doc sync | opencode-skill-creation, opencode-agent-creation, opencode-skills-maintainer, documentation-sync-workflow |
 | **docx-creation-subagent** | Word document creation | docx-creation |
-| **diagram-subagent** | ASCII diagrams and images | ascii-diagram-creator |
+| **diagram-subagent** | ASCII diagrams and images | ascii-diagram-creator, mermaid-diagram-creator |
 | **mermaid-diagram-subagent** | Mermaid diagrams with PNG conversion | mermaid-diagram-creator |
 | **image-analyzer** | Image analysis and conversion | (built-in capabilities) |
 | **google-mcp-specialist-subagent** | Google Cloud MCP setup and usage | google-bigquery, google-maps, google-gce, google-gke |
@@ -184,6 +185,8 @@ This repository implements **skill modularization** with 51 skills organized acr
 | **civil-3d-specialist-subagent** | Autodesk Civil 3D model modifications and features | (documentation search + version-specific guidance) |
 | **microsoft-m365-specialist-subagent** | Microsoft 365 MCP setup and usage | microsoft-teams, microsoft-mail, microsoft-calendar, microsoft-sharepoint |
 | **open3d-specialist** | Open3D 3D data processing guidance | (documentation search + version-specific guidance) |
+| **explorer-subagent** | Fast codebase exploration and analysis | (built-in search capabilities) |
+| **nextjs-mcp-advisor-subagent** | Next.js runtime guidance with MCP | nextjs-pr-workflow, nextjs-unit-test-creator |
 
 #### Trigger Phrases
 

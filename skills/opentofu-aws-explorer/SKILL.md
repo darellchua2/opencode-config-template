@@ -41,6 +41,8 @@ Use this skill when you need to:
 - **AWS Credentials**: Access keys or IAM role for authentication
 - **Basic AWS Knowledge**: Understanding of AWS services and concepts
 
+**Provider Setup**: Complete the `opentofu-provider-setup` skill first for provider authentication and state backend configuration. This skill focuses on AWS resource management, not provider setup.
+
 ## Provider Documentation
 
 - **Terraform Registry (AWS Provider)**: https://registry.terraform.io/providers/hashicorp/aws/latest/docs
@@ -583,7 +585,7 @@ resource "aws_db_instance" "main" {
   engine_version          = "8.0"
   instance_class         = "db.t3.micro"
   allocated_storage      = 20
-  storage_type          = "gp2"
+  storage_type          = "gp3"
   storage_encrypted     = true
 
   db_name  = var.db_name
@@ -824,7 +826,7 @@ variable "ssh_key_name" {
 variable "ssh_allowed_cidr" {
   description = "CIDR block allowed for SSH access"
   type        = string
-  default     = "0.0.0.0/0"
+  default     = "10.0.0.0/8"
 }
 
 variable "db_name" {

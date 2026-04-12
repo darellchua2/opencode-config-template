@@ -76,12 +76,16 @@ Use `linting-workflow` framework for:
 |------------|-------------|-----------|
 | F401 | Unused imports | Remove or use import |
 | F841 | Unused variables | Remove or use variable |
-| E501 | Line too long (>88) | Break into multiple lines |
-| E722 | Missing docstring | Add function docstring |
+| E501 | Line too long (>default 88) | Break into multiple lines |
+| E722 | Do not use bare except | Use specific exception types |
 | W291 | Trailing whitespace | Remove trailing spaces |
-| E731 | Class name should use CapWords | Rename class |
-| F821 | Redefined variable | Rename variable |
-| E231 | Unexpected indentation | Fix indentation level |
+| E731 | Do not assign a lambda expression | Use def instead of lambda assignment |
+| F821 | Undefined name | Define the name or add missing import |
+| E231 | Whitespace after ':' | Fix whitespace around punctuation |
+| I001 | Import block is unsorted | Run ruff check --select I001 --fix |
+| S101 | Use of assert detected | Use pytest.raises or remove assert |
+| N801 | Class name should use CapWords | Rename class to CapWords convention |
+| SIM | Code can be simplified | Apply suggested simplification |
 
 **Error Resolution Template**:
 ```

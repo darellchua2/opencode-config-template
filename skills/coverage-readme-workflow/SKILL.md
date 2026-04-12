@@ -243,9 +243,9 @@ fi
 
 ```bash
 # Add detailed coverage section to README
+# NOTE: Use unquoted heredoc (EOF not 'EOF') so variables expand
 if ! grep -q "## Test Coverage" README.md; then
-  # Find insertion point (after Badges or Description section)
-  cat >> README.md << 'EOF'
+  cat >> README.md <<EOF
 
 ## Test Coverage
 
@@ -261,9 +261,9 @@ if ! grep -q "## Test Coverage" README.md; then
 **Total Coverage:** ${COVERAGE_PERCENT}%
 
 To run tests with coverage:
-```bash
+\`\`\`bash
 ${COVERAGE_CMD}
-```
+\`\`\`
 
 EOF
 fi

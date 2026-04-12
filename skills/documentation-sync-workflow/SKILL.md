@@ -33,20 +33,12 @@ Use this workflow when:
 
 ## Files Requiring Updates
 
-### 1. setup.sh (Lines 503-558)
+### 1. setup.sh
 
-**AGENTS Section (Lines 503-509)**:
-```bash
-  AGENTS (5):
-    build (default)      Full-featured coding agent with all tools
-    plan                 Planning agent (read-only, edits need approval)
-    explore              Fast codebase exploration and analysis
-    image-analyzer       Images/screenshots → code, OCR, error diagnosis
-    diagram-creator      Diagrams (architecture, flowcharts, UML)
-```
+**AGENTS Section**: Search for `AGENTS (` to find the agent listing.
 Update when: Adding a new primary agent
 
-**SKILLS Section (Lines 523-556)**:
+**SKILLS Section**: Search for `SKILLS (` to find the skill listing.
 ```bash
    SKILLS (49):
      Framework (7):        test-generator-framework, linting-workflow,
@@ -56,19 +48,14 @@ Update when: Adding a new primary agent
 ```
 Update when: Adding a new skill - increment count and add to appropriate category
 
-### 2. setup.ps1 (Lines 304-337)
+### 2. setup.ps1
 
-**SKILLS Section (Lines 304-337)**:
-```powershell
-  SKILLS (49):
-    Framework (7):        test-generator-framework, linting-workflow,
-                          ...
-```
+**SKILLS Section**: Search for `SKILLS (` (mirrors setup.sh).
 Update when: Adding a new skill - same changes as setup.sh
 
-### 3. README.md (Lines 132-177)
+### 3. README.md
 
-**Skill Categories Table (Lines 132-142)**:
+**Skill Categories Table**: Search for `| Category | Skills |` to locate.
 ```markdown
 | Category | Skills | Purpose |
 |-----------|---------|---------|
@@ -77,12 +64,7 @@ Update when: Adding a new skill - same changes as setup.sh
 ```
 Update when: Adding a new skill - add to or update appropriate category row
 
-**Subagents Table (Lines 157-176)**:
-```markdown
-| Subagent | Purpose | Skills |
-|----------|---------|--------|
-| **documentation-subagent** | Documentation generation | docstring-generator, coverage-readme-workflow |
-```
+**Subagents Table**: Search for `| Subagent | Purpose |` to locate.
 Update when: Adding a new subagent - add row with purpose and associated skills
 
 ### 4. AGENTS.md
@@ -96,7 +78,8 @@ Add workflow guidance section when creating new documentation patterns.
 # Count total skills
 ls -d skills/*/ | wc -l
 
-# Expected: 50 (after adding documentation-sync-workflow)
+# Compare with what's documented in setup.sh
+grep "SKILLS (" setup.sh
 ```
 
 ### Count Subagents
@@ -104,7 +87,8 @@ ls -d skills/*/ | wc -l
 # Count subagents
 ls agents/*.md | wc -l
 
-# Expected: 24 (after adding documentation-sync-subagent)
+# Compare with README.md subagents table
+grep -c "| \*\*" README.md
 ```
 
 ### Verify Counts Match in Files
@@ -142,27 +126,27 @@ ls agents/*.md
 
 ### Step 2: Update setup.sh
 
-1. Find the appropriate category section (lines 524-556)
+1. Search for the appropriate category section (grep for `SKILLS (`)
 2. Increment category count: `(7)` → `(8)`
 3. Add skill name to the list
-4. Update total count on line 523: `SKILLS (49)` → `SKILLS (50)`
+4. Update total count: `SKILLS (49)` → `SKILLS (50)`
 
 ### Step 3: Update setup.ps1
 
-1. Apply identical changes to setup.ps1 (lines 304-337)
+1. Apply identical changes to setup.ps1 (search for `SKILLS (`)
 2. Maintain exact same formatting and counts as setup.sh
 
 ### Step 4: Update README.md
 
-1. Update Skill Categories table (lines 132-142):
+1. Search for the Skill Categories table (grep for `| Category | Skills |`):
    - Update category count
    - Add skill name to list
    - Ensure Purpose column remains accurate
 
-2. If adding a subagent, update Subagents table (lines 157-176):
+2. If adding a subagent, search for the Subagents table (grep for `| Subagent | Purpose |`):
    - Add new row with subagent name, purpose, and associated skills
 
-3. Update total skill count in the intro paragraph (line 128)
+3. Search for the total skill count in the intro paragraph and update it
 
 ### Step 5: Update AGENTS.md (if needed)
 
@@ -186,21 +170,21 @@ Run validation commands to ensure all counts match.
 | JIRA | 4 | JIRA integration workflows |
 | Code Quality | 7 | Code quality analysis and patterns |
 
-**Total: 49 skills** (before this skill's addition)
+**Total: Verify with `ls -d skills/*/ | wc -l`**
 
 ## Checklist for Adding a New Skill
 
 - [ ] Create skill directory: `skills/<skill-name>/SKILL.md`
 - [ ] Update setup.sh:
-  - [ ] Increment total skill count (line 523)
+  - [ ] Increment total skill count (search for `SKILLS (`)
   - [ ] Add skill to appropriate category
   - [ ] Increment category count
 - [ ] Update setup.ps1:
-  - [ ] Increment total skill count (line 304)
+  - [ ] Increment total skill count (search for `SKILLS (`)
   - [ ] Add skill to appropriate category
   - [ ] Increment category count
 - [ ] Update README.md:
-  - [ ] Update Skill Categories table
+  - [ ] Update Skill Categories table (search for `| Category | Skills |`)
   - [ ] Update total count in intro paragraph
 - [ ] Run validation commands to verify counts match
 
