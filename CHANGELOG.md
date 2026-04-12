@@ -1,3 +1,10 @@
+# [1.40.0](https://github.com/darellchua2/opencode-config-template/compare/v1.39.1...v1.40.0) (2026-04-12)
+
+
+### Features
+
+* add backup retention cleanup, unit tests, and 4 agent optimization skills ([#150](https://github.com/darellchua2/opencode-config-template/issues/150)) ([#151](https://github.com/darellchua2/opencode-config-template/issues/151)) ([fb153b0](https://github.com/darellchua2/opencode-config-template/commit/fb153b0a8978ab143091d29412c73f9777e0aa08))
+
 ## [1.39.1](https://github.com/darellchua2/opencode-config-template/compare/v1.39.0...v1.39.1) (2026-04-10)
 
 
