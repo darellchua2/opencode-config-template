@@ -1,3 +1,10 @@
+## [1.40.1](https://github.com/darellchua2/opencode-config-template/compare/v1.40.0...v1.40.1) (2026-04-12)
+
+
+### Bug Fixes
+
+* comprehensive quality review and enhancement of skills and agents ([#154](https://github.com/darellchua2/opencode-config-template/issues/154)) ([ccd2850](https://github.com/darellchua2/opencode-config-template/commit/ccd2850d5073082065a003753055a6d690cb9796))
+
 # [1.40.0](https://github.com/darellchua2/opencode-config-template/compare/v1.39.1...v1.40.0) (2026-04-12)
 
 
