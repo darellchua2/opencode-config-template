@@ -14,7 +14,6 @@ permission:
     semantic-release-convention: allow
     pr-creation-workflow: allow
     nextjs-pr-workflow: allow
-    git-pr-creator: allow
     jira-status-updater: allow
     plan-updater: allow
     changelog-python-cliff: allow
@@ -36,9 +35,8 @@ Invoke this subagent when the user uses phrases like:
 Common target branch patterns: main, master, develop, dev, staging, production
 
 PR Workflows by Framework:
-- pr-creation-workflow: Generic PR creation with configurable quality checks
+- pr-creation-workflow: Generic PR creation with configurable quality checks and JIRA image handling
 - nextjs-pr-workflow: Complete Next.js PR workflow with lint/build/test and coverage badges
-- git-pr-creator: Create PRs with optional JIRA integration
 
 Framework-Specific Quality Checks:
  Next.js:
@@ -78,7 +76,7 @@ Workflow:
 4. Update branch-specific PLAN.md (invoke plan-updater skill)
 5. Create PR using appropriate workflow:
    - Next.js: Use nextjs-pr-workflow
-   - Generic: Use pr-creation-workflow with git-pr-creator
+   - Generic: Use pr-creation-workflow
 6. Update JIRA ticket with PR link (if applicable)
 7. Coordinate with linting/testing/coverage subagents as needed
 

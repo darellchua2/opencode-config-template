@@ -1,6 +1,6 @@
 ---
 name: pr-creation-workflow
-description: Framework for creating PRs with automatic framework/language detection, configurable quality checks, multi-platform integration, semantic versioning labels (major/minor/patch), and JIRA/git issue tracking
+description: Framework for creating PRs with automatic framework/language detection, configurable quality checks, multi-platform integration, semantic versioning labels (major/minor/patch), JIRA image attachments, and JIRA/git issue tracking
 license: Apache-2.0
 compatibility: opencode
 metadata:
@@ -17,7 +17,8 @@ I provide a generic PR creation workflow:
 - Run quality checks (linting, build, test, type check) appropriate for detected framework
 - Detect tracking (JIRA tickets or git issues)
 - Create PR with comprehensive description linked to tracking
-- Handle images (upload local, embed URLs)
+- Handle images (upload local to JIRA, embed URLs)
+- Post JIRA comments with PR details and image attachments
 - Merge confirmation with JIRA status update
 
 ## When to use me
@@ -407,10 +408,84 @@ IMAGES=$(find diagrams /tmp . -maxdepth 2 \
   -mmin -60 2>/dev/null)
 ```
 
+**Categorization**:
+```bash
+if [[ "$image_path" =~ ^https?:// ]]; then
+  if curl -s -o /dev/null -w "%{http_code}" "$image_path" | grep -q "200"; then
+    TYPE="accessible_url"
+  else
+    TYPE="inaccessible_url"
+  fi
+else
+  if [[ -f "$image_path" ]]; then
+    TYPE="local_file"
+  else
+    TYPE="not_found"
+  fi
+fi
+```
+
 **Handling**:
-- Public URL: Embed directly in PR
-- Local file: Upload to external host or JIRA
-- Temp file: Warn user it's temporary
+- **accessible_url**: Embed directly in PR description and JIRA comment
+- **inaccessible_url**: Download and upload as JIRA attachment (if JIRA is used)
+- **local_file**: Upload to JIRA as attachment (if JIRA is used), or commit to repo
+- **not_found**: Warn user and skip
+
+**JIRA Image Attachments** (when JIRA tracking is detected):
+
+For local/temporary images that need to be shared on JIRA:
+
+1. **Upload the image to JIRA**:
+   ```bash
+   atlassian_addAttachmentToJiraIssue \
+     --cloudId "$CLOUD_ID" \
+     --issueIdOrKey "$TICKET_KEY" \
+     --attachment "$image_path"
+   ```
+
+2. **Get the attachment URL** from the response (hosted on JIRA)
+
+3. **Embed in JIRA comment** using the attachment URL:
+   ```markdown
+   ![Diagram](https://company.atlassian.net/secure/attachment/12345/workflow-diagram.png)
+   ```
+
+> **Note**: For comprehensive JIRA image handling (download-and-retry for inaccessible URLs, batch uploads), refer to the `jira-git-integration` skill.
+
+### Step 6.5: Create JIRA Comment (if JIRA is used)
+
+Create a comprehensive comment on the JIRA ticket with PR details:
+
+**Comment Template**:
+```markdown
+## Pull Request Created
+
+**PR**: #<PR_NUMBER> - <PR_TITLE>
+**URL**: <PR_URL>
+**Branch**: <branch-name>
+
+### Changes Summary
+<Brief description of what was implemented>
+
+### Files Modified
+<list of key files changed>
+
+### Diagrams/Visuals
+<embed uploaded images using JIRA attachment URLs>
+
+### Testing Performed
+<test coverage and results>
+
+### Review Request
+@reviewer1 @reviewer2
+```
+
+```bash
+atlassian_addCommentToJiraIssue \
+  --cloudId "$CLOUD_ID" \
+  --issueIdOrKey "$TICKET_KEY" \
+  --commentBody "$COMMENT"
+```
 
 ### Step 7: Merge and Update JIRA
 
@@ -545,7 +620,6 @@ gh pr create --title "feat: add user auth" --add-label "minor"
 ## Relevant Skills
 
 **Skills using this framework**:
-- `git-pr-creator` - PR creation with JIRA integration
 - `nextjs-pr-workflow` - Next.js-specific extension (example of framework-specific extension)
 
 **Framework-specific extensions** (can be created for other frameworks):
@@ -557,6 +631,6 @@ gh pr create --title "feat: add user auth" --add-label "minor"
 - `git-semantic-commits` - Semantic commit formatting
 - `git-issue-updater` - Issue progress updates
 - `jira-status-updater` - JIRA status transitions
-- `jira-git-integration` - JIRA operations
+- `jira-git-integration` - JIRA operations (image handling, API utilities)
 - `linting-workflow` - Quality checks
-- `git-issue-plan-workflow` - Initial setup (branch, PLAN.md)
+- `ticket-plan-workflow` - Initial setup (branch, PLAN.md)

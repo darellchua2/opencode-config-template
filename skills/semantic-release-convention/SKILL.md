@@ -1,6 +1,6 @@
 ---
 name: semantic-release-convention
-description: Single source of truth for commit to PR to merge to release to CI/CD conventions, governing semantic versioning labels, branch-aware release tagging, changelog generation, and release pipeline standards consumed by 6 skills and 2 agents
+description: Single source of truth for commit to PR to merge to release to CI/CD conventions, governing semantic versioning labels, branch-aware release tagging, changelog generation, and release pipeline standards consumed by 5 skills and 2 agents
 license: Apache-2.0
 compatibility: opencode
 metadata:
@@ -34,8 +34,7 @@ This is a **governance skill** - it defines conventions that other skills and ag
 | Skill | What It Consumes |
 |-------|-----------------|
 | `git-semantic-commits` | Commit type definitions and format rules |
-| `git-pr-creator` | PR title format and label assignment |
-| `pr-creation-workflow` | PR title format, label mapping, merge conventions |
+| `pr-creation-workflow` | PR title format, label mapping, merge conventions, JIRA image handling |
 | `nextjs-pr-workflow` | Inherits via `pr-creation-workflow` |
 | `git-issue-labeler` | Semver label definitions and detection |
 | `changelog-python-cliff` | Changelog category structure from commit types |
