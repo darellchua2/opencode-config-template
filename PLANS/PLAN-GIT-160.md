@@ -9,11 +9,11 @@
 Audit all 12 git-related, PR-related, and JIRA+Git integration skills for potential consolidation. Several skills have overlapping functionality that could be merged to reduce maintenance burden and improve clarity.
 
 ## Acceptance Criteria
-- [ ] Dependency map of all 12 skills is documented
-- [ ] Each overlap identified in the issue is confirmed or debunked with evidence
-- [ ] Consolidation proposal is drafted with before/after skill count
-- [ ] Impact analysis on agents and other consuming skills is completed
-- [ ] Decision is made on which skills to merge, which to keep separate, and which to deprecate
+- [x] Dependency map of all 12 skills is documented
+- [x] Each overlap identified in the issue is confirmed or debunked with evidence
+- [x] Consolidation proposal is drafted with before/after skill count
+- [x] Impact analysis on agents and other consuming skills is completed
+- [x] Decision is made on which skills to merge, which to keep separate, and which to deprecate
 
 ## Scope
 - `skills/git-issue-labeler/`
@@ -223,7 +223,7 @@ nextjs-pr-workflow (framework-specific extension)
 
 ## Phase 5: Validation
 
-- [ ] Verify no skill references point to deprecated skills
+- [x] Verify no skill references point to deprecated skills
 - [ ] Run `setup.sh` to verify deployment still works
 - [ ] Verify all agent routing still functions
 - [ ] Update issue #160 with final consolidation results
