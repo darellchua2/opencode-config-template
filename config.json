@@ -257,6 +257,9 @@
     },
     "explore": {
       "model": "zai-coding-plan/glm-4.7"
+    },
+    "general": {
+      "model": "zai-coding-plan/glm-4.7"
     }
   }
 }
