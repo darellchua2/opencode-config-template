@@ -339,10 +339,11 @@ USAGE:
     Usage: opencode --agent build 'implement auth feature'
            opencode --agent explore 'find all API routes'
 
-      SKILLS (50):
-          Framework (7):        test-generator-framework, linting-workflow,
-                                pr-creation-workflow, error-resolver-workflow,
-                                tdd-workflow, docx-creation, pptx-specialist
+      SKILLS (52):
+          Framework (9):        test-generator-framework, linting-workflow,
+                                 pr-creation-workflow, error-resolver-workflow,
+                                 tdd-workflow, docx-creation, pptx-specialist,
+                                 xlsx-specialist, pdf-specialist
 
          Language-Specific (4): python-pytest-creator-skill, python-ruff-linter-skill,
                                javascript-eslint-linter-skill, changelog-python-cliff-skill
