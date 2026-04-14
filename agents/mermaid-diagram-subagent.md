@@ -184,7 +184,7 @@ PLANS/PLAN-136/
 
 I integrate with existing planning workflows:
 
-- **ticket-plan-workflow**: Diagrams stored in `PLANS/PLAN-[issue-or-ticket-number]/`
+- **ticket-plan-workflow-skill**: Diagrams stored in `PLANS/PLAN-[issue-or-ticket-number]/`
 
 When invoked during planning, I automatically:
 1. Detect the current issue/ticket number from context

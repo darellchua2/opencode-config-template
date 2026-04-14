@@ -12,7 +12,7 @@ permission:
   atlassian*: allow
   skill:
     semantic-release-convention: allow
-    ticket-plan-workflow: allow
+    ticket-plan-workflow-skill: allow
     git-issue-updater: allow
     git-issue-labeler: allow
     git-semantic-commits: allow
@@ -83,7 +83,7 @@ After execution, this subagent provides:
 
 | Skill | Purpose |
 |-------|---------|
-| ticket-plan-workflow | Unified GitHub/JIRA workflow with PLAN.md |
+| ticket-plan-workflow-skill | Unified GitHub/JIRA workflow with PLAN.md |
 | git-issue-labeler | Automatic label assignment (GitHub) |
 | git-issue-updater | Progress updates |
 | git-semantic-commits | Commit message formatting |

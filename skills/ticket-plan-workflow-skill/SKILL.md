@@ -357,7 +357,7 @@ gh issue comment "$ISSUE_NUMBER" --body "## Planning Complete - $(date '+%Y-%m-%
 2. Begin Phase 1: Setup & Analysis
 
 ---
-*Tracking progress with ticket-plan-workflow*"
+*Tracking progress with ticket-plan-workflow-skill*"
 ```
 
 #### JIRA Tickets

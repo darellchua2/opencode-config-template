@@ -2175,7 +2175,7 @@ print_summary() {
         echo "      - opentofu-ecr-provision"
         echo "    - Git/Workflow (5):"
         echo "      - ascii-diagram-creator"
-        echo "      - ticket-plan-workflow"
+        echo "      - ticket-plan-workflow-skill"
         echo "      - git-issue-labeler"
         echo "      - git-issue-updater"
         echo "      - git-semantic-commits"
