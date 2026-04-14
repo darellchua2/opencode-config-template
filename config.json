@@ -254,6 +254,9 @@
           "*": "allow"
         }
       }
+    },
+    "explore": {
+      "model": "zai-coding-plan/glm-4.7"
     }
   }
 }
