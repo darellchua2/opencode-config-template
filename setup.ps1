@@ -330,11 +330,11 @@ USAGE:
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
-    image-analyzer       Images/screenshots -> code, OCR, error diagnosis
+    image-analyzer-subagent  Images/screenshots -> code, OCR, error diagnosis
     diagram-creator      Diagrams (architecture, flowcharts, UML)
     mermaid-diagram-subagent  Mermaid diagrams with PNG conversion
     civil-3d-specialist-subagent  Autodesk Civil 3D model modifications and features
-    open3d-specialist    Open3D 3D data processing guidance
+    open3d-specialist-subagent  Open3D 3D data processing guidance
 
     Usage: opencode --agent build 'implement auth feature'
            opencode --agent explore 'find all API routes'
@@ -344,37 +344,37 @@ USAGE:
                                 pr-creation-workflow, error-resolver-workflow,
                                 tdd-workflow, docx-creation, pptx-specialist
 
-         Language-Specific (4): python-pytest-creator, python-ruff-linter,
-                               javascript-eslint-linter, changelog-python-cliff
+         Language-Specific (4): python-pytest-creator-skill, python-ruff-linter-skill,
+                               javascript-eslint-linter-skill, changelog-python-cliff-skill
 
-        Framework-Specific (5): nextjs-pr-workflow, nextjs-unit-test-creator,
-                              nextjs-standard-setup, nextjs-image-usage,
-                              typescript-dry-principle
+        Framework-Specific (5): nextjs-pr-workflow-skill, nextjs-unit-test-creator-skill,
+                              nextjs-standard-setup-skill, nextjs-image-usage-skill,
+                              typescript-dry-principle-skill
 
-        OpenCode Meta (3):    opencode-agent-creation, opencode-skill-creation,
-                              opencode-skills-maintainer
+        OpenCode Meta (3):    opencode-agent-creation-skill, opencode-skill-creation-skill,
+                              opencode-skills-maintainer-skill
 
-        OpenTofu (7):         opentofu-aws-explorer, opentofu-keycloak-explorer,
-                              opentofu-kubernetes-explorer, opentofu-neon-explorer,
-                              opentofu-provider-setup, opentofu-provisioning-workflow,
-                              opentofu-ecr-provision
+        OpenTofu (7):         opentofu-aws-explorer-skill, opentofu-keycloak-explorer-skill,
+                              opentofu-kubernetes-explorer-skill, opentofu-neon-explorer-skill,
+                              opentofu-provider-setup-skill, opentofu-provisioning-workflow-skill,
+                              opentofu-ecr-provision-skill
 
         Git/Workflow (8):     ascii-diagram-creator, mermaid-diagram-creator,
                               ticket-plan-workflow, git-issue-labeler,
                               git-issue-updater, git-semantic-commits,
                               semantic-release-convention, plan-updater
 
-       Documentation (3):    coverage-readme-workflow, docstring-generator,
-                             documentation-sync-workflow
+       Documentation (3):    coverage-readme-workflow-skill, docstring-generator-skill,
+                             documentation-sync-workflow-skill
 
        JIRA (2):             jira-status-updater, jira-git-integration
 
-       Code Quality (7):     solid-principles, clean-code, clean-architecture,
-                             design-patterns, object-design, code-smells,
-                             complexity-management
+       Code Quality (7):     solid-principles-skill, clean-code-skill, clean-architecture-skill,
+                             design-patterns-skill, object-design-skill, code-smells-skill,
+                             complexity-management-skill
 
-   Agent Optimization (4):  continuous-learning, eval-harness,
-                             strategic-compact, verification-loop
+   Agent Optimization (4):  continuous-learning-skill, eval-harness-skill,
+                             strategic-compact-skill, verification-loop-skill
 
     Run 'opencode --list-skills' for detailed descriptions
     Run 'opencode --skill <name> \"prompt\"' to invoke a skill
@@ -1156,7 +1156,7 @@ function Set-Configuration {
             Write-Host "    - build (default) - Full-featured coding agent"
             Write-Host "    - plan - Planning agent (read-only)"
             Write-Host "    - explore - Codebase exploration and analysis"
-            Write-Host "    - image-analyzer - Image/screenshot analysis"
+            Write-Host "    - image-analyzer-subagent - Image/screenshot analysis"
             Write-Host "    - diagram-creator - Diagram creation"
             Write-Host ""
             Write-Host "Configured 5 MCP servers:" -ForegroundColor Green
@@ -1221,20 +1221,20 @@ function Deploy-Skills {
         Write-Host ""
         Write-Host "  Skill Categories:" -ForegroundColor Cyan
         Write-Host "    Framework (8):"
-        Write-Host "      - test-generator-framework, linting-workflow"
-        Write-Host "      - pr-creation-workflow, jira-git-integration"
-        Write-Host "      - error-resolver-workflow, tdd-workflow"
-        Write-Host "      - docx-creation, coverage-framework"
+        Write-Host "      - test-generator-framework-skill, linting-workflow-skill"
+        Write-Host "      - pr-creation-workflow-skill, jira-git-integration-skill"
+        Write-Host "      - error-resolver-workflow-skill, tdd-workflow-skill"
+        Write-Host "      - docx-creation-skill, coverage-framework"
         Write-Host "    Language-Specific (4):"
-        Write-Host "      - python-pytest-creator, python-ruff-linter"
-        Write-Host "      - javascript-eslint-linter, changelog-python-cliff"
+        Write-Host "      - python-pytest-creator-skill, python-ruff-linter-skill"
+        Write-Host "      - javascript-eslint-linter-skill, changelog-python-cliff-skill"
         Write-Host "    Framework-Specific (5):"
-        Write-Host "      - nextjs-pr-workflow, nextjs-unit-test-creator"
-        Write-Host "      - nextjs-standard-setup, nextjs-image-usage"
-         Write-Host "      - typescript-dry-principle"
+        Write-Host "      - nextjs-pr-workflow-skill, nextjs-unit-test-creator-skill"
+        Write-Host "      - nextjs-standard-setup-skill, nextjs-image-usage-skill"
+         Write-Host "      - typescript-dry-principle-skill"
          Write-Host "    OpenCode Meta (3):"
-         Write-Host "      - opencode-agent-creation, opencode-skill-creation"
-         Write-Host "      - opencode-skills-maintainer"
+         Write-Host "      - opencode-agent-creation-skill, opencode-skill-creation-skill"
+         Write-Host "      - opencode-skills-maintainer-skill"
          Write-Host "    OpenTofu (7):"
          Write-Host "      - opentofu-aws-explorer, opentofu-keycloak-explorer"
         Write-Host "      - opentofu-kubernetes-explorer, opentofu-neon-explorer"
@@ -1249,28 +1249,28 @@ function Deploy-Skills {
         Write-Host "    JIRA (2):"
         Write-Host "      - jira-status-updater, jira-git-integration"
         Write-Host "    Code Quality (7):"
-        Write-Host "      - solid-principles, clean-code, clean-architecture"
-        Write-Host "      - design-patterns, object-design, code-smells"
-        Write-Host "      - complexity-management"
+        Write-Host "      - solid-principles-skill, clean-code-skill, clean-architecture-skill"
+        Write-Host "      - design-patterns-skill, object-design-skill, code-smells-skill"
+        Write-Host "      - complexity-management-skill"
         Write-Host ""
         Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
         Write-Host ""
         Write-Host "  Skill Categories:" -ForegroundColor Cyan
         Write-Host "    Framework (8):"
-        Write-Host "      - test-generator-framework, linting-workflow"
-        Write-Host "      - pr-creation-workflow, jira-git-integration"
-        Write-Host "      - error-resolver-workflow, tdd-workflow"
-        Write-Host "      - coverage-framework, docx-creation"
+        Write-Host "      - test-generator-framework-skill, linting-workflow-skill"
+        Write-Host "      - pr-creation-workflow-skill, jira-git-integration-skill"
+        Write-Host "      - error-resolver-workflow-skill, tdd-workflow-skill"
+        Write-Host "      - coverage-framework, docx-creation-skill"
         Write-Host "    Language-Specific (4):"
-        Write-Host "      - python-pytest-creator, python-ruff-linter"
-        Write-Host "      - javascript-eslint-linter, changelog-python-cliff"
+        Write-Host "      - python-pytest-creator-skill, python-ruff-linter-skill"
+        Write-Host "      - javascript-eslint-linter-skill, changelog-python-cliff-skill"
         Write-Host "    Framework-Specific (5):"
-        Write-Host "      - nextjs-pr-workflow, nextjs-unit-test-creator"
-        Write-Host "      - nextjs-standard-setup, nextjs-image-usage"
-         Write-Host "      - typescript-dry-principle"
+        Write-Host "      - nextjs-pr-workflow-skill, nextjs-unit-test-creator-skill"
+        Write-Host "      - nextjs-standard-setup-skill, nextjs-image-usage-skill"
+         Write-Host "      - typescript-dry-principle-skill"
          Write-Host "    OpenCode Meta (3):"
-         Write-Host "      - opencode-agent-creation, opencode-skill-creation"
-         Write-Host "      - opencode-skills-maintainer"
+         Write-Host "      - opencode-agent-creation-skill, opencode-skill-creation-skill"
+         Write-Host "      - opencode-skills-maintainer-skill"
          Write-Host "    OpenTofu (7):"
          Write-Host "      - opentofu-aws-explorer, opentofu-keycloak-explorer"
         Write-Host "      - opentofu-kubernetes-explorer, opentofu-neon-explorer"
@@ -1285,9 +1285,9 @@ function Deploy-Skills {
         Write-Host "    JIRA (2):"
         Write-Host "      - jira-status-updater, jira-git-integration"
         Write-Host "    Code Quality (7):"
-        Write-Host "      - solid-principles, clean-code, clean-architecture"
-        Write-Host "      - design-patterns, object-design, code-smells"
-        Write-Host "      - complexity-management"
+        Write-Host "      - solid-principles-skill, clean-code-skill, clean-architecture-skill"
+        Write-Host "      - design-patterns-skill, object-design-skill, code-smells-skill"
+        Write-Host "      - complexity-management-skill"
         Write-Host ""
         Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
         Write-Host ""
@@ -1651,7 +1651,7 @@ function Show-NextSteps {
     Write-Host "  - build (default) - Full-featured coding agent"
     Write-Host "  - plan - Planning agent (read-only)"
     Write-Host "  - explore - Fast codebase exploration and analysis"
-    Write-Host "  - image-analyzer - Images/screenshots to code, OCR, error diagnosis"
+    Write-Host "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
     Write-Host "  - diagram-creator - Diagrams (architecture, flowcharts, UML)"
     Write-Host ""
     Write-Host "  Usage: opencode --agent <name> `"prompt`""

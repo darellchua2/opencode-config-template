@@ -501,11 +501,11 @@ USAGE:
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
-    image-analyzer       Images/screenshots → code, OCR, error diagnosis
+    image-analyzer-subagent  Images/screenshots → code, OCR, error diagnosis
     diagram-creator      Diagrams (architecture, flowcharts, UML)
     mermaid-diagram-subagent  Mermaid diagrams with PNG conversion
     civil-3d-specialist-subagent  Autodesk Civil 3D model modifications and features
-    open3d-specialist    Open3D 3D data processing guidance
+    open3d-specialist-subagent  Open3D 3D data processing guidance
 
     Usage: opencode --agent build "implement auth feature"
            opencode --agent explore "find all API routes"
@@ -560,12 +560,12 @@ USAGE:
 
         JIRA (2):             jira-status-updater, jira-git-integration
 
-       Code Quality (7):     solid-principles, clean-code, clean-architecture,
-                             design-patterns, object-design, code-smells,
-                             complexity-management
+       Code Quality (7):     solid-principles-skill, clean-code-skill, clean-architecture-skill,
+                             design-patterns-skill, object-design-skill, code-smells-skill,
+                             complexity-management-skill
 
-   Agent Optimization (4):  continuous-learning, eval-harness,
-                             strategic-compact, verification-loop
+   Agent Optimization (4):  continuous-learning-skill, eval-harness-skill,
+                             strategic-compact-skill, verification-loop-skill
 
     Run 'opencode --list-skills' for detailed descriptions
     Run 'opencode --skill <name> "prompt"' to invoke a skill
@@ -1621,7 +1621,7 @@ setup_config() {
             echo "    - build (default) - Full-featured coding agent"
             echo "    - plan - Planning agent (read-only)"
             echo "    - explore - Codebase exploration and analysis"
-            echo "    - image-analyzer - Image/screenshot analysis"
+            echo "    - image-analyzer-subagent - Image/screenshot analysis"
             echo "    - diagram-creator - Diagram creation"
             echo ""
             echo "✓ Configured 5 MCP servers:"
@@ -1678,29 +1678,29 @@ setup_config() {
         echo ""
         echo "✓ Deployed 44 skills:"
         echo "    - Framework (8):"
-        echo "      - test-generator-framework"
-        echo "      - linting-workflow"
-        echo "      - pr-creation-workflow"
-        echo "      - jira-git-integration"
-        echo "      - error-resolver-workflow"
-        echo "      - tdd-workflow"
+        echo "      - test-generator-framework-skill"
+        echo "      - linting-workflow-skill"
+        echo "      - pr-creation-workflow-skill"
+        echo "      - jira-git-integration-skill"
+        echo "      - error-resolver-workflow-skill"
+        echo "      - tdd-workflow-skill"
         echo "      - coverage-framework"
-        echo "      - docx-creation"
+        echo "      - docx-creation-skill"
         echo "    - Language-Specific (4):"
-        echo "      - python-pytest-creator"
-        echo "      - python-ruff-linter"
-        echo "      - javascript-eslint-linter"
-        echo "      - changelog-python-cliff"
+        echo "      - python-pytest-creator-skill"
+        echo "      - python-ruff-linter-skill"
+        echo "      - javascript-eslint-linter-skill"
+        echo "      - changelog-python-cliff-skill"
         echo "    - Framework-Specific (5):"
-        echo "      - nextjs-pr-workflow"
-        echo "      - nextjs-unit-test-creator"
-        echo "      - nextjs-standard-setup"
-        echo "      - nextjs-image-usage"
-        echo "      - typescript-dry-principle"
+        echo "      - nextjs-pr-workflow-skill"
+        echo "      - nextjs-unit-test-creator-skill"
+        echo "      - nextjs-standard-setup-skill"
+        echo "      - nextjs-image-usage-skill"
+        echo "      - typescript-dry-principle-skill"
         echo "    - OpenCode Meta (3):"
-        echo "      - opencode-agent-creation"
-        echo "      - opencode-skill-creation"
-        echo "      - opencode-skills-maintainer"
+        echo "      - opencode-agent-creation-skill"
+        echo "      - opencode-skill-creation-skill"
+        echo "      - opencode-skills-maintainer-skill"
         echo "    - OpenTofu (7):"
         echo "      - opentofu-aws-explorer"
         echo "      - opentofu-keycloak-explorer"
@@ -1722,13 +1722,13 @@ setup_config() {
         echo "      - jira-status-updater"
         echo "      - jira-git-integration"
         echo "    - Code Quality (7):"
-        echo "      - solid-principles"
-        echo "      - clean-code"
-        echo "      - clean-architecture"
-        echo "      - design-patterns"
-        echo "      - object-design"
-        echo "      - code-smells"
-        echo "      - complexity-management"
+        echo "      - solid-principles-skill"
+        echo "      - clean-code-skill"
+        echo "      - clean-architecture-skill"
+        echo "      - design-patterns-skill"
+        echo "      - object-design-skill"
+        echo "      - code-smells-skill"
+        echo "      - complexity-management-skill"
         echo ""
         echo "  Run 'opencode --list-skills' for detailed descriptions"
         echo ""
@@ -2180,7 +2180,7 @@ print_summary() {
         echo "    - build (default) - Full-featured coding agent"
         echo "    - plan - Planning agent (read-only)"
         echo "    - explore - Codebase exploration and analysis"
-        echo "    - image-analyzer - Image/screenshot analysis"
+        echo "    - image-analyzer-subagent - Image/screenshot analysis"
         echo "    - diagram-creator - Diagram creation"
     fi
 
@@ -2199,29 +2199,29 @@ print_summary() {
         local skill_count=$(find ${SKILLS_DIR} -name "SKILL.md" 2>/dev/null | wc -l)
         echo "✓ skills: ${skill_count} skills deployed to ${SKILLS_DIR}/"
         echo "    - Framework (8):"
-        echo "      - test-generator-framework"
-        echo "      - linting-workflow"
-        echo "      - pr-creation-workflow"
-        echo "      - jira-git-integration"
-        echo "      - error-resolver-workflow"
-        echo "      - tdd-workflow"
+        echo "      - test-generator-framework-skill"
+        echo "      - linting-workflow-skill"
+        echo "      - pr-creation-workflow-skill"
+        echo "      - jira-git-integration-skill"
+        echo "      - error-resolver-workflow-skill"
+        echo "      - tdd-workflow-skill"
         echo "      - coverage-framework"
-        echo "      - docx-creation"
+        echo "      - docx-creation-skill"
         echo "    - Language-Specific (4):"
-        echo "      - python-pytest-creator"
-        echo "      - python-ruff-linter"
-        echo "      - javascript-eslint-linter"
-        echo "      - changelog-python-cliff"
+        echo "      - python-pytest-creator-skill"
+        echo "      - python-ruff-linter-skill"
+        echo "      - javascript-eslint-linter-skill"
+        echo "      - changelog-python-cliff-skill"
         echo "    - Framework-Specific (5):"
-        echo "      - nextjs-pr-workflow"
-        echo "      - nextjs-unit-test-creator"
-        echo "      - nextjs-standard-setup"
-        echo "      - nextjs-image-usage"
-        echo "      - typescript-dry-principle"
+        echo "      - nextjs-pr-workflow-skill"
+        echo "      - nextjs-unit-test-creator-skill"
+        echo "      - nextjs-standard-setup-skill"
+        echo "      - nextjs-image-usage-skill"
+        echo "      - typescript-dry-principle-skill"
         echo "    - OpenCode Meta (3):"
-        echo "      - opencode-agent-creation"
-        echo "      - opencode-skill-creation"
-        echo "      - opencode-skills-maintainer"
+        echo "      - opencode-agent-creation-skill"
+        echo "      - opencode-skill-creation-skill"
+        echo "      - opencode-skills-maintainer-skill"
         echo "    - OpenTofu (7):"
         echo "      - opentofu-aws-explorer"
         echo "      - opentofu-keycloak-explorer"
@@ -2243,13 +2243,13 @@ print_summary() {
         echo "      - jira-status-updater"
         echo "      - jira-git-integration"
         echo "    - Code Quality (7):"
-        echo "      - solid-principles"
-        echo "      - clean-code"
-        echo "      - clean-architecture"
-        echo "      - design-patterns"
-        echo "      - object-design"
-        echo "      - code-smells"
-        echo "      - complexity-management"
+        echo "      - solid-principles-skill"
+        echo "      - clean-code-skill"
+        echo "      - clean-architecture-skill"
+        echo "      - design-patterns-skill"
+        echo "      - object-design-skill"
+        echo "      - code-smells-skill"
+        echo "      - complexity-management-skill"
     else
         echo "✗ skills: Not deployed"
     fi
@@ -2306,7 +2306,7 @@ print_next_steps() {
     echo "  - build (default) - Full-featured coding agent"
     echo "  - plan - Planning agent (read-only)"
     echo "  - explore - Fast codebase exploration and analysis"
-    echo "  - image-analyzer - Images/screenshots to code, OCR, error diagnosis"
+    echo "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
     echo "  - diagram-creator - Diagrams (architecture, flowcharts, UML)"
     echo ""
     echo "  Usage: opencode --agent <name> \"prompt\""

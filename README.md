@@ -179,12 +179,12 @@ This repository implements **skill modularization** with 50 skills organized acr
 | **docx-creation-subagent** | Word document creation | docx-creation |
 | **diagram-subagent** | ASCII diagrams and images | ascii-diagram-creator, mermaid-diagram-creator |
 | **mermaid-diagram-subagent** | Mermaid diagrams with PNG conversion | mermaid-diagram-creator |
-| **image-analyzer** | Image analysis and conversion | (built-in capabilities) |
+| **image-analyzer-subagent** | Image analysis and conversion | (built-in capabilities) |
 | **google-mcp-specialist-subagent** | Google Cloud MCP setup and usage | google-bigquery, google-maps, google-gce, google-gke |
 | **autodesk-specialist-subagent** | Autodesk API integration | autodesk-revit, autodesk-model-data, autodesk-fusion |
 | **civil-3d-specialist-subagent** | Autodesk Civil 3D model modifications and features | (documentation search + version-specific guidance) |
 | **microsoft-m365-specialist-subagent** | Microsoft 365 MCP setup and usage | microsoft-teams, microsoft-mail, microsoft-calendar, microsoft-sharepoint |
-| **open3d-specialist** | Open3D 3D data processing guidance | (documentation search + version-specific guidance) |
+| **open3d-specialist-subagent** | Open3D 3D data processing guidance | (documentation search + version-specific guidance) |
 | **explorer-subagent** | Fast codebase exploration and analysis | (built-in search capabilities) |
 | **nextjs-mcp-advisor-subagent** | Next.js runtime guidance with MCP | nextjs-pr-workflow, nextjs-unit-test-creator |
 | **pptx-specialist-subagent** | PowerPoint presentations (read, create, edit, analyze) | pptx-specialist |
