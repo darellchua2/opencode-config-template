@@ -471,8 +471,7 @@ atlassian_transitionJiraIssue \
 
 **Integration**:
 - Use with `jira-status-updater` skill for complete automation
-- Use with `pr-creation-workflow` for integrated PR + status updates
-- Use with `git-pr-creator` for optional status updates after manual merge
+- Use with `pr-creation-workflow` for integrated PR + status updates + image handling
 
 ## Best Practices
 
@@ -594,8 +593,8 @@ atlassian_getAccessibleAtlassianResources
 ## Relevant Skills
 
 Skills that use this JIRA integration framework:
-- `git-pr-creator`: PR creation with JIRA comments and image uploads
-- `jira-ticket-plan-workflow`: JIRA ticket creation and branch management
+- `pr-creation-workflow`: PR creation with JIRA comments and image uploads
+- `ticket-plan-workflow`: GitHub/JIRA ticket creation and branch management
 - `nextjs-pr-workflow`: Next.js PR workflow with JIRA integration
 - `jira-status-updater`: Automated JIRA ticket status transitions after PR merge
 

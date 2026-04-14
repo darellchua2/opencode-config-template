@@ -382,10 +382,11 @@ mmdc -i diagram.mmd -o diagram.png -w 1920 -H 1080 --scale 2
 
 ## Integration with Planning Workflows
 
-### git-issue-plan-workflow
+### ticket-plan-workflow
 
-When creating plans for GitHub issues, diagrams are stored in `PLANS/PLAN-[issue-number]/`:
+When creating plans for GitHub issues or JIRA tickets, diagrams are stored alongside PLAN files:
 
+**GitHub Issues**:
 ```bash
 # After creating issue plan
 mkdir -p PLANS/PLAN-136
@@ -395,10 +396,7 @@ mmdc -i PLANS/PLAN-136/flow.mmd -o PLANS/PLAN-136/flow.png
 echo "![Flow Diagram](./PLAN-136/flow.png)" >> PLANS/PLAN-GIT-136.md
 ```
 
-### jira-ticket-plan-workflow
-
-For JIRA tickets, use ticket number:
-
+**JIRA Tickets**:
 ```bash
 mkdir -p PLANS/PLAN-PROJ-123
 mmdc -i PLANS/PLAN-PROJ-123/architecture.mmd -o PLANS/PLAN-PROJ-123/architecture.png

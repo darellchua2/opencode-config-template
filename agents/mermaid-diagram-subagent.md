@@ -184,8 +184,7 @@ PLANS/PLAN-136/
 
 I integrate with existing planning workflows:
 
-- **git-issue-plan-workflow**: Diagrams stored in `PLANS/PLAN-[issue-number]/`
-- **jira-ticket-plan-workflow**: Diagrams stored in `PLANS/PLAN-[ticket-number]/`
+- **ticket-plan-workflow**: Diagrams stored in `PLANS/PLAN-[issue-or-ticket-number]/`
 
 When invoked during planning, I automatically:
 1. Detect the current issue/ticket number from context

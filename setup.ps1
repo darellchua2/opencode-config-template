@@ -339,7 +339,7 @@ USAGE:
     Usage: opencode --agent build 'implement auth feature'
            opencode --agent explore 'find all API routes'
 
-      SKILLS (52):
+      SKILLS (50):
           Framework (7):        test-generator-framework, linting-workflow,
                                 pr-creation-workflow, error-resolver-workflow,
                                 tdd-workflow, docx-creation, pptx-specialist
@@ -359,17 +359,15 @@ USAGE:
                               opentofu-provider-setup, opentofu-provisioning-workflow,
                               opentofu-ecr-provision
 
-        Git/Workflow (9):     ascii-diagram-creator, mermaid-diagram-creator,
-                              git-pr-creator, git-issue-labeler,
-                              git-issue-plan-workflow, git-issue-updater,
-                              git-semantic-commits, semantic-release-convention,
-                              plan-updater
+        Git/Workflow (8):     ascii-diagram-creator, mermaid-diagram-creator,
+                              ticket-plan-workflow, git-issue-labeler,
+                              git-issue-updater, git-semantic-commits,
+                              semantic-release-convention, plan-updater
 
        Documentation (3):    coverage-readme-workflow, docstring-generator,
                              documentation-sync-workflow
 
-       JIRA (3):             jira-ticket-plan-workflow, jira-status-updater,
-                              jira-git-integration
+       JIRA (2):             jira-status-updater, jira-git-integration
 
        Code Quality (7):     solid-principles, clean-code, clean-architecture,
                              design-patterns, object-design, code-smells,
@@ -1242,15 +1240,14 @@ function Deploy-Skills {
         Write-Host "      - opentofu-kubernetes-explorer, opentofu-neon-explorer"
         Write-Host "      - opentofu-provider-setup, opentofu-provisioning-workflow"
         Write-Host "      - opentofu-ecr-provision"
-        Write-Host "    Git/Workflow (6):"
-        Write-Host "      - ascii-diagram-creator, git-pr-creator"
-        Write-Host "      - git-issue-labeler, git-issue-plan-workflow"
-        Write-Host "      - git-issue-updater, git-semantic-commits"
+        Write-Host "    Git/Workflow (5):"
+        Write-Host "      - ascii-diagram-creator, ticket-plan-workflow"
+        Write-Host "      - git-issue-labeler, git-issue-updater"
+        Write-Host "      - git-semantic-commits"
         Write-Host "    Documentation (2):"
         Write-Host "      - coverage-readme-workflow, docstring-generator"
-        Write-Host "    JIRA (3):"
-        Write-Host "      - jira-ticket-plan-workflow, jira-status-updater"
-        Write-Host "      - jira-git-integration"
+        Write-Host "    JIRA (2):"
+        Write-Host "      - jira-status-updater, jira-git-integration"
         Write-Host "    Code Quality (7):"
         Write-Host "      - solid-principles, clean-code, clean-architecture"
         Write-Host "      - design-patterns, object-design, code-smells"
@@ -1279,15 +1276,14 @@ function Deploy-Skills {
         Write-Host "      - opentofu-kubernetes-explorer, opentofu-neon-explorer"
         Write-Host "      - opentofu-provider-setup, opentofu-provisioning-workflow"
         Write-Host "      - opentofu-ecr-provision"
-        Write-Host "    Git/Workflow (6):"
-        Write-Host "      - ascii-diagram-creator, git-pr-creator"
-        Write-Host "      - git-issue-labeler, git-issue-plan-workflow"
-        Write-Host "      - git-issue-updater, git-semantic-commits"
+        Write-Host "    Git/Workflow (5):"
+        Write-Host "      - ascii-diagram-creator, ticket-plan-workflow"
+        Write-Host "      - git-issue-labeler, git-issue-updater"
+        Write-Host "      - git-semantic-commits"
         Write-Host "    Documentation (2):"
         Write-Host "      - coverage-readme-workflow, docstring-generator"
-        Write-Host "    JIRA (3):"
-        Write-Host "      - jira-ticket-plan-workflow, jira-status-updater"
-        Write-Host "      - jira-git-integration"
+        Write-Host "    JIRA (2):"
+        Write-Host "      - jira-status-updater, jira-git-integration"
         Write-Host "    Code Quality (7):"
         Write-Host "      - solid-principles, clean-code, clean-architecture"
         Write-Host "      - design-patterns, object-design, code-smells"
@@ -1662,19 +1658,19 @@ function Show-NextSteps {
     Write-Host "         opencode `"prompt`" (uses build)"
     Write-Host ""
     Write-Host "=====================================================================" -ForegroundColor White
-     Write-Host "                     52 Skills Available" -ForegroundColor White
+     Write-Host "                     50 Skills Available" -ForegroundColor White
     Write-Host "=====================================================================" -ForegroundColor White
     Write-Host ""
-     Write-Host "  Framework (7) • Language-Specific (5) • Framework-Specific (7)"
-     Write-Host "  OpenCode Meta (3) • OpenTofu (7) • Git/Workflow (7)"
-    Write-Host "  Documentation (2) • JIRA (4) • Code Quality (7)"
+     Write-Host "  Framework (7) • Language-Specific (4) • Framework-Specific (5)"
+     Write-Host "  OpenCode Meta (3) • OpenTofu (7) • Git/Workflow (8)"
+    Write-Host "  Documentation (3) • JIRA (2) • Code Quality (7)"
     Write-Host ""
     Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
     Write-Host "  Run 'opencode --skill <name> `"prompt`"' to invoke a skill"
     Write-Host ""
-     Write-Host "  Framework (9) | Language-Specific (5) | Framework-Specific (7)"
+     Write-Host "  Framework (7) | Language-Specific (4) | Framework-Specific (5)"
      Write-Host "  OpenCode Meta (3) | OpenTofu (7) | Git/Workflow (8)"
-    Write-Host "  Documentation (2) | JIRA (4) | Code Quality (7)"
+    Write-Host "  Documentation (3) | JIRA (2) | Code Quality (7)"
     Write-Host ""
     Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
     Write-Host "  Run 'opencode --skill <name> `"prompt`"' to invoke a skill"

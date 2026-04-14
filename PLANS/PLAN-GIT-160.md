@@ -33,10 +33,10 @@ Audit all 12 git-related, PR-related, and JIRA+Git integration skills for potent
 
 ## Phase 1: Dependency Mapping
 
-- [ ] Document the full dependency graph of all 12 skills
-- [ ] Identify which skills are **framework** skills (consumed by others) vs **workflow** skills (standalone)
-- [ ] Map which agents consume which skills
-- [ ] Note: `jira-ticket-oauth-workflow` and `jira-ticket-pat-workflow` do NOT exist in the repo (mentioned in issue but already removed/never created)
+- [x] Document the full dependency graph of all 12 skills
+- [x] Identify which skills are **framework** skills (consumed by others) vs **workflow** skills (standalone)
+- [x] Map which agents consume which skills
+- [x] Note: `jira-ticket-oauth-workflow` and `jira-ticket-pat-workflow` do NOT exist in the repo (mentioned in issue but already removed/never created)
 
 ### Known Dependency Graph (from skill analysis)
 
@@ -87,11 +87,11 @@ nextjs-pr-workflow (framework-specific extension)
 
 ## Phase 2: Overlap Analysis
 
-- [ ] **Overlap 1**: `git-pr-creator` vs `pr-creation-workflow` — confirm redundancy
-- [ ] **Overlap 2**: `jira-ticket-plan-workflow` vs `git-issue-plan-workflow` — confirm parallel patterns
-- [ ] **Overlap 3**: Semantic versioning label logic scattered across skills
-- [ ] **Overlap 4**: `git-semantic-commits` role relative to `semantic-release-convention`
-- [ ] **Overlap 5**: Image handling logic duplicated in `git-pr-creator` and `jira-git-integration`
+- [x] **Overlap 1**: `git-pr-creator` vs `pr-creation-workflow` — confirm redundancy
+- [x] **Overlap 2**: `jira-ticket-plan-workflow` vs `git-issue-plan-workflow` — confirm parallel patterns
+- [x] **Overlap 3**: Semantic versioning label logic scattered across skills
+- [x] **Overlap 4**: `git-semantic-commits` role relative to `semantic-release-convention`
+- [x] **Overlap 5**: Image handling logic duplicated in `git-pr-creator` and `jira-git-integration`
 
 ### Overlap 1: git-pr-creator vs pr-creation-workflow
 
@@ -153,10 +153,10 @@ nextjs-pr-workflow (framework-specific extension)
 
 ## Phase 3: Consolidation Proposal
 
-- [ ] Draft proposed consolidated skill structure
-- [ ] Identify which skills to merge, keep, or deprecate
-- [ ] Calculate before/after skill count
-- [ ] Document migration plan for consuming agents/skills
+- [x] Draft proposed consolidated skill structure
+- [x] Identify which skills to merge, keep, or deprecate
+- [x] Calculate before/after skill count
+- [x] Document migration plan for consuming agents/skills
 
 ### Proposed Consolidation
 
@@ -207,17 +207,17 @@ nextjs-pr-workflow (framework-specific extension)
 
 ## Phase 4: Implementation
 
-- [ ] Create `ticket-plan-workflow` skill (merged from git-issue-plan-workflow + jira-ticket-plan-workflow)
-- [ ] Enhance `pr-creation-workflow` with JIRA image handling from git-pr-creator
-- [ ] Move `git-pr-creator` to `_archived/`
-- [ ] Move `git-issue-plan-workflow` to `_archived/`
-- [ ] Move `jira-ticket-plan-workflow` to `_archived/`
-- [ ] Update `semantic-release-convention` governed skills table
-- [ ] Update all skill cross-references (SKILL.md files that reference merged skills)
-- [ ] Update `setup.sh` skill listings
-- [ ] Update `setup.ps1` skill listings
-- [ ] Update `README.md` tables and counts
-- [ ] Update `AGENTS.md` routing
+- [x] Create `ticket-plan-workflow` skill (merged from git-issue-plan-workflow + jira-ticket-plan-workflow)
+- [x] Enhance `pr-creation-workflow` with JIRA image handling from git-pr-creator
+- [x] Move `git-pr-creator` to `_archived/`
+- [x] Move `git-issue-plan-workflow` to `_archived/`
+- [x] Move `jira-ticket-plan-workflow` to `_archived/`
+- [x] Update `semantic-release-convention` governed skills table
+- [x] Update all skill cross-references (SKILL.md files that reference merged skills)
+- [x] Update `setup.sh` skill listings
+- [x] Update `setup.ps1` skill listings
+- [x] Update `README.md` tables and counts
+- [x] Update agent routing (pr-workflow-subagent, ticket-creation-subagent)
 
 ---
 
