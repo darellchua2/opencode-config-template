@@ -1,3 +1,10 @@
+# [1.41.0](https://github.com/darellchua2/opencode-config-template/compare/v1.40.1...v1.41.0) (2026-04-14)
+
+
+### Features
+
+* add semantic-release-convention governance skill and standardize release pipeline ([#159](https://github.com/darellchua2/opencode-config-template/issues/159)) ([90fd218](https://github.com/darellchua2/opencode-config-template/commit/90fd218932fe4056b3944d11a3c6980a15407d6c)), closes [#158](https://github.com/darellchua2/opencode-config-template/issues/158)
+
 ## [1.40.1](https://github.com/darellchua2/opencode-config-template/compare/v1.40.0...v1.40.1) (2026-04-12)
 
 
