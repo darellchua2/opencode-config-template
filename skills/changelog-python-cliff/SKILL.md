@@ -203,8 +203,16 @@ git log --oneline -10
 - Projects without conventional commits in history
 - One-off changelogs that don't need automation
 
+## Governance
+
+Changelog generation follows the conventions in `semantic-release-convention`:
+- Commit types map to changelog categories (feat → Features, fix → Bug Fixes, etc.)
+- Release tags use branch-aware format (`v1.0.0` on prod, `v1.0.0-dev.1` on non-prod)
+- Tag format uses `v` prefix for compatibility with both PEP 440 and SemVer
+
 ## Dependencies
 
+- **semantic-release-convention**: For release tag format and commit type conventions
 - **git-semantic-commits**: For conventional commit formatting guidance
 - **documentation-sync-workflow**: If changelog is part of documentation updates
 - **git-cliff**: External tool (not bundled)

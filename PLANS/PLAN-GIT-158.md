@@ -9,72 +9,84 @@
 Formalize a single standardized approach for semantic commit messages, PR conventions, merge strategies, and release tagging across all skills and agents. Create a new governance skill (`semantic-release-convention`) as the single source of truth for the entire commit → PR → merge → release → CI/CD pipeline.
 
 ## Acceptance Criteria
-- [ ] New `semantic-release-convention` skill created with full convention definitions
-- [ ] Skill defines: commit rules, PR title rules, PR label rules, merge strategy, release tag format, GitHub Actions requirements
-- [ ] Skill includes branch-aware release tag mapping table
-- [ ] All existing PR/workflow skills updated to reference the governance skill
-- [ ] Both agents (`pr-workflow-subagent`, `ticket-creation-subagent`) updated with new skill permission
-- [ ] Documentation synced (setup.sh, setup.ps1, README.md, AGENTS.md)
-- [ ] Skill follows OpenCode skill naming conventions and frontmatter standards
+- [x] New `semantic-release-convention` skill created with full convention definitions
+- [x] Skill defines: commit rules, PR title rules, PR label rules, merge strategy, release tag format, GitHub Actions requirements
+- [x] Skill includes branch-aware release tag mapping table
+- [x] All existing PR/workflow skills updated to reference the governance skill
+- [x] Both agents (`pr-workflow-subagent`, `ticket-creation-subagent`) updated with new skill permission
+- [x] Documentation synced (setup.sh, setup.ps1, README.md, AGENTS.md)
+- [x] Skill follows OpenCode skill naming conventions and frontmatter standards
+- [x] New agents (`pptx-specialist-subagent`, `startup-ceo-subagent`) added to README tables
+- [x] Primary agents (`business-development-primary-agent`, `startup-founder-primary-agent`) set to `mode: all`
 
 ## Scope
-- `skills/semantic-release-convention/SKILL.md` (NEW)
-- `skills/git-semantic-commits/SKILL.md` (UPDATE)
-- `skills/git-pr-creator/SKILL.md` (UPDATE)
-- `skills/pr-creation-workflow/SKILL.md` (UPDATE)
-- `skills/nextjs-pr-workflow/SKILL.md` (UPDATE)
-- `skills/git-issue-labeler/SKILL.md` (UPDATE)
-- `skills/changelog-python-cliff/SKILL.md` (UPDATE)
-- `agents/pr-workflow-subagent.md` (UPDATE)
-- `agents/ticket-creation-subagent.md` (UPDATE)
-- `setup.sh` (UPDATE)
-- `setup.ps1` (UPDATE)
-- `README.md` (UPDATE)
-- `AGENTS.md` (UPDATE)
+- `skills/semantic-release-convention/SKILL.md` (NEW - DONE)
+- `skills/git-semantic-commits/SKILL.md` (UPDATE - DONE)
+- `skills/git-pr-creator/SKILL.md` (UPDATE - DONE)
+- `skills/pr-creation-workflow/SKILL.md` (UPDATE - DONE)
+- `skills/nextjs-pr-workflow/SKILL.md` (UPDATE - DONE)
+- `skills/git-issue-labeler/SKILL.md` (UPDATE - DONE)
+- `skills/changelog-python-cliff/SKILL.md` (UPDATE - DONE)
+- `agents/pr-workflow-subagent.md` (UPDATE - DONE)
+- `agents/ticket-creation-subagent.md` (UPDATE - DONE)
+- `agents/business-development-primary-agent.md` (UPDATE - DONE: mode primary → all)
+- `agents/startup-founder-primary-agent.md` (UPDATE - DONE: mode primary → all, startup-ceo delegation)
+- `setup.sh` (UPDATE - DONE)
+- `setup.ps1` (UPDATE - DONE)
+- `README.md` (UPDATE - DONE)
+- `AGENTS.md` (no change needed)
 
 ---
 
 ## Implementation Phases
 
-### Phase 1: Create Governance Skill
-- [ ] Create `skills/semantic-release-convention/SKILL.md` with OpenCode skill frontmatter
-- [ ] Define commit message convention section (Conventional Commits spec)
-- [ ] Define PR title convention section
-- [ ] Define PR label rules section (major/minor/patch as single decision factor)
-- [ ] Define merge message convention section (squash merge strategy)
-- [ ] Define release tag convention section with branch-aware mapping table
-- [ ] Define GitHub Actions requirements section (4 workflows)
-- [ ] Include reference links to Conventional Commits v1.0.0 and SemVer 2.0.0 specs
-- [ ] Make skill consumable by agents/skills that create commits, PRs, or releases
-- [ ] Verify skill naming conventions with `opencode-skills-maintainer`
+### Phase 1: Create Governance Skill — DONE
+- [x] Create `skills/semantic-release-convention/SKILL.md` with OpenCode skill frontmatter
+- [x] Define commit message convention section (Conventional Commits spec)
+- [x] Define PR title convention section
+- [x] Define PR label rules section (major/minor/patch as single decision factor)
+- [x] Define merge message convention section (squash merge strategy)
+- [x] Define release tag convention section with branch-aware mapping table
+- [x] Define GitHub Actions requirements section (4 workflows)
+- [x] Include reference links to Conventional Commits v1.0.0 and SemVer 2.0.0 specs
+- [x] Make skill consumable by agents/skills that create commits, PRs, or releases
+- [x] Verify skill naming conventions with `opencode-skills-maintainer`
 
-### Phase 2: Update Existing Skills
-- [ ] Update `skills/git-semantic-commits/SKILL.md` — add reference to governance skill, remain as formatting utility
-- [ ] Update `skills/git-pr-creator/SKILL.md` — load governance skill for label enforcement rules
-- [ ] Update `skills/pr-creation-workflow/SKILL.md` — load governance skill for merge/release conventions
-- [ ] Update `skills/nextjs-pr-workflow/SKILL.md` — inherits via pr-creation-workflow, verify cascade
-- [ ] Update `skills/git-issue-labeler/SKILL.md` — load governance skill for semver label definitions
-- [ ] Update `skills/changelog-python-cliff/SKILL.md` — load governance skill for release tag format
+### Phase 2: Update Existing Skills — DONE
+- [x] Update `skills/git-semantic-commits/SKILL.md` — add reference to governance skill, remain as formatting utility
+- [x] Update `skills/git-pr-creator/SKILL.md` — add Governance section referencing conventions
+- [x] Update `skills/pr-creation-workflow/SKILL.md` — add Governance section + skill to Frameworks Used
+- [x] Update `skills/nextjs-pr-workflow/SKILL.md` — add governance note to Frameworks Used
+- [x] Update `skills/git-issue-labeler/SKILL.md` — add Governance section referencing conventions
+- [x] Update `skills/changelog-python-cliff/SKILL.md` — add Governance section + dependency
 
-### Phase 3: Update Agents
-- [ ] Update `agents/pr-workflow-subagent.md` — add `semantic-release-convention: allow` to permissions
-- [ ] Update `agents/ticket-creation-subagent.md` — add `semantic-release-convention: allow` to permissions
+### Phase 3: Update Agents — DONE
+- [x] Update `agents/pr-workflow-subagent.md` — add `semantic-release-convention: allow` to permissions
+- [x] Update `agents/ticket-creation-subagent.md` — add `semantic-release-convention: allow` to permissions
 
-### Phase 4: Documentation Sync
-- [ ] Run `documentation-sync-workflow` to update setup.sh, setup.ps1, README.md, AGENTS.md
-- [ ] Increment total skill count in setup.sh and setup.ps1
-- [ ] Add skill to appropriate category in both setup files
-- [ ] Update README.md skill categories table
-- [ ] Update README.md total counts
-- [ ] Add routing info to AGENTS.md if needed
+### Phase 4: Documentation Sync — DONE
+- [x] Increment total skill count in setup.sh (51→52) and setup.ps1 (51→52)
+- [x] Add `semantic-release-convention` to Git/Workflow category in both setup files (8→9)
+- [x] Update README.md skill categories table (51→52 skills, Git/Workflow 8→9)
+- [x] Update banner skill counts in setup.sh (50→52) and setup.ps1 (50→52)
+- [x] Add `pptx-specialist-subagent` and `startup-ceo-subagent` to README.md Subagents table
+- [x] Add trigger phrases for both new agents to README.md
+- [x] Update README.md agent count (4 primary + 26 subagents → 4 primary + 28 subagents)
 
-### Phase 5: Validation
-- [ ] Verify all cross-references between skills are correct
-- [ ] Verify frontmatter standards are met for the new skill
-- [ ] Verify no duplicate conventions across skills
-- [ ] Run `opencode-skills-maintainer` to validate skill consistency
-- [ ] Test that the governance skill can be loaded by other skills
-- [ ] Final review of all changed files
+### Phase 5: Agent Updates — DONE
+- [x] Add `startup-ceo-subagent` to `startup-founder-primary-agent.md` delegation table
+- [x] Update `startup-founder-primary-agent.md` presentations workflow to reference both agents
+- [x] Change `business-development-primary-agent.md` mode: primary → all
+- [x] Change `startup-founder-primary-agent.md` mode: primary → all
+
+### Phase 6: Validation — DONE
+- [x] Verify all cross-references between skills are correct
+- [x] Verify frontmatter standards are met for the new skill
+- [x] Verify no duplicate conventions across skills
+- [x] Verify all 6 skills reference `semantic-release-convention`
+- [x] Verify both agents have `semantic-release-convention: allow` permission
+- [x] Verify documentation counts match (52 skills)
+- [x] Final review of all changed files
 
 ---
 
@@ -117,6 +129,12 @@ semantic-release-convention (governance)
 └── changelog-python-cliff (release tag format)
 ```
 
+### Agent Mode Changes
+| Agent | Before | After | Reason |
+|-------|--------|-------|--------|
+| business-development-primary-agent | mode: primary | mode: all | Allows invocation as subagent via @mention or Task tool |
+| startup-founder-primary-agent | mode: primary | mode: all | Allows invocation as subagent via @mention or Task tool |
+
 ## Dependencies
 - None — this is a foundational governance change
 
@@ -134,3 +152,4 @@ semantic-release-convention (governance)
 - Both agents have proper skill permissions
 - Documentation is fully synchronized across all 4 files
 - Zero convention conflicts between skills
+- Both primary agents accessible as subagents (mode: all)

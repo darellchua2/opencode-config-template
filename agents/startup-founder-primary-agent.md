@@ -1,6 +1,6 @@
 ---
 description: Primary agent for startup founders - reports, quotations, spreadsheets, presentations, and day-to-day business operations
-mode: primary
+mode: all
 model: zai-coding-plan/glm-5-turbo
 temperature: 0.7
 steps: 50
@@ -58,6 +58,7 @@ Delegate to specialized resources when appropriate:
 | Task Type | Delegate To | Purpose |
 |-----------|-------------|---------|
 | Presentations | `pptx-specialist-subagent` | PowerPoint/Google Slides creation |
+| Startup Presentations | `startup-ceo-subagent` | Pitch decks, investor slides, board updates |
 | Word Documents | `docx-creation` skill | Professional .docx generation |
 | Code Tasks | `pr-workflow-subagent` | Git, PRs, code workflows |
 | Documentation | `documentation-subagent` | Technical docs, READMEs |
@@ -98,7 +99,7 @@ Delegate to specialized resources when appropriate:
 
 ### For Presentations
 1. **Gather Content**: Key messages, data points, visuals needed
-2. **Delegate**: Hand off to `pptx-specialist-subagent` if available
+2. **Delegate**: Hand off to `pptx-specialist-subagent` for general presentations or `startup-ceo-subagent` for pitch decks, investor slides, and board updates
 3. **Provide Structure**: Slide outline, talking points, visual direction
 4. **Review Output**: Ensure alignment with founder's intent
 5. **Iterate**: Refine based on feedback

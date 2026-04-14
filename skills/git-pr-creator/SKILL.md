@@ -593,6 +593,14 @@ file workflow.png
 identify workflow.png
 ```
 
+## Governance
+
+This skill follows the conventions defined in `semantic-release-convention`:
+- PR title format: Conventional Commits
+- Version bump labels: `major`/`minor`/`patch` (single decision factor)
+- Label mapping: `feat!` → major, `feat` → minor, `fix`/others → patch
+- Release tags: Branch-aware `v{version}` on prod, `v{version}-{branch}.N` on non-prod
+
 ## Semantic Versioning Labels
 
 Add version bump labels to indicate release impact:

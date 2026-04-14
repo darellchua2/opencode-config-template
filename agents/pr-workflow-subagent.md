@@ -11,6 +11,7 @@ permission:
   bash: allow
   atlassian*: allow
   skill:
+    semantic-release-convention: allow
     pr-creation-workflow: allow
     nextjs-pr-workflow: allow
     git-pr-creator: allow

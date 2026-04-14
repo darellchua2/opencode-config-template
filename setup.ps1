@@ -339,7 +339,7 @@ USAGE:
     Usage: opencode --agent build 'implement auth feature'
            opencode --agent explore 'find all API routes'
 
-      SKILLS (51):
+      SKILLS (52):
           Framework (7):        test-generator-framework, linting-workflow,
                                 pr-creation-workflow, error-resolver-workflow,
                                 tdd-workflow, docx-creation, pptx-specialist
@@ -354,15 +354,16 @@ USAGE:
         OpenCode Meta (3):    opencode-agent-creation, opencode-skill-creation,
                               opencode-skills-maintainer
 
-       OpenTofu (7):         opentofu-aws-explorer, opentofu-keycloak-explorer,
-                             opentofu-kubernetes-explorer, opentofu-neon-explorer,
-                             opentofu-provider-setup, opentofu-provisioning-workflow,
-                             opentofu-ecr-provision
+        OpenTofu (7):         opentofu-aws-explorer, opentofu-keycloak-explorer,
+                              opentofu-kubernetes-explorer, opentofu-neon-explorer,
+                              opentofu-provider-setup, opentofu-provisioning-workflow,
+                              opentofu-ecr-provision
 
-       Git/Workflow (8):     ascii-diagram-creator, mermaid-diagram-creator,
-                             git-pr-creator, git-issue-labeler,
-                             git-issue-plan-workflow, git-issue-updater,
-                             git-semantic-commits, plan-updater
+        Git/Workflow (9):     ascii-diagram-creator, mermaid-diagram-creator,
+                              git-pr-creator, git-issue-labeler,
+                              git-issue-plan-workflow, git-issue-updater,
+                              git-semantic-commits, semantic-release-convention,
+                              plan-updater
 
        Documentation (3):    coverage-readme-workflow, docstring-generator,
                              documentation-sync-workflow
@@ -1661,7 +1662,7 @@ function Show-NextSteps {
     Write-Host "         opencode `"prompt`" (uses build)"
     Write-Host ""
     Write-Host "=====================================================================" -ForegroundColor White
-     Write-Host "                     50 Skills Available" -ForegroundColor White
+     Write-Host "                     52 Skills Available" -ForegroundColor White
     Write-Host "=====================================================================" -ForegroundColor White
     Write-Host ""
      Write-Host "  Framework (7) • Language-Specific (5) • Framework-Specific (7)"
