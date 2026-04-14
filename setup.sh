@@ -552,9 +552,9 @@ USAGE:
                                opentofu-ecr-provision
 
          Git/Workflow (8):     ascii-diagram-creator, mermaid-diagram-creator,
-                               ticket-plan-workflow, git-issue-labeler,
-                               git-issue-updater, git-semantic-commits,
-                               semantic-release-convention, plan-updater
+                                ticket-plan-workflow-skill, git-issue-labeler,
+                                git-issue-updater, git-semantic-commits,
+                                semantic-release-convention, plan-updater
 
         Documentation (3):    coverage-readme-workflow, docstring-generator,
                                documentation-sync-workflow
@@ -1675,78 +1675,6 @@ setup_config() {
             done
         fi
         log_success "Skills copied successfully to ${SKILLS_DIR}"
-
-        # Copy scripts/office shared module
-        SCRIPTS_OFFICE_DIR="${SKILLS_DIR}/scripts/office"
-        mkdir -p "${SCRIPTS_OFFICE_DIR}"
-        
-        if command -v rsync &> /dev/null; then
-            run_cmd "rsync -av --exclude='__pycache__' ${SCRIPT_DIR}/scripts/office/ ${SCRIPTS_OFFICE_DIR}/"
-        else
-            mkdir -p "${SCRIPTS_OFFICE_DIR}"
-            for item in "${SCRIPT_DIR}/scripts/office"/*; do
-                item_name=$(basename "$item")
-                if [[ "$item_name" != "__pycache__" ]]; then
-                    cp -r "$item" "${SCRIPTS_OFFICE_DIR}/"
-                fi
-            done
-        fi
-        
-        log_success "Shared office scripts copied successfully to ${SCRIPTS_OFFICE_DIR}"
-
-        echo ""
-        echo "✓ Deployed 12 shared office scripts:"
-        echo "      - office/unpack.py"
-        echo "      - office/pack.py"
-        echo "      - office/validate.py"
-        echo "      - office/soffice.py"
-        echo "      - office/helpers/merge_runs.py"
-        echo "      - office/helpers/simplify_redlines.py"
-        echo "      - office/validators/__init__.py"
-        echo "      - office/validators/base.py"
-        echo "      - office/validators/docx.py"
-        echo "      - office/validators/pptx.py"
-        echo "      - office/validators/redlining.py"
-        echo "      - nextjs-pr-workflow-skill"
-        echo "      - nextjs-unit-test-creator-skill"
-        echo "      - nextjs-standard-setup-skill"
-        echo "      - nextjs-image-usage-skill"
-        echo "      - typescript-dry-principle-skill"
-        echo "    - OpenCode Meta (3):"
-        echo "      - opencode-agent-creation-skill"
-        echo "      - opencode-skill-creation-skill"
-        echo "      - opencode-skills-maintainer-skill"
-        echo "    - OpenTofu (7):"
-        echo "      - opentofu-aws-explorer"
-        echo "      - opentofu-keycloak-explorer"
-        echo "      - opentofu-kubernetes-explorer"
-        echo "      - opentofu-neon-explorer"
-        echo "      - opentofu-provider-setup"
-        echo "      - opentofu-provisioning-workflow"
-        echo "      - opentofu-ecr-provision"
-        echo "    - Git/Workflow (5):"
-        echo "      - ascii-diagram-creator"
-        echo "      - ticket-plan-workflow"
-        echo "      - git-issue-labeler"
-        echo "      - git-issue-updater"
-        echo "      - git-semantic-commits"
-        echo "    - Documentation (2):"
-        echo "      - coverage-readme-workflow"
-        echo "      - docstring-generator"
-        echo "    - JIRA (2):"
-        echo "      - jira-status-updater"
-        echo "      - jira-git-integration"
-        echo "    - Code Quality (7):"
-        echo "      - solid-principles-skill"
-        echo "      - clean-code-skill"
-        echo "      - clean-architecture-skill"
-        echo "      - design-patterns-skill"
-        echo "      - object-design-skill"
-        echo "      - code-smells-skill"
-        echo "      - complexity-management-skill"
-        echo ""
-        echo "  Run 'opencode --list-skills' for detailed descriptions"
-        echo ""
     else
         log_warn "skills/ folder not found in ${SCRIPT_DIR}"
     fi

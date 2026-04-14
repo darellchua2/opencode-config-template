@@ -382,7 +382,7 @@ mmdc -i diagram.mmd -o diagram.png -w 1920 -H 1080 --scale 2
 
 ## Integration with Planning Workflows
 
-### ticket-plan-workflow
+### ticket-plan-workflow-skill
 
 When creating plans for GitHub issues or JIRA tickets, diagrams are stored alongside PLAN files:
 

@@ -324,6 +324,6 @@ echo "Completed tasks in PLAN"
 
 ## References
 
-- `ticket-plan-workflow` - Creates GitHub issue and JIRA ticket PLAN files
+- `ticket-plan-workflow-skill` - Creates GitHub issue and JIRA ticket PLAN files
 - `git-issue-updater` - Updates issues with commit progress
 - `git-semantic-commits` - Commit message formatting
