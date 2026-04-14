@@ -1130,6 +1130,7 @@ function Set-Configuration {
         if (-not (Read-YesNo "Do you want to overwrite it?" $false)) {
             Write-LogInfo "Skipping config.json copy. Existing configuration preserved."
             $script:SkipConfigCopy = $true
+            Deploy-SharedOfficeScripts
             Deploy-Skills
             return
         }
@@ -1160,15 +1161,72 @@ function Set-Configuration {
             Write-Host "    - diagram-creator - Diagram creation"
             Write-Host ""
             Write-Host "Configured 5 MCP servers:" -ForegroundColor Green
-            Write-Host "    Local (auto-start): atlassian, zai-vision-mcp-server"
-            Write-Host "    Remote (needs key): web-reader, web-search-prime, zread"
+            Write-Host "    - Local (auto-start): atlassian, zai-vision-mcp-server"
+            Write-Host "    - Remote (needs key): web-reader, web-search-prime, zread"
             Write-Host ""
         } else {
             Write-LogError "config.json not found in $ScriptDir"
         }
     }
+    
+    Deploy-SharedOfficeScripts
+    Deploy-Skills
+}
+    }
 
     Deploy-Skills
+}
+
+function Deploy-SharedOfficeScripts {
+    Write-Host ""
+    Write-LogInfo "Setting up shared office scripts directory..."
+
+    $scriptsOfficeSrc = Join-Path $ScriptDir "scripts\office"
+
+    if (-not $DryRun) {
+        if (-not (Test-Path $ScriptsDir)) {
+            New-Item -ItemType Directory -Path $ScriptsDir -Force | Out-Null
+        }
+    }
+    Write-LogInfo "Shared office scripts directory: $ScriptsDir"
+
+    if (Test-Path $scriptsOfficeSrc) {
+        $existingScripts = @(Get-ChildItem $scriptsOfficeSrc -ErrorAction SilentlyContinue)
+        if ($existingScripts.Count -gt 0) {
+            Write-LogWarn "Shared office scripts directory already contains files"
+
+            if (-not (Read-YesNo "Do you want to overwrite existing shared office scripts?" $false)) {
+                Write-LogInfo "Skipping shared office scripts deployment. Existing files preserved."
+                return
+            }
+
+            $scriptsBackup = Join-Path $BackupDir "office-scripts-backup"
+            if (-not $DryRun) {
+                if (-not (Test-Path $BackupDir)) {
+                    New-Item -ItemType Directory -Path $BackupDir -Force | Out-Null
+                }
+                Copy-Item $ScriptsDir $scriptsBackup -Recurse -Force
+                Write-LogInfo "Backed up existing shared office scripts to $scriptsBackup"
+            }
+        } else {
+            Write-LogInfo "Skipping shared office scripts deployment. Existing files preserved."
+            return
+        }
+
+        if (-not $DryRun) {
+            # Copy all scripts/office files
+            Get-ChildItem -Path $scriptsOfficeSrc -Recurse | ForEach-Object {
+                Copy-Item $_.FullName $ScriptsDir -Recurse -Force
+            }
+        }
+        Write-LogSuccess "Shared office scripts copied successfully to $ScriptsDir"
+
+        $officeScriptCount = @(Get-ChildItem $ScriptsOfficeSrc -Recurse).Count
+        Write-Host ""
+        Write-Host "Deployed $officeScriptCount shared office scripts to $ScriptsDir" -ForegroundColor Green
+    } else {
+        Write-LogWarn "scripts/office folder not found in $ScriptDir"
+    }
 }
 
 function Deploy-Skills {
@@ -1218,6 +1276,45 @@ function Deploy-Skills {
         $skillCount = @(Get-ChildItem $SkillsDir -Directory -ErrorAction SilentlyContinue).Count
         Write-Host ""
         Write-Host "Deployed $skillCount skills to $SkillsDir" -ForegroundColor Green
+        Write-Host ""
+        Write-Host "  Shared Office Scripts (12):" -ForegroundColor Cyan
+        Write-Host "      - office/unpack.py"
+        Write-Host "      - office/pack.py"
+        Write-Host "      - office/validate.py"
+        Write-Host "      - office/soffice.py"
+        Write-Host "      - office/helpers/merge_runs.py"
+        Write-Host "      - office/helpers/simplify_redlines.py"
+        Write-Host "      - office/validators/__init__.py"
+        Write-Host "      - office/validators/base.py"
+        Write-Host "      - office/validators/docx.py"
+        Write-Host "      - office/validators/pptx.py"
+        Write-Host "      - office/validators/redlining.py"
+        Write-Host ""
+        Write-Host "  Shared Office Scripts (12):" -ForegroundColor Cyan
+        Write-Host "      - office/unpack.py"
+        Write-Host "      - office/pack.py"
+        Write-Host "      - office/validate.py"
+        Write-Host "      - office/soffice.py"
+        Write-Host "      - office/helpers/merge_runs.py"
+        Write-Host "      - office/helpers/simplify_redlines.py"
+        Write-Host "      - office/validators/__init__.py"
+        Write-Host "      - office/validators/base.py"
+        Write-Host "      - office/validators/docx.py"
+        Write-Host "      - office/validators/pptx.py"
+        Write-Host "      - office/validators/redlining.py"
+        Write-Host ""
+        Write-Host "  Shared Office Scripts (12):" -ForegroundColor Cyan
+        Write-Host "      - office/unpack.py"
+        Write-Host "      - office/pack.py"
+        Write-Host "      - office/validate.py"
+        Write-Host "      - office/soffice.py"
+        Write-Host "      - office/helpers/merge_runs.py"
+        Write-Host "      - office/helpers/simplify_redlines.py"
+        Write-Host "      - office/validators/__init__.py"
+        Write-Host "      - office/validators/base.py"
+        Write-Host "      - office/validators/docx.py"
+        Write-Host "      - office/validators/pptx.py"
+        Write-Host "      - office/validators/redlining.py"
         Write-Host ""
         Write-Host "  Skill Categories:" -ForegroundColor Cyan
         Write-Host "    Framework (8):"

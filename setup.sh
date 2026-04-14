@@ -1675,23 +1675,37 @@ setup_config() {
         fi
         log_success "Skills copied successfully to ${SKILLS_DIR}"
 
+        # Copy scripts/office shared module
+        SCRIPTS_OFFICE_DIR="${SKILLS_DIR}/scripts/office"
+        mkdir -p "${SCRIPTS_OFFICE_DIR}"
+        
+        if command -v rsync &> /dev/null; then
+            run_cmd "rsync -av --exclude='__pycache__' ${SCRIPT_DIR}/scripts/office/ ${SCRIPTS_OFFICE_DIR}/"
+        else
+            mkdir -p "${SCRIPTS_OFFICE_DIR}"
+            for item in "${SCRIPT_DIR}/scripts/office"/*; do
+                item_name=$(basename "$item")
+                if [[ "$item_name" != "__pycache__" ]]; then
+                    cp -r "$item" "${SCRIPTS_OFFICE_DIR}/"
+                fi
+            done
+        fi
+        
+        log_success "Shared office scripts copied successfully to ${SCRIPTS_OFFICE_DIR}"
+
         echo ""
-        echo "✓ Deployed 44 skills:"
-        echo "    - Framework (8):"
-        echo "      - test-generator-framework-skill"
-        echo "      - linting-workflow-skill"
-        echo "      - pr-creation-workflow-skill"
-        echo "      - jira-git-integration-skill"
-        echo "      - error-resolver-workflow-skill"
-        echo "      - tdd-workflow-skill"
-        echo "      - coverage-framework"
-        echo "      - docx-creation-skill"
-        echo "    - Language-Specific (4):"
-        echo "      - python-pytest-creator-skill"
-        echo "      - python-ruff-linter-skill"
-        echo "      - javascript-eslint-linter-skill"
-        echo "      - changelog-python-cliff-skill"
-        echo "    - Framework-Specific (5):"
+        echo "✓ Deployed 12 shared office scripts:"
+        echo "      - office/unpack.py"
+        echo "      - office/pack.py"
+        echo "      - office/validate.py"
+        echo "      - office/soffice.py"
+        echo "      - office/helpers/merge_runs.py"
+        echo "      - office/helpers/simplify_redlines.py"
+        echo "      - office/validators/__init__.py"
+        echo "      - office/validators/base.py"
+        echo "      - office/validators/docx.py"
+        echo "      - office/validators/pptx.py"
+        echo "      - office/validators/redlining.py"
         echo "      - nextjs-pr-workflow-skill"
         echo "      - nextjs-unit-test-creator-skill"
         echo "      - nextjs-standard-setup-skill"
