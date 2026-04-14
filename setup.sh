@@ -501,11 +501,11 @@ USAGE:
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
-    image-analyzer       Images/screenshots → code, OCR, error diagnosis
+    image-analyzer-subagent  Images/screenshots → code, OCR, error diagnosis
     diagram-creator      Diagrams (architecture, flowcharts, UML)
     mermaid-diagram-subagent  Mermaid diagrams with PNG conversion
     civil-3d-specialist-subagent  Autodesk Civil 3D model modifications and features
-    open3d-specialist    Open3D 3D data processing guidance
+    open3d-specialist-subagent  Open3D 3D data processing guidance
 
     Usage: opencode --agent build "implement auth feature"
            opencode --agent explore "find all API routes"
@@ -1621,7 +1621,7 @@ setup_config() {
             echo "    - build (default) - Full-featured coding agent"
             echo "    - plan - Planning agent (read-only)"
             echo "    - explore - Codebase exploration and analysis"
-            echo "    - image-analyzer - Image/screenshot analysis"
+            echo "    - image-analyzer-subagent - Image/screenshot analysis"
             echo "    - diagram-creator - Diagram creation"
             echo ""
             echo "✓ Configured 5 MCP servers:"
@@ -2180,7 +2180,7 @@ print_summary() {
         echo "    - build (default) - Full-featured coding agent"
         echo "    - plan - Planning agent (read-only)"
         echo "    - explore - Codebase exploration and analysis"
-        echo "    - image-analyzer - Image/screenshot analysis"
+        echo "    - image-analyzer-subagent - Image/screenshot analysis"
         echo "    - diagram-creator - Diagram creation"
     fi
 
@@ -2306,7 +2306,7 @@ print_next_steps() {
     echo "  - build (default) - Full-featured coding agent"
     echo "  - plan - Planning agent (read-only)"
     echo "  - explore - Fast codebase exploration and analysis"
-    echo "  - image-analyzer - Images/screenshots to code, OCR, error diagnosis"
+    echo "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
     echo "  - diagram-creator - Diagrams (architecture, flowcharts, UML)"
     echo ""
     echo "  Usage: opencode --agent <name> \"prompt\""

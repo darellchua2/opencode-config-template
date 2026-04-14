@@ -330,11 +330,11 @@ USAGE:
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
-    image-analyzer       Images/screenshots -> code, OCR, error diagnosis
+    image-analyzer-subagent  Images/screenshots -> code, OCR, error diagnosis
     diagram-creator      Diagrams (architecture, flowcharts, UML)
     mermaid-diagram-subagent  Mermaid diagrams with PNG conversion
     civil-3d-specialist-subagent  Autodesk Civil 3D model modifications and features
-    open3d-specialist    Open3D 3D data processing guidance
+    open3d-specialist-subagent  Open3D 3D data processing guidance
 
     Usage: opencode --agent build 'implement auth feature'
            opencode --agent explore 'find all API routes'
@@ -1156,7 +1156,7 @@ function Set-Configuration {
             Write-Host "    - build (default) - Full-featured coding agent"
             Write-Host "    - plan - Planning agent (read-only)"
             Write-Host "    - explore - Codebase exploration and analysis"
-            Write-Host "    - image-analyzer - Image/screenshot analysis"
+            Write-Host "    - image-analyzer-subagent - Image/screenshot analysis"
             Write-Host "    - diagram-creator - Diagram creation"
             Write-Host ""
             Write-Host "Configured 5 MCP servers:" -ForegroundColor Green
@@ -1651,7 +1651,7 @@ function Show-NextSteps {
     Write-Host "  - build (default) - Full-featured coding agent"
     Write-Host "  - plan - Planning agent (read-only)"
     Write-Host "  - explore - Fast codebase exploration and analysis"
-    Write-Host "  - image-analyzer - Images/screenshots to code, OCR, error diagnosis"
+    Write-Host "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
     Write-Host "  - diagram-creator - Diagrams (architecture, flowcharts, UML)"
     Write-Host ""
     Write-Host "  Usage: opencode --agent <name> `"prompt`""
