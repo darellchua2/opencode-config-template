@@ -532,33 +532,33 @@ USAGE:
       microsoft-dataverse Business data (Dynamics 365)
 
    SKILLS (50):
-           Framework (7):        test-generator-framework-skill, linting-workflow-skill,
-                                 pr-creation-workflow-skill, error-resolver-workflow-skill,
-                                 tdd-workflow-skill, docx-creation-skill, pptx-specialist-skill
+           Framework (7):        test-generator-framework, linting-workflow,
+                                 pr-creation-workflow, error-resolver-workflow,
+                                 tdd-workflow, docx-creation, pptx-specialist
 
-          Language-Specific (4): python-pytest-creator-skill, python-ruff-linter-skill,
-                                javascript-eslint-linter-skill, changelog-python-cliff-skill
-         Framework-Specific (5): nextjs-pr-workflow-skill, nextjs-unit-test-creator-skill,
-                               nextjs-standard-setup-skill, nextjs-image-usage-skill,
-                               typescript-dry-principle-skill
+          Language-Specific (4): python-pytest-creator, python-ruff-linter,
+                                javascript-eslint-linter, changelog-python-cliff
+         Framework-Specific (5): nextjs-pr-workflow, nextjs-unit-test-creator,
+                               nextjs-standard-setup, nextjs-image-usage,
+                               typescript-dry-principle
 
-         OpenCode Meta (3):    opencode-agent-creation-skill, opencode-skill-creation-skill,
-                               opencode-skills-maintainer-skill
+         OpenCode Meta (3):    opencode-agent-creation, opencode-skill-creation,
+                               opencode-skills-maintainer
 
-         OpenTofu (7):         opentofu-aws-explorer-skill, opentofu-keycloak-explorer-skill,
-                               opentofu-kubernetes-explorer-skill, opentofu-neon-explorer-skill,
-                               opentofu-provider-setup-skill, opentofu-provisioning-workflow-skill,
-                               opentofu-ecr-provision-skill
+         OpenTofu (7):         opentofu-aws-explorer, opentofu-keycloak-explorer,
+                               opentofu-kubernetes-explorer, opentofu-neon-explorer,
+                               opentofu-provider-setup, opentofu-provisioning-workflow,
+                               opentofu-ecr-provision
 
-         Git/Workflow (8):     ascii-diagram-creator-skill, mermaid-diagram-creator-skill,
-                               ticket-plan-workflow-skill, git-issue-labeler-skill,
-                               git-issue-updater-skill, git-semantic-commits-skill,
-                               semantic-release-convention-skill, plan-updater-skill
+         Git/Workflow (8):     ascii-diagram-creator, mermaid-diagram-creator,
+                               ticket-plan-workflow, git-issue-labeler,
+                               git-issue-updater, git-semantic-commits,
+                               semantic-release-convention, plan-updater
 
-        Documentation (3):    coverage-readme-workflow-skill, docstring-generator-skill,
-                               documentation-sync-workflow-skill
+        Documentation (3):    coverage-readme-workflow, docstring-generator,
+                               documentation-sync-workflow
 
-        JIRA (2):             jira-status-updater-skill, jira-git-integration-skill
+        JIRA (2):             jira-status-updater, jira-git-integration
 
        Code Quality (7):     solid-principles-skill, clean-code-skill, clean-architecture-skill,
                              design-patterns-skill, object-design-skill, code-smells-skill,
@@ -1702,25 +1702,25 @@ setup_config() {
         echo "      - opencode-skill-creation-skill"
         echo "      - opencode-skills-maintainer-skill"
         echo "    - OpenTofu (7):"
-        echo "      - opentofu-aws-explorer-skill"
-        echo "      - opentofu-keycloak-explorer-skill"
-        echo "      - opentofu-kubernetes-explorer-skill"
-        echo "      - opentofu-neon-explorer-skill"
-        echo "      - opentofu-provider-setup-skill"
-        echo "      - opentofu-provisioning-workflow-skill"
-        echo "      - opentofu-ecr-provision-skill"
+        echo "      - opentofu-aws-explorer"
+        echo "      - opentofu-keycloak-explorer"
+        echo "      - opentofu-kubernetes-explorer"
+        echo "      - opentofu-neon-explorer"
+        echo "      - opentofu-provider-setup"
+        echo "      - opentofu-provisioning-workflow"
+        echo "      - opentofu-ecr-provision"
         echo "    - Git/Workflow (5):"
-        echo "      - ascii-diagram-creator-skill"
-        echo "      - ticket-plan-workflow-skill"
-        echo "      - git-issue-labeler-skill"
-        echo "      - git-issue-updater-skill"
-        echo "      - git-semantic-commits-skill"
+        echo "      - ascii-diagram-creator"
+        echo "      - ticket-plan-workflow"
+        echo "      - git-issue-labeler"
+        echo "      - git-issue-updater"
+        echo "      - git-semantic-commits"
         echo "    - Documentation (2):"
-        echo "      - coverage-readme-workflow-skill"
-        echo "      - docstring-generator-skill"
+        echo "      - coverage-readme-workflow"
+        echo "      - docstring-generator"
         echo "    - JIRA (2):"
-        echo "      - jira-status-updater-skill"
-        echo "      - jira-git-integration-skill"
+        echo "      - jira-status-updater"
+        echo "      - jira-git-integration"
         echo "    - Code Quality (7):"
         echo "      - solid-principles-skill"
         echo "      - clean-code-skill"
@@ -2223,25 +2223,25 @@ print_summary() {
         echo "      - opencode-skill-creation-skill"
         echo "      - opencode-skills-maintainer-skill"
         echo "    - OpenTofu (7):"
-        echo "      - opentofu-aws-explorer-skill"
-        echo "      - opentofu-keycloak-explorer-skill"
-        echo "      - opentofu-kubernetes-explorer-skill"
-        echo "      - opentofu-neon-explorer-skill"
-        echo "      - opentofu-provider-setup-skill"
-        echo "      - opentofu-provisioning-workflow-skill"
-        echo "      - opentofu-ecr-provision-skill"
+        echo "      - opentofu-aws-explorer"
+        echo "      - opentofu-keycloak-explorer"
+        echo "      - opentofu-kubernetes-explorer"
+        echo "      - opentofu-neon-explorer"
+        echo "      - opentofu-provider-setup"
+        echo "      - opentofu-provisioning-workflow"
+        echo "      - opentofu-ecr-provision"
         echo "    - Git/Workflow (5):"
-        echo "      - ascii-diagram-creator-skill"
-        echo "      - ticket-plan-workflow-skill"
-        echo "      - git-issue-labeler-skill"
-        echo "      - git-issue-updater-skill"
-        echo "      - git-semantic-commits-skill"
+        echo "      - ascii-diagram-creator"
+        echo "      - ticket-plan-workflow"
+        echo "      - git-issue-labeler"
+        echo "      - git-issue-updater"
+        echo "      - git-semantic-commits"
         echo "    - Documentation (2):"
-        echo "      - coverage-readme-workflow-skill"
-        echo "      - docstring-generator-skill"
+        echo "      - coverage-readme-workflow"
+        echo "      - docstring-generator"
         echo "    - JIRA (2):"
-        echo "      - jira-status-updater-skill"
-        echo "      - jira-git-integration-skill"
+        echo "      - jira-status-updater"
+        echo "      - jira-git-integration"
         echo "    - Code Quality (7):"
         echo "      - solid-principles-skill"
         echo "      - clean-code-skill"

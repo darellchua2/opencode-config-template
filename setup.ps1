@@ -340,9 +340,9 @@ USAGE:
            opencode --agent explore 'find all API routes'
 
       SKILLS (50):
-          Framework (7):        test-generator-framework-skill, linting-workflow-skill,
-                                pr-creation-workflow-skill, error-resolver-workflow-skill,
-                                tdd-workflow-skill, docx-creation-skill, pptx-specialist-skill
+          Framework (7):        test-generator-framework, linting-workflow,
+                                pr-creation-workflow, error-resolver-workflow,
+                                tdd-workflow, docx-creation, pptx-specialist
 
          Language-Specific (4): python-pytest-creator-skill, python-ruff-linter-skill,
                                javascript-eslint-linter-skill, changelog-python-cliff-skill
@@ -359,15 +359,15 @@ USAGE:
                               opentofu-provider-setup-skill, opentofu-provisioning-workflow-skill,
                               opentofu-ecr-provision-skill
 
-        Git/Workflow (8):     ascii-diagram-creator-skill, mermaid-diagram-creator-skill,
-                              ticket-plan-workflow-skill, git-issue-labeler-skill,
-                              git-issue-updater-skill, git-semantic-commits-skill,
-                              semantic-release-convention-skill, plan-updater-skill
+        Git/Workflow (8):     ascii-diagram-creator, mermaid-diagram-creator,
+                              ticket-plan-workflow, git-issue-labeler,
+                              git-issue-updater, git-semantic-commits,
+                              semantic-release-convention, plan-updater
 
        Documentation (3):    coverage-readme-workflow-skill, docstring-generator-skill,
                              documentation-sync-workflow-skill
 
-       JIRA (2):             jira-status-updater-skill, jira-git-integration-skill
+       JIRA (2):             jira-status-updater, jira-git-integration
 
        Code Quality (7):     solid-principles-skill, clean-code-skill, clean-architecture-skill,
                              design-patterns-skill, object-design-skill, code-smells-skill,
@@ -1236,18 +1236,18 @@ function Deploy-Skills {
          Write-Host "      - opencode-agent-creation-skill, opencode-skill-creation-skill"
          Write-Host "      - opencode-skills-maintainer-skill"
          Write-Host "    OpenTofu (7):"
-         Write-Host "      - opentofu-aws-explorer-skill, opentofu-keycloak-explorer-skill"
-        Write-Host "      - opentofu-kubernetes-explorer-skill, opentofu-neon-explorer-skill"
-        Write-Host "      - opentofu-provider-setup-skill, opentofu-provisioning-workflow-skill"
-        Write-Host "      - opentofu-ecr-provision-skill"
+         Write-Host "      - opentofu-aws-explorer, opentofu-keycloak-explorer"
+        Write-Host "      - opentofu-kubernetes-explorer, opentofu-neon-explorer"
+        Write-Host "      - opentofu-provider-setup, opentofu-provisioning-workflow"
+        Write-Host "      - opentofu-ecr-provision"
         Write-Host "    Git/Workflow (5):"
-        Write-Host "      - ascii-diagram-creator-skill, ticket-plan-workflow-skill"
-        Write-Host "      - git-issue-labeler-skill, git-issue-updater-skill"
-        Write-Host "      - git-semantic-commits-skill"
+        Write-Host "      - ascii-diagram-creator, ticket-plan-workflow"
+        Write-Host "      - git-issue-labeler, git-issue-updater"
+        Write-Host "      - git-semantic-commits"
         Write-Host "    Documentation (2):"
-        Write-Host "      - coverage-readme-workflow-skill, docstring-generator-skill"
+        Write-Host "      - coverage-readme-workflow, docstring-generator"
         Write-Host "    JIRA (2):"
-        Write-Host "      - jira-status-updater-skill, jira-git-integration-skill"
+        Write-Host "      - jira-status-updater, jira-git-integration"
         Write-Host "    Code Quality (7):"
         Write-Host "      - solid-principles-skill, clean-code-skill, clean-architecture-skill"
         Write-Host "      - design-patterns-skill, object-design-skill, code-smells-skill"
@@ -1272,18 +1272,18 @@ function Deploy-Skills {
          Write-Host "      - opencode-agent-creation-skill, opencode-skill-creation-skill"
          Write-Host "      - opencode-skills-maintainer-skill"
          Write-Host "    OpenTofu (7):"
-         Write-Host "      - opentofu-aws-explorer-skill, opentofu-keycloak-explorer-skill"
-        Write-Host "      - opentofu-kubernetes-explorer-skill, opentofu-neon-explorer-skill"
-        Write-Host "      - opentofu-provider-setup-skill, opentofu-provisioning-workflow-skill"
-        Write-Host "      - opentofu-ecr-provision-skill"
+         Write-Host "      - opentofu-aws-explorer, opentofu-keycloak-explorer"
+        Write-Host "      - opentofu-kubernetes-explorer, opentofu-neon-explorer"
+        Write-Host "      - opentofu-provider-setup, opentofu-provisioning-workflow"
+        Write-Host "      - opentofu-ecr-provision"
         Write-Host "    Git/Workflow (5):"
-        Write-Host "      - ascii-diagram-creator-skill, ticket-plan-workflow-skill"
-        Write-Host "      - git-issue-labeler-skill, git-issue-updater-skill"
-        Write-Host "      - git-semantic-commits-skill"
+        Write-Host "      - ascii-diagram-creator, ticket-plan-workflow"
+        Write-Host "      - git-issue-labeler, git-issue-updater"
+        Write-Host "      - git-semantic-commits"
         Write-Host "    Documentation (2):"
-        Write-Host "      - coverage-readme-workflow-skill, docstring-generator-skill"
+        Write-Host "      - coverage-readme-workflow, docstring-generator"
         Write-Host "    JIRA (2):"
-        Write-Host "      - jira-status-updater-skill, jira-git-integration-skill"
+        Write-Host "      - jira-status-updater, jira-git-integration"
         Write-Host "    Code Quality (7):"
         Write-Host "      - solid-principles-skill, clean-code-skill, clean-architecture-skill"
         Write-Host "      - design-patterns-skill, object-design-skill, code-smells-skill"
