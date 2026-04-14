@@ -37,21 +37,21 @@
       ],
       "enabled": true
     },
-    "web-reader": {
+    "zai-web-reader": {
       "type": "remote",
       "url": "https://api.z.ai/api/mcp/web_reader/mcp",
       "headers": {
         "Authorization": "Bearer {env:ZAI_API_KEY}"
       },
-      "enabled": true
+      "enabled": false
     },
-    "web-search-prime": {
+    "zai-web-search-prime": {
       "type": "remote",
       "url": "https://api.z.ai/api/mcp/web_search_prime/mcp",
       "headers": {
         "Authorization": "Bearer {env:ZAI_API_KEY}"
       },
-      "enabled": true
+      "enabled": false
     },
     "zai-mcp-server": {
       "type": "local",
@@ -62,7 +62,7 @@
       },
       "enabled": true
     },
-    "zread": {
+    "zai-zread": {
       "type": "remote",
       "url": "https://api.z.ai/api/mcp/zread/mcp",
       "headers": {
@@ -215,10 +215,8 @@
   },
   "tools": {
     "atlassian*": true,
-    "web-reader*": false,
-    "web-search-prime*": false,
     "zai-mcp-server*": false,
-    "zread*": false,
+    "zai-zread*": false,
     "google-bigquery*": false,
     "google-maps*": false,
     "google-gce*": false,
