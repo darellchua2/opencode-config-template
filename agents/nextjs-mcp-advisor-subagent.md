@@ -1,7 +1,7 @@
 ---
 description: Specialized subagent for Next.js runtime guidance using MCP server integration. Provides real-time error diagnosis, route analysis, and best practices advice for Next.js 16+ projects with running dev servers.
 mode: subagent
-
+model: zai-coding-plan/glm-4.7
 permission:
   read: allow
   write: allow

@@ -1,7 +1,7 @@
 ---
 description: Specialized subagent for Open3D - provides version-specific guidance for 3D data processing including point clouds, meshes, 3D visualization, surface reconstruction, deep learning (Open3D-ML), camera integration, and sensor workflows. MANDATORY version detection before providing any guidance.
 mode: subagent
-
+model: zai-coding-plan/glm-4.7
 permission:
   read: allow
   write: allow

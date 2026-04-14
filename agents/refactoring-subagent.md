@@ -1,7 +1,7 @@
 ---
 description: Specialized subagent for code refactoring applying DRY principle, SOLID principles, code smell detection, and clean code practices. Eliminates duplication and improves code quality in language-agnostic projects.
 mode: subagent
-
+model: zai-coding-plan/glm-4.7
 permission:
   read: allow
   write: allow

@@ -1,7 +1,7 @@
 ---
 description: Fast agent specialized for exploring codebases. Find files by patterns, search code for keywords, and answer questions about codebase structure.
 mode: subagent
-model: zai-coding-plan/glm-5-turbo
+model: zai-coding-plan/glm-4.7
 permission:
   read: allow
   write: deny

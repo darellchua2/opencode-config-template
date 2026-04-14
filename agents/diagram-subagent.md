@@ -1,7 +1,7 @@
 ---
 description: Specialized subagent for diagram creation supporting both Mermaid and ASCII formats. Creates flowcharts, sequence diagrams, architecture diagrams, and converts them to image files. Auto-selects best available format.
 mode: subagent
-model: zai-coding-plan/glm-5
+model: zai-coding-plan/glm-4.7
 permission:
   read: allow
   write: allow

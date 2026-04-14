@@ -1,7 +1,7 @@
 ---
 description: Specialized subagent for OpenTofu/Terraform infrastructure management. Explores and provisions resources across Kubernetes, Neon, AWS, Keycloak, manages ECR repositories, and handles provider setup with proper state management.
 mode: subagent
-
+model: zai-coding-plan/glm-4.7
 permission:
   read: allow
   write: allow
