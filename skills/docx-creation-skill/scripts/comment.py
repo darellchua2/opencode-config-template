@@ -1,0 +1,317 @@
+"""Add comments to DOCX documents.
+
+Usage:
+    python comment.py unpacked/ 0 "Comment text"
+    python comment.py unpacked/ 1 "Reply text" --parent 0
+
+Text should be pre-escaped XML (e.g., &amp; for &, &#x2019; for smart quotes).
+"""
+
+import argparse
+import random
+import shutil
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+import defusedxml.minidom
+
+NS = {
+    "w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
+    "w14": "http://schemas.microsoft.com/office/word/2010/wordml",
+    "w15": "http://schemas.microsoft.com/office/word/2012/wordml",
+    "w16cid": "http://schemas.microsoft.com/office/word/2016/wordml/cid",
+    "w16cex": "http://schemas.microsoft.com/office/word/2018/wordml/cex",
+}
+
+COMMENT_XML = """\
+<w:comment w:id="{id}" w:author="{author}" w:date="{date}" w:initials="{initials}">
+  <w:p w14:paraId="{para_id}" w14:textId="77777777">
+    <w:r>
+      <w:rPr><w:rStyle w:val="CommentReference"/></w:rPr>
+      <w:annotationRef/>
+    </w:r>
+    <w:r>
+      <w:rPr>
+        <w:color w:val="000000"/>
+        <w:sz w:val="20"/>
+        <w:szCs w:val="20"/>
+      </w:rPr>
+      <w:t>{text}</w:t>
+    </w:r>
+  </w:p>
+</w:comment>"""
+
+COMMENT_MARKER_TEMPLATE = """
+Add to document.xml (markers must be direct children of w:p, never inside w:r):
+  <w:commentRangeStart w:id="{cid}"/>
+  <w:r>...</w:r>
+  <w:commentRangeEnd w:id="{cid}"/>
+  <w:r><w:rPr><w:rStyle w:val="CommentReference"/></w:rPr><w:commentReference w:id="{cid}"/></w:r>
+"""
+
+REPLY_MARKER_TEMPLATE = """
+Nest markers inside parent {pid}'s markers (markers must be direct children of w:p, never inside w:r):
+  <w:commentRangeStart w:id="{pid}"/><w:commentRangeStart w:id="{cid}"/>
+  <w:r>...</w:r>
+  <w:commentRangeEnd w:id="{cid}"/><w:commentRangeEnd w:id="{pid}"/>
+  <w:r><w:rPr><w:rStyle w:val="CommentReference"/></w:rPr><w:commentReference w:id="{pid}"/></w:r><w:r><w:rPr><w:rStyle w:val="CommentReference"/></w:rPr><w:commentReference w:id="{cid}"/></w:r>
+"""
+
+
+def _generate_hex_id() -> str:
+    return f"{random.randint(0, 0x7FFFFFFE):08X}"
+
+
+SMART_QUOTE_ENTITIES = {
+    "\u201c": "&#x201C;",
+    "\u201d": "&#x201D;",
+    "\u2018": "&#x2018;",
+    "\u2019": "&#x2019;",
+}
+
+
+def _encode_smart_quotes(text: str) -> str:
+    for char, entity in SMART_QUOTE_ENTITIES.items():
+        text = text.replace(char, entity)
+    return text
+
+
+def _append_xml(xml_path: Path, root_tag: str, content: str) -> None:
+    dom = defusedxml.minidom.parseString(xml_path.read_text(encoding="utf-8"))
+    root = dom.getElementsByTagName(root_tag)[0]
+    ns_attrs = " ".join(f'xmlns:{k}="{v}"' for k, v in NS.items())
+    wrapper_dom = defusedxml.minidom.parseString(f"<root {ns_attrs}>{content}</root>")
+    for child in wrapper_dom.documentElement.childNodes:
+        if child.nodeType == child.ELEMENT_NODE:
+            root.appendChild(dom.importNode(child, True))
+    output = _encode_smart_quotes(dom.toxml(encoding="UTF-8").decode("utf-8"))
+    xml_path.write_text(output, encoding="utf-8")
+
+
+def _find_para_id(comments_path: Path, comment_id: int) -> str | None:
+    dom = defusedxml.minidom.parseString(comments_path.read_text(encoding="utf-8"))
+    for c in dom.getElementsByTagName("w:comment"):
+        if c.getAttribute("w:id") == str(comment_id):
+            for p in c.getElementsByTagName("w:p"):
+                if pid := p.getAttribute("w14:paraId"):
+                    return pid
+    return None
+
+
+def _get_next_rid(rels_path: Path) -> int:
+    dom = defusedxml.minidom.parseString(rels_path.read_text(encoding="utf-8"))
+    max_rid = 0
+    for rel in dom.getElementsByTagName("Relationship"):
+        rid = rel.getAttribute("Id")
+        if rid and rid.startswith("rId"):
+            try:
+                rid_num = int(rid[3:])
+                max_rid = max(max_rid, rid_num)
+            except ValueError:
+                pass
+    return max_rid + 1
+
+
+def _has_relationship(rels_path: Path, target: str) -> bool:
+    dom = defusedxml.minidom.parseString(rels_path.read_text(encoding="utf-8"))
+    for rel in dom.getElementsByTagName("Relationship"):
+        if rel.getAttribute("Target") == target:
+            return True
+    return False
+
+
+def _has_content_type(ct_path: Path, part_name: str) -> bool:
+    dom = defusedxml.minidom.parseString(ct_path.read_text(encoding="utf-8"))
+    for override in dom.getElementsByTagName("Override"):
+        if override.getAttribute("PartName") == part_name:
+            return True
+    return False
+
+
+def _ensure_comment_relationships(unpacked_dir: Path) -> None:
+    rels_path = unpacked_dir / "word" / "_rels" / "document.xml.rels"
+    if not rels_path.exists():
+        return
+
+    rels_to_add = [
+        (
+            "http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments",
+            "comments.xml",
+        ),
+        (
+            "http://schemas.microsoft.com/office/2011/relationships/commentsExtended",
+            "commentsExtended.xml",
+        ),
+        (
+            "http://schemas.microsoft.com/office/2016/09/relationships/commentsIds",
+            "commentsIds.xml",
+        ),
+        (
+            "http://schemas.microsoft.com/office/2018/08/relationships/commentsExtensible",
+            "commentsExtensible.xml",
+        ),
+    ]
+
+    existing_rels = set()
+    dom = defusedxml.minidom.parseString(rels_path.read_text(encoding="utf-8"))
+    for rel in dom.getElementsByTagName("Relationship"):
+        target = rel.getAttribute("Target")
+        if target:
+            existing_rels.add(target)
+
+    next_rid = _get_next_rid(rels_path)
+
+    added = False
+    for rel_type, target in rels_to_add:
+        if target not in existing_rels:
+            rel = dom.createElement("Relationship")
+            rel.setAttribute("Id", f"rId{next_rid}")
+            rel.setAttribute("Type", rel_type)
+            rel.setAttribute("Target", target)
+            dom.documentElement.appendChild(rel)
+            next_rid += 1
+            added = True
+
+    if added:
+        rels_path.write_bytes(dom.toxml(encoding="UTF-8"))
+
+
+def _ensure_comment_content_types(unpacked_dir: Path) -> None:
+    ct_path = unpacked_dir / "[Content_Types].xml"
+    if not ct_path.exists():
+        return
+
+    overrides_to_add = [
+        (
+            "/word/comments.xml",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml",
+        ),
+        (
+            "/word/commentsExtended.xml",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.commentsExtended+xml",
+        ),
+        (
+            "/word/commentsIds.xml",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.commentsIds+xml",
+        ),
+        (
+            "/word/commentsExtensible.xml",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.commentsExtensible+xml",
+        ),
+    ]
+
+    existing_overrides = set()
+    dom = defusedxml.minidom.parseString(ct_path.read_text(encoding="utf-8"))
+    for override in dom.getElementsByTagName("Override"):
+        part_name = override.getAttribute("PartName")
+        if part_name:
+            existing_overrides.add(part_name)
+
+    added = False
+    for part_name, content_type in overrides_to_add:
+        if part_name not in existing_overrides:
+            override = dom.createElement("Override")
+            override.setAttribute("PartName", part_name)
+            override.setAttribute("ContentType", content_type)
+            dom.documentElement.appendChild(override)
+            added = True
+
+    if added:
+        ct_path.write_bytes(dom.toxml(encoding="UTF-8"))
+
+
+def add_comment(
+    unpacked_dir: str,
+    comment_id: int,
+    text: str,
+    author: str = "Claude",
+    initials: str = "C",
+    parent_id: int | None = None,
+) -> tuple[str, str]:
+    word = Path(unpacked_dir) / "word"
+    if not word.exists():
+        return "", f"Error: {word} not found"
+
+    para_id, durable_id = _generate_hex_id(), _generate_hex_id()
+    ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    comments = word / "comments.xml"
+    first_comment = not comments.exists()
+    if first_comment:
+        _ensure_comment_relationships(unpacked_dir)
+        _ensure_comment_content_types(unpacked_dir)
+
+    _append_xml(
+        comments,
+        "w:comments",
+        COMMENT_XML.format(
+            id=comment_id,
+            author=author,
+            date=ts,
+            initials=initials,
+            para_id=para_id,
+            text=text,
+        ),
+    )
+
+    ext = word / "commentsExtended.xml"
+    if not ext.exists():
+        ext.write_text(
+            f"""<?xml version="1.0" encoding="UTF-8"?>
+<w15:commentsEx xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml">
+  <w15:commentEx w15:paraId="{para_id}" w15:done="0"/>
+</w15:commentsEx>""",
+            encoding="utf-8",
+        )
+
+    ids = word / "commentsIds.xml"
+    if not ids.exists():
+        ids.write_text(
+            f"""<?xml version="1.0" encoding="UTF-8"?>
+<w16cid:commentsIds xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid">
+  <w16cid:commentId w16cid:paraId="{para_id}" w16cid:durableId="{durable_id}"/>
+</w16cid:commentsIds>""",
+            encoding="utf-8",
+        )
+
+    extensible = word / "commentsExtensible.xml"
+    if not extensible.exists():
+        extensible.write_text(
+            f"""<?xml version="1.0" encoding="UTF-8"?>
+<w16cex:commentsExtensible xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex">
+  <w16cex:commentExt w16cex:durableId="{durable_id}" w16cex:dateUtc="{ts}"/>
+</w16cex:commentExtensible>""",
+            encoding="utf-8",
+        )
+
+    action = "reply" if parent_id is not None else "comment"
+    return para_id, f"Added {action} {comment_id} (para_id={para_id})"
+
+
+if __name__ == "__main__":
+    p = argparse.ArgumentParser(description="Add comments to DOCX documents")
+    p.add_argument("unpacked_dir", help="Unpacked DOCX directory")
+    p.add_argument("comment_id", type=int, help="Comment ID (must be unique)")
+    p.add_argument("text", help="Comment text")
+    p.add_argument("--author", default="Claude", help="Author name")
+    p.add_argument("--initials", default="C", help="Author initials")
+    p.add_argument("--parent", type=int, help="Parent comment ID (for replies)")
+    args = p.parse_args()
+
+    para_id, msg = add_comment(
+        args.unpacked_dir,
+        args.comment_id,
+        args.text,
+        args.author,
+        args.initials,
+        args.parent,
+    )
+    print(msg)
+    if "Error" in msg:
+        sys.exit(1)
+    cid = args.comment_id
+    if args.parent is not None:
+        print(REPLY_MARKER_TEMPLATE.format(pid=args.parent, cid=cid))
+    else:
+        print(COMMENT_MARKER_TEMPLATE.format(cid=cid))
