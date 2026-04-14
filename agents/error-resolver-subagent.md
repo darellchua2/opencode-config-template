@@ -9,7 +9,7 @@ permission:
   glob: allow
   grep: allow
   bash: deny
-  zai-mcp-server*: allow
+  zai-vision-mcp-server*: allow
   skill:
     error-resolver-workflow: allow
 ---

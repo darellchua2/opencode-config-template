@@ -43,7 +43,7 @@
       "headers": {
         "Authorization": "Bearer {env:ZAI_API_KEY}"
       },
-      "enabled": false
+      "enabled": true
     },
     "zai-web-search-prime": {
       "type": "remote",
@@ -53,7 +53,7 @@
       },
       "enabled": false
     },
-    "zai-mcp-server": {
+    "zai-vision-mcp-server": {
       "type": "local",
       "command": ["npx", "-y", "@z_ai/mcp-server"],
       "environment": {
@@ -215,7 +215,8 @@
   },
   "tools": {
     "atlassian*": true,
-    "zai-mcp-server*": false,
+    "zai-web-reader*": true,
+    "zai-vision-mcp-server*": false,
     "zai-zread*": false,
     "google-bigquery*": false,
     "google-maps*": false,

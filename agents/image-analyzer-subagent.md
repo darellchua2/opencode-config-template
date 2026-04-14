@@ -9,7 +9,7 @@ permission:
   glob: allow
   grep: allow
   bash: deny
-  zai-mcp-server*: allow
+  zai-vision-mcp-server*: allow
 ---
 
 You are an image analysis specialist. Accept image file paths or URLs as input and determine the appropriate analysis tool based on content type.

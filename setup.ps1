@@ -1160,7 +1160,7 @@ function Set-Configuration {
             Write-Host "    - diagram-creator - Diagram creation"
             Write-Host ""
             Write-Host "Configured 5 MCP servers:" -ForegroundColor Green
-            Write-Host "    Local (auto-start): atlassian, zai-mcp-server"
+            Write-Host "    Local (auto-start): atlassian, zai-vision-mcp-server"
             Write-Host "    Remote (needs key): web-reader, web-search-prime, zread"
             Write-Host ""
         } else {
@@ -1676,7 +1676,7 @@ function Show-NextSteps {
     Write-Host "  Run 'opencode --skill <name> `"prompt`"' to invoke a skill"
     Write-Host ""
     Write-Host "MCP Servers (5):"
-    Write-Host "  Local (auto-start): atlassian, zai-mcp-server"
+    Write-Host "  Local (auto-start): atlassian, zai-vision-mcp-server"
     Write-Host "  Remote (needs key): web-reader, web-search-prime, zread"
     Write-Host ""
     Write-Host "  Auth: opencode mcp auth atlassian / opencode mcp auth github"

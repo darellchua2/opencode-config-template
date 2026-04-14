@@ -513,7 +513,7 @@ USAGE:
   MCP SERVERS (15):
     Auto-start (npx):
       atlassian          JIRA and Confluence integration
-      zai-mcp-server     Image analysis and video processing
+      zai-vision-mcp-server     Image analysis and video processing
 
     Remote (requires ZAI_API_KEY):
       web-reader         Web page content extraction
@@ -1625,7 +1625,7 @@ setup_config() {
             echo "    - diagram-creator - Diagram creation"
             echo ""
             echo "✓ Configured 5 MCP servers:"
-            echo "    Local (auto-start): atlassian, zai-mcp-server"
+            echo "    Local (auto-start): atlassian, zai-vision-mcp-server"
             echo "    Remote (needs key): web-reader, web-search-prime, zread"
             echo ""
         else
@@ -2190,7 +2190,7 @@ print_summary() {
         echo "    - atlassian - JIRA and Confluence integration (auto-start)"
         echo "    - web-reader - Web page reading (needs ZAI_API_KEY)"
         echo "    - web-search-prime - Web search (needs ZAI_API_KEY)"
-        echo "    - zai-mcp-server - Image analysis (auto-start)"
+        echo "    - zai-vision-mcp-server - Image analysis (auto-start)"
         echo "    - zread - GitHub repo search (needs ZAI_API_KEY)"
     fi
 
@@ -2327,7 +2327,7 @@ print_next_steps() {
     echo "                     🔌 MCP Servers (5)"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "  Local (auto-start): atlassian, zai-mcp-server"
+    echo "  Local (auto-start): atlassian, zai-vision-mcp-server"
     echo "  Remote (needs key): web-reader, web-search-prime, zread"
     echo ""
     echo "  Auth: opencode mcp auth atlassian / opencode mcp auth github"

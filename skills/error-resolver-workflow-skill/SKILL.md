@@ -97,7 +97,7 @@ Use when user explicitly requests:
 
 When user provides an error screenshot:
 ```
-Use zai-mcp-server diagnose_error_screenshot:
+Use zai-vision-mcp-server diagnose_error_screenshot:
 - image_source: Path or URL to screenshot
 - prompt: "Diagnose this error and provide solution"
 - context: Optional context about when error occurred
@@ -107,7 +107,7 @@ Use zai-mcp-server diagnose_error_screenshot:
 
 For screenshots containing error text:
 ```
-Use zai-mcp-server extract_text_from_screenshot:
+Use zai-vision-mcp-server extract_text_from_screenshot:
 - image_source: Path or URL to screenshot
 - prompt: "Extract error message and stack trace"
 - programming_language: Optional language hint
