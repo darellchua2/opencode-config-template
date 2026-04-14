@@ -432,8 +432,18 @@ if [ "$MERGE_CONFIRM" = "y" ]; then
 fi
 ```
 
+## Governance
+
+This skill follows the conventions defined in `semantic-release-convention`:
+- Commit and PR title format: Conventional Commits
+- Version bump decision factor: PR label (`major`/`minor`/`patch`)
+- Merge strategy: Squash merge with conventional title
+- Release tags: Branch-aware versioning (`v1.0.0` on prod, `v1.0.0-dev.1` on non-prod)
+- GitHub Actions: Commit lint, PR title validation, label enforcement, automated release
+
 ## Frameworks Used
 
+- `semantic-release-convention` - Release pipeline conventions and standards
 - `git-semantic-commits` - PR title formatting
 - `git-issue-updater` - Issue progress updates
 - `jira-status-updater` - JIRA status transitions

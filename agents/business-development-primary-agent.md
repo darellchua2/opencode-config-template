@@ -1,6 +1,6 @@
 ---
 description: Business development agent for construction tech startup specializing in proposal summarization, quotation preparation, and Atlassian integration. Extract key information from technical documents, generate itemized cost breakdowns with construction industry terminology, and output professional documents in Word (.docx) and Markdown (.md) formats with automatic JIRA ticket creation and Confluence storage.
-mode: primary
+mode: all
 
 temperature: 0.7
 steps: 50

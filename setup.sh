@@ -531,29 +531,30 @@ USAGE:
       microsoft-copilot  M365 Copilot conversations
       microsoft-dataverse Business data (Dynamics 365)
 
-   SKILLS (51):
-         Framework (7):        test-generator-framework, linting-workflow,
-                               pr-creation-workflow, error-resolver-workflow,
-                               tdd-workflow, docx-creation, pptx-specialist
+   SKILLS (52):
+          Framework (7):        test-generator-framework, linting-workflow,
+                                pr-creation-workflow, error-resolver-workflow,
+                                tdd-workflow, docx-creation, pptx-specialist
 
-        Language-Specific (4): python-pytest-creator, python-ruff-linter,
-                              javascript-eslint-linter, changelog-python-cliff
-       Framework-Specific (5): nextjs-pr-workflow, nextjs-unit-test-creator,
-                             nextjs-standard-setup, nextjs-image-usage,
-                             typescript-dry-principle
+         Language-Specific (4): python-pytest-creator, python-ruff-linter,
+                               javascript-eslint-linter, changelog-python-cliff
+        Framework-Specific (5): nextjs-pr-workflow, nextjs-unit-test-creator,
+                              nextjs-standard-setup, nextjs-image-usage,
+                              typescript-dry-principle
 
-       OpenCode Meta (3):    opencode-agent-creation, opencode-skill-creation,
-                             opencode-skills-maintainer
+        OpenCode Meta (3):    opencode-agent-creation, opencode-skill-creation,
+                              opencode-skills-maintainer
 
-       OpenTofu (7):         opentofu-aws-explorer, opentofu-keycloak-explorer,
-                             opentofu-kubernetes-explorer, opentofu-neon-explorer,
-                             opentofu-provider-setup, opentofu-provisioning-workflow,
-                             opentofu-ecr-provision
+        OpenTofu (7):         opentofu-aws-explorer, opentofu-keycloak-explorer,
+                              opentofu-kubernetes-explorer, opentofu-neon-explorer,
+                              opentofu-provider-setup, opentofu-provisioning-workflow,
+                              opentofu-ecr-provision
 
-       Git/Workflow (8):     ascii-diagram-creator, mermaid-diagram-creator,
-                             git-pr-creator, git-issue-labeler,
-                             git-issue-plan-workflow, git-issue-updater,
-                             git-semantic-commits, plan-updater
+        Git/Workflow (9):     ascii-diagram-creator, mermaid-diagram-creator,
+                              git-pr-creator, git-issue-labeler,
+                              git-issue-plan-workflow, git-issue-updater,
+                              git-semantic-commits, semantic-release-convention,
+                              plan-updater
 
        Documentation (3):    coverage-readme-workflow, docstring-generator,
                               documentation-sync-workflow
@@ -2322,7 +2323,7 @@ print_next_steps() {
     echo "         opencode \"prompt\" (uses build)"
     echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "                     📦 50 Skills Available"
+    echo "                     📦 52 Skills Available"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
     echo "  Framework (7) • Language-Specific (5) • Framework-Specific (7)"

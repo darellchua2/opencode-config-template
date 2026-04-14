@@ -30,6 +30,8 @@ Use this workflow when:
 - Following the standard practice of linting, building, and testing before PR
 - **All tests must pass** before PR can be created (blocking requirement)
 
+**Governance**: This skill follows `semantic-release-convention` for PR titles, version labels, merge strategy, and release tags (inherited via `pr-creation-workflow`).
+
 **Frameworks Used**:
 - `pr-creation-workflow`: For PR creation logic and quality checks
 - `linting-workflow`: For Next.js linting (npm run lint)

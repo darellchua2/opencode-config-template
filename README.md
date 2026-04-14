@@ -125,7 +125,7 @@ This template implements **skill permissions** to control which skills agents ca
 
 ## Skill Modularization
 
-This repository implements **skill modularization** with 51 skills organized across 10 categories. Skills are designed with clear separation of concerns and explicit dependencies.
+This repository implements **skill modularization** with 52 skills organized across 10 categories. Skills are designed with clear separation of concerns and explicit dependencies.
 
 ### Skill Categories
 
@@ -136,7 +136,7 @@ This repository implements **skill modularization** with 51 skills organized acr
 | **Framework-Specific** (5) | nextjs-pr-workflow, nextjs-unit-test-creator, nextjs-standard-setup, nextjs-image-usage, typescript-dry-principle | Next.js 16 and TypeScript workflows |
 | **OpenCode Meta** (3) | opencode-agent-creation, opencode-skill-creation, opencode-skills-maintainer | Agent and skill creation/maintenance |
 | **OpenTofu** (7) | opentofu-aws-explorer, opentofu-keycloak-explorer, opentofu-kubernetes-explorer, opentofu-neon-explorer, opentofu-provider-setup, opentofu-provisioning-workflow, opentofu-ecr-provision | Infrastructure as Code |
-| **Git/Workflow** (8) | ascii-diagram-creator, mermaid-diagram-creator, git-pr-creator, git-issue-labeler, git-issue-plan-workflow, git-issue-updater, git-semantic-commits, plan-updater | Diagrams, git operations, and workflows |
+| **Git/Workflow** (9) | ascii-diagram-creator, mermaid-diagram-creator, git-pr-creator, git-issue-labeler, git-issue-plan-workflow, git-issue-updater, git-semantic-commits, semantic-release-convention, plan-updater | Diagrams, git operations, release conventions, and workflows |
 | **Documentation** (3) | coverage-readme-workflow, docstring-generator, documentation-sync-workflow | Documentation generation |
 | **JIRA** (3) | jira-ticket-plan-workflow, jira-status-updater, jira-git-integration | JIRA integration via MCP server |
 | **Code Quality** (7) | solid-principles, clean-code, clean-architecture, design-patterns, object-design, code-smells, complexity-management | Code quality analysis and patterns |
@@ -146,7 +146,7 @@ This repository implements **skill modularization** with 51 skills organized acr
 
 ### Agents
 
-30 agents provide specialized task handling (4 primary + 26 subagents):
+30 agents provide specialized task handling (4 primary + 28 subagents):
 
 #### Primary Agents
 
@@ -187,6 +187,8 @@ This repository implements **skill modularization** with 51 skills organized acr
 | **open3d-specialist** | Open3D 3D data processing guidance | (documentation search + version-specific guidance) |
 | **explorer-subagent** | Fast codebase exploration and analysis | (built-in search capabilities) |
 | **nextjs-mcp-advisor-subagent** | Next.js runtime guidance with MCP | nextjs-pr-workflow, nextjs-unit-test-creator |
+| **pptx-specialist-subagent** | PowerPoint presentations (read, create, edit, analyze) | pptx-specialist |
+| **startup-ceo-subagent** | Startup presentations (pitch decks, investor slides, board updates) | pptx-specialist |
 
 #### Trigger Phrases
 
@@ -196,6 +198,8 @@ Some subagents recognize natural language triggers:
 |----------|-----------------|
 | **pr-workflow-subagent** | "create pr", "pr merge to [branch]", "merge to main", "pull request" |
 | **ticket-creation-subagent** | "create issue", "new ticket", "jira ticket" |
+| **pptx-specialist-subagent** | "PowerPoint", ".pptx", "presentation", "slides", "deck", "html to pptx" |
+| **startup-ceo-subagent** | "pitch deck", "investor deck", "board update", "fundraising", "demo day" |
 
 ### Skill Architecture
 

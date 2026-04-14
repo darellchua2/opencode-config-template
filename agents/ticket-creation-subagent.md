@@ -11,6 +11,7 @@ permission:
   bash: allow
   atlassian*: allow
   skill:
+    semantic-release-convention: allow
     git-issue-plan-workflow: allow
     git-issue-updater: allow
     git-issue-labeler: allow

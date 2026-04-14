@@ -129,6 +129,10 @@ Use this when:
 - "Technical limitations prevent implementation"
 - "Not aligned with project goals"
 
+## Governance
+
+The semantic versioning label definitions below follow `semantic-release-convention`, which is the single source of truth for version bump conventions across all skills and agents.
+
 ## Semantic Versioning Labels
 
 These labels indicate the version bump type for releases:

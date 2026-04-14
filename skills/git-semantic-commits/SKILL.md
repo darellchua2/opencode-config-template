@@ -34,6 +34,8 @@ Use this framework when:
 
 This is a **framework skill** - it provides commit message formatting that other skills use.
 
+For the full release pipeline conventions (PR titles, merge strategy, release tags, GitHub Actions), see `semantic-release-convention`.
+
 ## Conventional Commits Specification
 
 ### Format Structure
