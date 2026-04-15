@@ -1,3 +1,11 @@
+## [1.42.1](https://github.com/darellchua2/opencode-config-template/compare/v1.42.0...v1.42.1) (2026-04-15)
+
+
+### Bug Fixes
+
+* resolve Python syntax errors in thumbnail.py and base.py validator ([95b42a8](https://github.com/darellchua2/opencode-config-template/commit/95b42a8f90d576eaa72ced6c6efc2f13e6392fa0))
+* udpate gitignore ([1766328](https://github.com/darellchua2/opencode-config-template/commit/17663286c7c345689daec953270a4c4c3dc93a0b))
+
 # [1.42.0](https://github.com/darellchua2/opencode-config-template/compare/v1.41.0...v1.42.0) (2026-04-15)
 
 
