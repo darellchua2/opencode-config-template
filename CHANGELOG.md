@@ -1,3 +1,15 @@
+# [1.42.0](https://github.com/darellchua2/opencode-config-template/compare/v1.41.0...v1.42.0) (2026-04-15)
+
+
+### Bug Fixes
+
+* model override for explore and general ([025bb26](https://github.com/darellchua2/opencode-config-template/commit/025bb26e7b0634f67d181efdc8b64a8b8d9b783d))
+
+
+### Features
+
+* add plan-execution-skill and update documentation sync ([d5bef75](https://github.com/darellchua2/opencode-config-template/commit/d5bef75fb30d9ef00644a7a67d7c201bc31194a5))
+
 # [1.41.0](https://github.com/darellchua2/opencode-config-template/compare/v1.40.1...v1.41.0) (2026-04-14)
 
 
