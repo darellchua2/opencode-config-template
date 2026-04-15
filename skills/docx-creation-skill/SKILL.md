@@ -40,7 +40,7 @@ Do NOT use for:
 
 - **pandoc**: Text extraction from .docx files
 - **docx**: `npm install -g docx` (for creating new documents)
-- **LibreOffice**: PDF conversion (auto-configured via `scripts/office/soffice.py`)
+- **LibreOffice**: PDF conversion (auto-configured via `skills/docx-creation-skill/scripts/soffice.py`)
 - **Poppler**: `pdftoppm` for converting PDFs to images
 
 ## Quick Reference
@@ -81,7 +81,7 @@ pdftoppm -jpeg -r 150 document.pdf page
 To produce a clean document with all tracked changes accepted:
 
 ```bash
-python scripts/accept_changes.py input.docx output.docx
+python scripts/docx-creation-skill/scripts/accept_changes.py input.docx output.docx
 ```
 
 ---
@@ -107,7 +107,7 @@ Packer.toBuffer(doc).then(buffer => fs.writeFileSync("doc.docx", buffer));
 ### Validation
 After creating the file, validate it. If validation fails, unpack, fix the XML, and repack.
 ```bash
-python scripts/office/validate.py doc.docx
+python scripts/docx-creation-skill/scripts/validate.py doc.docx
 ```
 
 ### Page Size
@@ -338,7 +338,7 @@ sections: [{
 
 ### Step 1: Unpack
 ```bash
-python scripts/office/unpack.py document.docx unpacked/
+python scripts/docx-creation-skill/scripts/unpack.py document.docx unpacked/
 ```
 Extracts XML, pretty-prints, merges adjacent runs.
 
@@ -361,7 +361,7 @@ Edit files in `unpacked/word/`. See XML Reference below for patterns.
 
 ### Step 3: Pack
 ```bash
-python scripts/office/pack.py unpacked/ output.docx --original document.docx
+python scripts/docx-creation-skill/scripts/pack.py unpacked/ output.docx --original document.docx
 ```
 Validates with auto-repair, condenses XML, and creates DOCX. Use `--validate false` to skip.
 

@@ -531,10 +531,11 @@ USAGE:
       microsoft-copilot  M365 Copilot conversations
       microsoft-dataverse Business data (Dynamics 365)
 
-   SKILLS (50):
-           Framework (7):        test-generator-framework, linting-workflow,
-                                 pr-creation-workflow, error-resolver-workflow,
-                                 tdd-workflow, docx-creation, pptx-specialist
+   SKILLS (52):
+            Framework (9):        test-generator-framework, linting-workflow,
+                                  pr-creation-workflow, error-resolver-workflow,
+                                  tdd-workflow, docx-creation, pptx-specialist,
+                                  xlsx-specialist, pdf-specialist
 
           Language-Specific (4): python-pytest-creator, python-ruff-linter,
                                 javascript-eslint-linter, changelog-python-cliff
@@ -550,10 +551,11 @@ USAGE:
                                opentofu-provider-setup, opentofu-provisioning-workflow,
                                opentofu-ecr-provision
 
-         Git/Workflow (8):     ascii-diagram-creator, mermaid-diagram-creator,
-                               ticket-plan-workflow, git-issue-labeler,
-                               git-issue-updater, git-semantic-commits,
-                               semantic-release-convention, plan-updater
+         Git/Workflow (9):     ascii-diagram-creator, mermaid-diagram-creator,
+                                ticket-plan-workflow-skill, plan-execution-skill,
+                                git-issue-labeler, git-issue-updater,
+                                git-semantic-commits, semantic-release-convention,
+                                plan-updater
 
         Documentation (3):    coverage-readme-workflow, docstring-generator,
                                documentation-sync-workflow
@@ -1674,64 +1676,6 @@ setup_config() {
             done
         fi
         log_success "Skills copied successfully to ${SKILLS_DIR}"
-
-        echo ""
-        echo "✓ Deployed 44 skills:"
-        echo "    - Framework (8):"
-        echo "      - test-generator-framework-skill"
-        echo "      - linting-workflow-skill"
-        echo "      - pr-creation-workflow-skill"
-        echo "      - jira-git-integration-skill"
-        echo "      - error-resolver-workflow-skill"
-        echo "      - tdd-workflow-skill"
-        echo "      - coverage-framework"
-        echo "      - docx-creation-skill"
-        echo "    - Language-Specific (4):"
-        echo "      - python-pytest-creator-skill"
-        echo "      - python-ruff-linter-skill"
-        echo "      - javascript-eslint-linter-skill"
-        echo "      - changelog-python-cliff-skill"
-        echo "    - Framework-Specific (5):"
-        echo "      - nextjs-pr-workflow-skill"
-        echo "      - nextjs-unit-test-creator-skill"
-        echo "      - nextjs-standard-setup-skill"
-        echo "      - nextjs-image-usage-skill"
-        echo "      - typescript-dry-principle-skill"
-        echo "    - OpenCode Meta (3):"
-        echo "      - opencode-agent-creation-skill"
-        echo "      - opencode-skill-creation-skill"
-        echo "      - opencode-skills-maintainer-skill"
-        echo "    - OpenTofu (7):"
-        echo "      - opentofu-aws-explorer"
-        echo "      - opentofu-keycloak-explorer"
-        echo "      - opentofu-kubernetes-explorer"
-        echo "      - opentofu-neon-explorer"
-        echo "      - opentofu-provider-setup"
-        echo "      - opentofu-provisioning-workflow"
-        echo "      - opentofu-ecr-provision"
-        echo "    - Git/Workflow (5):"
-        echo "      - ascii-diagram-creator"
-        echo "      - ticket-plan-workflow"
-        echo "      - git-issue-labeler"
-        echo "      - git-issue-updater"
-        echo "      - git-semantic-commits"
-        echo "    - Documentation (2):"
-        echo "      - coverage-readme-workflow"
-        echo "      - docstring-generator"
-        echo "    - JIRA (2):"
-        echo "      - jira-status-updater"
-        echo "      - jira-git-integration"
-        echo "    - Code Quality (7):"
-        echo "      - solid-principles-skill"
-        echo "      - clean-code-skill"
-        echo "      - clean-architecture-skill"
-        echo "      - design-patterns-skill"
-        echo "      - object-design-skill"
-        echo "      - code-smells-skill"
-        echo "      - complexity-management-skill"
-        echo ""
-        echo "  Run 'opencode --list-skills' for detailed descriptions"
-        echo ""
     else
         log_warn "skills/ folder not found in ${SCRIPT_DIR}"
     fi
@@ -2232,7 +2176,7 @@ print_summary() {
         echo "      - opentofu-ecr-provision"
         echo "    - Git/Workflow (5):"
         echo "      - ascii-diagram-creator"
-        echo "      - ticket-plan-workflow"
+        echo "      - ticket-plan-workflow-skill"
         echo "      - git-issue-labeler"
         echo "      - git-issue-updater"
         echo "      - git-semantic-commits"

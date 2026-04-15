@@ -106,7 +106,7 @@ Organize skills into logical categories based on naming patterns:
 | Category | Pattern | Examples |
 |----------|---------|----------|
 | Framework | `*-framework`, `*-workflow` | linting-workflow, test-generator-framework |
-| Git/Workflow | `git-*`, `jira-*`, `pr-*`, `ticket-*` | ticket-plan-workflow, jira-git-integration |
+| Git/Workflow | `git-*`, `jira-*`, `pr-*`, `ticket-*` | ticket-plan-workflow-skill, jira-git-integration |
 | OpenTofu/IaC | `opentofu-*` | opentofu-aws-explorer, opentofu-kubernetes-explorer |
 | OpenCode Meta | `opencode-*` | opencode-agent-creation, opencode-skill-creation |
 | Language-Specific | `{lang}-*`, `{framework}-*` | python-pytest-creator, nextjs-unit-test-creator |

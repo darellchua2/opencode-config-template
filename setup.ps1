@@ -339,10 +339,11 @@ USAGE:
     Usage: opencode --agent build 'implement auth feature'
            opencode --agent explore 'find all API routes'
 
-      SKILLS (50):
-          Framework (7):        test-generator-framework, linting-workflow,
-                                pr-creation-workflow, error-resolver-workflow,
-                                tdd-workflow, docx-creation, pptx-specialist
+      SKILLS (52):
+          Framework (9):        test-generator-framework, linting-workflow,
+                                 pr-creation-workflow, error-resolver-workflow,
+                                 tdd-workflow, docx-creation, pptx-specialist,
+                                 xlsx-specialist, pdf-specialist
 
          Language-Specific (4): python-pytest-creator-skill, python-ruff-linter-skill,
                                javascript-eslint-linter-skill, changelog-python-cliff-skill
@@ -359,10 +360,11 @@ USAGE:
                               opentofu-provider-setup-skill, opentofu-provisioning-workflow-skill,
                               opentofu-ecr-provision-skill
 
-        Git/Workflow (8):     ascii-diagram-creator, mermaid-diagram-creator,
-                              ticket-plan-workflow, git-issue-labeler,
-                              git-issue-updater, git-semantic-commits,
-                              semantic-release-convention, plan-updater
+        Git/Workflow (9):     ascii-diagram-creator, mermaid-diagram-creator,
+                              ticket-plan-workflow-skill, plan-execution-skill,
+                              git-issue-labeler, git-issue-updater,
+                              git-semantic-commits, semantic-release-convention,
+                              plan-updater
 
        Documentation (3):    coverage-readme-workflow-skill, docstring-generator-skill,
                              documentation-sync-workflow-skill
@@ -1160,8 +1162,8 @@ function Set-Configuration {
             Write-Host "    - diagram-creator - Diagram creation"
             Write-Host ""
             Write-Host "Configured 5 MCP servers:" -ForegroundColor Green
-            Write-Host "    Local (auto-start): atlassian, zai-vision-mcp-server"
-            Write-Host "    Remote (needs key): web-reader, web-search-prime, zread"
+            Write-Host "    - Local (auto-start): atlassian, zai-vision-mcp-server"
+            Write-Host "    - Remote (needs key): web-reader, web-search-prime, zread"
             Write-Host ""
         } else {
             Write-LogError "config.json not found in $ScriptDir"
@@ -1219,6 +1221,45 @@ function Deploy-Skills {
         Write-Host ""
         Write-Host "Deployed $skillCount skills to $SkillsDir" -ForegroundColor Green
         Write-Host ""
+        Write-Host "  Shared Office Scripts (12):" -ForegroundColor Cyan
+        Write-Host "      - office/unpack.py"
+        Write-Host "      - office/pack.py"
+        Write-Host "      - office/validate.py"
+        Write-Host "      - office/soffice.py"
+        Write-Host "      - office/helpers/merge_runs.py"
+        Write-Host "      - office/helpers/simplify_redlines.py"
+        Write-Host "      - office/validators/__init__.py"
+        Write-Host "      - office/validators/base.py"
+        Write-Host "      - office/validators/docx.py"
+        Write-Host "      - office/validators/pptx.py"
+        Write-Host "      - office/validators/redlining.py"
+        Write-Host ""
+        Write-Host "  Shared Office Scripts (12):" -ForegroundColor Cyan
+        Write-Host "      - office/unpack.py"
+        Write-Host "      - office/pack.py"
+        Write-Host "      - office/validate.py"
+        Write-Host "      - office/soffice.py"
+        Write-Host "      - office/helpers/merge_runs.py"
+        Write-Host "      - office/helpers/simplify_redlines.py"
+        Write-Host "      - office/validators/__init__.py"
+        Write-Host "      - office/validators/base.py"
+        Write-Host "      - office/validators/docx.py"
+        Write-Host "      - office/validators/pptx.py"
+        Write-Host "      - office/validators/redlining.py"
+        Write-Host ""
+        Write-Host "  Shared Office Scripts (12):" -ForegroundColor Cyan
+        Write-Host "      - office/unpack.py"
+        Write-Host "      - office/pack.py"
+        Write-Host "      - office/validate.py"
+        Write-Host "      - office/soffice.py"
+        Write-Host "      - office/helpers/merge_runs.py"
+        Write-Host "      - office/helpers/simplify_redlines.py"
+        Write-Host "      - office/validators/__init__.py"
+        Write-Host "      - office/validators/base.py"
+        Write-Host "      - office/validators/docx.py"
+        Write-Host "      - office/validators/pptx.py"
+        Write-Host "      - office/validators/redlining.py"
+        Write-Host ""
         Write-Host "  Skill Categories:" -ForegroundColor Cyan
         Write-Host "    Framework (8):"
         Write-Host "      - test-generator-framework-skill, linting-workflow-skill"
@@ -1241,7 +1282,7 @@ function Deploy-Skills {
         Write-Host "      - opentofu-provider-setup, opentofu-provisioning-workflow"
         Write-Host "      - opentofu-ecr-provision"
         Write-Host "    Git/Workflow (5):"
-        Write-Host "      - ascii-diagram-creator, ticket-plan-workflow"
+        Write-Host "      - ascii-diagram-creator, ticket-plan-workflow-skill"
         Write-Host "      - git-issue-labeler, git-issue-updater"
         Write-Host "      - git-semantic-commits"
         Write-Host "    Documentation (2):"
@@ -1277,7 +1318,7 @@ function Deploy-Skills {
         Write-Host "      - opentofu-provider-setup, opentofu-provisioning-workflow"
         Write-Host "      - opentofu-ecr-provision"
         Write-Host "    Git/Workflow (5):"
-        Write-Host "      - ascii-diagram-creator, ticket-plan-workflow"
+        Write-Host "      - ascii-diagram-creator, ticket-plan-workflow-skill"
         Write-Host "      - git-issue-labeler, git-issue-updater"
         Write-Host "      - git-semantic-commits"
         Write-Host "    Documentation (2):"
