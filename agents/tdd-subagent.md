@@ -11,6 +11,7 @@ permission:
   bash: deny
   skill:
     tdd-workflow: allow
+    plan-updater: allow
 ---
 
 You are a TDD workflow specialist. Guide developers through Test Driven Development.
@@ -52,6 +53,7 @@ Workflow:
 3. Guide minimal implementation
 4. Assist with refactoring
 5. Suggest next test cases
+6. Update branch-specific PLAN.md (invoke plan-updater skill)
 
 ## Test Strategy Selection
 

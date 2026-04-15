@@ -360,10 +360,11 @@ USAGE:
                               opentofu-provider-setup-skill, opentofu-provisioning-workflow-skill,
                               opentofu-ecr-provision-skill
 
-        Git/Workflow (8):     ascii-diagram-creator, mermaid-diagram-creator,
-                              ticket-plan-workflow-skill, git-issue-labeler,
-                              git-issue-updater, git-semantic-commits,
-                              semantic-release-convention, plan-updater
+        Git/Workflow (9):     ascii-diagram-creator, mermaid-diagram-creator,
+                              ticket-plan-workflow-skill, plan-execution-skill,
+                              git-issue-labeler, git-issue-updater,
+                              git-semantic-commits, semantic-release-convention,
+                              plan-updater
 
        Documentation (3):    coverage-readme-workflow-skill, docstring-generator-skill,
                              documentation-sync-workflow-skill

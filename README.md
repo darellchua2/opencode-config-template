@@ -125,7 +125,7 @@ This template implements **skill permissions** to control which skills agents ca
 
 ## Skill Modularization
 
-This repository implements **skill modularization** with 52 skills organized across 10 categories. Skills are designed with clear separation of concerns and explicit dependencies.
+This repository implements **skill modularization** with 53 skills organized across 10 categories. Skills are designed with clear separation of concerns and explicit dependencies.
 
 ### Skill Categories
 
@@ -136,7 +136,7 @@ This repository implements **skill modularization** with 52 skills organized acr
 | **Framework-Specific** (5) | nextjs-pr-workflow, nextjs-unit-test-creator, nextjs-standard-setup, nextjs-image-usage, typescript-dry-principle | Next.js 16 and TypeScript workflows |
 | **OpenCode Meta** (3) | opencode-agent-creation, opencode-skill-creation, opencode-skills-maintainer | Agent and skill creation/maintenance |
 | **OpenTofu** (7) | opentofu-aws-explorer, opentofu-keycloak-explorer, opentofu-kubernetes-explorer, opentofu-neon-explorer, opentofu-provider-setup, opentofu-provisioning-workflow, opentofu-ecr-provision | Infrastructure as Code |
-| **Git/Workflow** (8) | ascii-diagram-creator, mermaid-diagram-creator, ticket-plan-workflow-skill, git-issue-labeler, git-issue-updater, git-semantic-commits, semantic-release-convention, plan-updater | Diagrams, git operations, release conventions, and workflows |
+| **Git/Workflow** (9) | ascii-diagram-creator, mermaid-diagram-creator, ticket-plan-workflow-skill, plan-execution-skill, git-issue-labeler, git-issue-updater, git-semantic-commits, semantic-release-convention, plan-updater | Diagrams, git operations, release conventions, and workflows |
 | **Documentation** (3) | coverage-readme-workflow, docstring-generator, documentation-sync-workflow | Documentation generation |
 | **JIRA** (2) | jira-status-updater, jira-git-integration | JIRA integration via MCP server |
 | **Code Quality** (7) | solid-principles, clean-code, clean-architecture, design-patterns, object-design, code-smells, complexity-management | Code quality analysis and patterns |
