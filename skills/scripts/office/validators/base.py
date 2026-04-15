@@ -477,6 +477,9 @@ class BaseSchemaValidator:
                 if self.verbose:
                     print("PASSED - All content types properly declared")
                 return True
+        except Exception as e:
+            print(f"FAILED - Error parsing [Content_Types].xml: {e}")
+            return False
 
     def _get_expected_relationship_type(self, element_name):
         elem_lower = element_name.lower()

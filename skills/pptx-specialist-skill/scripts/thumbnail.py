@@ -127,14 +127,13 @@ def get_slide_info(pptx_path: Path) -> list[dict]:
             capture_output=True,
             text=True,
         )
-        )
 
         if result.returncode != 0:
             print("Error: Image conversion failed", file=sys.stderr)
             sys.exit(1)
 
         slides = []
-        for i, image_file in enumerate(sorted(temp_path.glob("slide-*.jpg")):
+        for i, image_file in enumerate(sorted(temp_path.glob("slide-*.jpg"))):
             hidden = False
             if i < len(slide_info):
                 hidden = slide_info[i]["hidden"]
