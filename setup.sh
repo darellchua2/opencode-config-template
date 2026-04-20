@@ -76,7 +76,7 @@ LOG_FILE="${HOME}/.opencode-setup.log"
 CONFIG_DIR="${HOME}/.config/opencode"
 CONFIG_FILE="${CONFIG_DIR}/config.json"
 SKILLS_DIR="${CONFIG_DIR}/skills"
-AGENTS_SRC_DIR="${SCRIPT_DIR}/agents"
+AGENTS_SRC_DIR="${SCRIPT_DIR}/opencode_app/.opencode/agents"
 AGENTS_DEST_DIR="${CONFIG_DIR}/agents"
 BACKUP_DIR="${HOME}/.opencode-backup-$(date +%Y%m%d_%H%M%S)"
 LAST_UPDATE_CHECK="${CONFIG_DIR}/.last-update-check"
@@ -1645,7 +1645,7 @@ setup_config() {
     log_info "Created ${SKILLS_DIR} directory"
 
     # Check if skills folder exists in script directory
-    if [ -d "${SCRIPT_DIR}/skills" ]; then
+    if [ -d "${SCRIPT_DIR}/opencode_app/.opencode/skills" ]; then
         # Check if skills directory already has content
         if [ -d "${SKILLS_DIR}" ] && [ "$(ls -A ${SKILLS_DIR} 2>/dev/null)" ]; then
             log_warn "Skills directory already contains files"
@@ -1664,11 +1664,11 @@ setup_config() {
 
         # Copy skills folder (excluding _archived)
         if command -v rsync &> /dev/null; then
-            run_cmd "rsync -av --exclude='_archived' ${SCRIPT_DIR}/skills/ ${SKILLS_DIR}/"
+            run_cmd "rsync -av --exclude='_archived' ${SCRIPT_DIR}/opencode_app/.opencode/skills/ ${SKILLS_DIR}/"
         else
             # Fallback: copy all except _archived
             mkdir -p "${SKILLS_DIR}"
-            for item in "${SCRIPT_DIR}/skills"/*; do
+            for item in "${SCRIPT_DIR}/opencode_app/.opencode/skills"/*; do
                 item_name=$(basename "$item")
                 if [[ "$item_name" != "_archived" ]]; then
                     cp -r "$item" "${SKILLS_DIR}/"
@@ -1677,7 +1677,7 @@ setup_config() {
         fi
         log_success "Skills copied successfully to ${SKILLS_DIR}"
     else
-        log_warn "skills/ folder not found in ${SCRIPT_DIR}"
+        log_warn "skills/ folder not found in ${SCRIPT_DIR}/opencode_app/.opencode/skills"
     fi
 
     return 0
@@ -1765,7 +1765,7 @@ deploy_agents() {
             echo ""
         fi
     else
-        log_warn "agents/ folder not found in ${SCRIPT_DIR}"
+        log_warn "agents/ folder not found in ${AGENTS_SRC_DIR}"
     fi
 }
 

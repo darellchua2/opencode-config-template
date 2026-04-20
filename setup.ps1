@@ -58,7 +58,7 @@ if (Test-Path $VersionFile) {
 $ConfigDir = Join-Path $HOME ".config\opencode"
 $ConfigFile = Join-Path $ConfigDir "config.json"
 $SkillsDir = Join-Path $ConfigDir "skills"
-$AgentsSrcDir = Join-Path $ScriptDir "agents"
+$AgentsSrcDir = Join-Path $ScriptDir "opencode_app\.opencode\agents"
 $AgentsDestDir = Join-Path $ConfigDir "agents"
 $BackupDir = Join-Path $HOME ".opencode-backup-$(Get-Date -Format 'yyyyMMdd_HHmmss')"
 $LogFile = Join-Path $HOME ".opencode-setup.log"
@@ -1177,7 +1177,7 @@ function Deploy-Skills {
     Write-Host ""
     Write-LogInfo "Setting up skills directory..."
 
-    $skillsSrc = Join-Path $ScriptDir "skills"
+    $skillsSrc = Join-Path $ScriptDir "opencode_app\.opencode\skills"
 
     if (-not $DryRun) {
         if (-not (Test-Path $SkillsDir)) {
@@ -1333,7 +1333,7 @@ function Deploy-Skills {
         Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
         Write-Host ""
     } else {
-        Write-LogWarn "skills/ folder not found in $ScriptDir"
+        Write-LogWarn "skills/ folder not found in $skillsSrc"
     }
 
     Deploy-Agents
@@ -1398,7 +1398,16 @@ function Deploy-Agents {
                 $subagentCount++
             }
         } else {
-            Write-LogWarn "agents/subagents/ directory not found in $ScriptDir"
+            Write-LogWarn "agents/subagents/ directory not found in $AgentsSrcDir"
+        }
+
+        # Also copy flat agent files from root of agents dir
+        $flatAgentFiles = @(Get-ChildItem $AgentsSrcDir -Filter "*.md" -ErrorAction SilentlyContinue)
+        foreach ($file in $flatAgentFiles) {
+            if (-not $DryRun) {
+                Copy-Item $file.FullName (Join-Path $AgentsDestDir $file.Name) -Force
+            }
+            $subagentCount++
         }
 
         $totalCount = $primaryCount + $subagentCount
@@ -1412,7 +1421,7 @@ function Deploy-Agents {
         Write-Host "  Run 'opencode --list-agents' for details"
         Write-Host ""
     } else {
-        Write-LogWarn "agents/ folder not found in $ScriptDir"
+        Write-LogWarn "agents/ folder not found in $AgentsSrcDir"
     }
 }
 

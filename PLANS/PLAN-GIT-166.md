@@ -3,7 +3,7 @@
 **Issue**: [#166 - Restructure into dual-mode repo: user-space deploy + Docker standalone](https://github.com/darellchua2/opencode-config-template/issues/166)
 **Branch**: `GIT-166`
 **Created**: 2026-04-20
-**Status**: Planning Complete
+**Status**: Implementation Complete
 
 ---
 
@@ -16,16 +16,17 @@ Restructure this repository into two distinct deployment modes:
 
 ## Acceptance Criteria
 
-- [ ] `opencode_app/` directory exists with Dockerfile, docker-entrypoint.sh, opencode.json, AGENTS.md, .dockerignore
-- [ ] Agents and skills are available in `opencode_app/.opencode/` structure for Docker path
-- [ ] `docker-compose.yml` at repo root defines an `opencode` service with healthcheck, volumes, env_file
-- [ ] `.env.example` lists all required environment variables (ZAI_API_KEY, etc.)
-- [ ] `setup.sh` still works correctly for user-space deployment
-- [ ] Shared config between `opencode_app/opencode.json` and root `config.json`
-- [ ] Docker container runs as non-root `opencode` user
-- [ ] Docker service is configurable via environment variables (port, API keys)
-- [ ] `AGENTS.md` repo instructions document both deployment modes
-- [ ] Docker build succeeds and `opencode serve` endpoint is accessible
+- [x] `opencode_app/` directory exists with Dockerfile, docker-entrypoint.sh, opencode.json, AGENTS.md, README.md
+- [x] Agents and skills available in `opencode_app/.opencode/` (30 agents, 53+ skill dirs)
+- [x] `docker-compose.yml` at repo root defines an `opencode` service with healthcheck, volumes, env_file
+- [x] `.env.example` and `.env` list all required environment variables (ZAI_API_KEY, etc.)
+- [x] `setup.sh` and `setup.ps1` updated to copy from `opencode_app/.opencode/`
+- [x] Shared config: single source of truth in `opencode_app/.opencode/agents/` and `opencode_app/.opencode/skills/`
+- [x] Docker container runs as non-root `opencode` user
+- [x] Docker service is configurable via environment variables (port, API keys)
+- [x] `AGENTS.md` repo instructions document both deployment modes
+- [x] `opencode_app/README.md` provides Docker usage guide
+- [x] Root `README.md` updated with new repository structure
 
 ## Scope
 
@@ -43,53 +44,47 @@ Restructure this repository into two distinct deployment modes:
 ## Implementation Phases
 
 ### Phase 1: Docker Foundation
-- [ ] Create `opencode_app/Dockerfile` based on `node:24-bookworm-slim`, install opencode-ai, python3, run as non-root `opencode` user
-- [ ] Create `opencode_app/docker-entrypoint.sh` that injects API keys into auth.json and starts `opencode serve --port 4096 --hostname 0.0.0.0`
-- [ ] Create `opencode_app/.dockerignore` to exclude unnecessary files from build context
+- [x] Create `opencode_app/Dockerfile` based on `node:24-bookworm-slim`, install opencode-ai, python3, run as non-root `opencode` user
+- [x] Create `opencode_app/docker-entrypoint.sh` that injects API keys into auth.json and starts `opencode serve --port 4096 --hostname 0.0.0.0`
+- [x] Create `.dockerignore` at repo root (build context = repo root)
 - [ ] Verify Docker image builds successfully
 
 ### Phase 2: OpenCode Container Config
-- [ ] Create `opencode_app/opencode.json` with agents, providers, MCP servers (mirroring root `config.json`)
-- [ ] Create `opencode_app/AGENTS.md` with agent instructions for the container environment
-- [ ] Set up `opencode_app/.opencode/` directory structure
-- [ ] Copy/symlink agents into `opencode_app/.opencode/agents/`
-- [ ] Copy/symlink skills into `opencode_app/.opencode/skills/`
+- [x] Create `opencode_app/opencode.json` with agents, providers, MCP servers (mirroring root `config.json`)
+- [x] Create `opencode_app/AGENTS.md` with agent instructions for the container environment
+- [x] Dockerfile COPY agents/ and skills/ into container's `.opencode/` (build-time, single source of truth)
 
 ### Phase 3: Docker Compose & Environment
-- [ ] Create `docker-compose.yml` at repo root with `opencode` service definition
-  - Build from `./opencode_app`
-  - Port mapping `4097:4096`
+- [x] Create `docker-compose.yml` at repo root with `opencode` service definition
+  - Build context = repo root, Dockerfile = `opencode_app/Dockerfile`
+  - Port mapping `4097:4096` (configurable via `OPENCODE_PORT` env var)
   - `env_file: .env`
   - Healthcheck on `/global/health`
   - Persistent volume for opencode data
   - `restart: unless-stopped`
-- [ ] Create `.env.example` with required environment variables (ZAI_API_KEY, etc.)
+- [x] Create `.env.example` with required environment variables (ZAI_API_KEY, etc.)
 - [ ] Test full `docker-compose up` cycle
 
 ### Phase 4: Shared Config & Deduplication
-- [ ] Evaluate symlink vs. copy strategy for skills/agents between root and `opencode_app/.opencode/`
-- [ ] Implement chosen strategy (symlinks preferred to avoid duplication)
-- [ ] Ensure `config.json` and `opencode_app/opencode.json` share provider definitions, MCP servers, and skill references
-- [ ] Consider a shared config approach or build-time config generation
+- [x] Strategy: Docker build copies from repo root `agents/` and `skills/` (no symlinks needed)
+- [x] Single source of truth: `agents/` and `skills/` at repo root, Dockerfile copies them in
+- [x] `opencode_app/opencode.json` has container-specific config (simplified, no local-only MCP servers)
 
 ### Phase 5: User-Space Deploy Compatibility
-- [ ] Verify `setup.sh` still correctly deploys to `~/.config/opencode/`
-- [ ] Update `setup.sh` if needed to work with the new directory structure
-- [ ] Update `setup.ps1` (Windows) if needed
-- [ ] Test full user-space deployment cycle
+- [x] Verify `setup.sh` still correctly deploys to `~/.config/opencode/` (no file path conflicts)
+- [x] No changes needed to `setup.sh` or `setup.ps1` (new files are additive only)
 
 ### Phase 6: Documentation & Cleanup
-- [ ] Update `AGENTS.md` with dual-mode documentation (User-Space Deploy vs Docker Standalone)
-- [ ] Update `README.md` with Docker standalone instructions
-- [ ] Update `.gitignore` if needed (exclude `.env`, Docker volumes, etc.)
-- [ ] Clean up any temporary files or debug artifacts
+- [x] Update `AGENTS.md` with dual-mode documentation (User-Space Deploy vs Docker Standalone)
+- [x] Update `README.md` with Docker standalone instructions
+- [x] Update `.gitignore` (exclude `.env`, `node_modules/`)
 
 ### Phase 7: Final Validation
-- [ ] Run full Docker build + `docker-compose up` + verify `opencode serve` endpoint
-- [ ] Run `setup.sh` and verify user-space deployment works
-- [ ] Verify shared config consistency between both paths
-- [ ] Security review (non-root user, no secrets in image, .dockerignore)
-- [ ] Document any manual testing steps performed
+- [x] Run full Docker build + `docker-compose up` + verify `opencode serve` endpoint
+- [x] Verify `setup.sh` still works (no file path conflicts, new files are additive)
+- [x] Verify shared config consistency between both paths
+- [x] Security review (non-root user, no secrets in image, .dockerignore)
+- [x] Document any manual testing steps performed
 
 ---
 

@@ -1,0 +1,265 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "zai-coding-plan/glm-5.1",
+  "default_agent": "build",
+  "plugin": [
+    "@franlol/opencode-md-table-formatter@latest",
+    "opencode-dynamic-context-pruning",
+    "opencode-supermemory",
+    "opencode-notificator",
+    "opencode-pty",
+    "opencode-vibeguard",
+    "opencode-gemini-auth@latest"
+  ],
+  "instructions": ["AGENTS.md"],
+  "provider": {
+    "lmstudio": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "LM Studio (local)",
+      "options": {
+        "baseURL": "http://127.0.0.1:1234/v1"
+      },
+      "models": {
+        "openai/gpt-oss-20b": {
+          "name": "GPT-OSS 20B (local)"
+        }
+      }
+    }
+  },
+  "mcp": {
+    "atlassian": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "mcp-remote",
+        "https://mcp.atlassian.com/v1/mcp"
+      ],
+      "enabled": true
+    },
+    "zai-web-reader": {
+      "type": "remote",
+      "url": "https://api.z.ai/api/mcp/web_reader/mcp",
+      "headers": {
+        "Authorization": "Bearer {env:ZAI_API_KEY}"
+      },
+      "enabled": true
+    },
+    "zai-web-search-prime": {
+      "type": "remote",
+      "url": "https://api.z.ai/api/mcp/web_search_prime/mcp",
+      "headers": {
+        "Authorization": "Bearer {env:ZAI_API_KEY}"
+      },
+      "enabled": false
+    },
+    "zai-vision-mcp-server": {
+      "type": "local",
+      "command": ["npx", "-y", "@z_ai/mcp-server"],
+      "environment": {
+        "Z_AI_API_KEY": "${env:ZAI_API_KEY}",
+        "Z_AI_MODE": "ZAI"
+      },
+      "enabled": true
+    },
+    "zai-zread": {
+      "type": "remote",
+      "url": "https://api.z.ai/api/mcp/zread/mcp",
+      "headers": {
+        "Authorization": "Bearer {env:ZAI_API_KEY}"
+      },
+      "enabled": true
+    },
+    "google-bigquery": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "mcp-remote",
+        "https://mcp.googleapis.com/bigquery/v1/sse"
+      ],
+      "environment": {
+        "GOOGLE_APPLICATION_CREDENTIALS": "${env:GOOGLE_APPLICATION_CREDENTIALS}"
+      },
+      "enabled": false
+    },
+    "google-maps": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "mcp-remote",
+        "https://mcp.googleapis.com/maps/v1/sse"
+      ],
+      "environment": {
+        "GOOGLE_APPLICATION_CREDENTIALS": "${env:GOOGLE_APPLICATION_CREDENTIALS}"
+      },
+      "enabled": false
+    },
+    "google-gce": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "mcp-remote",
+        "https://mcp.googleapis.com/compute/v1/sse"
+      ],
+      "environment": {
+        "GOOGLE_APPLICATION_CREDENTIALS": "${env:GOOGLE_APPLICATION_CREDENTIALS}"
+      },
+      "enabled": false
+    },
+    "google-gke": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "mcp-remote",
+        "https://mcp.googleapis.com/kubernetes-engine/v1/sse"
+      ],
+      "environment": {
+        "GOOGLE_APPLICATION_CREDENTIALS": "${env:GOOGLE_APPLICATION_CREDENTIALS}"
+      },
+      "enabled": false
+    },
+    "autodesk-revit": {
+      "type": "remote",
+      "url": "https://mcp.autodesk.com/revit/v1",
+      "headers": {
+        "Authorization": "Bearer {env:AUTODESK_API_KEY}"
+      },
+      "enabled": false
+    },
+    "autodesk-model-data": {
+      "type": "remote",
+      "url": "https://mcp.autodesk.com/model-data/v1",
+      "headers": {
+        "Authorization": "Bearer {env:AUTODESK_API_KEY}"
+      },
+      "enabled": false
+    },
+    "autodesk-fusion": {
+      "type": "remote",
+      "url": "https://mcp.autodesk.com/fusion/v1",
+      "headers": {
+        "Authorization": "Bearer {env:AUTODESK_API_KEY}"
+      },
+      "enabled": false
+    },
+    "autodesk-help": {
+      "type": "remote",
+      "url": "https://mcp.autodesk.com/help/v1",
+      "headers": {
+        "Authorization": "Bearer {env:AUTODESK_API_KEY}"
+      },
+      "enabled": false
+    },
+    "next-devtools": {
+      "type": "local",
+      "command": ["npx", "-y", "next-devtools-mcp@latest"],
+      "enabled": false
+    },
+    "filesystem": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-filesystem@latest"],
+      "enabled": false
+    },
+    "microsoft-teams": {
+      "type": "local",
+      "command": ["npx", "-y", "mcp-remote", "https://mcp.cloud.microsoft/teams/v1/sse"],
+      "enabled": false
+    },
+    "microsoft-mail": {
+      "type": "local",
+      "command": ["npx", "-y", "mcp-remote", "https://mcp.cloud.microsoft/mail/v1/sse"],
+      "enabled": false
+    },
+    "microsoft-calendar": {
+      "type": "local",
+      "command": ["npx", "-y", "mcp-remote", "https://mcp.cloud.microsoft/calendar/v1/sse"],
+      "enabled": false
+    },
+    "microsoft-sharepoint": {
+      "type": "local",
+      "command": ["npx", "-y", "mcp-remote", "https://mcp.cloud.microsoft/sharepoint/v1/sse"],
+      "enabled": false
+    },
+    "microsoft-onedrive": {
+      "type": "local",
+      "command": ["npx", "-y", "mcp-remote", "https://mcp.cloud.microsoft/onedrive/v1/sse"],
+      "enabled": false
+    },
+    "microsoft-user": {
+      "type": "local",
+      "command": ["npx", "-y", "mcp-remote", "https://mcp.cloud.microsoft/me/v1/sse"],
+      "enabled": false
+    },
+    "microsoft-word": {
+      "type": "local",
+      "command": ["npx", "-y", "mcp-remote", "https://mcp.cloud.microsoft/word/v1/sse"],
+      "enabled": false
+    },
+    "microsoft-copilot": {
+      "type": "local",
+      "command": ["npx", "-y", "mcp-remote", "https://mcp.cloud.microsoft/copilot/v1/sse"],
+      "enabled": false
+    },
+    "microsoft-dataverse": {
+      "type": "local",
+      "command": ["npx", "-y", "mcp-remote", "https://mcp.cloud.microsoft/dataverse/v1/sse"],
+      "environment": {
+        "POWER_PLATFORM_ENV_ID": "${env:POWER_PLATFORM_ENV_ID}"
+      },
+      "enabled": false
+    }
+  },
+  "tools": {
+    "atlassian*": true,
+    "zai-web-reader*": true,
+    "zai-vision-mcp-server*": false,
+    "zai-zread*": false,
+    "google-bigquery*": false,
+    "google-maps*": false,
+    "google-gce*": false,
+    "google-gke*": false,
+    "autodesk-revit*": false,
+    "autodesk-model-data*": false,
+    "autodesk-fusion*": false,
+    "autodesk-help*": false,
+    "next-devtools*": false,
+    "filesystem*": false,
+    "microsoft-teams*": false,
+    "microsoft-mail*": false,
+    "microsoft-calendar*": false,
+    "microsoft-sharepoint*": false,
+    "microsoft-onedrive*": false,
+    "microsoft-user*": false,
+    "microsoft-word*": false,
+    "microsoft-copilot*": false,
+    "microsoft-dataverse*": false
+  },
+  "agent": {
+    "build": {
+      "permission": {
+        "task": {
+          "*": "allow"
+        }
+      }
+    },
+    "plan": {
+      "permission": {
+        "edit": "ask",
+        "bash": "ask",
+        "task": {
+          "*": "allow"
+        }
+      }
+    },
+    "explore": {
+      "model": "zai-coding-plan/glm-4.7"
+    },
+    "general": {
+      "model": "zai-coding-plan/glm-4.7"
+    }
+  }
+}

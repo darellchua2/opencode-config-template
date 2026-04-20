@@ -1,0 +1,20 @@
+services:
+  opencode:
+    build:
+      context: ./opencode_app
+    container_name: opencode
+    env_file: .env
+    ports:
+      - "${OPENCODE_PORT:-4097}:4096"
+    volumes:
+      - opencode-data:/home/opencode/.local/share/opencode
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4096/global/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+volumes:
+  opencode-data:

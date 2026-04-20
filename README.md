@@ -1,6 +1,31 @@
 # OpenCode Configuration Template
 
-This repository contains a pre-configured OpenCode configuration file with support for local LM Studio, Jira/Confluence integration via Atlassian MCP, and Z.AI services. It also includes reusable workflow skills for common development tasks.
+A dual-mode OpenCode configurator repository:
+
+1. **User-Space Deploy** — Run `setup.sh` to copy config, agents, and skills to `~/.config/opencode/` for global use
+2. **Docker Standalone** — Run `docker compose up -d` to launch OpenCode as a web endpoint
+
+## Repository Structure
+
+```
+opencode-config-template/
+├── config.json                  # User-space config (agents, MCP servers, providers)
+├── .AGENTS.md                   # User-space subagent routing (deployed)
+├── setup.sh / setup.ps1         # User-space deployment scripts
+├── opencode_app/                # Docker standalone mode
+│   ├── Dockerfile               # Container image
+│   ├── docker-entrypoint.sh     # API key injection + opencode serve
+│   ├── opencode.json            # Container-specific config
+│   ├── AGENTS.md                # Container-specific instructions
+│   ├── .dockerignore
+│   ├── .opencode/
+│   │   ├── agents/              # 30 subagent .md files
+│   │   └── skills/              # 53+ skill directories
+│   └── README.md                # Docker usage guide
+├── docker-compose.yml           # Docker Compose service definition
+├── .env.example                 # Environment variable template
+└── .env                         # Local environment (git-ignored)
+```
 
 ## Installation
 
@@ -47,6 +72,38 @@ powershell -ExecutionPolicy Bypass -File .\setup.ps1 -Quick -Yes
 
 # Show help with all options
 powershell -ExecutionPolicy Bypass -File .\setup.ps1 -Help
+```
+
+### Docker Standalone
+
+Run OpenCode as a standalone web endpoint accessible through the browser:
+
+```bash
+# 1. Copy environment template and add your API keys
+cp .env.example .env
+# Edit .env and set ZAI_API_KEY=your-key-here
+
+# 2. Start the container
+docker compose up -d
+
+# 3. Access OpenCode at http://localhost:4097
+```
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `ZAI_API_KEY` | Yes | — | Z.AI API key (primary LLM provider) |
+| `GEMINI_API_KEY` | No | — | Gemini API key (secondary provider) |
+| `OPENCODE_PORT` | No | `4097` | External port mapping |
+
+```bash
+# View logs
+docker compose logs -f
+
+# Stop
+docker compose down
+
+# Rebuild after changes
+docker compose build --no-cache
 ```
 
 ## Prerequisites
