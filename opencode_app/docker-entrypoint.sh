@@ -8,40 +8,32 @@ AUTH_DIR="/home/opencode/.local/share/opencode"
 AUTH_FILE="${AUTH_DIR}/auth.json"
 mkdir -p "${AUTH_DIR}"
 
-if [ -n "${ZAI_API_KEY}" ]; then
-    cat > "${AUTH_FILE}" <<AUTHJSON
-{
-  "zai": {
-    "type": "api",
-    "key": "${ZAI_API_KEY}"
-  }
-}
-AUTHJSON
-    echo "Injected ZAI API key into ${AUTH_FILE}"
-fi
+# Build auth.json with all available API keys
+python3 << 'PYEOF'
+import json
+import os
 
-if [ -n "${GEMINI_API_KEY}" ]; then
-    if [ -f "${AUTH_FILE}" ]; then
-        python3 -c "
-import json, sys
-with open('${AUTH_FILE}', 'r') as f:
-    data = json.load(f)
-data['gemini'] = {'type': 'api', 'key': '${GEMINI_API_KEY}'}
-with open('${AUTH_FILE}', 'w') as f:
-    json.dump(data, f, indent=2)
-"
-    else
-        cat > "${AUTH_FILE}" <<AUTHJSON
-{
-  "gemini": {
-    "type": "api",
-    "key": "${GEMINI_API_KEY}"
-  }
-}
-AUTHJSON
-    fi
-    echo "Injected Gemini API key into ${AUTH_FILE}"
-fi
+auth = {}
+
+zai_key = os.environ.get("ZAI_API_KEY", "").strip()
+if zai_key:
+    auth["zai"] = {"type": "api", "key": zai_key}
+
+gemini_key = os.environ.get("GEMINI_API_KEY", "").strip()
+if gemini_key:
+    auth["gemini"] = {"type": "api", "key": gemini_key}
+
+auth_file = os.environ.get("AUTH_FILE", "")
+
+if auth:
+    with open(auth_file, "w") as f:
+        json.dump(auth, f, indent=2)
+    print(f"Injected {len(auth)} API key(s) into {auth_file}: {', '.join(auth.keys())}")
+else:
+    print("WARNING: No API keys provided (ZAI_API_KEY, GEMINI_API_KEY)")
+    print("OpenCode will start but LLM calls will fail without authentication")
+PYEOF
+export AUTH_FILE
 
 echo "Starting OpenCode server on ${HOST}:${PORT}..."
 exec opencode serve --port "${PORT}" --hostname "${HOST}"
