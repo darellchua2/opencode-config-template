@@ -337,46 +337,41 @@ USAGE:
     open3d-specialist-subagent  Open3D 3D data processing guidance
 
     Usage: opencode --agent build 'implement auth feature'
-           opencode --agent explore 'find all API routes'
+            opencode --agent explore 'find all API routes'
+ 
+       SKILLS (54):
+           Framework (9):        test-generator-framework, linting-workflow,
+                                  pr-creation-workflow, error-resolver-workflow,
+                                  tdd-workflow, docx-creation, pptx-specialist,
+                                  xlsx-specialist, pdf-specialist
 
-      SKILLS (52):
-          Framework (9):        test-generator-framework, linting-workflow,
-                                 pr-creation-workflow, error-resolver-workflow,
-                                 tdd-workflow, docx-creation, pptx-specialist,
-                                 xlsx-specialist, pdf-specialist
+          Language-Specific (4): python-pytest-creator, python-ruff-linter,
+                                javascript-eslint-linter, changelog-python-cliff
 
-         Language-Specific (4): python-pytest-creator-skill, python-ruff-linter-skill,
-                               javascript-eslint-linter-skill, changelog-python-cliff-skill
+         Framework-Specific (5): nextjs-pr-workflow, nextjs-unit-test-creator,
+                               nextjs-standard-setup, nextjs-image-usage,
+                                typescript-dry-principle
+         OpenCode Meta (3):    opencode-agent-creation, opencode-skill-creation,
+                               opencode-skills-maintainer
+         OpenTofu (7):         opentofu-aws-explorer, opentofu-keycloak-explorer,
+                               opentofu-kubernetes-explorer, opentofu-neon-explorer,
+                               opentofu-provider-setup, opentofu-provisioning-workflow,
+                               opentofu-ecr-provision
+         Git/Workflow (9):     ascii-diagram-creator, mermaid-diagram-creator,
+                               ticket-plan-workflow-skill, plan-execution-skill,
+                               git-issue-labeler, git-issue-updater,
+                               git-semantic-commits, semantic-release-convention,
+                               plan-updater
+        Documentation (3):    coverage-readme-workflow, docstring-generator,
+                               documentation-sync-workflow
 
-        Framework-Specific (5): nextjs-pr-workflow-skill, nextjs-unit-test-creator-skill,
-                              nextjs-standard-setup-skill, nextjs-image-usage-skill,
-                              typescript-dry-principle-skill
+        JIRA (2):             jira-status-updater, jira-git-integration
+        Code Quality (7):     solid-principles, clean-code, clean-architecture,
+                              design-patterns, object-design, code-smells,
+                              complexity-management
 
-        OpenCode Meta (3):    opencode-agent-creation-skill, opencode-skill-creation-skill,
-                              opencode-skills-maintainer-skill
-
-        OpenTofu (7):         opentofu-aws-explorer-skill, opentofu-keycloak-explorer-skill,
-                              opentofu-kubernetes-explorer-skill, opentofu-neon-explorer-skill,
-                              opentofu-provider-setup-skill, opentofu-provisioning-workflow-skill,
-                              opentofu-ecr-provision-skill
-
-        Git/Workflow (9):     ascii-diagram-creator, mermaid-diagram-creator,
-                              ticket-plan-workflow-skill, plan-execution-skill,
-                              git-issue-labeler, git-issue-updater,
-                              git-semantic-commits, semantic-release-convention,
-                              plan-updater
-
-       Documentation (3):    coverage-readme-workflow-skill, docstring-generator-skill,
-                             documentation-sync-workflow-skill
-
-       JIRA (2):             jira-status-updater, jira-git-integration
-
-       Code Quality (7):     solid-principles-skill, clean-code-skill, clean-architecture-skill,
-                             design-patterns-skill, object-design-skill, code-smells-skill,
-                             complexity-management-skill
-
-   Agent Optimization (4):  continuous-learning-skill, eval-harness-skill,
-                             strategic-compact-skill, verification-loop-skill
+    Agent Optimization (4):  continuous-learning, eval-harness,
+                              strategic-compact, verification-loop
 
     Run 'opencode --list-skills' for detailed descriptions
     Run 'opencode --skill <name> \"prompt\"' to invoke a skill
@@ -1215,84 +1210,48 @@ function Deploy-Skills {
                 Copy-Item $_.FullName $SkillsDir -Force
             }
         }
-        Write-LogSuccess "Skills copied successfully to $SkillsDir"
-
+         Write-LogSuccess "Skills copied successfully to $SkillsDir"
+        
         $skillCount = @(Get-ChildItem $SkillsDir -Directory -ErrorAction SilentlyContinue).Count
         Write-Host ""
         Write-Host "Deployed $skillCount skills to $SkillsDir" -ForegroundColor Green
         Write-Host ""
-        Write-Host "  Shared Office Scripts (12):" -ForegroundColor Cyan
-        Write-Host "      - office/unpack.py"
-        Write-Host "      - office/pack.py"
-        Write-Host "      - office/validate.py"
-        Write-Host "      - office/soffice.py"
-        Write-Host "      - office/helpers/merge_runs.py"
-        Write-Host "      - office/helpers/simplify_redlines.py"
-        Write-Host "      - office/validators/__init__.py"
-        Write-Host "      - office/validators/base.py"
-        Write-Host "      - office/validators/docx.py"
-        Write-Host "      - office/validators/pptx.py"
-        Write-Host "      - office/validators/redlining.py"
-        Write-Host ""
-        Write-Host "  Shared Office Scripts (12):" -ForegroundColor Cyan
-        Write-Host "      - office/unpack.py"
-        Write-Host "      - office/pack.py"
-        Write-Host "      - office/validate.py"
-        Write-Host "      - office/soffice.py"
-        Write-Host "      - office/helpers/merge_runs.py"
-        Write-Host "      - office/helpers/simplify_redlines.py"
-        Write-Host "      - office/validators/__init__.py"
-        Write-Host "      - office/validators/base.py"
-        Write-Host "      - office/validators/docx.py"
-        Write-Host "      - office/validators/pptx.py"
-        Write-Host "      - office/validators/redlining.py"
-        Write-Host ""
-        Write-Host "  Shared Office Scripts (12):" -ForegroundColor Cyan
-        Write-Host "      - office/unpack.py"
-        Write-Host "      - office/pack.py"
-        Write-Host "      - office/validate.py"
-        Write-Host "      - office/soffice.py"
-        Write-Host "      - office/helpers/merge_runs.py"
-        Write-Host "      - office/helpers/simplify_redlines.py"
-        Write-Host "      - office/validators/__init__.py"
-        Write-Host "      - office/validators/base.py"
-        Write-Host "      - office/validators/docx.py"
-        Write-Host "      - office/validators/pptx.py"
-        Write-Host "      - office/validators/redlining.py"
-        Write-Host ""
         Write-Host "  Skill Categories:" -ForegroundColor Cyan
-        Write-Host "    Framework (8):"
-        Write-Host "      - test-generator-framework-skill, linting-workflow-skill"
-        Write-Host "      - pr-creation-workflow-skill, jira-git-integration-skill"
-        Write-Host "      - error-resolver-workflow-skill, tdd-workflow-skill"
-        Write-Host "      - docx-creation-skill, coverage-framework"
-        Write-Host "    Language-Specific (4):"
-        Write-Host "      - python-pytest-creator-skill, python-ruff-linter-skill"
-        Write-Host "      - javascript-eslint-linter-skill, changelog-python-cliff-skill"
-        Write-Host "    Framework-Specific (5):"
-        Write-Host "      - nextjs-pr-workflow-skill, nextjs-unit-test-creator-skill"
-        Write-Host "      - nextjs-standard-setup-skill, nextjs-image-usage-skill"
-         Write-Host "      - typescript-dry-principle-skill"
+        Write-Host "    Framework (9):"
+        Write-Host "      - test-generator-framework, linting-workflow"
+        Write-Host "      - pr-creation-workflow, error-resolver-workflow, tdd-workflow"
+        Write-Host "      - docx-creation, pptx-specialist"
+        Write-Host "      - xlsx-specialist, pdf-specialist"
+    - Language-Specific (4):"
+        Write-Host "      - python-pytest-creator, python-ruff-linter"
+        Write-Host "      - javascript-eslint-linter, changelog-python-cliff"
+    - Framework-Specific (5):"
+        Write-Host "      - nextjs-pr-workflow, nextjs-unit-test-creator"
+        Write-Host "      - nextjs-standard-setup, nextjs-image-usage"
+         Write-Host "      - typescript-dry-principle"
          Write-Host "    OpenCode Meta (3):"
-         Write-Host "      - opencode-agent-creation-skill, opencode-skill-creation-skill"
-         Write-Host "      - opencode-skills-maintainer-skill"
+         Write-Host "      - opencode-agent-creation, opencode-skill-creation"
+         Write-Host "      - opencode-skills-maintainer"
          Write-Host "    OpenTofu (7):"
          Write-Host "      - opentofu-aws-explorer, opentofu-keycloak-explorer"
         Write-Host "      - opentofu-kubernetes-explorer, opentofu-neon-explorer"
         Write-Host "      - opentofu-provider-setup, opentofu-provisioning-workflow"
         Write-Host "      - opentofu-ecr-provision"
-        Write-Host "    Git/Workflow (5):"
-        Write-Host "      - ascii-diagram-creator, ticket-plan-workflow-skill"
+    - Git/Workflow (9):"
+        Write-Host "      - ascii-diagram-creator, mermaid-diagram-creator"
+        Write-Host "      - ticket-plan-workflow-skill, plan-execution-skill"
         Write-Host "      - git-issue-labeler, git-issue-updater"
-        Write-Host "      - git-semantic-commits"
-        Write-Host "    Documentation (2):"
+        Write-Host "      - git-semantic-commits, semantic-release-convention"
+        Write-Host "      - plan-updater"
+    - Documentation (3):"
         Write-Host "      - coverage-readme-workflow, docstring-generator"
-        Write-Host "    JIRA (2):"
+        Write-Host "      - documentation-sync-workflow"
+    - JIRA (2):"
         Write-Host "      - jira-status-updater, jira-git-integration"
-        Write-Host "    Code Quality (7):"
-        Write-Host "      - solid-principles-skill, clean-code-skill, clean-architecture-skill"
-        Write-Host "      - design-patterns-skill, object-design-skill, code-smells-skill"
-        Write-Host "      - complexity-management-skill"
+    - Code Quality (7):"
+        Write-Host "      - solid-principles, clean-code, clean-architecture"
+        Write-Host "      - design-patterns, object-design, code-smells"
+        Write-Host "      - complexity-management"
         Write-Host ""
         Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
         Write-Host ""
@@ -1347,11 +1306,22 @@ function Deploy-Agents {
         $existingAgents = @(Get-ChildItem $AgentsDestDir -Filter "*.md" -ErrorAction SilentlyContinue)
         if ($existingAgents.Count -gt 0) {
             Write-LogWarn "Agents directory already contains files"
-
+            
             if (-not (Read-YesNo "Do you want to overwrite existing agents?" $false)) {
                 Write-LogInfo "Skipping agents deployment. Existing agents preserved."
                 return
             }
+            
+            $agentsBackup = Join-Path $BackupDir "agents-backup"
+            if (-not $DryRun) {
+                if (-not (Test-Path $BackupDir)) {
+                    New-Item -ItemType Directory -Path $BackupDir -Force | Out-Null
+                }
+                Copy-Item $AgentsDestDir $agentsBackup -Recurse -Force
+                Write-LogInfo "Backed up existing agents to $agentsBackup"
+            }
+        }
+    }
 
             $agentsBackup = Join-Path $BackupDir "agents-backup"
             if (-not $DryRun) {
@@ -1374,7 +1344,13 @@ function Deploy-Agents {
     if (Test-Path $AgentsSrcDir) {
         $primaryCount = 0
         $subagentCount = 0
-
+        
+        # Detect layout: flat files or subdirectories?
+        $flatLayout = $true
+        if (Test-Path (Join-Path $AgentsSrcDir "primary")) -or (Test-Path (Join-Path $AgentsSrcDir "subagents"))) {
+            $flatLayout = $false
+        }
+        
         # Copy primary agents (flat into agents/)
         $primaryDir = Join-Path $AgentsSrcDir "primary"
         if (Test-Path $primaryDir) {
@@ -1386,7 +1362,7 @@ function Deploy-Agents {
                 $primaryCount++
             }
         }
-
+        
         # Copy subagents (flat into agents/)
         $subagentsDir = Join-Path $AgentsSrcDir "subagents"
         if (Test-Path $subagentsDir) {
@@ -1397,17 +1373,24 @@ function Deploy-Agents {
                 }
                 $subagentCount++
             }
-        } else {
-            Write-LogWarn "agents/subagents/ directory not found in $AgentsSrcDir"
         }
-
-        # Also copy flat agent files from root of agents dir
+        
+        # Also copy flat agent files from root of agents dir (count correctly)
         $flatAgentFiles = @(Get-ChildItem $AgentsSrcDir -Filter "*.md" -ErrorAction SilentlyContinue)
         foreach ($file in $flatAgentFiles) {
             if (-not $DryRun) {
                 Copy-Item $file.FullName (Join-Path $AgentsDestDir $file.Name) -Force
             }
-            $subagentCount++
+            # Check mode in frontmatter to determine type
+            $content = Get-Content $file.FullName -Raw -ErrorAction SilentlyContinue
+            if ($content -match "^mode:\s*primary") {
+                $primaryCount++
+            } elseif ($content -match "^mode:\s*subagent") {
+                $subagentCount++
+            } else {
+                # Default to subagent if mode not specified
+                $subagentCount++
+            }
         }
 
         $totalCount = $primaryCount + $subagentCount
@@ -1697,30 +1680,33 @@ function Show-NextSteps {
     Write-Host "  2. Start LM Studio: http://127.0.0.1:1234/v1"
     Write-Host "  3. Verify installation: opencode --version"
     Write-Host ""
-    Write-Host "Agents (5):"
+    Write-Host "Agents (30):"
     Write-Host "  - build (default) - Full-featured coding agent"
     Write-Host "  - plan - Planning agent (read-only)"
-    Write-Host "  - explore - Fast codebase exploration and analysis"
+    Write-Host "  - explore - Codebase exploration and analysis"
     Write-Host "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
     Write-Host "  - diagram-creator - Diagrams (architecture, flowcharts, UML)"
+    Write-Host "  - ... and 25 more agents"
     Write-Host ""
     Write-Host "  Usage: opencode --agent <name> `"prompt`""
     Write-Host "         opencode `"prompt`" (uses build)"
     Write-Host ""
-    Write-Host "=====================================================================" -ForegroundColor White
-     Write-Host "                     50 Skills Available" -ForegroundColor White
-    Write-Host "=====================================================================" -ForegroundColor White
-    Write-Host ""
-     Write-Host "  Framework (7) • Language-Specific (4) • Framework-Specific (5)"
-     Write-Host "  OpenCode Meta (3) • OpenTofu (7) • Git/Workflow (8)"
-    Write-Host "  Documentation (3) • JIRA (2) • Code Quality (7)"
-    Write-Host ""
-    Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
-    Write-Host "  Run 'opencode --skill <name> `"prompt`"' to invoke a skill"
-    Write-Host ""
-     Write-Host "  Framework (7) | Language-Specific (4) | Framework-Specific (5)"
-     Write-Host "  OpenCode Meta (3) | OpenTofu (7) | Git/Workflow (8)"
-    Write-Host "  Documentation (3) | JIRA (2) | Code Quality (7)"
+     Write-Host "=====================================================================" -ForegroundColor White
+      Write-Host "                     54 Skills Available" -ForegroundColor White
+     Write-Host "=====================================================================" -ForegroundColor White
+     Write-Host ""
+      Write-Host "  Framework (9) • Language-Specific (4) • Framework-Specific (5)"
+      Write-Host "  OpenCode Meta (3) • OpenTofu (7) • Git/Workflow (9)"
+      Write-Host "  Documentation (3) • JIRA (2) • Code Quality (7)"
+      Write-Host "  Agent Optimization (4)"
+      Write-Host ""
+      Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
+      Write-Host "  Run 'opencode --skill <name> `"prompt`"' to invoke a skill"
+      Write-Host ""
+      Write-Host "  Framework (9) | Language-Specific (4) | Framework-Specific (5)"
+      Write-Host "  OpenCode Meta (3) | OpenTofu (7) | Git/Workflow (9)"
+      Write-Host "  Documentation (3) | JIRA (2) | Code Quality (7)"
+      Write-Host "  Agent Optimization (4)"
     Write-Host ""
     Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
     Write-Host "  Run 'opencode --skill <name> `"prompt`"' to invoke a skill"
