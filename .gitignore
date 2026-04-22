@@ -18,3 +18,9 @@ venv/
 # OS
 .DS_Store
 Thumbs.db
+
+# Docker
+.env
+
+# Node
+node_modules/

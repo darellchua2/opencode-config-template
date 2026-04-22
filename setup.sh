@@ -76,7 +76,7 @@ LOG_FILE="${HOME}/.opencode-setup.log"
 CONFIG_DIR="${HOME}/.config/opencode"
 CONFIG_FILE="${CONFIG_DIR}/config.json"
 SKILLS_DIR="${CONFIG_DIR}/skills"
-AGENTS_SRC_DIR="${SCRIPT_DIR}/agents"
+AGENTS_SRC_DIR="${SCRIPT_DIR}/opencode_app/.opencode/agents"
 AGENTS_DEST_DIR="${CONFIG_DIR}/agents"
 BACKUP_DIR="${HOME}/.opencode-backup-$(date +%Y%m%d_%H%M%S)"
 LAST_UPDATE_CHECK="${CONFIG_DIR}/.last-update-check"
@@ -1619,12 +1619,14 @@ setup_config() {
             log_success "config.json copied successfully"
 
             echo ""
-            echo "✓ Configured 5 agents:"
+            echo "✓ Configured 30 agents:"
             echo "    - build (default) - Full-featured coding agent"
             echo "    - plan - Planning agent (read-only)"
             echo "    - explore - Codebase exploration and analysis"
             echo "    - image-analyzer-subagent - Image/screenshot analysis"
             echo "    - diagram-creator - Diagram creation"
+            echo "    - mermaid-diagram-subagent - Mermaid diagrams with PNG conversion"
+            echo "    - ... and 24 more subagents"
             echo ""
             echo "✓ Configured 5 MCP servers:"
             echo "    Local (auto-start): atlassian, zai-vision-mcp-server"
@@ -1645,7 +1647,7 @@ setup_config() {
     log_info "Created ${SKILLS_DIR} directory"
 
     # Check if skills folder exists in script directory
-    if [ -d "${SCRIPT_DIR}/skills" ]; then
+    if [ -d "${SCRIPT_DIR}/opencode_app/.opencode/skills" ]; then
         # Check if skills directory already has content
         if [ -d "${SKILLS_DIR}" ] && [ "$(ls -A ${SKILLS_DIR} 2>/dev/null)" ]; then
             log_warn "Skills directory already contains files"
@@ -1664,11 +1666,11 @@ setup_config() {
 
         # Copy skills folder (excluding _archived)
         if command -v rsync &> /dev/null; then
-            run_cmd "rsync -av --exclude='_archived' ${SCRIPT_DIR}/skills/ ${SKILLS_DIR}/"
+            run_cmd "rsync -av --exclude='_archived' ${SCRIPT_DIR}/opencode_app/.opencode/skills/ ${SKILLS_DIR}/"
         else
             # Fallback: copy all except _archived
             mkdir -p "${SKILLS_DIR}"
-            for item in "${SCRIPT_DIR}/skills"/*; do
+            for item in "${SCRIPT_DIR}/opencode_app/.opencode/skills"/*; do
                 item_name=$(basename "$item")
                 if [[ "$item_name" != "_archived" ]]; then
                     cp -r "$item" "${SKILLS_DIR}/"
@@ -1677,7 +1679,7 @@ setup_config() {
         fi
         log_success "Skills copied successfully to ${SKILLS_DIR}"
     else
-        log_warn "skills/ folder not found in ${SCRIPT_DIR}"
+        log_warn "skills/ folder not found in ${SCRIPT_DIR}/opencode_app/.opencode/skills"
     fi
 
     return 0
@@ -1711,14 +1713,20 @@ deploy_agents() {
         local primary_count=0
         local subagent_count=0
         local agent_count=0
-
-        # Copy all agent markdown files from flat agents/ directory
+        
+        # Detect layout: flat files or subdirectories?
+        local flat_layout=true
+        if [ -d "${AGENTS_SRC_DIR}/primary" ] || [ -d "${AGENTS_SRC_DIR}/subagents" ]; then
+            flat_layout=false
+        fi
+        
+        # Copy all agent markdown files from flat agents/ directory (or count them)
         for agent_file in "${AGENTS_SRC_DIR}"/*.md; do
             if [ -f "$agent_file" ]; then
                 local filename=$(basename "$agent_file")
                 run_cmd "cp ${agent_file} ${AGENTS_DEST_DIR}/${filename}"
                 agent_count=$((agent_count + 1))
-
+                
                 # Count by mode (check frontmatter for mode: primary vs subagent)
                 if grep -q "^mode: primary" "$agent_file" 2>/dev/null; then
                     primary_count=$((primary_count + 1))
@@ -1727,7 +1735,7 @@ deploy_agents() {
                 fi
             fi
         done
-
+        
         # Also support subdirectory layout (agents/primary/ and agents/subagents/)
         if [ -d "${AGENTS_SRC_DIR}/primary" ]; then
             for agent_file in "${AGENTS_SRC_DIR}"/primary/*.md; do
@@ -1739,7 +1747,7 @@ deploy_agents() {
                 fi
             done
         fi
-
+        
         if [ -d "${AGENTS_SRC_DIR}/subagents" ]; then
             for agent_file in "${AGENTS_SRC_DIR}"/subagents/*.md; do
                 if [ -f "$agent_file" ]; then
@@ -1765,7 +1773,7 @@ deploy_agents() {
             echo ""
         fi
     else
-        log_warn "agents/ folder not found in ${SCRIPT_DIR}"
+        log_warn "agents/ folder not found in ${AGENTS_SRC_DIR}"
     fi
 }
 
@@ -2120,12 +2128,14 @@ print_summary() {
 
     # Agents configured
     if [ -f "$CONFIG_FILE" ]; then
-        echo "✓ Configured 5 agents:"
+        echo "✓ Configured 30 agents:"
         echo "    - build (default) - Full-featured coding agent"
         echo "    - plan - Planning agent (read-only)"
         echo "    - explore - Codebase exploration and analysis"
         echo "    - image-analyzer-subagent - Image/screenshot analysis"
         echo "    - diagram-creator - Diagram creation"
+        echo "    - mermaid-diagram-subagent - Mermaid diagrams with PNG conversion"
+        echo "    - ... and 24 more subagents"
     fi
 
     # MCP servers configured
@@ -2142,30 +2152,31 @@ print_summary() {
     if [ -d "$SKILLS_DIR" ] && [ "$(ls -A ${SKILLS_DIR} 2>/dev/null)" ]; then
         local skill_count=$(find ${SKILLS_DIR} -name "SKILL.md" 2>/dev/null | wc -l)
         echo "✓ skills: ${skill_count} skills deployed to ${SKILLS_DIR}/"
-        echo "    - Framework (8):"
-        echo "      - test-generator-framework-skill"
-        echo "      - linting-workflow-skill"
-        echo "      - pr-creation-workflow-skill"
-        echo "      - jira-git-integration-skill"
-        echo "      - error-resolver-workflow-skill"
-        echo "      - tdd-workflow-skill"
-        echo "      - coverage-framework"
-        echo "      - docx-creation-skill"
+        echo "    - Framework (9):"
+        echo "      - test-generator-framework"
+        echo "      - linting-workflow"
+        echo "      - pr-creation-workflow"
+        echo "      - error-resolver-workflow"
+        echo "      - tdd-workflow"
+        echo "      - docx-creation"
+        echo "      - pptx-specialist"
+        echo "      - xlsx-specialist"
+        echo "      - pdf-specialist"
         echo "    - Language-Specific (4):"
-        echo "      - python-pytest-creator-skill"
-        echo "      - python-ruff-linter-skill"
-        echo "      - javascript-eslint-linter-skill"
-        echo "      - changelog-python-cliff-skill"
+        echo "      - python-pytest-creator"
+        echo "      - python-ruff-linter"
+        echo "      - javascript-eslint-linter"
+        echo "      - changelog-python-cliff"
         echo "    - Framework-Specific (5):"
-        echo "      - nextjs-pr-workflow-skill"
-        echo "      - nextjs-unit-test-creator-skill"
-        echo "      - nextjs-standard-setup-skill"
-        echo "      - nextjs-image-usage-skill"
-        echo "      - typescript-dry-principle-skill"
+        echo "      - nextjs-pr-workflow"
+        echo "      - nextjs-unit-test-creator"
+        echo "      - nextjs-standard-setup"
+        echo "      - nextjs-image-usage"
+        echo "      - typescript-dry-principle"
         echo "    - OpenCode Meta (3):"
-        echo "      - opencode-agent-creation-skill"
-        echo "      - opencode-skill-creation-skill"
-        echo "      - opencode-skills-maintainer-skill"
+        echo "      - opencode-agent-creation"
+        echo "      - opencode-skill-creation"
+        echo "      - opencode-skills-maintainer"
         echo "    - OpenTofu (7):"
         echo "      - opentofu-aws-explorer"
         echo "      - opentofu-keycloak-explorer"
@@ -2174,26 +2185,32 @@ print_summary() {
         echo "      - opentofu-provider-setup"
         echo "      - opentofu-provisioning-workflow"
         echo "      - opentofu-ecr-provision"
-        echo "    - Git/Workflow (5):"
+        echo "    - Git/Workflow (9):"
         echo "      - ascii-diagram-creator"
+        echo "      - mermaid-diagram-creator"
         echo "      - ticket-plan-workflow-skill"
+        echo "      - plan-execution-skill"
         echo "      - git-issue-labeler"
         echo "      - git-issue-updater"
         echo "      - git-semantic-commits"
-        echo "    - Documentation (2):"
+        echo "      - semantic-release-convention"
+        echo "      - plan-updater"
+        echo "    - Documentation (3):"
         echo "      - coverage-readme-workflow"
         echo "      - docstring-generator"
+        echo "      - documentation-sync-workflow"
         echo "    - JIRA (2):"
         echo "      - jira-status-updater"
         echo "      - jira-git-integration"
         echo "    - Code Quality (7):"
-        echo "      - solid-principles-skill"
-        echo "      - clean-code-skill"
-        echo "      - clean-architecture-skill"
-        echo "      - design-patterns-skill"
-        echo "      - object-design-skill"
-        echo "      - code-smells-skill"
-        echo "      - complexity-management-skill"
+        echo "      - solid-principles"
+        echo "      - clean-code"
+        echo "      - clean-architecture"
+        echo "      - design-patterns"
+        echo "      - object-design"
+        echo "      - code-smells"
+        echo "      - complexity-management"
+
     else
         echo "✗ skills: Not deployed"
     fi
@@ -2246,23 +2263,25 @@ print_next_steps() {
     echo "                        🚀 Quick Start"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "🤖 Agents (5):"
+    echo "🤖 Agents (30):"
     echo "  - build (default) - Full-featured coding agent"
     echo "  - plan - Planning agent (read-only)"
     echo "  - explore - Fast codebase exploration and analysis"
     echo "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
     echo "  - diagram-creator - Diagrams (architecture, flowcharts, UML)"
+    echo "  - ... and 25 more agents"
     echo ""
     echo "  Usage: opencode --agent <name> \"prompt\""
     echo "         opencode \"prompt\" (uses build)"
-    echo ""
+     echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "                     📦 50 Skills Available"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "                     📦 54 Skills Available"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "  Framework (7) • Language-Specific (4) • Framework-Specific (5)"
-    echo "  OpenCode Meta (3) • OpenTofu (7) • Git/Workflow (8)"
+    echo "  Framework (9) • Language-Specific (4) • Framework-Specific (5)"
+    echo "  OpenCode Meta (3) • OpenTofu (7) • Git/Workflow (9)"
     echo "  Documentation (3) • JIRA (2) • Code Quality (7)"
+    echo "  Agent Optimization (4)"
     echo ""
     echo "  Run 'opencode --list-skills' for detailed descriptions"
     echo "  Run 'opencode --skill <name> \"prompt\"' to use a skill"
