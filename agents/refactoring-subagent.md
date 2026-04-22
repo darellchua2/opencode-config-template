@@ -9,6 +9,10 @@ permission:
   glob: allow
   grep: allow
   bash: deny
+  task:
+    "*": deny
+    explore: allow
+    general: allow
   skill:
     typescript-dry-principle: allow
     solid-principles: allow
@@ -58,6 +62,17 @@ Best Practices:
 - Type safety with generics
 - Extract early
 - Utility-first approach
+
+Built-in Subagent Delegation:
+- Delegate to `explore` for codebase analysis:
+  - Finding duplicate code patterns across files
+  - Mapping class hierarchies and interface implementations
+  - Locating files with similar exports, interfaces, and function signatures
+  - Identifying shared logic that could be consolidated
+- Delegate to `general` for parallel refactoring:
+  - Refactor independent modules simultaneously (e.g., extract utilities from files A-C, D-F in parallel)
+  - Run type-check and lint in parallel after refactoring to verify changes
+- Use `explore` via Task tool with subagent_type="explore" for analysis, `general` via subagent_type="general" for parallel work
 
 Delegation:
 - Build/test commands: Request from parent agent
