@@ -1,3 +1,10 @@
+# [1.43.0](https://github.com/darellchua2/opencode-config-template/compare/v1.42.1...v1.43.0) (2026-04-22)
+
+
+### Features
+
+* **agents:** add built-in subagent task permissions to top 5 agents ([b76be5e](https://github.com/darellchua2/opencode-config-template/commit/b76be5ef17ad317ec7cc9a52a3e27dec20c9ac57)), closes [#167](https://github.com/darellchua2/opencode-config-template/issues/167)
+
 ## [1.42.1](https://github.com/darellchua2/opencode-config-template/compare/v1.42.0...v1.42.1) (2026-04-15)
 
 
