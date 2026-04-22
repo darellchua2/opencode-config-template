@@ -10,6 +10,10 @@ permission:
   grep: allow
   bash: allow
   atlassian*: allow
+  task:
+    "*": deny
+    explore: allow
+    general: allow
   skill:
     semantic-release-convention: allow
     pr-creation-workflow: allow
@@ -62,6 +66,17 @@ JIRA Integration:
 JIRA MCP Tools:
 - atlassian_jira_add_comment: Add PR link to ticket
 - atlassian_jira_transitions: Transition ticket to "In Review" / "Done"
+
+Built-in Subagent Delegation:
+- Delegate to `explore` for project analysis:
+  - Detecting project framework, language, and build tools
+  - Finding test runners, lint configs, and CI/CD pipelines
+  - Mapping project structure for PR scope assessment
+- Delegate to `general` for parallelizable quality checks:
+  - Run lint + typecheck in parallel (both are independent reads)
+  - Generate coverage report while preparing PR description
+  - Collect JIRA ticket info while running build checks
+- Use `explore` via Task tool with subagent_type="explore" for discovery, `general` via subagent_type="general" for parallel work
 
 Subagent Coordination:
 - Delegate to linting-subagent for code quality checks

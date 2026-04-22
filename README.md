@@ -159,36 +159,38 @@ This repository implements **skill modularization** with 53 skills organized acr
 
 #### Subagents
 
-| Subagent | Purpose | Skills |
-|----------|---------|--------|
-| **linting-subagent** | Code quality and style (Python, JS/TS, Java Spring Boot, C# .NET) | linting-workflow, python-ruff-linter, javascript-eslint-linter |
-| **testing-subagent** | Test generation and execution | test-generator-framework, python-pytest-creator, nextjs-unit-test-creator |
-| **tdd-subagent** | Test-driven development workflow | tdd-workflow, test-generator-framework |
-| **pr-workflow-subagent** | Pull request creation | pr-creation-workflow, nextjs-pr-workflow |
-| **ticket-creation-subagent** | Issue/ticket creation | ticket-plan-workflow-skill |
-| **documentation-subagent** | Documentation generation | docstring-generator, coverage-readme-workflow |
-| **coverage-subagent** | Coverage reporting | coverage-readme-workflow |
-| **opentofu-explorer-subagent** | Infrastructure as code | 7 OpenTofu skills (AWS, K8s, Keycloak, Neon, ECR) |
-| **code-quality-subagent** | SOLID, clean code, code smells | solid-principles, clean-code, code-smells |
-| **architecture-review-subagent** | Architecture and design patterns | clean-architecture, design-patterns, complexity-management |
-| **code-review-subagent** | Comprehensive code review | All 7 Code Quality skills |
-| **refactoring-subagent** | Code refactoring | solid-principles, code-smells, clean-code |
-| **error-resolver-subagent** | Error diagnosis and resolution | error-resolver-workflow |
-| **nextjs-setup-subagent** | Next.js project setup | nextjs-standard-setup (also see docstring-generator for TSDoc) |
-| **opencode-tooling-subagent** | Skills, agents, and rules creation + doc sync | opencode-skill-creation, opencode-agent-creation, opencode-skills-maintainer, documentation-sync-workflow |
-| **docx-creation-subagent** | Word document creation | docx-creation |
-| **diagram-subagent** | ASCII diagrams and images | ascii-diagram-creator, mermaid-diagram-creator |
-| **mermaid-diagram-subagent** | Mermaid diagrams with PNG conversion | mermaid-diagram-creator |
-| **image-analyzer-subagent** | Image analysis and conversion | (built-in capabilities) |
-| **google-mcp-specialist-subagent** | Google Cloud MCP setup and usage | google-bigquery, google-maps, google-gce, google-gke |
-| **autodesk-specialist-subagent** | Autodesk API integration | autodesk-revit, autodesk-model-data, autodesk-fusion |
-| **civil-3d-specialist-subagent** | Autodesk Civil 3D model modifications and features | (documentation search + version-specific guidance) |
-| **microsoft-m365-specialist-subagent** | Microsoft 365 MCP setup and usage | microsoft-teams, microsoft-mail, microsoft-calendar, microsoft-sharepoint |
-| **open3d-specialist-subagent** | Open3D 3D data processing guidance | (documentation search + version-specific guidance) |
-| **explorer-subagent** | Fast codebase exploration and analysis | (built-in search capabilities) |
-| **nextjs-mcp-advisor-subagent** | Next.js runtime guidance with MCP | nextjs-pr-workflow, nextjs-unit-test-creator |
-| **pptx-specialist-subagent** | PowerPoint presentations (read, create, edit, analyze) | pptx-specialist |
-| **startup-ceo-subagent** | Startup presentations (pitch decks, investor slides, board updates) | pptx-specialist |
+| Subagent | Purpose | Skills | Built-in Delegation |
+|----------|---------|--------|---------------------|
+| **linting-subagent** | Code quality and style (Python, JS/TS, Java Spring Boot, C# .NET) | linting-workflow, python-ruff-linter, javascript-eslint-linter | `explore` |
+| **testing-subagent** | Test generation and execution | test-generator-framework, python-pytest-creator, nextjs-unit-test-creator | `explore` |
+| **tdd-subagent** | Test-driven development workflow | tdd-workflow, test-generator-framework | — |
+| **pr-workflow-subagent** | Pull request creation | pr-creation-workflow, nextjs-pr-workflow | `explore`, `general` |
+| **ticket-creation-subagent** | Issue/ticket creation | ticket-plan-workflow-skill | — |
+| **documentation-subagent** | Documentation generation | docstring-generator, coverage-readme-workflow | — |
+| **coverage-subagent** | Coverage reporting | coverage-readme-workflow | — |
+| **opentofu-explorer-subagent** | Infrastructure as code | 7 OpenTofu skills (AWS, K8s, Keycloak, Neon, ECR) | — |
+| **code-quality-subagent** | SOLID, clean code, code smells | solid-principles, clean-code, code-smells | — |
+| **architecture-review-subagent** | Architecture and design patterns | clean-architecture, design-patterns, complexity-management | — |
+| **code-review-subagent** | Comprehensive code review | All 7 Code Quality skills | `explore` |
+| **refactoring-subagent** | Code refactoring | solid-principles, code-smells, clean-code | `explore`, `general` |
+| **error-resolver-subagent** | Error diagnosis and resolution | error-resolver-workflow | — |
+| **nextjs-setup-subagent** | Next.js project setup | nextjs-standard-setup (also see docstring-generator for TSDoc) | — |
+| **opencode-tooling-subagent** | Skills, agents, and rules creation + doc sync | opencode-skill-creation, opencode-agent-creation, opencode-skills-maintainer, documentation-sync-workflow | — |
+| **docx-creation-subagent** | Word document creation | docx-creation | — |
+| **diagram-subagent** | ASCII diagrams and images | ascii-diagram-creator, mermaid-diagram-creator | — |
+| **mermaid-diagram-subagent** | Mermaid diagrams with PNG conversion | mermaid-diagram-creator | — |
+| **image-analyzer-subagent** | Image analysis and conversion | (built-in capabilities) | — |
+| **google-mcp-specialist-subagent** | Google Cloud MCP setup and usage | google-bigquery, google-maps, google-gce, google-gke | — |
+| **autodesk-specialist-subagent** | Autodesk API integration | autodesk-revit, autodesk-model-data, autodesk-fusion | — |
+| **civil-3d-specialist-subagent** | Autodesk Civil 3D model modifications and features | (documentation search + version-specific guidance) | — |
+| **microsoft-m365-specialist-subagent** | Microsoft 365 MCP setup and usage | microsoft-teams, microsoft-mail, microsoft-calendar, microsoft-sharepoint | — |
+| **open3d-specialist-subagent** | Open3D 3D data processing guidance | (documentation search + version-specific guidance) | — |
+| **explorer-subagent** | Fast codebase exploration and analysis | (built-in search capabilities) | — |
+| **nextjs-mcp-advisor-subagent** | Next.js runtime guidance with MCP | nextjs-pr-workflow, nextjs-unit-test-creator | — |
+| **pptx-specialist-subagent** | PowerPoint presentations (read, create, edit, analyze) | pptx-specialist | — |
+| **startup-ceo-subagent** | Startup presentations (pitch decks, investor slides, board updates) | pptx-specialist | — |
+
+> **Built-in Delegation**: Subagents with `explore` can delegate codebase scanning to the built-in `explore` subagent. Subagents with `general` can delegate parallelizable multi-step work to the built-in `general` subagent. Access is controlled via `task` permissions in each agent's frontmatter (`"*": deny` by default, explicit allowlist).
 
 #### Trigger Phrases
 
@@ -268,18 +270,18 @@ This repository includes 7 new code quality skills for writing senior-engineer q
 ### Code Quality Subagents
 3 new subagents provide specialized code quality analysis:
 
-| Subagent | Purpose | Skills Used |
-|----------|---------|-------------|
-| `code-quality-subagent` | SOLID principles, clean code, code smells | solid-principles, clean-code, code-smells |
-| `architecture-review-subagent` | Architecture review and design patterns | clean-architecture, design-patterns, complexity-management |
-| `code-review-subagent` | Comprehensive code review (all quality skills) | All 7 quality skills |
+| Subagent | Purpose | Skills Used | Built-in Delegation |
+|----------|---------|-------------|---------------------|
+| `code-quality-subagent` | SOLID principles, clean code, code smells | solid-principles, clean-code, code-smells | — |
+| `architecture-review-subagent` | Architecture review and design patterns | clean-architecture, design-patterns, complexity-management | — |
+| `code-review-subagent` | Comprehensive code review (all quality skills) | All 7 quality skills | `explore` |
 
 ### Enhanced Subagent
-The `refactoring-subagent` has been enhanced with new skills:
+The `refactoring-subagent` has been enhanced with new skills and built-in subagent delegation:
 
-| Subagent | New Skills Added |
-|----------|------------------|
-| `refactoring-subagent` | solid-principles, code-smells, clean-code |
+| Subagent | New Skills Added | Built-in Delegation |
+|----------|------------------|---------------------|
+| `refactoring-subagent` | solid-principles, code-smells, clean-code | `explore`, `general` |
 
 ### Related Existing Skills
 | New Skill | Related Existing Skills |
