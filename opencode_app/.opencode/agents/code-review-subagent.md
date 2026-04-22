@@ -9,6 +9,9 @@ permission:
   glob: allow
   grep: allow
   bash: deny
+  task:
+    "*": deny
+    explore: allow
   skill:
     solid-principles: allow
     clean-code: allow
@@ -78,6 +81,14 @@ Output Format:
 ## Recommended Actions (Priority Order)
 1. ...
 2. ...
+
+Built-in Subagent Delegation:
+- Delegate to `explore` for codebase scanning tasks:
+  - Finding files matching patterns (glob) before review
+  - Searching for specific code patterns (SOLID violations, code smells, design anti-patterns)
+  - Mapping class hierarchies and dependency graphs
+  - Locating related files across the project
+- Use `explore` via Task tool with subagent_type="explore" when initial codebase exploration is needed before focused review
 
 Delegation:
 - Code changes: Request from parent agent (read-only review)
