@@ -1,3 +1,17 @@
+# [1.44.0](https://github.com/darellchua2/opencode-config-template/compare/v1.43.0...v1.44.0) (2026-04-22)
+
+
+### Bug Fixes
+
+* resolve docker-entrypoint.sh auth.json generation error ([62b1a1b](https://github.com/darellchua2/opencode-config-template/commit/62b1a1b823e2f11687e79448c49d58bbaabab23d))
+* rewrite docker-entrypoint.sh to build auth.json in single pass ([6476d9b](https://github.com/darellchua2/opencode-config-template/commit/6476d9bb2f764e75f7925feda8b8d27a8da07bff))
+* **setup:** correct echo formatting in print_summary skill listings ([75270c5](https://github.com/darellchua2/opencode-config-template/commit/75270c53dde6107b209643e2173f021a4be23bc8))
+
+
+### Features
+
+* implement dual-mode repo with Docker standalone and user-space deploy ([5724429](https://github.com/darellchua2/opencode-config-template/commit/572442911089c78a49d9fbf48bda22b98b30d8a4)), closes [#166](https://github.com/darellchua2/opencode-config-template/issues/166)
+
 # [1.43.0](https://github.com/darellchua2/opencode-config-template/compare/v1.42.1...v1.43.0) (2026-04-22)
 
 
