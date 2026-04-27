@@ -7,7 +7,19 @@ services:
     ports:
       - "${OPENCODE_PORT:-4097}:4096"
     volumes:
+      # OpenCode internal state (sessions, history, auth)
       - opencode-data:/home/opencode/.local/share/opencode
+      # Primary workspace — set WORKSPACE_DIR in .env (e.g. ~/VSCODE)
+      - ${WORKSPACE_DIR:-~/Projects}:/workspace
+      # ── Additional workspace mounts (uncomment as needed) ──────────
+      # - ~/other-project:/workspace-extra/project-name
+      # - ~/another-dir:/workspace-extra/another
+      # ───────────────────────────────────────────────────────────────
+      # GitHub SSH keys (read-only staging, copied in entrypoint)
+      - ~/.ssh:/tmp/ssh-host:ro
+      # Persistent tool caches (survive container rebuilds)
+      - npm-cache:/home/opencode/.npm
+      - pip-cache:/home/opencode/.cache/pip
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:4096/global/health"]
@@ -18,3 +30,5 @@ services:
 
 volumes:
   opencode-data:
+  npm-cache:
+  pip-cache:
