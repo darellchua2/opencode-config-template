@@ -1,3 +1,10 @@
+# [1.45.0](https://github.com/darellchua2/opencode-config-template/compare/v1.44.0...v1.45.0) (2026-04-27)
+
+
+### Features
+
+* **docker:** add code execution, persistent volumes, folder passthrough, and git support ([#172](https://github.com/darellchua2/opencode-config-template/issues/172)) ([ace6f49](https://github.com/darellchua2/opencode-config-template/commit/ace6f49eaae05effe87ba402452712e084e258cb)), closes [#171](https://github.com/darellchua2/opencode-config-template/issues/171)
+
 # [1.44.0](https://github.com/darellchua2/opencode-config-template/compare/v1.43.0...v1.44.0) (2026-04-22)
 
 
