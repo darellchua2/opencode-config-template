@@ -15,10 +15,14 @@ RUN apt-get update \
         python3-venv \
         ca-certificates \
         curl \
+        git \
+        openssh-client \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-RUN npm install -g "opencode-ai@${OPENCODE_VERSION}"
+RUN npm install -g "opencode-ai@${OPENCODE_VERSION}" \
+    typescript \
+    ts-node
 
 RUN python3 -m venv /opt/python-env
 ENV PATH="/opt/python-env/bin:${PATH}"
@@ -26,7 +30,10 @@ ENV PATH="/opt/python-env/bin:${PATH}"
 RUN pip install --no-cache-dir \
     "openpyxl>=3.1.0" \
     "pandas>=3.0.0" \
-    "pdfplumber>=0.11.0"
+    "pdfplumber>=0.11.0" \
+    "requests>=2.32.0" \
+    "numpy>=2.0.0" \
+    "fastapi>=0.115.0"
 
 RUN useradd -m -d /home/opencode -s /bin/bash opencode
 
