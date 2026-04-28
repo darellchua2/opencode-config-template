@@ -1,3 +1,10 @@
+# [1.46.0](https://github.com/darellchua2/opencode-config-template/compare/v1.45.0...v1.46.0) (2026-04-28)
+
+
+### Features
+
+* **scripts:** add PM2 restart script for opencode serve ([#173](https://github.com/darellchua2/opencode-config-template/issues/173)) ([4474384](https://github.com/darellchua2/opencode-config-template/commit/4474384464eda5d98c3ff8de1a0ba9942afa0227))
+
 # [1.45.0](https://github.com/darellchua2/opencode-config-template/compare/v1.44.0...v1.45.0) (2026-04-27)
 
 
