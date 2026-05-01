@@ -1,3 +1,10 @@
+# [1.47.0](https://github.com/darellchua2/opencode-config-template/compare/v1.46.0...v1.47.0) (2026-05-01)
+
+
+### Features
+
+* **scripts:** add git pull to pm2 restart script ([e7454eb](https://github.com/darellchua2/opencode-config-template/commit/e7454eb484717e8f43c4508af22fe097f90fa756))
+
 # [1.46.0](https://github.com/darellchua2/opencode-config-template/compare/v1.45.0...v1.46.0) (2026-04-28)
 
 
