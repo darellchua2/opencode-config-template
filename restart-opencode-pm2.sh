@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+cd /home/silentx/VSCODE/opencode-config-template
+git checkout main
+git stash
+git pull
+git stash pop 2>/dev/null || true
+
 pm2 delete opencode 2>/dev/null || true
 pm2 start "opencode serve --hostname 0.0.0.0 --port 4096" --name opencode
 pm2 save
