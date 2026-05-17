@@ -1,3 +1,10 @@
+# [1.49.0](https://github.com/darellchua2/opencode-config-template/compare/v1.48.0...v1.49.0) (2026-05-17)
+
+
+### Features
+
+* add LEARNINGS infrastructure with dual-strategy knowledge persistence ([#184](https://github.com/darellchua2/opencode-config-template/issues/184)) ([c328240](https://github.com/darellchua2/opencode-config-template/commit/c3282402ca9214c7854be5310035e5e61b54a491))
+
 # [1.48.0](https://github.com/darellchua2/opencode-config-template/compare/v1.47.1...v1.48.0) (2026-05-17)
 
 
