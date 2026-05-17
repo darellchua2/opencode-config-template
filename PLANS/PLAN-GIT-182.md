@@ -19,17 +19,17 @@ GitHub Actions running on Node.js 20 will be forced to Node.js 24 starting **Jun
 
 | Action | Current | Target | Line |
 |--------|---------|--------|------|
-| `actions/checkout` | `@v4` | `@v5` | 24 |
-| `actions/setup-node` | `@v4` | `@v5` | 41 |
-| `actions/upload-artifact` | `@v4` | `@v5` | 72 |
+| `actions/checkout` | `@v4` | `@v6` | 24 |
+| `actions/setup-node` | `@v4` | `@v6` | 41 |
+| `actions/upload-artifact` | `@v4` | `@v7` | 72 |
 
 ## Phases
 
 ### Phase 1: Update Action Versions
 - [ ] Verify latest major versions on GitHub Marketplace
-- [ ] Update `actions/checkout@v4` → `@v5` (line 24)
-- [ ] Update `actions/setup-node@v4` → `@v5` (line 41)
-- [ ] Update `actions/upload-artifact@v4` → `@v5` (line 72)
+- [ ] Update `actions/checkout@v4` → `@v6` (line 24)
+- [ ] Update `actions/setup-node@v4` → `@v6` (line 41)
+- [ ] Update `actions/upload-artifact@v4` → `@v7` (line 72)
 - [ ] Update `setup-node` `node-version` from `'20'` to `'24'`
 
 ### Phase 2: Validate & Push
@@ -53,8 +53,8 @@ GitHub Actions running on Node.js 20 will be forced to Node.js 24 starting **Jun
 
 | Risk | Mitigation |
 |------|------------|
-| v5 versions not yet released | Verify on GitHub Marketplace before updating; fall back to latest v4 patch |
-| Breaking changes in v5 | Review release notes for each action; adjust parameters if needed |
+| v6/v7 breaking changes | Verified on GitHub Marketplace; reviewed release notes |
+| CI fails after update | PR-based validation catches issues before merge |
 | CI fails after update | PR-based validation catches issues before merge |
 
 ## References
