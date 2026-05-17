@@ -1,3 +1,10 @@
+# [1.48.0](https://github.com/darellchua2/opencode-config-template/compare/v1.47.1...v1.48.0) (2026-05-17)
+
+
+### Features
+
+* add frontend-design-skill and enhance pptx/docx/xlsx with anti-AI-slop aesthetics ([#179](https://github.com/darellchua2/opencode-config-template/issues/179)) ([5e09917](https://github.com/darellchua2/opencode-config-template/commit/5e099174bdd0674c7c1d9f91566ffe9b9b5f8f6f)), closes [#178](https://github.com/darellchua2/opencode-config-template/issues/178)
+
 ## [1.47.1](https://github.com/darellchua2/opencode-config-template/compare/v1.47.0...v1.47.1) (2026-05-17)
 
 
