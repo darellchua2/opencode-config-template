@@ -119,7 +119,7 @@ Research whether custom subagents (defined in `agents/*.md`) can delegate work t
 - [x] Fix claim-vs-permission mismatches in affected subagent definitions
 - [x] Update AGENTS.md with findings and subagent chaining guidelines
 - [x] Update .AGENTS.md with subagent chaining guidelines if supported
-- [ ] Update `opencode-tooling-subagent.md` with task permission guidance for agent creation
+- [x] Update `opencode-tooling-subagent.md` with task permission guidance for agent creation
 - [x] Update `opencode_app/README.md` with subagent chaining capabilities
 - [x] Add `task` permission syntax guide to subagent definitions
 

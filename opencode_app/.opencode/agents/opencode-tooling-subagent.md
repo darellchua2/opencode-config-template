@@ -10,6 +10,10 @@ permission:
   grep: allow
   bash: deny
   webfetch: allow
+  task:
+    "*": deny
+    explore: allow
+    general: allow
   skill:
     opencode-agent-creation: allow
     opencode-skill-creation: allow
@@ -253,13 +257,42 @@ When a user wants to create their own OpenCode configurator repo (to manage and 
 6. If project uses `opencode.json`, suggest `instructions` field for external file references
 
 ### Creating Agents/Subagents
-1. Ask scope → load `opencode-agent-creation` skill
+1. Ask scope -> load `opencode-agent-creation` skill
 2. Gather: name, description, mode, permissions, purpose
 3. Fetch latest docs from opencode.ai/docs/agents/
 4. Create with `permission` (not `tools`), `steps` (not `maxSteps`)
 5. Configure task permissions for subagents
 6. Place at correct location based on scope
 7. Validate frontmatter
+
+#### Task Permission Guidance
+
+When creating agents that need to spawn other agents, always configure `permission.task`:
+
+**Key rules:**
+- `task` gates the **Task tool** (subagent spawning); `skill` gates the **Skill tool** (skill loading) — completely separate systems
+- Agent name = filename minus `.md` (e.g., `code-review-subagent.md` -> `code-review-subagent`)
+- Denied agents are hidden from the Task tool description entirely (model cannot see them)
+- Wildcard `*` matches zero+ characters; last matching rule wins
+- Each spawned subagent gets its own session, context, and step budget
+
+**Common patterns:**
+```yaml
+permission:
+  task: allow                                              # Full access to all subagents
+  task:                                                    # Selective access
+    "*": deny                                              # Deny all by default
+    explore: allow                                         # Built-in explore
+    general: allow                                         # Built-in general
+    "linting-subagent": allow                              # Specific custom subagent
+    "reviewer-*": allow                                    # Glob pattern matching
+```
+
+**Common mistakes to avoid:**
+- Using a skill name in `task` permissions (e.g., `"pptx-specialist": allow`) — this does NOT enable skill loading; use `skill` permission instead
+- Mismatching agent names (e.g., `"pptx-specialist"` when the agent is `pptx-specialist-subagent`)
+- Forgetting that agents without `task` permission default to full access
+- Using Task tool to invoke skills — skills must be loaded via the Skill tool
 
 ### Creating Skills
 1. Ask scope → load `opencode-skill-creation` skill
