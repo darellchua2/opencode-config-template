@@ -152,7 +152,7 @@ Research whether custom subagents (defined in `agents/*.md`) can delegate work t
 - [x] Fix setup.ps1: remove duplicate skill listing in Deploy-Skills (lines 1219-1292)
 - [x] Fix setup.ps1: remove duplicate backup code in Deploy-Agents (lines 1326-1334)
 - [x] Fix setup.ps1: syntax errors on bare `- Category (N):"` lines (1225, 1228, 1240, 1246, 1249, 1251)
-- [ ] Commit, push, and close issue
+- [x] Commit, push, and close issue
 
 ---
 
