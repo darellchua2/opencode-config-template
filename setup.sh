@@ -641,6 +641,7 @@ USAGE:
   Configuration:        ~/.config/opencode/config.json
   Agents config:        ~/.config/opencode/AGENTS.md
   Skills directory:     ~/.config/opencode/skills/
+  Learnings directory:  ~/.config/opencode/learnings/
   Setup log:            ~/.opencode-setup.log
   Update log:           ~/.config/opencode/update.log
   Backups:              ~/.opencode-backup-YYYYMMDD_HHMMSS/
@@ -1812,6 +1813,52 @@ deploy_agents() {
     fi
 }
 
+setup_learnings_dir() {
+    log_info "Setting up user-level learnings directory..."
+
+    local LEARNINGS_DIR="${CONFIG_DIR}/learnings"
+    local learnings_categories=("patterns" "decisions" "anti-patterns" "solutions" "conventions")
+
+    if [ ! -d "${LEARNINGS_DIR}" ]; then
+        run_cmd "mkdir -p ${LEARNINGS_DIR}"
+        log_info "Created ${LEARNINGS_DIR}"
+    fi
+
+    for category in "${learnings_categories[@]}"; do
+        local category_dir="${LEARNINGS_DIR}/${category}"
+        if [ ! -d "${category_dir}" ]; then
+            run_cmd "mkdir -p ${category_dir} && touch ${category_dir}/.gitkeep"
+        fi
+    done
+
+    if [ ! -f "${LEARNINGS_DIR}/_index.md" ]; then
+        cat > "${LEARNINGS_DIR}/_index.md" << 'LEARNINGS_INDEX'
+# LEARNINGS Index (User-Level)
+
+<!-- AUTO-GENERATED — manual edits to the listing below will be overwritten on next learning write -->
+
+## Folder Structure
+
+| Folder | Purpose |
+|--------|---------|
+| `patterns/` | Reusable code/architecture patterns (cross-project) |
+| `decisions/` | Personal architectural decisions |
+| `anti-patterns/` | Things to avoid |
+| `solutions/` | Non-obvious fixes worth remembering |
+| `conventions/` | Personal coding standards |
+
+## Entries
+
+<!-- Entries are appended here automatically when new learnings are saved -->
+
+<!-- No entries yet -->
+LEARNINGS_INDEX
+        log_info "Created _index.md template"
+    fi
+
+    log_success "User-level learnings directory ready at ${LEARNINGS_DIR}"
+}
+
 # Check if running on Windows (native or Git Bash)
 is_windows() {
     case "$DETECTED_OS" in
@@ -2513,6 +2560,7 @@ main() {
 
     setup_config || true
     deploy_agents || true
+    setup_learnings_dir || true
     setup_shell_vars || true
 
     cleanup_old_backups

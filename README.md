@@ -24,6 +24,14 @@ opencode-config-template/
 │   └── README.md                # Docker usage guide
 ├── docker-compose.yml           # Docker Compose service definition
 ├── .env.example                 # Environment variable template
+├── PLANS/                       # Execution plans (git-committed)
+├── LEARNINGS/                   # Knowledge persistence template (auto-provisioned in target projects)
+│   ├── _index.md                # Auto-generated index
+│   ├── patterns/                # Reusable code/architecture patterns
+│   ├── decisions/               # Architectural decisions (ADR-lite)
+│   ├── anti-patterns/           # Things to avoid
+│   ├── solutions/               # Non-obvious fixes
+│   └── conventions/             # Team coding standards
 └── .env                         # Local environment (git-ignored)
 ```
 
@@ -180,6 +188,22 @@ This template implements **skill permissions** to control which skills agents ca
 - ⚠️ Not Crush-compatible - Uses custom schema
 - ⚠️ Manual maintenance required - Adding skills requires editing agent prompts
 
+## Knowledge Persistence
+
+Skills like `continuous-learning` persist knowledge across sessions using a dual strategy:
+
+| Storage | Scope | Purpose |
+|---------|-------|---------|
+| `supermemory` tool | Primary, searchable by relevance | Quick facts, decisions, anti-patterns |
+| `LEARNINGS/` in target projects | Curated, git-committed | Detailed patterns, ADRs, team conventions |
+| `~/.config/opencode/learnings/` | User-level, cross-project | Personal preferences and patterns |
+
+**How it works:**
+- `setup.sh` / `setup.ps1` creates `~/.config/opencode/learnings/` with 5 subfolders at user level
+- When `continuous-learning` skill runs in a target project, it auto-provisions `LEARNINGS/` in that project root
+- Review agents (architecture-review, code-review) save findings to both supermemory and markdown files
+- Agents discover learnings via AGENTS.md instructions (auto-loaded) + explicit file reads
+
 ## Skill Modularization
 
 This repository implements **skill modularization** with 54 skills organized across 10 categories. Skills are designed with clear separation of concerns and explicit dependencies.
@@ -230,8 +254,8 @@ This repository implements **skill modularization** with 54 skills organized acr
 | **coverage-subagent** | Coverage reporting | coverage-readme-workflow | — |
 | **opentofu-explorer-subagent** | Infrastructure as code | 7 OpenTofu skills (AWS, K8s, Keycloak, Neon, ECR) | — |
 | **code-quality-subagent** | SOLID, clean code, code smells | solid-principles, clean-code, code-smells | — |
-| **architecture-review-subagent** | Architecture and design patterns | clean-architecture, design-patterns, complexity-management | — |
-| **code-review-subagent** | Comprehensive code review | All 7 Code Quality skills | `explore` |
+| **architecture-review-subagent** | Architecture and design patterns | clean-architecture, design-patterns, complexity-management, continuous-learning, verification-loop | `explore` |
+| **code-review-subagent** | Comprehensive code review | All 7 Code Quality skills + continuous-learning, complexity-management | `explore`, `general` |
 | **refactoring-subagent** | Code refactoring | solid-principles, code-smells, clean-code | `explore`, `general` |
 | **error-resolver-subagent** | Error diagnosis and resolution | error-resolver-workflow | — |
 | **nextjs-setup-subagent** | Next.js project setup | nextjs-standard-setup (also see docstring-generator for TSDoc) | — |
@@ -334,8 +358,8 @@ This repository includes 7 new code quality skills for writing senior-engineer q
 | Subagent | Purpose | Skills Used | Built-in Delegation |
 |----------|---------|-------------|---------------------|
 | `code-quality-subagent` | SOLID principles, clean code, code smells | solid-principles, clean-code, code-smells | — |
-| `architecture-review-subagent` | Architecture review and design patterns | clean-architecture, design-patterns, complexity-management | — |
-| `code-review-subagent` | Comprehensive code review (all quality skills) | All 7 quality skills | `explore` |
+| `architecture-review-subagent` | Architecture review and design patterns | clean-architecture, design-patterns, complexity-management, continuous-learning, verification-loop | `explore` |
+| `code-review-subagent` | Comprehensive code review (all quality skills) | All 7 quality skills + continuous-learning, complexity-management | `explore`, `general` |
 
 ### Enhanced Subagent
 The `refactoring-subagent` has been enhanced with new skills and built-in subagent delegation:

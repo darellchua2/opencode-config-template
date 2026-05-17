@@ -48,6 +48,14 @@ opencode-config-template/
 │   └── .opencode/
 │       ├── agents/      # 32 subagent .md files (single source of truth)
 │       └── skills/      # 59 skill directories (single source of truth)
+├── PLANS/               # Execution plans (git-committed)
+├── LEARNINGS/           # Knowledge persistence template (auto-provisioned in target projects)
+│   ├── _index.md        # Auto-generated index
+│   ├── patterns/        # Reusable code/architecture patterns
+│   ├── decisions/       # Architectural decisions (ADR-lite)
+│   ├── anti-patterns/   # Things to avoid
+│   ├── solutions/       # Non-obvious fixes
+│   └── conventions/     # Team coding standards
 └── .opencode/
     └── agents/          # Project-level subagents (NOT deployed)
 ```
@@ -60,6 +68,22 @@ Agents and skills have a **single source of truth** in `opencode_app/.opencode/`
 
 For **user-space**: `setup.sh` and `setup.ps1` copy from `opencode_app/.opencode/` to `~/.config/opencode/`
 For **Docker**: The Dockerfile `COPY . /app/` includes `.opencode/` in the container
+
+## Project Learnings
+
+This repository includes a `LEARNINGS/` template directory. When skills (like `continuous-learning`) are deployed to target projects via `setup.sh`, they auto-provision a `LEARNINGS/` directory in the target project root on first use.
+
+**Dual storage strategy for knowledge persistence:**
+
+| Storage | Scope | Access Pattern |
+|---------|-------|----------------|
+| `supermemory` tool | Primary, searchable by relevance | On-demand via `supermemory(mode: "search")` |
+| `LEARNINGS/*.md` | Secondary, curated, git-committed | Explicit `glob`/`read` tool calls |
+| `~/.config/opencode/learnings/` | User-level, cross-project | Explicit `glob`/`read` tool calls |
+
+When working in **this** configurator repo, `LEARNINGS/` is a template. When working in **target projects** (where skills are deployed), agents should use `LEARNINGS/` for project-specific knowledge.
+
+When reviewing code or architecture, check `LEARNINGS/` for existing patterns and decisions that apply to the current task.
 
 ## Subagent Locations
 
@@ -156,5 +180,5 @@ permission:
 | Pattern | Count | Notes |
 |---------|-------|-------|
 | `task: allow` | 1 | startup-founder-primary-agent |
-| `task: { "*": deny, ... }` | 8 | code-review, linting, pr-workflow, refactoring, testing, startup-ceo, office-document, opencode-tooling |
-| No `task` field | 23 | Defaults to full access |
+| `task: { "*": deny, ... }` | 9 | code-review, linting, pr-workflow, refactoring, testing, startup-ceo, office-document, opencode-tooling, architecture-review |
+| No `task` field | 22 | Defaults to full access |
