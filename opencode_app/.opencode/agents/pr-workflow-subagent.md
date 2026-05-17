@@ -8,7 +8,6 @@ permission:
   glob: allow
   grep: allow
   bash: allow
-  atlassian*: allow
   task:
     "*": deny
     explore: allow

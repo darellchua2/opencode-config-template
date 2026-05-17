@@ -9,7 +9,6 @@ permission:
   glob: allow
   grep: allow
   bash: allow
-  atlassian*: allow
   skill:
     semantic-release-convention: allow
     ticket-plan-workflow-skill: allow

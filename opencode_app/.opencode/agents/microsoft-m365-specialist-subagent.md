@@ -10,15 +10,6 @@ permission:
   grep: allow
   bash: allow
   webfetch: allow
-  microsoft-teams*: allow
-  microsoft-mail*: allow
-  microsoft-calendar*: allow
-  microsoft-sharepoint*: allow
-  microsoft-onedrive*: allow
-  microsoft-user*: allow
-  microsoft-word*: allow
-  microsoft-copilot*: allow
-  microsoft-dataverse*: allow
   skill:
     microsoft-m365-config-skill: allow
 ---

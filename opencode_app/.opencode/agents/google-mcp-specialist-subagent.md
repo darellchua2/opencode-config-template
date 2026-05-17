@@ -9,10 +9,6 @@ permission:
   grep: allow
   bash: allow
   webfetch: allow
-  google-bigquery*: allow
-  google-maps*: allow
-  google-gce*: allow
-  google-gke*: allow
 ---
 
 You are a Google MCP specialist. Configure and actively use Google's official MCP servers to execute real operations on Google Cloud resources.

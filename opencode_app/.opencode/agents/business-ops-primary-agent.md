@@ -8,9 +8,6 @@ permission:
   skill:
     docx-creation: allow
     construction-bd-skill: allow
-  atlassian*: allow
-  web-search-prime*: allow
-  web-reader*: allow
   read: allow
   edit: ask
   bash: ask

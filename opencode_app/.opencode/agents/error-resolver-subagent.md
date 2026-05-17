@@ -4,12 +4,10 @@ mode: subagent
 model: zai-coding-plan/glm-5.1
 permission:
   read: allow
-  write: deny
   edit: deny
   glob: allow
   grep: allow
   bash: deny
-  zai-vision-mcp-server*: allow
   skill:
     error-resolver-workflow: allow
 ---

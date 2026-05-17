@@ -5,7 +5,6 @@ model: zai-coding-plan/glm-5.1
 steps: 15
 permission:
   read: allow
-  write: deny
   edit: deny
   glob: allow
   grep: allow
