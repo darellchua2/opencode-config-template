@@ -1403,6 +1403,62 @@ function Deploy-Agents {
     }
 }
 
+function Set-LearningsDir {
+    Write-Host ""
+    Write-LogInfo "Setting up user-level learnings directory..."
+
+    $learningsDir = Join-Path $ConfigDir "learnings"
+    $categories = @("patterns", "decisions", "anti-patterns", "solutions", "conventions")
+
+    if (-not (Test-Path $learningsDir)) {
+        if (-not $DryRun) {
+            New-Item -ItemType Directory -Path $learningsDir -Force | Out-Null
+        }
+        Write-LogInfo "Created $learningsDir"
+    }
+
+    foreach ($category in $categories) {
+        $categoryDir = Join-Path $learningsDir $category
+        if (-not (Test-Path $categoryDir)) {
+            if (-not $DryRun) {
+                New-Item -ItemType Directory -Path $categoryDir -Force | Out-Null
+                New-Item -ItemType File -Path (Join-Path $categoryDir ".gitkeep") -Force | Out-Null
+            }
+        }
+    }
+
+    $indexFile = Join-Path $learningsDir "_index.md"
+    if (-not (Test-Path $indexFile)) {
+        if (-not $DryRun) {
+            $indexContent = @"
+# LEARNINGS Index (User-Level)
+
+<!-- AUTO-GENERATED — manual edits to the listing below will be overwritten on next learning write -->
+
+## Folder Structure
+
+| Folder | Purpose |
+|--------|---------|
+| ``patterns/`` | Reusable code/architecture patterns (cross-project) |
+| ``decisions/`` | Personal architectural decisions |
+| ``anti-patterns/`` | Things to avoid |
+| ``solutions/`` | Non-obvious fixes worth remembering |
+| ``conventions/`` | Personal coding standards |
+
+## Entries
+
+<!-- Entries are appended here automatically when new learnings are saved -->
+
+<!-- No entries yet -->
+"@
+            Set-Content -Path $indexFile -Value $indexContent -Encoding UTF8
+        }
+        Write-LogInfo "Created _index.md template"
+    }
+
+    Write-LogSuccess "User-level learnings directory ready at $learningsDir"
+}
+
 ################################################################################
 # SETUP: Environment Variables
 ################################################################################
@@ -1860,6 +1916,7 @@ function Main {
     }
 
     Set-Configuration
+    Set-LearningsDir
     Set-ShellVariables
 
     Remove-OldBackups
