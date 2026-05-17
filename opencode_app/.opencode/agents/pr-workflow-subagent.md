@@ -27,12 +27,13 @@ You are a pull request workflow specialist. Handle PR creation with framework-sp
 
 Invoke this subagent when the user uses phrases like:
 - "create pr" / "make pr" / "open pr"
-- "pr merge to [branch]" / "create pr merge to main"
-- "merge to [branch]" / "merge to main" / "merge into develop"
+- "create pr merge to main" / "create pr to [branch]"
 - "submit pr" / "push pr" / "ready for pr"
 - "pull request" / "create pull request"
 - "pr to [branch]" / "pr for [branch]"
 - "create a pr" / "make a pr"
+
+Do NOT trigger for "merge the PR" / "pr merge to [branch]" / "merge it" — those trigger the pr-merge-workflow-skill instead (post-merge execution).
 
 Common target branch patterns: main, master, develop, dev, staging, production
 
@@ -88,6 +89,7 @@ Workflow:
    - Generic: Use pr-creation-workflow
 6. Update JIRA ticket with PR link (if applicable)
 7. Use skills for specialized tasks (linting, testing, docs as needed)
+8. Inform user to say "pr merge to [branch]" when ready to merge
 
 PLAN.md Sync:
 - Before creating PR, invoke plan-updater skill

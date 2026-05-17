@@ -367,10 +367,11 @@ USAGE:
     Usage: opencode --agent build 'implement auth feature'
             opencode --agent explore 'find all API routes'
  
-        SKILLS (58):
-             Framework (10):       test-generator-framework, linting-workflow,
-                                    pr-creation-workflow, error-resolver-workflow,
-                                    tdd-workflow, docx-creation, pptx-specialist,
+        SKILLS (59):
+             Framework (11):       test-generator-framework, linting-workflow,
+                                    pr-creation-workflow, pr-merge-workflow,
+                                    error-resolver-workflow, tdd-workflow,
+                                    docx-creation, pptx-specialist,
                                     xlsx-specialist, pdf-specialist, frontend-design
 
            Language-Specific (4): python-pytest-creator, python-ruff-linter,
@@ -1686,7 +1687,7 @@ function Show-NextSteps {
     Write-Host "         opencode `"prompt`" (uses build)"
      Write-Host ""
     Write-Host "=====================================================================" -ForegroundColor White
-    Write-Host "                     58 Skills Available" -ForegroundColor White
+    Write-Host "                     59 Skills Available" -ForegroundColor White
     Write-Host "=====================================================================" -ForegroundColor White
     Write-Host ""
     Write-Host "  Framework (10) • Language-Specific (4) • Framework-Specific (5)"

@@ -559,11 +559,12 @@ USAGE:
       microsoft-copilot  M365 Copilot conversations
       microsoft-dataverse Business data (Dynamics 365)
 
-   SKILLS (58):
-             Framework (10):       test-generator-framework, linting-workflow,
-                                   pr-creation-workflow, error-resolver-workflow,
-                                   tdd-workflow, docx-creation, pptx-specialist,
-                                   xlsx-specialist, pdf-specialist, frontend-design
+   SKILLS (59):
+              Framework (11):       test-generator-framework, linting-workflow,
+                                    pr-creation-workflow, pr-merge-workflow,
+                                    error-resolver-workflow, tdd-workflow,
+                                    docx-creation, pptx-specialist,
+                                    xlsx-specialist, pdf-specialist, frontend-design
 
            Language-Specific (4): python-pytest-creator, python-ruff-linter,
                                  javascript-eslint-linter, changelog-python-cliff
@@ -2310,7 +2311,7 @@ print_next_steps() {
     echo "         opencode \"prompt\" (uses build)"
      echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "                     📦 58 Skills Available"
+    echo "                     📦 59 Skills Available"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
     echo "  Framework (10) • Language-Specific (4) • Framework-Specific (5)"
