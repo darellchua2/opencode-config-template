@@ -326,7 +326,7 @@ USAGE:
                          CONFIGURED FEATURES
 =======================================================================
 
-  AGENTS (30):
+   AGENTS (31):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
@@ -353,7 +353,8 @@ USAGE:
     ticket-creation      GitHub issues and JIRA ticket management
     startup-founder      Startup founder business operations agent
     startup-ceo          Investor-ready pitch decks and board updates
-    business-dev         Proposal summarization and quotation preparation
+    business-ops         Business operations: proposals, quotations, project management
+    office-document      Office document specialist: Word, PowerPoint, Excel
     autodesk-specialist  Autodesk integration and APS APIs
     civil-3d-specialist  Autodesk Civil 3D model modifications
     open3d-specialist    Open3D 3D data processing guidance
@@ -361,39 +362,44 @@ USAGE:
     Usage: opencode --agent build 'implement auth feature'
             opencode --agent explore 'find all API routes'
  
-       SKILLS (54):
-            Framework (10):       test-generator-framework, linting-workflow,
-                                   pr-creation-workflow, error-resolver-workflow,
-                                   tdd-workflow, docx-creation, pptx-specialist,
-                                   xlsx-specialist, pdf-specialist, frontend-design
+        SKILLS (58):
+             Framework (10):       test-generator-framework, linting-workflow,
+                                    pr-creation-workflow, error-resolver-workflow,
+                                    tdd-workflow, docx-creation, pptx-specialist,
+                                    xlsx-specialist, pdf-specialist, frontend-design
 
-          Language-Specific (4): python-pytest-creator, python-ruff-linter,
-                                javascript-eslint-linter, changelog-python-cliff
+           Language-Specific (4): python-pytest-creator, python-ruff-linter,
+                                 javascript-eslint-linter, changelog-python-cliff
 
-         Framework-Specific (5): nextjs-pr-workflow, nextjs-unit-test-creator,
-                               nextjs-standard-setup, nextjs-image-usage,
-                                typescript-dry-principle
-         OpenCode Meta (3):    opencode-agent-creation, opencode-skill-creation,
-                               opencode-skills-maintainer
-         OpenTofu (7):         opentofu-aws-explorer, opentofu-keycloak-explorer,
-                               opentofu-kubernetes-explorer, opentofu-neon-explorer,
-                               opentofu-provider-setup, opentofu-provisioning-workflow,
-                               opentofu-ecr-provision
-         Git/Workflow (9):     ascii-diagram-creator, mermaid-diagram-creator,
-                               ticket-plan-workflow-skill, plan-execution-skill,
-                               git-issue-labeler, git-issue-updater,
-                               git-semantic-commits, semantic-release-convention,
-                               plan-updater
-        Documentation (3):    coverage-readme-workflow, docstring-generator,
-                               documentation-sync-workflow
+          Framework-Specific (5): nextjs-pr-workflow, nextjs-unit-test-creator,
+                                nextjs-standard-setup, nextjs-image-usage,
+                                 typescript-dry-principle
+          OpenCode Meta (3):    opencode-agent-creation, opencode-skill-creation,
+                                opencode-skills-maintainer
+          OpenTofu (7):         opentofu-aws-explorer, opentofu-keycloak-explorer,
+                                opentofu-kubernetes-explorer, opentofu-neon-explorer,
+                                opentofu-provider-setup, opentofu-provisioning-workflow,
+                                opentofu-ecr-provision
+          Git/Workflow (9):     ascii-diagram-creator, mermaid-diagram-creator,
+                                ticket-plan-workflow-skill, plan-execution-skill,
+                                git-issue-labeler, git-issue-updater,
+                                git-semantic-commits, semantic-release-convention,
+                                plan-updater
+         Documentation (3):    coverage-readme-workflow, docstring-generator,
+                                documentation-sync-workflow
 
-        JIRA (2):             jira-status-updater, jira-git-integration
-        Code Quality (7):     solid-principles, clean-code, clean-architecture,
-                              design-patterns, object-design, code-smells,
-                              complexity-management
+         JIRA (2):             jira-status-updater, jira-git-integration
+         Code Quality (7):     solid-principles, clean-code, clean-architecture,
+                               design-patterns, object-design, code-smells,
+                               complexity-management
 
-    Agent Optimization (4):  continuous-learning, eval-harness,
-                              strategic-compact, verification-loop
+     Agent Optimization (4):  continuous-learning, eval-harness,
+                               strategic-compact, verification-loop
+
+           Startup/Business (3): startup-pitch-deck-skill, startup-business-docs-skill,
+                                 construction-bd-skill
+
+          Configuration (1):    microsoft-m365-config-skill
 
     Run 'opencode --list-skills' for detailed descriptions
     Run 'opencode --skill <name> \"prompt\"' to invoke a skill
@@ -1277,6 +1283,11 @@ function Deploy-Skills {
         Write-Host "    Agent Optimization (4):"
         Write-Host "      - continuous-learning, eval-harness"
         Write-Host "      - strategic-compact, verification-loop"
+        Write-Host "    Startup/Business (3):"
+        Write-Host "      - startup-pitch-deck-skill, startup-business-docs-skill"
+        Write-Host "      - construction-bd-skill"
+        Write-Host "    Configuration (1):"
+        Write-Host "      - microsoft-m365-config-skill"
         Write-Host ""
         Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
         Write-Host ""

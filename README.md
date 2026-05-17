@@ -19,8 +19,8 @@ opencode-config-template/
 │   ├── AGENTS.md                # Container-specific instructions
 │   ├── .dockerignore
 │   ├── .opencode/
-│   │   ├── agents/              # 30 subagent .md files
-│   │   └── skills/              # 54 skill directories
+│   │   ├── agents/              # 31 subagent .md files
+│   │   └── skills/              # 58 skill directories
 │   └── README.md                # Docker usage guide
 ├── docker-compose.yml           # Docker Compose service definition
 ├── .env.example                 # Environment variable template
@@ -198,12 +198,14 @@ This repository implements **skill modularization** with 54 skills organized acr
 | **JIRA** (2) | jira-status-updater, jira-git-integration | JIRA integration via MCP server |
 | **Code Quality** (7) | solid-principles, clean-code, clean-architecture, design-patterns, object-design, code-smells, complexity-management | Code quality analysis and patterns |
 | **Agent Optimization** (4) | continuous-learning, eval-harness, strategic-compact, verification-loop | AI agent session optimization and quality assurance |
+| **Startup/Business** (3) | startup-pitch-deck-skill, startup-business-docs-skill, construction-bd-skill | Startup pitch decks, business documentation, construction proposals |
+| **Configuration** (1) | microsoft-m365-config-skill | Microsoft 365 MCP server setup and configuration |
 
 > **Note**: 6 redundant skills archived to `skills/_archived/`: `nextjs-complete-setup`, `python-docstring-generator`, `nextjs-tsdoc-documentor`, `git-pr-creator`, `git-issue-plan-workflow`, `jira-ticket-plan-workflow`. Use `docstring-generator` for all language docstrings (Python PEP 257, TypeScript TSDoc, Java Javadoc, C# XML docs). Use `ticket-plan-workflow-skill` for unified GitHub/JIRA ticket planning. 
 
 ### Agents
 
-30 agents provide specialized task handling (4 primary + 28 subagents):
+31 agents provide specialized task handling (5 primary + 26 subagents):
 
 #### Primary Agents
 
@@ -212,7 +214,8 @@ This repository implements **skill modularization** with 54 skills organized acr
 | **build** | Default agent for general tasks | Full access to all tools and subagents |
 | **plan** | Read-only planning and analysis | `task`, `read`, `glob`, `grep` only (no write/execute) |
 | **startup-founder-primary-agent** | Business docs - reports, quotations, spreadsheets, presentations | Full access (`read`, `edit`, `bash`, `webfetch`, `task`) |
-| **business-development-primary-agent** | Business development and strategy | Full access (`read`, `edit`, `bash`, `webfetch`, `task`) |
+| **business-ops-primary-agent** | Business operations: proposals, quotations, project management | Full access (`read`, `edit`, `bash`, `webfetch`, `task`) |
+| **office-document-primary-agent** | Office document specialist: Word, PowerPoint, Excel | Full access (`read`, `edit`, `bash`, `webfetch`, `task`) |
 
 #### Subagents
 
@@ -245,6 +248,7 @@ This repository implements **skill modularization** with 54 skills organized acr
 | **explorer-subagent** | Fast codebase exploration and analysis | (built-in search capabilities) | — |
 | **nextjs-mcp-advisor-subagent** | Next.js runtime guidance with MCP | nextjs-pr-workflow, nextjs-unit-test-creator | — |
 | **pptx-specialist-subagent** | PowerPoint presentations (read, create, edit, analyze) | pptx-specialist | — |
+| **xlsx-specialist-subagent** | Spreadsheets (read, create, edit, analyze) | xlsx-specialist | — |
 | **startup-ceo-subagent** | Startup presentations (pitch decks, investor slides, board updates) | pptx-specialist | — |
 
 > **Built-in Delegation**: Subagents with `explore` can delegate codebase scanning to the built-in `explore` subagent. Subagents with `general` can delegate parallelizable multi-step work to the built-in `general` subagent. Access is controlled via `task` permissions in each agent's frontmatter (`"*": deny` by default, explicit allowlist).
