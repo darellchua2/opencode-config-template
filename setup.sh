@@ -497,13 +497,14 @@ USAGE:
                          CONFIGURED FEATURES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-   AGENTS (31):
+   AGENTS (36):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
     general              General-purpose multi-step research
     scout                External docs and dependency research
     code-review          Code review with SOLID/clean-code analysis
+    code-quality         Code quality with SOLID/clean-code/smells analysis
     testing              Test generation with framework detection
     pr-workflow          PR creation with quality gates and JIRA integration
     linting              Code linting with auto-fix for Python/JS/TS
@@ -517,7 +518,6 @@ USAGE:
     pptx-specialist      PowerPoint presentation creation and editing
     docx-creation        Word document creation and manipulation
     xlsx-specialist      Spreadsheet creation and analysis
-    pdf-specialist       PDF creation, reading, and manipulation
     image-analyzer       Images/screenshots to code, OCR, error diagnosis
     error-resolver       Error diagnosis with stack trace analysis
     opencode-tooling     OpenCode config creation and maintenance
@@ -526,6 +526,11 @@ USAGE:
     startup-ceo          Investor-ready pitch decks and board updates
     business-ops         Business operations: proposals, quotations, project management
     office-document      Office document specialist: Word, PowerPoint, Excel
+    google-mcp           Google Cloud MCP (BigQuery, Maps, GCE, GKE)
+    microsoft-m365       Microsoft 365 MCP (Teams, Mail, Calendar, SharePoint, etc.)
+    nextjs-mcp-advisor   Next.js runtime guidance with MCP integration
+    nextjs-setup         Next.js project setup and configuration
+    opentofu-explorer    OpenTofu/Terraform infrastructure management
     autodesk-specialist  Autodesk integration and APS APIs
     civil-3d-specialist  Autodesk Civil 3D model modifications
     open3d-specialist    Open3D 3D data processing guidance
@@ -1648,14 +1653,14 @@ setup_config() {
             log_success "config.json copied successfully"
 
             echo ""
-            echo "✓ Configured 30 agents:"
-            echo "    - build (default) - Full-featured coding agent"
-            echo "    - plan - Planning agent (read-only)"
-            echo "    - explore - Codebase exploration and analysis"
-            echo "    - image-analyzer-subagent - Image/screenshot analysis"
-            echo "    - diagram-creator - Diagram creation"
-            echo "    - mermaid-diagram-subagent - Mermaid diagrams with PNG conversion"
-            echo "    - ... and 24 more subagents"
+             echo "✓ Configured 36 agents:"
+             echo "    - build (default) - Full-featured coding agent"
+             echo "    - plan - Planning agent (read-only)"
+             echo "    - explore - Codebase exploration and analysis"
+             echo "    - image-analyzer-subagent - Image/screenshot analysis"
+             echo "    - diagram-creator - Diagram creation"
+             echo "    - mermaid-diagram-subagent - Mermaid diagrams with PNG conversion"
+             echo "    - ... and 30 more agents"
             echo ""
             echo "✓ Configured 5 MCP servers:"
             echo "    Local (auto-start): atlassian, zai-vision-mcp-server"
@@ -2157,14 +2162,14 @@ print_summary() {
 
     # Agents configured
     if [ -f "$CONFIG_FILE" ]; then
-        echo "✓ Configured 30 agents:"
+        echo "✓ Configured 36 agents:"
         echo "    - build (default) - Full-featured coding agent"
         echo "    - plan - Planning agent (read-only)"
         echo "    - explore - Codebase exploration and analysis"
         echo "    - image-analyzer-subagent - Image/screenshot analysis"
         echo "    - diagram-creator - Diagram creation"
         echo "    - mermaid-diagram-subagent - Mermaid diagrams with PNG conversion"
-        echo "    - ... and 24 more subagents"
+        echo "    - ... and 30 more agents"
     fi
 
     # MCP servers configured
@@ -2293,19 +2298,19 @@ print_next_steps() {
     echo "                        🚀 Quick Start"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "🤖 Agents (30):"
+    echo "🤖 Agents (36):"
     echo "  - build (default) - Full-featured coding agent"
     echo "  - plan - Planning agent (read-only)"
     echo "  - explore - Fast codebase exploration and analysis"
     echo "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
     echo "  - diagram-creator - Diagrams (architecture, flowcharts, UML)"
-    echo "  - ... and 25 more agents"
+    echo "  - ... and 31 more agents"
     echo ""
     echo "  Usage: opencode --agent <name> \"prompt\""
     echo "         opencode \"prompt\" (uses build)"
      echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "                     📦 54 Skills Available"
+    echo "                     📦 58 Skills Available"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
     echo "  Framework (10) • Language-Specific (4) • Framework-Specific (5)"

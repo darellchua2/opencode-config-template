@@ -46,8 +46,8 @@ opencode-config-template/
 │   ├── README.md        # Docker usage guide
 │   ├── .dockerignore    # Build exclusions
 │   └── .opencode/
-│       ├── agents/      # 31 subagent .md files (single source of truth)
-│       └── skills/      # 57+ skill directories (single source of truth)
+│       ├── agents/      # 32 subagent .md files (single source of truth)
+│       └── skills/      # 58 skill directories (single source of truth)
 └── .opencode/
     └── agents/          # Project-level subagents (NOT deployed)
 ```
@@ -55,8 +55,8 @@ opencode-config-template/
 ## Shared Config Strategy
 
 Agents and skills have a **single source of truth** in `opencode_app/.opencode/`:
-- `opencode_app/.opencode/agents/` — All 31 subagent definitions
-- `opencode_app/.opencode/skills/` — All 57+ skill directories
+- `opencode_app/.opencode/agents/` — All 32 subagent definitions
+- `opencode_app/.opencode/skills/` — All 58 skill directories
 
 For **user-space**: `setup.sh` and `setup.ps1` copy from `opencode_app/.opencode/` to `~/.config/opencode/`
 For **Docker**: The Dockerfile `COPY . /app/` includes `.opencode/` in the container
@@ -156,5 +156,5 @@ permission:
 | Pattern | Count | Notes |
 |---------|-------|-------|
 | `task: allow` | 1 | startup-founder-primary-agent |
-| `task: { "*": deny, built-in: allow }` | 5 | code-review, linting, pr-workflow, refactoring, testing |
-| No `task` field | 24 | Defaults to full access |
+| `task: { "*": deny, ... }` | 8 | code-review, linting, pr-workflow, refactoring, testing, startup-ceo, office-document, opencode-tooling |
+| No `task` field | 23 | Defaults to full access |

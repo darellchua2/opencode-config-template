@@ -19,7 +19,7 @@ opencode-config-template/
 │   ├── AGENTS.md                # Container-specific instructions
 │   ├── .dockerignore
 │   ├── .opencode/
-│   │   ├── agents/              # 31 subagent .md files
+│   │   ├── agents/              # 32 subagent .md files
 │   │   └── skills/              # 58 skill directories
 │   └── README.md                # Docker usage guide
 ├── docker-compose.yml           # Docker Compose service definition
@@ -205,7 +205,7 @@ This repository implements **skill modularization** with 54 skills organized acr
 
 ### Agents
 
-31 agents provide specialized task handling (5 primary + 26 subagents):
+34 agents provide specialized task handling (5 primary + 29 subagents):
 
 #### Primary Agents
 

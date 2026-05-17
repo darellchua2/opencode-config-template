@@ -4,7 +4,7 @@ LABEL org.opencontainers.image.title="opencode-config-template" \
       org.opencontainers.image.description="OpenCode standalone web endpoint - configurable agent/skill runner" \
       org.opencontainers.image.source="https://github.com/darellchua2/opencode-config-template"
 
-ARG OPENCODE_VERSION=1.4.17
+ARG OPENCODE_VERSION=1.15.3
 
 ENV DEBIAN_FRONTEND=noninteractive
 

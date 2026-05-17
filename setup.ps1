@@ -326,13 +326,14 @@ USAGE:
                          CONFIGURED FEATURES
 =======================================================================
 
-   AGENTS (31):
+   AGENTS (36):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
     general              General-purpose multi-step research
     scout                External docs and dependency research
     code-review          Code review with SOLID/clean-code analysis
+    code-quality         Code quality with SOLID/clean-code/smells analysis
     testing              Test generation with framework detection
     pr-workflow          PR creation with quality gates and JIRA integration
     linting              Code linting with auto-fix for Python/JS/TS
@@ -346,7 +347,6 @@ USAGE:
     pptx-specialist      PowerPoint presentation creation and editing
     docx-creation        Word document creation and manipulation
     xlsx-specialist      Spreadsheet creation and analysis
-    pdf-specialist       PDF creation, reading, and manipulation
     image-analyzer       Images/screenshots to code, OCR, error diagnosis
     error-resolver       Error diagnosis with stack trace analysis
     opencode-tooling     OpenCode config creation and maintenance
@@ -355,6 +355,11 @@ USAGE:
     startup-ceo          Investor-ready pitch decks and board updates
     business-ops         Business operations: proposals, quotations, project management
     office-document      Office document specialist: Word, PowerPoint, Excel
+    google-mcp           Google Cloud MCP (BigQuery, Maps, GCE, GKE)
+    microsoft-m365       Microsoft 365 MCP (Teams, Mail, Calendar, SharePoint, etc.)
+    nextjs-mcp-advisor   Next.js runtime guidance with MCP integration
+    nextjs-setup         Next.js project setup and configuration
+    opentofu-explorer    OpenTofu/Terraform infrastructure management
     autodesk-specialist  Autodesk integration and APS APIs
     civil-3d-specialist  Autodesk Civil 3D model modifications
     open3d-specialist    Open3D 3D data processing guidance
@@ -1669,19 +1674,19 @@ function Show-NextSteps {
     Write-Host "  2. Start LM Studio: http://127.0.0.1:1234/v1"
     Write-Host "  3. Verify installation: opencode --version"
     Write-Host ""
-    Write-Host "Agents (30):"
+    Write-Host "Agents (36):"
     Write-Host "  - build (default) - Full-featured coding agent"
     Write-Host "  - plan - Planning agent (read-only)"
     Write-Host "  - explore - Codebase exploration and analysis"
     Write-Host "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
     Write-Host "  - diagram-creator - Diagrams (architecture, flowcharts, UML)"
-    Write-Host "  - ... and 25 more agents"
+    Write-Host "  - ... and 31 more agents"
     Write-Host ""
     Write-Host "  Usage: opencode --agent <name> `"prompt`""
     Write-Host "         opencode `"prompt`" (uses build)"
      Write-Host ""
     Write-Host "=====================================================================" -ForegroundColor White
-    Write-Host "                     54 Skills Available" -ForegroundColor White
+    Write-Host "                     58 Skills Available" -ForegroundColor White
     Write-Host "=====================================================================" -ForegroundColor White
     Write-Host ""
     Write-Host "  Framework (10) • Language-Specific (4) • Framework-Specific (5)"
