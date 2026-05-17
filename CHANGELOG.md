@@ -1,3 +1,10 @@
+## [1.47.1](https://github.com/darellchua2/opencode-config-template/compare/v1.47.0...v1.47.1) (2026-05-17)
+
+
+### Bug Fixes
+
+* **agents:** correct task permission mismatches and document subagent chaining ([#170](https://github.com/darellchua2/opencode-config-template/issues/170)) ([#177](https://github.com/darellchua2/opencode-config-template/issues/177)) ([25a882b](https://github.com/darellchua2/opencode-config-template/commit/25a882b3789813b01bf5f44848dd2bd0abe83a49))
+
 # [1.47.0](https://github.com/darellchua2/opencode-config-template/compare/v1.46.0...v1.47.0) (2026-05-01)
 
 
