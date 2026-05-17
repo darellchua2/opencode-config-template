@@ -38,3 +38,22 @@ When construction-specific context is detected (e.g., RFI, RFP, RFQ, constructio
 ## Best Practices
 
 Double-check calculations, use current market rates via web search, maintain professional tone and formatting, ensure consistency in terminology and categorization, validate information against source documents, and track all documents in Atlassian systems for complete audit trails.
+
+## Return Contract
+
+When your task is complete, return ONLY this structure:
+
+**Status:** [success | partial | failed]
+**Output:** [Files updated + summary]
+**Summary:** [2-3 sentences max describing what was done]
+**Issues:** [blockers, warnings, or "None"]
+
+On failure (Status: failed), you MAY include additional diagnostic
+information (error messages, stack traces, root cause analysis) to help
+the primary agent debug. The summary should still be concise.
+
+Do NOT return:
+- Full reasoning or chain-of-thought
+- Intermediate steps or exploration logs
+- Raw tool outputs (reference files instead)
+- Skill content that was loaded

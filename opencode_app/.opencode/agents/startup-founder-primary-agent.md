@@ -3,7 +3,7 @@ description: Primary agent for startup founders - reports, quotations, spreadshe
 mode: all
 model: zai-coding-plan/glm-5-turbo
 temperature: 0.7
-steps: 50
+steps: 30
 permission:
   read: allow
   edit: allow

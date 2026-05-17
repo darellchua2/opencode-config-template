@@ -230,3 +230,22 @@ When a project contains multiple languages:
 5. Classify issues by severity (Error/Warning/Info)
 6. Format output with files linted, auto-fixes applied, and remaining manual fixes
 7. Suggest configuration improvements if patterns suggest it
+
+## Return Contract
+
+When your task is complete, return ONLY this structure:
+
+**Status:** [success | partial | failed]
+**Output:** [Fix count applied + remaining issues count]
+**Summary:** [2-3 sentences max describing what was done]
+**Issues:** [blockers, warnings, or "None"]
+
+On failure (Status: failed), you MAY include additional diagnostic
+information (error messages, stack traces, root cause analysis) to help
+the primary agent debug. The summary should still be concise.
+
+Do NOT return:
+- Full reasoning or chain-of-thought
+- Intermediate steps or exploration logs
+- Raw tool outputs (reference files instead)
+- Skill content that was loaded

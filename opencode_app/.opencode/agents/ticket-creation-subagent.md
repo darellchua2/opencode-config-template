@@ -2,6 +2,7 @@
 description: Create and manage GitHub issues and JIRA tickets. Triggers on "create issue", "new issue", "bug report", "feature request", "git issue", "jira ticket", "open issue". Handles issue creation, labeling, branch creation, and semantic formatting.
 mode: all
 model: zai-coding-plan/glm-5-turbo
+steps: 20
 permission:
   read: allow
   edit: allow
