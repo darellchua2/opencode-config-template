@@ -497,15 +497,37 @@ USAGE:
                          CONFIGURED FEATURES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  AGENTS (8):
+  AGENTS (30):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
-    image-analyzer-subagent  Images/screenshots → code, OCR, error diagnosis
-    diagram-creator      Diagrams (architecture, flowcharts, UML)
-    mermaid-diagram-subagent  Mermaid diagrams with PNG conversion
-    civil-3d-specialist-subagent  Autodesk Civil 3D model modifications and features
-    open3d-specialist-subagent  Open3D 3D data processing guidance
+    general              General-purpose multi-step research
+    scout                External docs and dependency research
+    code-review          Code review with SOLID/clean-code analysis
+    testing              Test generation with framework detection
+    pr-workflow          PR creation with quality gates and JIRA integration
+    linting              Code linting with auto-fix for Python/JS/TS
+    refactoring          Code refactoring with DRY/SOLID patterns
+    architecture-review  Architecture review with clean architecture principles
+    coverage             Test coverage reporting and badges
+    documentation        Docstring generation (PEP 257, JSDoc, Javadoc)
+    tdd                  Test Driven Development workflow guidance
+    diagram              Diagrams (architecture, flowcharts, UML)
+    mermaid-diagram      Mermaid diagrams with PNG conversion
+    pptx-specialist      PowerPoint presentation creation and editing
+    docx-creation        Word document creation and manipulation
+    xlsx-specialist      Spreadsheet creation and analysis
+    pdf-specialist       PDF creation, reading, and manipulation
+    image-analyzer       Images/screenshots to code, OCR, error diagnosis
+    error-resolver       Error diagnosis with stack trace analysis
+    opencode-tooling     OpenCode config creation and maintenance
+    ticket-creation      GitHub issues and JIRA ticket management
+    startup-founder      Startup founder business operations agent
+    startup-ceo          Investor-ready pitch decks and board updates
+    business-dev         Proposal summarization and quotation preparation
+    autodesk-specialist  Autodesk integration and APS APIs
+    civil-3d-specialist  Autodesk Civil 3D model modifications
+    open3d-specialist    Open3D 3D data processing guidance
 
     Usage: opencode --agent build "implement auth feature"
            opencode --agent explore "find all API routes"
@@ -531,7 +553,7 @@ USAGE:
       microsoft-copilot  M365 Copilot conversations
       microsoft-dataverse Business data (Dynamics 365)
 
-   SKILLS (52):
+   SKILLS (53):
             Framework (9):        test-generator-framework, linting-workflow,
                                   pr-creation-workflow, error-resolver-workflow,
                                   tdd-workflow, docx-creation, pptx-specialist,

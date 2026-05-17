@@ -78,11 +78,7 @@ Built-in Subagent Delegation:
   - Collect JIRA ticket info while running build checks
 - Use `explore` via Task tool with subagent_type="explore" for discovery, `general` via subagent_type="general" for parallel work
 
-Subagent Coordination:
-- Delegate to linting-subagent for code quality checks
-- Delegate to testing-subagent for test validation
-- Delegate to coverage-subagent for coverage reports
-- Delegate to documentation-subagent for docs
+Note: Subagent-to-subagent chaining is not used here. Use `explore` for discovery tasks and `general` for parallel quality checks. Skills handle the actual PR creation workflows (pr-creation-workflow, nextjs-pr-workflow).
 
 Workflow:
 1. Detect project framework (Next.js, Python, or other)
@@ -93,7 +89,7 @@ Workflow:
    - Next.js: Use nextjs-pr-workflow
    - Generic: Use pr-creation-workflow
 6. Update JIRA ticket with PR link (if applicable)
-7. Coordinate with linting/testing/coverage subagents as needed
+7. Use skills for specialized tasks (linting, testing, docs as needed)
 
 PLAN.md Sync:
 - Before creating PR, invoke plan-updater skill

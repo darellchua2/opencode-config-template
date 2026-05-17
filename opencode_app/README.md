@@ -80,3 +80,13 @@ After modifying agents or skills:
 docker compose build --no-cache
 docker compose up -d
 ```
+
+## Subagent Chaining
+
+OpenCode supports subagent-to-subagent delegation via the Task tool, controlled by the `permission.task` frontmatter field in each agent `.md` file. Key points:
+
+- **Task tool** (subagent spawning) and **Skill tool** (skill loading) are separate systems with separate permissions
+- Agent name = filename minus `.md` (e.g., `code-review-subagent.md` -> `code-review-subagent`)
+- Each spawned subagent gets its own session, context window, and step budget
+- Hub-and-spoke (primary agent -> subagent) remains the recommended pattern
+- 9 of 30 agents have explicit `task` permissions; the remaining 21 default to full access

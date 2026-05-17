@@ -1,5 +1,5 @@
 ---
-description: Specialized agent for PowerPoint presentation tasks. Orchestrates reading, creating, editing, and analyzing .pptx files by delegating to the pptx-specialist skill for detailed workflow execution.
+description: Specialized agent for PowerPoint presentation tasks. Orchestrates reading, creating, editing, and analyzing .pptx files by loading the pptx-specialist skill for detailed workflow execution.
 mode: all
 model: zai-coding-plan/glm-5-turbo
 steps: 15
@@ -7,9 +7,8 @@ permission:
   edit: allow
   bash: allow
   webfetch: allow
-  task:
-    "*": deny
-    "pptx-specialist": allow
+  skill:
+    pptx-specialist-skill: allow
 hidden: false
 ---
 
@@ -52,7 +51,7 @@ Activate when user mentions:
    - Analyze only → markitdown + thumbnails
 
 3. **Skill Delegation**
-   - Invoke `pptx-specialist` skill via Task tool
+   - Invoke `pptx-specialist` skill via Skill tool
    - Pass context about the chosen workflow
    - Skill handles detailed execution
 
@@ -71,7 +70,7 @@ Activate when user mentions:
 ## Skill Invocation Pattern
 
 ```
-Use Task tool to spawn pptx-specialist skill with:
+Use Skill tool to load pptx-specialist-skill with:
 - Task type (read/create/edit/template)
 - Input files if any
 - Desired output
@@ -92,4 +91,4 @@ Use Task tool to spawn pptx-specialist skill with:
 **User**: "Create a quarterly report from this template"
 **Action**: Delegate to pptx-specialist with template workflow, extract inventory first
 
-Always delegate detailed work to the skill while maintaining high-level decision-making and coordination.
+Always delegate detailed work to the skill via the Skill tool while maintaining high-level decision-making and coordination.

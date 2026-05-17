@@ -108,3 +108,36 @@ Invoke the `documentation-sync-workflow` skill or delegate to `opencode-tooling-
 ```
 opencode --skill documentation-sync-workflow "sync docs after adding new skill"
 ```
+
+## Subagent Chaining
+
+OpenCode supports subagent-to-subagent delegation via the Task tool. The `permission.task` frontmatter field controls which subagents an agent can spawn.
+
+### Key Facts
+
+- **Task tool** (subagent spawning) and **Skill tool** (skill loading) are separate systems with separate permissions
+- Agent name = filename minus `.md` (e.g., `code-review-subagent.md` -> `code-review-subagent`)
+- Denied subagents are hidden from the Task tool description entirely
+- Wildcard `*` matches zero+ characters; last matching rule wins
+- Each spawned subagent gets its own session, context, and step budget
+- Hub-and-spoke (primary -> subagent) remains the recommended pattern
+
+### Task Permission Syntax
+
+```yaml
+permission:
+  task: allow                    # Full access to all subagents
+  task:                          # Selective access
+    "*": deny                    # Deny all by default
+    explore: allow               # Allow built-in explore
+    general: allow               # Allow built-in general
+    "reviewer-*": allow          # Glob pattern matching
+```
+
+### Current Permission Distribution
+
+| Pattern | Count | Notes |
+|---------|-------|-------|
+| `task: allow` | 1 | startup-founder-primary-agent |
+| `task: { "*": deny, built-in: allow }` | 5 | code-review, linting, pr-workflow, refactoring, testing |
+| No `task` field | 24 | Defaults to full access |

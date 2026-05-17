@@ -9,7 +9,9 @@ permission:
   webfetch: allow
   task:
     "*": deny
-    "pptx-specialist": allow
+    "pptx-specialist-subagent": allow
+  skill:
+    pptx-specialist-skill: allow
 hidden: false
 ---
 
@@ -274,7 +276,7 @@ Choose appropriate color palette:
 
 ### Step 5: PPTX Creation
 
-Delegate to `pptx-specialist` skill via Task tool with:
+Delegate to `pptx-specialist-subagent` via Task tool with:
 - Presentation type and structure
 - Color palette selection
 - Content for each slide
@@ -319,7 +321,7 @@ Before final delivery, verify:
 ## Skill Delegation Pattern
 
 ```
-Use Task tool to spawn pptx-specialist skill with:
+Use Skill tool to load pptx-specialist-skill with:
 - Task type: create (new presentation)
 - Structure: pitch-deck / board-update / product-launch
 - Color palette: Selected from startup-appropriate options
@@ -344,7 +346,7 @@ Use Task tool to spawn pptx-specialist skill with:
 
 4. Help develop content for each slide
 
-5. Delegate to pptx-specialist with:
+5. Delegate to pptx-specialist-subagent via Task tool with:
    - html2pptx workflow
    - Deep Tech (Blue) color palette
    - Pitch deck structure with content
@@ -352,4 +354,4 @@ Use Task tool to spawn pptx-specialist skill with:
 
 6. Review output with investor-readiness checklist
 
-Always prioritize investor-readiness and startup-appropriate design while delegating detailed PPTX creation to the pptx-specialist skill.
+Always prioritize investor-readiness and startup-appropriate design while delegating detailed PPTX creation to the pptx-specialist-subagent.
