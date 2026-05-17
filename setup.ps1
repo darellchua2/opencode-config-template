@@ -361,11 +361,11 @@ USAGE:
     Usage: opencode --agent build 'implement auth feature'
             opencode --agent explore 'find all API routes'
  
-       SKILLS (53):
-            Framework (9):        test-generator-framework, linting-workflow,
+       SKILLS (54):
+            Framework (10):       test-generator-framework, linting-workflow,
                                    pr-creation-workflow, error-resolver-workflow,
                                    tdd-workflow, docx-creation, pptx-specialist,
-                                   xlsx-specialist, pdf-specialist
+                                   xlsx-specialist, pdf-specialist, frontend-design
 
           Language-Specific (4): python-pytest-creator, python-ruff-linter,
                                 javascript-eslint-linter, changelog-python-cliff
@@ -1239,10 +1239,11 @@ function Deploy-Skills {
         Write-Host "Deployed $skillCount skills to $SkillsDir" -ForegroundColor Green
         Write-Host ""
         Write-Host "  Skill Categories:" -ForegroundColor Cyan
-        Write-Host "    Framework (9):"
-        Write-Host "      - test-generator-framework, linting-workflow"
-        Write-Host "      - pr-creation-workflow, error-resolver-workflow, tdd-workflow"
-        Write-Host "      - docx-creation, pptx-specialist, xlsx-specialist, pdf-specialist"
+         Write-Host "    Framework (10):"
+         Write-Host "      - test-generator-framework, linting-workflow"
+         Write-Host "      - pr-creation-workflow, error-resolver-workflow, tdd-workflow"
+         Write-Host "      - docx-creation, pptx-specialist, xlsx-specialist, pdf-specialist"
+         Write-Host "      - frontend-design"
         Write-Host "    Language-Specific (4):"
         Write-Host "      - python-pytest-creator, python-ruff-linter"
         Write-Host "      - javascript-eslint-linter, changelog-python-cliff"
@@ -1667,23 +1668,15 @@ function Show-NextSteps {
     Write-Host ""
     Write-Host "  Usage: opencode --agent <name> `"prompt`""
     Write-Host "         opencode `"prompt`" (uses build)"
-    Write-Host ""
-     Write-Host "=====================================================================" -ForegroundColor White
-      Write-Host "                     54 Skills Available" -ForegroundColor White
-     Write-Host "=====================================================================" -ForegroundColor White
      Write-Host ""
-      Write-Host "  Framework (9) • Language-Specific (4) • Framework-Specific (5)"
-      Write-Host "  OpenCode Meta (3) • OpenTofu (7) • Git/Workflow (9)"
-      Write-Host "  Documentation (3) • JIRA (2) • Code Quality (7)"
-      Write-Host "  Agent Optimization (4)"
-      Write-Host ""
-      Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
-      Write-Host "  Run 'opencode --skill <name> `"prompt`"' to invoke a skill"
-      Write-Host ""
-      Write-Host "  Framework (9) | Language-Specific (4) | Framework-Specific (5)"
-      Write-Host "  OpenCode Meta (3) | OpenTofu (7) | Git/Workflow (9)"
-      Write-Host "  Documentation (3) | JIRA (2) | Code Quality (7)"
-      Write-Host "  Agent Optimization (4)"
+    Write-Host "=====================================================================" -ForegroundColor White
+    Write-Host "                     54 Skills Available" -ForegroundColor White
+    Write-Host "=====================================================================" -ForegroundColor White
+    Write-Host ""
+    Write-Host "  Framework (10) • Language-Specific (4) • Framework-Specific (5)"
+    Write-Host "  OpenCode Meta (3) • OpenTofu (7) • Git/Workflow (9)"
+    Write-Host "  Documentation (3) • JIRA (2) • Code Quality (7)"
+    Write-Host "  Agent Optimization (4)"
     Write-Host ""
     Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
     Write-Host "  Run 'opencode --skill <name> `"prompt`"' to invoke a skill"

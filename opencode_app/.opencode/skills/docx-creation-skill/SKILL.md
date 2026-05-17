@@ -454,6 +454,62 @@ Validates with auto-repair, condenses XML, and creates DOCX. Use `--validate fal
 - Preserve formatting when adding tracked changes
 - Validate after packing
 
+## Design Aesthetics — Avoiding Generic AI Slop
+
+**CRITICAL**: Documents must look intentionally designed and professionally crafted, not like AI-generated templates. Apply these principles alongside the technical formatting rules above.
+
+### Anti-Patterns to AVOID
+
+- **Default template aesthetics**: Avoid documents that look like they came from Word's "New Document" gallery — no generic blue headings, no Calibri 11pt for everything, no default narrow margins
+- **Cookie-cutter structure**: Do not produce documents where every section looks identical. Vary layout density — some sections dense with data tables, others with generous whitespace and a pull quote
+- **Generic formatting**: Avoid using the same font size and weight throughout. Create dramatic hierarchy: 24pt bold titles, 14pt subtitles, 11pt body, with intentional spacing between levels
+- **Template-looking tables**: Default Word tables with equal-width columns, thin borders, and no visual hierarchy scream "auto-generated." Design tables with intentional column widths, header styling, and minimal borders
+- **Overused color choices**: No default blue (#0070C0) for headings. No generic gray (#808080) for subtle text. Choose colors that reflect the document's identity
+- **Wall of text**: Break up long paragraphs with subheadings, callout boxes, or pull quotes. A page of unbroken 11pt text is the hallmark of AI-generated documents
+- **Inconsistent spacing**: Mixed spacing between paragraphs, random margins, or uneven indentation reveals lack of design intention
+
+### Signature Design Elements
+
+Every document should incorporate at least ONE distinctive design choice:
+
+- **Typography hierarchy**: Use at least 3 distinct levels of heading hierarchy with clear size/weight contrast
+- **Strategic color accents**: 1-2 accent colors used consistently for headings, borders, or callout boxes — never rainbow
+- **Professional table design**: Tables with styled headers (background fill + white text), minimal horizontal-only borders, and intentional column widths
+- **Pull quotes or callout boxes**: Key statistics or quotes highlighted in bordered/shaded boxes to break up text
+- **Intentional whitespace**: Generous margins (1-1.5 inches), spacing between sections, and breathing room around tables
+- **Custom header/footer**: Professional header with document title, footer with page numbers — never blank
+
+### Differentiation Strategy
+
+Before formatting, ask:
+1. **What is this document's visual identity?** A financial report looks different from a creative brief
+2. **What should the reader feel?** Authority? Warmth? Urgency? Design for that feeling
+3. **Does this look like it was designed or generated?** If every element is perfectly uniform, it's too generic
+4. **Would a professional designer approve this?** If not, refine spacing, hierarchy, and color choices
+
+### Typography Recommendations
+
+While Arial is the default for compatibility, use weight and size to create distinction:
+
+| Element | Recommended Styling |
+|---------|-------------------|
+| Document Title | 28-36pt Bold, accent color or black |
+| Heading 1 | 20-24pt Bold, accent color |
+| Heading 2 | 16-18pt Bold, dark gray |
+| Body Text | 11-12pt Regular, black |
+| Captions/Notes | 9-10pt Italic, medium gray |
+| Table Headers | 10-11pt Bold, white on colored background |
+
+### Document Aesthetic by Type
+
+| Document Type | Recommended Style | Key Characteristics |
+|---|---|---|
+| Financial Report | Corporate Minimal | Clean tables, blue/dark gray palette, precise alignment |
+| Technical Spec | Swiss/International | Grid-based, monospace for code, restrained color |
+| Marketing Brief | Modern Professional | Accent colors, pull quotes, varied layout density |
+| Legal/Contract | Formal Traditional | Generous margins, serif feel, numbered sections |
+| Proposal | Confident & Bold | Strong typography hierarchy, branded color accents |
+
 ## Common Issues
 
 ### Invalid XML After Edit

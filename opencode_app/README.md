@@ -23,7 +23,7 @@ opencode_app/
 ├── .dockerignore          # Excludes _archived, .env, node_modules
 └── .opencode/
     ├── agents/            # 30 agent .md files (single source of truth)
-    └── skills/            # 53+ skill directories (single source of truth)
+    └── skills/            # 54 skill directories (single source of truth)
 ```
 
 ## How It Works
