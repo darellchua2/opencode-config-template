@@ -553,11 +553,11 @@ USAGE:
       microsoft-copilot  M365 Copilot conversations
       microsoft-dataverse Business data (Dynamics 365)
 
-   SKILLS (53):
-            Framework (9):        test-generator-framework, linting-workflow,
+   SKILLS (54):
+            Framework (10):       test-generator-framework, linting-workflow,
                                   pr-creation-workflow, error-resolver-workflow,
                                   tdd-workflow, docx-creation, pptx-specialist,
-                                  xlsx-specialist, pdf-specialist
+                                  xlsx-specialist, pdf-specialist, frontend-design
 
           Language-Specific (4): python-pytest-creator, python-ruff-linter,
                                 javascript-eslint-linter, changelog-python-cliff
@@ -2174,7 +2174,7 @@ print_summary() {
     if [ -d "$SKILLS_DIR" ] && [ "$(ls -A ${SKILLS_DIR} 2>/dev/null)" ]; then
         local skill_count=$(find ${SKILLS_DIR} -name "SKILL.md" 2>/dev/null | wc -l)
         echo "✓ skills: ${skill_count} skills deployed to ${SKILLS_DIR}/"
-        echo "    - Framework (9):"
+        echo "    - Framework (10):"
         echo "      - test-generator-framework"
         echo "      - linting-workflow"
         echo "      - pr-creation-workflow"
@@ -2184,6 +2184,7 @@ print_summary() {
         echo "      - pptx-specialist"
         echo "      - xlsx-specialist"
         echo "      - pdf-specialist"
+        echo "      - frontend-design"
         echo "    - Language-Specific (4):"
         echo "      - python-pytest-creator"
         echo "      - python-ruff-linter"
@@ -2300,7 +2301,7 @@ print_next_steps() {
     echo "                     📦 54 Skills Available"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "  Framework (9) • Language-Specific (4) • Framework-Specific (5)"
+    echo "  Framework (10) • Language-Specific (4) • Framework-Specific (5)"
     echo "  OpenCode Meta (3) • OpenTofu (7) • Git/Workflow (9)"
     echo "  Documentation (3) • JIRA (2) • Code Quality (7)"
     echo "  Agent Optimization (4)"

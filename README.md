@@ -20,7 +20,7 @@ opencode-config-template/
 │   ├── .dockerignore
 │   ├── .opencode/
 │   │   ├── agents/              # 30 subagent .md files
-│   │   └── skills/              # 53+ skill directories
+│   │   └── skills/              # 54 skill directories
 │   └── README.md                # Docker usage guide
 ├── docker-compose.yml           # Docker Compose service definition
 ├── .env.example                 # Environment variable template
@@ -182,13 +182,13 @@ This template implements **skill permissions** to control which skills agents ca
 
 ## Skill Modularization
 
-This repository implements **skill modularization** with 53 skills organized across 10 categories. Skills are designed with clear separation of concerns and explicit dependencies.
+This repository implements **skill modularization** with 54 skills organized across 10 categories. Skills are designed with clear separation of concerns and explicit dependencies.
 
 ### Skill Categories
 
 | Category | Skills | Purpose |
 |-----------|---------|---------|
-| **Framework** (9) | test-generator-framework, linting-workflow, pr-creation-workflow, error-resolver-workflow, tdd-workflow, docx-creation, pptx-specialist, xlsx-specialist, pdf-specialist | Generic workflows, testing patterns, and document creation |
+| **Framework** (10) | test-generator-framework, linting-workflow, pr-creation-workflow, error-resolver-workflow, tdd-workflow, docx-creation, pptx-specialist, xlsx-specialist, pdf-specialist, frontend-design | Generic workflows, testing patterns, document creation, and UI design |
 | **Language-Specific** (4) | python-pytest-creator, python-ruff-linter, javascript-eslint-linter, changelog-python-cliff | Language-specific test, linting, and documentation |
 | **Framework-Specific** (5) | nextjs-pr-workflow, nextjs-unit-test-creator, nextjs-standard-setup, nextjs-image-usage, typescript-dry-principle | Next.js 16 and TypeScript workflows |
 | **OpenCode Meta** (3) | opencode-agent-creation, opencode-skill-creation, opencode-skills-maintainer | Agent and skill creation/maintenance |

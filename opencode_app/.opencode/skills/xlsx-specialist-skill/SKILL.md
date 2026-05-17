@@ -297,6 +297,58 @@ When updating templates:
 - Never impose standardized formatting on files with established patterns
 - Existing template conventions ALWAYS override these guidelines
 
+## Design Aesthetics — Avoiding Generic AI Slop
+
+**CRITICAL**: Spreadsheets must look intentionally designed and professionally formatted, not like raw data dumps or default Excel output. Apply these principles alongside the technical formatting rules above.
+
+### Anti-Patterns to AVOID
+
+- **Default Excel aesthetics**: Avoid spreadsheets that look like unformatted data — no default column widths, no Calibri 11pt for everything, no gridlines showing through data, no generic "Sheet1" tab names
+- **Raw data dumps**: Do not produce spreadsheets where data is simply dumped into cells without structure. Every sheet needs a clear visual hierarchy: title row, header row, data rows, summary rows
+- **Generic formatting**: Avoid using the same font size and color throughout. Financial models need blue/black/green color coding; dashboards need accent colors for KPIs
+- **Template-looking layouts**: Default Excel tables with no styling, random column widths, and no clear sections scream "auto-generated." Design with intentional grouping, borders, and section headers
+- **Overused color choices**: No default Excel blue (#4472C4) for all charts. No random rainbow palettes for data series. Choose colors that enhance readability and convey meaning
+- **Missing visual hierarchy**: A flat wall of numbers is unreadable. Create clear distinction between headers, data, totals, and assumptions through font weight, color, borders, and shading
+- **Chart defaults**: Never use default Excel chart styling (blue bars, gray gridlines, legend on right). Style every chart with intention — custom colors, data labels, minimal gridlines
+
+### Signature Design Elements
+
+Every spreadsheet should incorporate at least ONE distinctive design choice:
+
+- **Professional color scheme**: A consistent 3-5 color palette applied across all sheets — not random Excel defaults
+- **Clear section architecture**: Sheets divided into labeled sections (Assumptions, Calculations, Output, Summary) with bold section headers and visual separation
+- **Styled headers**: Header rows with background fills and white bold text, frozen panes, and filter-enabled tables
+- **KPI dashboard section**: Key metrics highlighted in large font with conditional formatting or colored backgrounds
+- **Intentional number formatting**: Consistent decimal places, currency symbols aligned, parentheses for negatives, dash for zeros
+- **Clean chart styling**: Charts with branded colors, data labels instead of legends, no unnecessary gridlines, meaningful titles
+
+### Differentiation Strategy
+
+Before formatting, ask:
+1. **Who reads this spreadsheet?** A CEO wants summary KPIs; an analyst wants detailed formulas
+2. **What decisions does this support?** Design to make the decision point obvious and accessible
+3. **Does this look professional or auto-generated?** If it looks like raw data output, it needs more formatting
+4. **Can someone understand the structure in 10 seconds?** If not, add section headers, grouping, and visual hierarchy
+
+### Color Palette Recommendations
+
+| Use Case | Recommended Palette | Characteristics |
+|---|---|---|
+| Financial Model | Blue/Black/Green coding | Blue=inputs, Black=formulas, Green=cross-sheet |
+| Dashboard | 3-4 accent colors + neutrals | One dominant, one accent for alerts, neutrals for structure |
+| Data Analysis | Muted professional tones | Gray structure, blue highlights, green for positive, red for negative |
+| Project Tracker | Clean 2-tone + status colors | Header color, alternating row tint, RAG status colors |
+| Reporting Pack | Corporate branded | Match company colors, consistent across all sheets |
+
+### Chart Styling Guidelines
+
+- **Color**: Use 2-3 colors maximum per chart. Match the spreadsheet's overall palette
+- **Data labels**: Prefer data labels over legends. Place labels directly on data points
+- **Gridlines**: Minimal or no gridlines. If needed, use light gray (#E0E0E0) horizontal gridlines only
+- **Titles**: Every chart needs a clear, descriptive title. No "Chart 1" defaults
+- **Axes**: Clean axis labels with proper number formatting. Avoid cluttered tick marks
+- **Background**: White chart background, no default Excel border
+
 ## Common Issues
 
 ### LibreOffice Not Installed

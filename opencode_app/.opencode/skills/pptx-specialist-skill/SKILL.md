@@ -494,6 +494,52 @@ pdftoppm -jpeg -r 150 -f 2 -l 5 presentation.pdf slide  # Converts only pages 2-
 
 ---
 
+## Design Aesthetics — Avoiding Generic AI Slop
+
+**CRITICAL**: Presentations must look intentionally designed, not AI-generated. Apply the same anti-generic principles from the Swiss Style design philosophy with these additional guidelines:
+
+### Anti-Patterns to AVOID
+
+- **Template aesthetics**: Avoid slides that look like default PowerPoint templates — no generic blue gradient title slides, no standard bullet-point layouts with the same clipart
+- **Cookie-cutter layouts**: Do not repeat the same layout on every slide. Vary composition intentionally — some slides dense with data, others with dramatic negative space
+- **Generic color choices**: Avoid default PowerPoint blues (#0070C0), generic reds, or any palette that screams "corporate template." Choose color groups based on the content's identity, not defaults
+- **Overused font combinations**: Avoid Calibri/Arial for everything without intention. While limited to web-safe fonts, use weight, size, spacing, and case strategically to create distinctive typography
+- **Symmetry by default**: Stop centering everything. Asymmetric compositions are more memorable
+- **Excessive decoration**: Do not add decorative shapes, borders, or elements that serve no purpose. Every visual element must earn its place
+- **Purple gradient syndrome**: Never use purple-to-blue gradients on title slides. This is the #1 indicator of AI-generated presentations
+
+### Signature Design Elements
+
+Every presentation should have at least ONE memorable design choice:
+
+- **Oversized typography**: A single word or number at 120pt+ as a focal element
+- **Color-blocking**: Bold blocks of color occupying 40-60% of a slide
+- **Data-forward design**: Let a single chart or metric dominate the entire slide
+- **Dramatic whitespace**: One slide with minimal content and generous spacing
+- **Unexpected layout**: A diagonal composition, overlapping elements, or a split-screen design
+- **Monochromatic boldness**: An entire presentation using only 2 colors with extreme contrast
+
+### Differentiation Strategy
+
+Before designing, ask:
+1. **What makes this presentation UNLIKE any other?** Find one unique angle
+2. **What is the audience's visual expectation?** Either meet it perfectly or deliberately subvert it
+3. **What emotion should this evoke?** Confidence? Urgency? Wonder? Trust? Design for that emotion
+4. **If someone saw just one slide, would they remember it?** If not, make it bolder
+
+### Matching Aesthetic to Content
+
+| Content Type | Recommended Aesthetic | Avoid |
+|---|---|---|
+| Tech/Startup | Cool Modern (Navy/Bold), Deep Mineral | Warm Retro, Soft Neutral |
+| Finance/Corporate | Minimalism (Clean/Warm), Cool Modern (Blue) | Playful palettes, neon accents |
+| Creative/Agency | Warm Modern (Mauve), Soft Neutral (Lavender) | Minimalism, default blues |
+| Education/Academic | Warm Retro (Forest), Soft Neutral (Olive) | Deep Mineral, neon colors |
+| Pitch/Fundraising | Cool Modern (Bold), Deep Mineral (Blue) | Soft Neutral, muted tones |
+| Report/Data-heavy | Minimalism (Gray), Cool Modern (Blue) | Warm Modern, heavy decoration |
+
+---
+
 ## Code Style Guidelines
 
 **IMPORTANT**: When generating code for PPTX operations:
