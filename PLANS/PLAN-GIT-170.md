@@ -142,10 +142,17 @@ Research whether custom subagents (defined in `agents/*.md`) can delegate work t
    - Add explicit `task: { "*": deny }` to agents that should NOT spawn subagents (21 agents currently default to full access) — DEFERRED: out of scope for this investigation ticket
 
 ### Phase 5: Final Validation
-- [ ] Verify all acceptance criteria are met
-- [ ] Ensure documentation is complete and accurate
-- [ ] Apply fixes to subagent definitions (pptx-specialist, startup-ceo, pr-workflow)
-- [ ] Close issue with findings summary
+- [x] Verify all acceptance criteria are met
+- [x] Ensure documentation is complete and accurate
+- [x] Apply fixes to subagent definitions (pptx-specialist, startup-ceo, pr-workflow)
+
+### Phase 6: Setup Script Fixes
+- [x] Fix setup.sh: AGENTS count 8->30, SKILLS count 52->53, add Agent Optimization category to help
+- [x] Fix setup.ps1: AGENTS count 8->30, SKILLS count 54->53
+- [x] Fix setup.ps1: remove duplicate skill listing in Deploy-Skills (lines 1219-1292)
+- [x] Fix setup.ps1: remove duplicate backup code in Deploy-Agents (lines 1326-1334)
+- [x] Fix setup.ps1: syntax errors on bare `- Category (N):"` lines (1225, 1228, 1240, 1246, 1249, 1251)
+- [ ] Commit, push, and close issue
 
 ---
 
