@@ -326,13 +326,14 @@ USAGE:
                          CONFIGURED FEATURES
 =======================================================================
 
-  AGENTS (30):
+   AGENTS (36):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
     general              General-purpose multi-step research
     scout                External docs and dependency research
     code-review          Code review with SOLID/clean-code analysis
+    code-quality         Code quality with SOLID/clean-code/smells analysis
     testing              Test generation with framework detection
     pr-workflow          PR creation with quality gates and JIRA integration
     linting              Code linting with auto-fix for Python/JS/TS
@@ -346,14 +347,19 @@ USAGE:
     pptx-specialist      PowerPoint presentation creation and editing
     docx-creation        Word document creation and manipulation
     xlsx-specialist      Spreadsheet creation and analysis
-    pdf-specialist       PDF creation, reading, and manipulation
     image-analyzer       Images/screenshots to code, OCR, error diagnosis
     error-resolver       Error diagnosis with stack trace analysis
     opencode-tooling     OpenCode config creation and maintenance
     ticket-creation      GitHub issues and JIRA ticket management
     startup-founder      Startup founder business operations agent
     startup-ceo          Investor-ready pitch decks and board updates
-    business-dev         Proposal summarization and quotation preparation
+    business-ops         Business operations: proposals, quotations, project management
+    office-document      Office document specialist: Word, PowerPoint, Excel
+    google-mcp           Google Cloud MCP (BigQuery, Maps, GCE, GKE)
+    microsoft-m365       Microsoft 365 MCP (Teams, Mail, Calendar, SharePoint, etc.)
+    nextjs-mcp-advisor   Next.js runtime guidance with MCP integration
+    nextjs-setup         Next.js project setup and configuration
+    opentofu-explorer    OpenTofu/Terraform infrastructure management
     autodesk-specialist  Autodesk integration and APS APIs
     civil-3d-specialist  Autodesk Civil 3D model modifications
     open3d-specialist    Open3D 3D data processing guidance
@@ -361,39 +367,45 @@ USAGE:
     Usage: opencode --agent build 'implement auth feature'
             opencode --agent explore 'find all API routes'
  
-       SKILLS (54):
-            Framework (10):       test-generator-framework, linting-workflow,
-                                   pr-creation-workflow, error-resolver-workflow,
-                                   tdd-workflow, docx-creation, pptx-specialist,
-                                   xlsx-specialist, pdf-specialist, frontend-design
+        SKILLS (59):
+             Framework (11):       test-generator-framework, linting-workflow,
+                                    pr-creation-workflow, pr-merge-workflow,
+                                    error-resolver-workflow, tdd-workflow,
+                                    docx-creation, pptx-specialist,
+                                    xlsx-specialist, pdf-specialist, frontend-design
 
-          Language-Specific (4): python-pytest-creator, python-ruff-linter,
-                                javascript-eslint-linter, changelog-python-cliff
+           Language-Specific (4): python-pytest-creator, python-ruff-linter,
+                                 javascript-eslint-linter, changelog-python-cliff
 
-         Framework-Specific (5): nextjs-pr-workflow, nextjs-unit-test-creator,
-                               nextjs-standard-setup, nextjs-image-usage,
-                                typescript-dry-principle
-         OpenCode Meta (3):    opencode-agent-creation, opencode-skill-creation,
-                               opencode-skills-maintainer
-         OpenTofu (7):         opentofu-aws-explorer, opentofu-keycloak-explorer,
-                               opentofu-kubernetes-explorer, opentofu-neon-explorer,
-                               opentofu-provider-setup, opentofu-provisioning-workflow,
-                               opentofu-ecr-provision
-         Git/Workflow (9):     ascii-diagram-creator, mermaid-diagram-creator,
-                               ticket-plan-workflow-skill, plan-execution-skill,
-                               git-issue-labeler, git-issue-updater,
-                               git-semantic-commits, semantic-release-convention,
-                               plan-updater
-        Documentation (3):    coverage-readme-workflow, docstring-generator,
-                               documentation-sync-workflow
+          Framework-Specific (5): nextjs-pr-workflow, nextjs-unit-test-creator,
+                                nextjs-standard-setup, nextjs-image-usage,
+                                 typescript-dry-principle
+          OpenCode Meta (3):    opencode-agent-creation, opencode-skill-creation,
+                                opencode-skills-maintainer
+          OpenTofu (7):         opentofu-aws-explorer, opentofu-keycloak-explorer,
+                                opentofu-kubernetes-explorer, opentofu-neon-explorer,
+                                opentofu-provider-setup, opentofu-provisioning-workflow,
+                                opentofu-ecr-provision
+          Git/Workflow (9):     ascii-diagram-creator, mermaid-diagram-creator,
+                                ticket-plan-workflow-skill, plan-execution-skill,
+                                git-issue-labeler, git-issue-updater,
+                                git-semantic-commits, semantic-release-convention,
+                                plan-updater
+         Documentation (3):    coverage-readme-workflow, docstring-generator,
+                                documentation-sync-workflow
 
-        JIRA (2):             jira-status-updater, jira-git-integration
-        Code Quality (7):     solid-principles, clean-code, clean-architecture,
-                              design-patterns, object-design, code-smells,
-                              complexity-management
+         JIRA (2):             jira-status-updater, jira-git-integration
+         Code Quality (7):     solid-principles, clean-code, clean-architecture,
+                               design-patterns, object-design, code-smells,
+                               complexity-management
 
-    Agent Optimization (4):  continuous-learning, eval-harness,
-                              strategic-compact, verification-loop
+     Agent Optimization (4):  continuous-learning, eval-harness,
+                               strategic-compact, verification-loop
+
+           Startup/Business (3): startup-pitch-deck-skill, startup-business-docs-skill,
+                                 construction-bd-skill
+
+          Configuration (1):    microsoft-m365-config-skill
 
     Run 'opencode --list-skills' for detailed descriptions
     Run 'opencode --skill <name> \"prompt\"' to invoke a skill
@@ -1277,6 +1289,11 @@ function Deploy-Skills {
         Write-Host "    Agent Optimization (4):"
         Write-Host "      - continuous-learning, eval-harness"
         Write-Host "      - strategic-compact, verification-loop"
+        Write-Host "    Startup/Business (3):"
+        Write-Host "      - startup-pitch-deck-skill, startup-business-docs-skill"
+        Write-Host "      - construction-bd-skill"
+        Write-Host "    Configuration (1):"
+        Write-Host "      - microsoft-m365-config-skill"
         Write-Host ""
         Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
         Write-Host ""
@@ -1658,19 +1675,19 @@ function Show-NextSteps {
     Write-Host "  2. Start LM Studio: http://127.0.0.1:1234/v1"
     Write-Host "  3. Verify installation: opencode --version"
     Write-Host ""
-    Write-Host "Agents (30):"
+    Write-Host "Agents (36):"
     Write-Host "  - build (default) - Full-featured coding agent"
     Write-Host "  - plan - Planning agent (read-only)"
     Write-Host "  - explore - Codebase exploration and analysis"
     Write-Host "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
     Write-Host "  - diagram-creator - Diagrams (architecture, flowcharts, UML)"
-    Write-Host "  - ... and 25 more agents"
+    Write-Host "  - ... and 31 more agents"
     Write-Host ""
     Write-Host "  Usage: opencode --agent <name> `"prompt`""
     Write-Host "         opencode `"prompt`" (uses build)"
      Write-Host ""
     Write-Host "=====================================================================" -ForegroundColor White
-    Write-Host "                     54 Skills Available" -ForegroundColor White
+    Write-Host "                     59 Skills Available" -ForegroundColor White
     Write-Host "=====================================================================" -ForegroundColor White
     Write-Host ""
     Write-Host "  Framework (10) • Language-Specific (4) • Framework-Specific (5)"

@@ -4,10 +4,8 @@ mode: subagent
 model: zai-coding-plan/glm-5-turbo
 temperature: 0.3
 steps: 5
-hidden: false
 permission:
   read: allow
-  write: allow
   edit: allow
   bash: allow
   webfetch: allow

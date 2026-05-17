@@ -497,13 +497,14 @@ USAGE:
                          CONFIGURED FEATURES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  AGENTS (30):
+   AGENTS (36):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
     general              General-purpose multi-step research
     scout                External docs and dependency research
     code-review          Code review with SOLID/clean-code analysis
+    code-quality         Code quality with SOLID/clean-code/smells analysis
     testing              Test generation with framework detection
     pr-workflow          PR creation with quality gates and JIRA integration
     linting              Code linting with auto-fix for Python/JS/TS
@@ -517,14 +518,19 @@ USAGE:
     pptx-specialist      PowerPoint presentation creation and editing
     docx-creation        Word document creation and manipulation
     xlsx-specialist      Spreadsheet creation and analysis
-    pdf-specialist       PDF creation, reading, and manipulation
     image-analyzer       Images/screenshots to code, OCR, error diagnosis
     error-resolver       Error diagnosis with stack trace analysis
     opencode-tooling     OpenCode config creation and maintenance
     ticket-creation      GitHub issues and JIRA ticket management
     startup-founder      Startup founder business operations agent
     startup-ceo          Investor-ready pitch decks and board updates
-    business-dev         Proposal summarization and quotation preparation
+    business-ops         Business operations: proposals, quotations, project management
+    office-document      Office document specialist: Word, PowerPoint, Excel
+    google-mcp           Google Cloud MCP (BigQuery, Maps, GCE, GKE)
+    microsoft-m365       Microsoft 365 MCP (Teams, Mail, Calendar, SharePoint, etc.)
+    nextjs-mcp-advisor   Next.js runtime guidance with MCP integration
+    nextjs-setup         Next.js project setup and configuration
+    opentofu-explorer    OpenTofu/Terraform infrastructure management
     autodesk-specialist  Autodesk integration and APS APIs
     civil-3d-specialist  Autodesk Civil 3D model modifications
     open3d-specialist    Open3D 3D data processing guidance
@@ -553,43 +559,50 @@ USAGE:
       microsoft-copilot  M365 Copilot conversations
       microsoft-dataverse Business data (Dynamics 365)
 
-   SKILLS (54):
-            Framework (10):       test-generator-framework, linting-workflow,
-                                  pr-creation-workflow, error-resolver-workflow,
-                                  tdd-workflow, docx-creation, pptx-specialist,
-                                  xlsx-specialist, pdf-specialist, frontend-design
+   SKILLS (59):
+              Framework (11):       test-generator-framework, linting-workflow,
+                                    pr-creation-workflow, pr-merge-workflow,
+                                    error-resolver-workflow, tdd-workflow,
+                                    docx-creation, pptx-specialist,
+                                    xlsx-specialist, pdf-specialist, frontend-design
 
-          Language-Specific (4): python-pytest-creator, python-ruff-linter,
-                                javascript-eslint-linter, changelog-python-cliff
-         Framework-Specific (5): nextjs-pr-workflow, nextjs-unit-test-creator,
-                               nextjs-standard-setup, nextjs-image-usage,
-                               typescript-dry-principle
+           Language-Specific (4): python-pytest-creator, python-ruff-linter,
+                                 javascript-eslint-linter, changelog-python-cliff
 
-         OpenCode Meta (3):    opencode-agent-creation, opencode-skill-creation,
-                               opencode-skills-maintainer
+          Framework-Specific (5): nextjs-pr-workflow, nextjs-unit-test-creator,
+                                nextjs-standard-setup, nextjs-image-usage,
+                                typescript-dry-principle
 
-         OpenTofu (7):         opentofu-aws-explorer, opentofu-keycloak-explorer,
-                               opentofu-kubernetes-explorer, opentofu-neon-explorer,
-                               opentofu-provider-setup, opentofu-provisioning-workflow,
-                               opentofu-ecr-provision
+          OpenCode Meta (3):    opencode-agent-creation, opencode-skill-creation,
+                                opencode-skills-maintainer
 
-         Git/Workflow (9):     ascii-diagram-creator, mermaid-diagram-creator,
-                                ticket-plan-workflow-skill, plan-execution-skill,
-                                git-issue-labeler, git-issue-updater,
-                                git-semantic-commits, semantic-release-convention,
-                                plan-updater
+          OpenTofu (7):         opentofu-aws-explorer, opentofu-keycloak-explorer,
+                                opentofu-kubernetes-explorer, opentofu-neon-explorer,
+                                opentofu-provider-setup, opentofu-provisioning-workflow,
+                                opentofu-ecr-provision
 
-        Documentation (3):    coverage-readme-workflow, docstring-generator,
-                               documentation-sync-workflow
+          Git/Workflow (9):     ascii-diagram-creator, mermaid-diagram-creator,
+                                 ticket-plan-workflow-skill, plan-execution-skill,
+                                 git-issue-labeler, git-issue-updater,
+                                 git-semantic-commits, semantic-release-convention,
+                                 plan-updater
 
-        JIRA (2):             jira-status-updater, jira-git-integration
+         Documentation (3):    coverage-readme-workflow, docstring-generator,
+                                documentation-sync-workflow
 
-       Code Quality (7):     solid-principles-skill, clean-code-skill, clean-architecture-skill,
-                             design-patterns-skill, object-design-skill, code-smells-skill,
-                             complexity-management-skill
+         JIRA (2):             jira-status-updater, jira-git-integration
 
-   Agent Optimization (4):  continuous-learning-skill, eval-harness-skill,
-                             strategic-compact-skill, verification-loop-skill
+        Code Quality (7):     solid-principles-skill, clean-code-skill, clean-architecture-skill,
+                              design-patterns-skill, object-design-skill, code-smells-skill,
+                              complexity-management-skill
+
+    Agent Optimization (4):  continuous-learning-skill, eval-harness-skill,
+                              strategic-compact-skill, verification-loop-skill
+
+           Startup/Business (3): startup-pitch-deck-skill, startup-business-docs-skill,
+                                 construction-bd-skill
+
+          Configuration (1):    microsoft-m365-config-skill
 
     Run 'opencode --list-skills' for detailed descriptions
     Run 'opencode --skill <name> "prompt"' to invoke a skill
@@ -1641,14 +1654,14 @@ setup_config() {
             log_success "config.json copied successfully"
 
             echo ""
-            echo "✓ Configured 30 agents:"
-            echo "    - build (default) - Full-featured coding agent"
-            echo "    - plan - Planning agent (read-only)"
-            echo "    - explore - Codebase exploration and analysis"
-            echo "    - image-analyzer-subagent - Image/screenshot analysis"
-            echo "    - diagram-creator - Diagram creation"
-            echo "    - mermaid-diagram-subagent - Mermaid diagrams with PNG conversion"
-            echo "    - ... and 24 more subagents"
+             echo "✓ Configured 36 agents:"
+             echo "    - build (default) - Full-featured coding agent"
+             echo "    - plan - Planning agent (read-only)"
+             echo "    - explore - Codebase exploration and analysis"
+             echo "    - image-analyzer-subagent - Image/screenshot analysis"
+             echo "    - diagram-creator - Diagram creation"
+             echo "    - mermaid-diagram-subagent - Mermaid diagrams with PNG conversion"
+             echo "    - ... and 30 more agents"
             echo ""
             echo "✓ Configured 5 MCP servers:"
             echo "    Local (auto-start): atlassian, zai-vision-mcp-server"
@@ -2150,14 +2163,14 @@ print_summary() {
 
     # Agents configured
     if [ -f "$CONFIG_FILE" ]; then
-        echo "✓ Configured 30 agents:"
+        echo "✓ Configured 36 agents:"
         echo "    - build (default) - Full-featured coding agent"
         echo "    - plan - Planning agent (read-only)"
         echo "    - explore - Codebase exploration and analysis"
         echo "    - image-analyzer-subagent - Image/screenshot analysis"
         echo "    - diagram-creator - Diagram creation"
         echo "    - mermaid-diagram-subagent - Mermaid diagrams with PNG conversion"
-        echo "    - ... and 24 more subagents"
+        echo "    - ... and 30 more agents"
     fi
 
     # MCP servers configured
@@ -2286,19 +2299,19 @@ print_next_steps() {
     echo "                        🚀 Quick Start"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "🤖 Agents (30):"
+    echo "🤖 Agents (36):"
     echo "  - build (default) - Full-featured coding agent"
     echo "  - plan - Planning agent (read-only)"
     echo "  - explore - Fast codebase exploration and analysis"
     echo "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
     echo "  - diagram-creator - Diagrams (architecture, flowcharts, UML)"
-    echo "  - ... and 25 more agents"
+    echo "  - ... and 31 more agents"
     echo ""
     echo "  Usage: opencode --agent <name> \"prompt\""
     echo "         opencode \"prompt\" (uses build)"
      echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "                     📦 54 Skills Available"
+    echo "                     📦 59 Skills Available"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
     echo "  Framework (10) • Language-Specific (4) • Framework-Specific (5)"

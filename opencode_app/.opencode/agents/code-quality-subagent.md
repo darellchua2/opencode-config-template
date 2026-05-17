@@ -4,7 +4,6 @@ mode: subagent
 model: zai-coding-plan/glm-4.7
 permission:
   read: allow
-  write: deny
   edit: deny
   glob: allow
   grep: allow

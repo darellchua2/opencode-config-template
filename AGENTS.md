@@ -46,8 +46,8 @@ opencode-config-template/
 │   ├── README.md        # Docker usage guide
 │   ├── .dockerignore    # Build exclusions
 │   └── .opencode/
-│       ├── agents/      # 30 subagent .md files (single source of truth)
-│       └── skills/      # 53+ skill directories (single source of truth)
+│       ├── agents/      # 32 subagent .md files (single source of truth)
+│       └── skills/      # 59 skill directories (single source of truth)
 └── .opencode/
     └── agents/          # Project-level subagents (NOT deployed)
 ```
@@ -55,8 +55,8 @@ opencode-config-template/
 ## Shared Config Strategy
 
 Agents and skills have a **single source of truth** in `opencode_app/.opencode/`:
-- `opencode_app/.opencode/agents/` — All 30 subagent definitions
-- `opencode_app/.opencode/skills/` — All 53+ skill directories
+- `opencode_app/.opencode/agents/` — All 32 subagent definitions
+- `opencode_app/.opencode/skills/` — All 59 skill directories
 
 For **user-space**: `setup.sh` and `setup.ps1` copy from `opencode_app/.opencode/` to `~/.config/opencode/`
 For **Docker**: The Dockerfile `COPY . /app/` includes `.opencode/` in the container
@@ -109,6 +109,23 @@ Invoke the `documentation-sync-workflow` skill or delegate to `opencode-tooling-
 opencode --skill documentation-sync-workflow "sync docs after adding new skill"
 ```
 
+## Return Contract Convention
+
+All subagents follow a standardized return contract to minimize context bloat when reporting back to the primary agent:
+
+**Status:** [success | partial | failed]
+**Output:** [file path(s) or key result, one line]
+**Summary:** [2-3 sentences max]
+**Issues:** [blockers, warnings, or "None"]
+
+On failure, subagents MAY include additional diagnostic information. This convention is documented in each subagent's `.md` file and should be followed when creating new agents.
+
+## Extract-then-Delegate Pattern
+
+When a subagent needs domain knowledge, prefer having the primary agent load the skill, extract relevant parameters, and pass ONLY those parameters to the subagent. This keeps heavy knowledge in the primary agent's context (which compacts) rather than the subagent's isolated context.
+
+Example: Instead of startup-ceo loading startup-pitch-deck-skill internally, the primary agent loads the skill, extracts the deck specification, and passes only the spec to startup-ceo.
+
 ## Subagent Chaining
 
 OpenCode supports subagent-to-subagent delegation via the Task tool. The `permission.task` frontmatter field controls which subagents an agent can spawn.
@@ -139,5 +156,5 @@ permission:
 | Pattern | Count | Notes |
 |---------|-------|-------|
 | `task: allow` | 1 | startup-founder-primary-agent |
-| `task: { "*": deny, built-in: allow }` | 5 | code-review, linting, pr-workflow, refactoring, testing |
-| No `task` field | 24 | Defaults to full access |
+| `task: { "*": deny, ... }` | 8 | code-review, linting, pr-workflow, refactoring, testing, startup-ceo, office-document, opencode-tooling |
+| No `task` field | 23 | Defaults to full access |
