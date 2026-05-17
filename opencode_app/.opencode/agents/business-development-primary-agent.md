@@ -5,12 +5,12 @@ model: zai-coding-plan/glm-4.7
 temperature: 0.7
 steps: 50
 permission:
-  docx-creation: allow
+  skill:
+    docx-creation: allow
   atlassian*: allow
   web-search-prime*: allow
   web-reader*: allow
   read: allow
-  write: allow
   edit: ask
   bash: ask
 ---
