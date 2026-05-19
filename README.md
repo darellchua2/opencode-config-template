@@ -229,7 +229,7 @@ This repository implements **skill modularization** with 54 skills organized acr
 
 ### Agents
 
-34 agents provide specialized task handling (5 primary + 29 subagents):
+33 agents provide specialized task handling (5 primary + 28 subagents):
 
 #### Primary Agents
 
