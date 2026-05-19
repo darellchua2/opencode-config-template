@@ -19,7 +19,7 @@ opencode-config-template/
 │   ├── AGENTS.md                # Container-specific instructions
 │   ├── .dockerignore
 │   ├── .opencode/
-│   │   ├── agents/              # 32 subagent .md files
+│   │       ├── agents/              # 31 subagent .md files
 │   │   └── skills/              # 59 skill directories
 │   └── README.md                # Docker usage guide
 ├── docker-compose.yml           # Docker Compose service definition
@@ -253,7 +253,6 @@ This repository implements **skill modularization** with 54 skills organized acr
 | **documentation-subagent** | Documentation generation | docstring-generator, coverage-readme-workflow | — |
 | **coverage-subagent** | Coverage reporting | coverage-readme-workflow | — |
 | **opentofu-explorer-subagent** | Infrastructure as code | 7 OpenTofu skills (AWS, K8s, Keycloak, Neon, ECR) | — |
-| **code-quality-subagent** | SOLID, clean code, code smells | solid-principles, clean-code, code-smells | — |
 | **architecture-review-subagent** | Architecture and design patterns | clean-architecture, design-patterns, complexity-management, continuous-learning, verification-loop | `explore` |
 | **code-review-subagent** | Comprehensive code review | All 7 Code Quality skills + continuous-learning, complexity-management | `explore`, `general` |
 | **refactoring-subagent** | Code refactoring | solid-principles, code-smells, clean-code | `explore`, `general` |
@@ -353,11 +352,10 @@ This repository includes 7 new code quality skills for writing senior-engineer q
 | `complexity-management` | Essential vs accidental complexity - language-agnostic |
 
 ### Code Quality Subagents
-3 new subagents provide specialized code quality analysis:
+2 subagents provide specialized code quality analysis:
 
 | Subagent | Purpose | Skills Used | Built-in Delegation |
 |----------|---------|-------------|---------------------|
-| `code-quality-subagent` | SOLID principles, clean code, code smells | solid-principles, clean-code, code-smells | — |
 | `architecture-review-subagent` | Architecture review and design patterns | clean-architecture, design-patterns, complexity-management, continuous-learning, verification-loop | `explore` |
 | `code-review-subagent` | Comprehensive code review (all quality skills) | All 7 quality skills + continuous-learning, complexity-management | `explore`, `general` |
 

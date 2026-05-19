@@ -326,14 +326,13 @@ USAGE:
                          CONFIGURED FEATURES
 =======================================================================
 
-   AGENTS (36):
+   AGENTS (35):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
     general              General-purpose multi-step research
     scout                External docs and dependency research
     code-review          Code review with SOLID/clean-code analysis
-    code-quality         Code quality with SOLID/clean-code/smells analysis
     testing              Test generation with framework detection
     pr-workflow          PR creation with quality gates and JIRA integration
     linting              Code linting with auto-fix for Python/JS/TS
@@ -1731,13 +1730,13 @@ function Show-NextSteps {
     Write-Host "  2. Start LM Studio: http://127.0.0.1:1234/v1"
     Write-Host "  3. Verify installation: opencode --version"
     Write-Host ""
-    Write-Host "Agents (36):"
+    Write-Host "Agents (35):"
     Write-Host "  - build (default) - Full-featured coding agent"
     Write-Host "  - plan - Planning agent (read-only)"
     Write-Host "  - explore - Codebase exploration and analysis"
     Write-Host "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
     Write-Host "  - diagram-creator - Diagrams (architecture, flowcharts, UML)"
-    Write-Host "  - ... and 31 more agents"
+    Write-Host "  - ... and 30 more agents"
     Write-Host ""
     Write-Host "  Usage: opencode --agent <name> `"prompt`""
     Write-Host "         opencode `"prompt`" (uses build)"

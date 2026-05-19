@@ -497,14 +497,13 @@ USAGE:
                          CONFIGURED FEATURES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-   AGENTS (36):
+   AGENTS (35):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
     general              General-purpose multi-step research
     scout                External docs and dependency research
     code-review          Code review with SOLID/clean-code analysis
-    code-quality         Code quality with SOLID/clean-code/smells analysis
     testing              Test generation with framework detection
     pr-workflow          PR creation with quality gates and JIRA integration
     linting              Code linting with auto-fix for Python/JS/TS
@@ -1655,7 +1654,7 @@ setup_config() {
             log_success "config.json copied successfully"
 
             echo ""
-             echo "✓ Configured 36 agents:"
+             echo "✓ Configured 35 agents:"
              echo "    - build (default) - Full-featured coding agent"
              echo "    - plan - Planning agent (read-only)"
              echo "    - explore - Codebase exploration and analysis"
@@ -2210,7 +2209,7 @@ print_summary() {
 
     # Agents configured
     if [ -f "$CONFIG_FILE" ]; then
-        echo "✓ Configured 36 agents:"
+        echo "✓ Configured 35 agents:"
         echo "    - build (default) - Full-featured coding agent"
         echo "    - plan - Planning agent (read-only)"
         echo "    - explore - Codebase exploration and analysis"
@@ -2346,13 +2345,13 @@ print_next_steps() {
     echo "                        🚀 Quick Start"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "🤖 Agents (36):"
+    echo "🤖 Agents (35):"
     echo "  - build (default) - Full-featured coding agent"
     echo "  - plan - Planning agent (read-only)"
     echo "  - explore - Fast codebase exploration and analysis"
     echo "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
     echo "  - diagram-creator - Diagrams (architecture, flowcharts, UML)"
-    echo "  - ... and 31 more agents"
+    echo "  - ... and 30 more agents"
     echo ""
     echo "  Usage: opencode --agent <name> \"prompt\""
     echo "         opencode \"prompt\" (uses build)"
