@@ -47,7 +47,7 @@ opencode-config-template/
 │   ├── .dockerignore    # Build exclusions
 │   └── .opencode/
 │       ├── agents/      # 31 subagent .md files (single source of truth)
-│       └── skills/      # 59 skill directories (single source of truth)
+│       └── skills/      # 60 skill directories (single source of truth)
 ├── PLANS/               # Execution plans (git-committed)
 ├── LEARNINGS/           # Knowledge persistence template (auto-provisioned in target projects)
 │   ├── _index.md        # Auto-generated index
@@ -64,7 +64,7 @@ opencode-config-template/
 
 Agents and skills have a **single source of truth** in `opencode_app/.opencode/`:
 - `opencode_app/.opencode/agents/` — All 31 subagent definitions
-- `opencode_app/.opencode/skills/` — All 59 skill directories
+- `opencode_app/.opencode/skills/` — All 60 skill directories
 
 For **user-space**: `setup.sh` and `setup.ps1` copy from `opencode_app/.opencode/` to `~/.config/opencode/`
 For **Docker**: The Dockerfile `COPY . /app/` includes `.opencode/` in the container
@@ -94,6 +94,52 @@ When reviewing code or architecture, check `LEARNINGS/` for existing patterns an
 
 **Project-Level Subagents:**
 - `mermaid-diagram-subagent` - Creates Mermaid diagrams with PNG conversion and integrated with planning workflows
+
+## CodeGraph MCP Server
+
+[CodeGraph](https://github.com/colbymchenry/codegraph) is a pre-indexed code knowledge graph MCP server integrated into this configurator. It builds a local SQLite database of symbol relationships, call graphs, and code structure — enabling agents to query the graph instantly instead of scanning files with grep/glob/Read.
+
+### Why CodeGraph
+
+| Metric | Without CodeGraph | With CodeGraph |
+|--------|-------------------|----------------|
+| Tool calls per exploration | 30-50+ | 1-6 |
+| Exploration time | 1-2 minutes | 15-35 seconds |
+| File reads | 10-20 | 0 |
+| API key required | — | No (100% local) |
+
+### Configuration
+
+CodeGraph is configured in `opencode_app/opencode.json`:
+- MCP server entry: `codegraph` (enabled by default, uses `npx`)
+- Tool permissions: `codegraph*: true`
+
+### Per-Project Setup
+
+CodeGraph requires per-project initialization before tools work:
+
+```bash
+cd your-project
+codegraph init -i
+```
+
+This creates a `.codegraph/` directory with an indexed SQLite database. Add `.codegraph/` to `.gitignore`. A file watcher auto-syncs changes as you code.
+
+### Agent Integration
+
+Since subagents inherit MCP tools from the session, CodeGraph is available to all agents automatically. Key beneficiaries:
+
+| Agent | CodeGraph Benefit |
+|-------|-------------------|
+| `explore` (built-in) | `codegraph_explore` replaces grep/glob chains for codebase exploration |
+| `code-review-subagent` | `codegraph_impact` assesses change radius before review |
+| `refactoring-subagent` | `codegraph_callers`/`callees` traces dependencies for safe refactoring |
+| `architecture-review-subagent` | Call graph analysis for design pattern evaluation |
+| `testing-subagent` | `codegraph_affected` finds impacted tests by changed files |
+
+### Supported Languages
+
+TypeScript, JavaScript, Python, Go, Rust, Java, C#, PHP, Ruby, C, C++, Swift, Kotlin, Dart, Svelte, Liquid, Pascal/Delphi, Scala, Vue (19+ languages).
 
 ## Adding New Subagents or Skills
 

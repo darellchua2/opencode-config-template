@@ -20,7 +20,7 @@ opencode-config-template/
 │   ├── .dockerignore
 │   ├── .opencode/
 │   │       ├── agents/              # 31 subagent .md files
-│   │   └── skills/              # 59 skill directories
+│   │   └── skills/              # 60 skill directories
 │   └── README.md                # Docker usage guide
 ├── docker-compose.yml           # Docker Compose service definition
 ├── .env.example                 # Environment variable template
@@ -204,9 +204,63 @@ Skills like `continuous-learning` persist knowledge across sessions using a dual
 - Review agents (architecture-review, code-review) save findings to both supermemory and markdown files
 - Agents discover learnings via AGENTS.md instructions (auto-loaded) + explicit file reads
 
+## CodeGraph
+
+[CodeGraph](https://github.com/colbymchenry/codegraph) is a pre-indexed code knowledge graph MCP server that enables agents to query symbol relationships, call graphs, and code structure instantly instead of scanning files with grep/glob/Read.
+
+### Performance
+
+| Metric | Without CodeGraph | With CodeGraph |
+|--------|-------------------|----------------|
+| Tool calls per exploration | 30-50+ | 1-6 |
+| Exploration time | 1-2 minutes | 15-35 seconds |
+| File reads | 10-20 | 0 |
+| API key required | — | No (100% local) |
+
+### Setup
+
+CodeGraph is enabled by default in `opencode_app/opencode.json`. No API keys needed — it uses a local SQLite database.
+
+**Per-project initialization** (required before tools work):
+
+```bash
+cd your-project
+codegraph init -i
+```
+
+This creates a `.codegraph/` directory with an indexed SQLite database. Add `.codegraph/` to `.gitignore`. A file watcher auto-syncs changes as you code.
+
+### MCP Tools
+
+| Tool | Purpose |
+|------|---------|
+| `codegraph_search` | Find symbols by name across the codebase |
+| `codegraph_explore` | Full exploration with source code sections (explore agents only) |
+| `codegraph_context` | Build relevant code context for a task (explore agents only) |
+| `codegraph_callers` | Find what calls a function |
+| `codegraph_callees` | Find what a function calls |
+| `codegraph_impact` | Analyze what code is affected by changing a symbol |
+| `codegraph_node` | Get details about a specific symbol |
+| `codegraph_files` | Get indexed file structure |
+| `codegraph_status` | Check index health and statistics |
+
+### Supported Languages
+
+TypeScript, JavaScript, Python, Go, Rust, Java, C#, PHP, Ruby, C, C++, Swift, Kotlin, Dart, Svelte, Liquid, Pascal/Delphi, Scala, Vue (19+ languages).
+
+### Subagent Benefits
+
+| Subagent | CodeGraph Benefit |
+|----------|-------------------|
+| `explore` (built-in) | `codegraph_explore` replaces grep/glob chains |
+| `code-review-subagent` | `codegraph_impact` assesses change radius before review |
+| `refactoring-subagent` | `codegraph_callers`/`callees` for safe refactoring |
+| `architecture-review-subagent` | Call graph analysis for design evaluation |
+| `testing-subagent` | `codegraph_affected` finds impacted tests by changed files |
+
 ## Skill Modularization
 
-This repository implements **skill modularization** with 54 skills organized across 10 categories. Skills are designed with clear separation of concerns and explicit dependencies.
+This repository implements **skill modularization** with 60 skills organized across 10 categories. Skills are designed with clear separation of concerns and explicit dependencies.
 
 ### Skill Categories
 
