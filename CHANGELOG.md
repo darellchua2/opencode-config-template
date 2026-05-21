@@ -1,3 +1,10 @@
+## [1.50.1](https://github.com/darellchua2/opencode-config-template/compare/v1.50.0...v1.50.1) (2026-05-21)
+
+
+### Bug Fixes
+
+* add strict input validation to y/n prompts in setup scripts (BT-53) ([#189](https://github.com/darellchua2/opencode-config-template/issues/189)) ([196289e](https://github.com/darellchua2/opencode-config-template/commit/196289eb0b776a0d9626aed224e30b1ba2ea1eca))
+
 # [1.50.0](https://github.com/darellchua2/opencode-config-template/compare/v1.49.0...v1.50.0) (2026-05-21)
 
 
