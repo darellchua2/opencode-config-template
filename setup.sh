@@ -497,14 +497,13 @@ USAGE:
                          CONFIGURED FEATURES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-   AGENTS (36):
+   AGENTS (35):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
     general              General-purpose multi-step research
     scout                External docs and dependency research
     code-review          Code review with SOLID/clean-code analysis
-    code-quality         Code quality with SOLID/clean-code/smells analysis
     testing              Test generation with framework detection
     pr-workflow          PR creation with quality gates and JIRA integration
     linting              Code linting with auto-fix for Python/JS/TS
@@ -538,8 +537,9 @@ USAGE:
     Usage: opencode --agent build "implement auth feature"
            opencode --agent explore "find all API routes"
 
-  MCP SERVERS (15):
+  MCP SERVERS (16):
     Auto-start (npx):
+      codegraph           Pre-indexed code knowledge graph (100% local)
       atlassian          JIRA and Confluence integration
       zai-vision-mcp-server     Image analysis and video processing
 
@@ -559,7 +559,7 @@ USAGE:
       microsoft-copilot  M365 Copilot conversations
       microsoft-dataverse Business data (Dynamics 365)
 
-   SKILLS (59):
+   SKILLS (61):
               Framework (11):       test-generator-framework, linting-workflow,
                                     pr-creation-workflow, pr-merge-workflow,
                                     error-resolver-workflow, tdd-workflow,
@@ -590,7 +590,7 @@ USAGE:
          Documentation (3):    coverage-readme-workflow, docstring-generator,
                                 documentation-sync-workflow
 
-         JIRA (2):             jira-status-updater, jira-git-integration
+         JIRA (3):             jira-status-updater, jira-git-integration, jira-ticket-labeler
 
         Code Quality (7):     solid-principles-skill, clean-code-skill, clean-architecture-skill,
                               design-patterns-skill, object-design-skill, code-smells-skill,
@@ -602,7 +602,7 @@ USAGE:
            Startup/Business (3): startup-pitch-deck-skill, startup-business-docs-skill,
                                  construction-bd-skill
 
-          Configuration (1):    microsoft-m365-config-skill
+           Configuration (2):    microsoft-m365-config-skill, codegraph-setup-skill
 
     Run 'opencode --list-skills' for detailed descriptions
     Run 'opencode --skill <name> "prompt"' to invoke a skill
@@ -1655,7 +1655,7 @@ setup_config() {
             log_success "config.json copied successfully"
 
             echo ""
-             echo "✓ Configured 36 agents:"
+             echo "✓ Configured 35 agents:"
              echo "    - build (default) - Full-featured coding agent"
              echo "    - plan - Planning agent (read-only)"
              echo "    - explore - Codebase exploration and analysis"
@@ -1664,9 +1664,9 @@ setup_config() {
              echo "    - mermaid-diagram-subagent - Mermaid diagrams with PNG conversion"
              echo "    - ... and 30 more agents"
             echo ""
-            echo "✓ Configured 5 MCP servers:"
-            echo "    Local (auto-start): atlassian, zai-vision-mcp-server"
-            echo "    Remote (needs key): web-reader, web-search-prime, zread"
+             echo "✓ Configured 6 MCP servers:"
+             echo "    Local (auto-start): atlassian, zai-vision-mcp-server, codegraph"
+             echo "    Remote (needs key): web-reader, web-search-prime, zread"
             echo ""
         else
             log_error "config.json not found in ${SCRIPT_DIR}"
@@ -2210,7 +2210,7 @@ print_summary() {
 
     # Agents configured
     if [ -f "$CONFIG_FILE" ]; then
-        echo "✓ Configured 36 agents:"
+        echo "✓ Configured 35 agents:"
         echo "    - build (default) - Full-featured coding agent"
         echo "    - plan - Planning agent (read-only)"
         echo "    - explore - Codebase exploration and analysis"
@@ -2222,12 +2222,13 @@ print_summary() {
 
     # MCP servers configured
     if [ -f "$CONFIG_FILE" ]; then
-        echo "✓ Configured 5 MCP servers:"
-        echo "    - atlassian - JIRA and Confluence integration (auto-start)"
-        echo "    - web-reader - Web page reading (needs ZAI_API_KEY)"
-        echo "    - web-search-prime - Web search (needs ZAI_API_KEY)"
-        echo "    - zai-vision-mcp-server - Image analysis (auto-start)"
-        echo "    - zread - GitHub repo search (needs ZAI_API_KEY)"
+         echo "✓ Configured 6 MCP servers:"
+         echo "    - atlassian - JIRA and Confluence integration (auto-start)"
+         echo "    - web-reader - Web page reading (needs ZAI_API_KEY)"
+         echo "    - web-search-prime - Web search (needs ZAI_API_KEY)"
+         echo "    - zai-vision-mcp-server - Image analysis (auto-start)"
+         echo "    - zread - GitHub repo search (needs ZAI_API_KEY)"
+         echo "    - codegraph - Code knowledge graph (auto-start)"
     fi
 
     # skills directory status
@@ -2282,9 +2283,10 @@ print_summary() {
         echo "      - coverage-readme-workflow"
         echo "      - docstring-generator"
         echo "      - documentation-sync-workflow"
-        echo "    - JIRA (2):"
-        echo "      - jira-status-updater"
-        echo "      - jira-git-integration"
+         echo "    - JIRA (3):"
+         echo "      - jira-status-updater"
+         echo "      - jira-git-integration"
+         echo "      - jira-ticket-labeler"
         echo "    - Code Quality (7):"
         echo "      - solid-principles"
         echo "      - clean-code"
@@ -2346,35 +2348,35 @@ print_next_steps() {
     echo "                        🚀 Quick Start"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "🤖 Agents (36):"
+    echo "🤖 Agents (35):"
     echo "  - build (default) - Full-featured coding agent"
     echo "  - plan - Planning agent (read-only)"
     echo "  - explore - Fast codebase exploration and analysis"
     echo "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
     echo "  - diagram-creator - Diagrams (architecture, flowcharts, UML)"
-    echo "  - ... and 31 more agents"
+    echo "  - ... and 30 more agents"
     echo ""
     echo "  Usage: opencode --agent <name> \"prompt\""
     echo "         opencode \"prompt\" (uses build)"
      echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "                     📦 59 Skills Available"
+    echo "                     📦 61 Skills Available"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
     echo "  Framework (10) • Language-Specific (4) • Framework-Specific (5)"
     echo "  OpenCode Meta (3) • OpenTofu (7) • Git/Workflow (9)"
-    echo "  Documentation (3) • JIRA (2) • Code Quality (7)"
+    echo "  Documentation (3) • JIRA (3) • Code Quality (7)"
     echo "  Agent Optimization (4)"
     echo ""
     echo "  Run 'opencode --list-skills' for detailed descriptions"
     echo "  Run 'opencode --skill <name> \"prompt\"' to use a skill"
     echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "                     🔌 MCP Servers (5)"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo ""
-    echo "  Local (auto-start): atlassian, zai-vision-mcp-server"
-    echo "  Remote (needs key): web-reader, web-search-prime, zread"
+     echo "                     🔌 MCP Servers (6)"
+     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+     echo ""
+     echo "  Local (auto-start): atlassian, zai-vision-mcp-server, codegraph"
+     echo "  Remote (needs key): web-reader, web-search-prime, zread"
     echo ""
     echo "  Auth: opencode mcp auth atlassian / opencode mcp auth github"
     echo ""

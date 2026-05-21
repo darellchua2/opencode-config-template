@@ -326,14 +326,13 @@ USAGE:
                          CONFIGURED FEATURES
 =======================================================================
 
-   AGENTS (36):
+   AGENTS (35):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
     general              General-purpose multi-step research
     scout                External docs and dependency research
     code-review          Code review with SOLID/clean-code analysis
-    code-quality         Code quality with SOLID/clean-code/smells analysis
     testing              Test generation with framework detection
     pr-workflow          PR creation with quality gates and JIRA integration
     linting              Code linting with auto-fix for Python/JS/TS
@@ -367,7 +366,7 @@ USAGE:
     Usage: opencode --agent build 'implement auth feature'
             opencode --agent explore 'find all API routes'
  
-        SKILLS (59):
+        SKILLS (61):
              Framework (11):       test-generator-framework, linting-workflow,
                                     pr-creation-workflow, pr-merge-workflow,
                                     error-resolver-workflow, tdd-workflow,
@@ -394,7 +393,7 @@ USAGE:
          Documentation (3):    coverage-readme-workflow, docstring-generator,
                                 documentation-sync-workflow
 
-         JIRA (2):             jira-status-updater, jira-git-integration
+         JIRA (3):             jira-status-updater, jira-git-integration, jira-ticket-labeler
          Code Quality (7):     solid-principles, clean-code, clean-architecture,
                                design-patterns, object-design, code-smells,
                                complexity-management
@@ -405,7 +404,7 @@ USAGE:
            Startup/Business (3): startup-pitch-deck-skill, startup-business-docs-skill,
                                  construction-bd-skill
 
-          Configuration (1):    microsoft-m365-config-skill
+          Configuration (2):    microsoft-m365-config-skill, codegraph-setup-skill
 
     Run 'opencode --list-skills' for detailed descriptions
     Run 'opencode --skill <name> \"prompt\"' to invoke a skill
@@ -1190,8 +1189,8 @@ function Set-Configuration {
             Write-Host "    - image-analyzer-subagent - Image/screenshot analysis"
             Write-Host "    - diagram-creator - Diagram creation"
             Write-Host ""
-            Write-Host "Configured 5 MCP servers:" -ForegroundColor Green
-            Write-Host "    - Local (auto-start): atlassian, zai-vision-mcp-server"
+            Write-Host "Configured 6 MCP servers:" -ForegroundColor Green
+            Write-Host "    - Local (auto-start): atlassian, zai-vision-mcp-server, codegraph"
             Write-Host "    - Remote (needs key): web-reader, web-search-prime, zread"
             Write-Host ""
         } else {
@@ -1280,8 +1279,8 @@ function Deploy-Skills {
         Write-Host "    Documentation (3):"
         Write-Host "      - coverage-readme-workflow, docstring-generator"
         Write-Host "      - documentation-sync-workflow"
-        Write-Host "    JIRA (2):"
-        Write-Host "      - jira-status-updater, jira-git-integration"
+        Write-Host "    JIRA (3):"
+         Write-Host "      - jira-status-updater, jira-git-integration, jira-ticket-labeler"
         Write-Host "    Code Quality (7):"
         Write-Host "      - solid-principles, clean-code, clean-architecture"
         Write-Host "      - design-patterns, object-design, code-smells"
@@ -1731,32 +1730,32 @@ function Show-NextSteps {
     Write-Host "  2. Start LM Studio: http://127.0.0.1:1234/v1"
     Write-Host "  3. Verify installation: opencode --version"
     Write-Host ""
-    Write-Host "Agents (36):"
+    Write-Host "Agents (35):"
     Write-Host "  - build (default) - Full-featured coding agent"
     Write-Host "  - plan - Planning agent (read-only)"
     Write-Host "  - explore - Codebase exploration and analysis"
     Write-Host "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
     Write-Host "  - diagram-creator - Diagrams (architecture, flowcharts, UML)"
-    Write-Host "  - ... and 31 more agents"
+    Write-Host "  - ... and 30 more agents"
     Write-Host ""
     Write-Host "  Usage: opencode --agent <name> `"prompt`""
     Write-Host "         opencode `"prompt`" (uses build)"
      Write-Host ""
     Write-Host "=====================================================================" -ForegroundColor White
-    Write-Host "                     59 Skills Available" -ForegroundColor White
+     Write-Host "                     61 Skills Available" -ForegroundColor White
     Write-Host "=====================================================================" -ForegroundColor White
     Write-Host ""
     Write-Host "  Framework (10) • Language-Specific (4) • Framework-Specific (5)"
     Write-Host "  OpenCode Meta (3) • OpenTofu (7) • Git/Workflow (9)"
-    Write-Host "  Documentation (3) • JIRA (2) • Code Quality (7)"
+    Write-Host "  Documentation (3) • JIRA (3) • Code Quality (7)"
     Write-Host "  Agent Optimization (4)"
     Write-Host ""
     Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
     Write-Host "  Run 'opencode --skill <name> `"prompt`"' to invoke a skill"
     Write-Host ""
-    Write-Host "MCP Servers (5):"
-    Write-Host "  Local (auto-start): atlassian, zai-vision-mcp-server"
-    Write-Host "  Remote (needs key): web-reader, web-search-prime, zread"
+     Write-Host "MCP Servers (6):"
+     Write-Host "  Local (auto-start): atlassian, zai-vision-mcp-server, codegraph"
+     Write-Host "  Remote (needs key): web-reader, web-search-prime, zread"
     Write-Host ""
     Write-Host "  Auth: opencode mcp auth atlassian / opencode mcp auth github"
     Write-Host ""

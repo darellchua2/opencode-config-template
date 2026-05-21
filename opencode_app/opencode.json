@@ -27,6 +27,17 @@
     }
   },
   "mcp": {
+    "codegraph": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@colbymchenry/codegraph",
+        "serve",
+        "--mcp"
+      ],
+      "enabled": true
+    },
     "atlassian": {
       "type": "local",
       "command": [
@@ -214,6 +225,7 @@
     }
   },
   "tools": {
+    "codegraph*": true,
     "atlassian*": true,
     "zai-web-reader*": true,
     "zai-vision-mcp-server*": false,

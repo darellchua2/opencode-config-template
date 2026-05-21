@@ -22,8 +22,8 @@ opencode_app/
 ├── AGENTS.md              # Agent instructions for container mode
 ├── .dockerignore          # Excludes _archived, .env, node_modules
 └── .opencode/
-    ├── agents/            # 30 agent .md files (single source of truth)
-    └── skills/            # 54 skill directories (single source of truth)
+    ├── agents/            # 31 agent .md files (single source of truth)
+    └── skills/            # 61 skill directories (single source of truth)
 ```
 
 ## How It Works
@@ -80,6 +80,16 @@ After modifying agents or skills:
 docker compose build --no-cache
 docker compose up -d
 ```
+
+## CodeGraph
+
+CodeGraph is a pre-indexed code knowledge graph MCP server enabled by default. It provides instant symbol search, call graph tracing, and impact analysis — reducing exploration tool calls by ~94%.
+
+- **No API keys** — 100% local SQLite
+- **Auto-sync** — file watcher keeps the index fresh
+- **Per-project setup** required: `codegraph init -i` in each project directory
+
+See the main `README.md` for full details on MCP tools, supported languages, and subagent integration.
 
 ## Subagent Chaining
 

@@ -27,6 +27,7 @@ I implement a unified ticket/issue creation and planning workflow supporting bot
 | Skill | Purpose | Used In |
 |-------|---------|---------|
 | `git-issue-labeler` | GitHub label assessment and assignment | Step 4 (GitHub) |
+| `jira-ticket-labeler` | JIRA issue type and priority classification | Step 4 (JIRA) |
 | `git-semantic-commits` | Conventional commit message formatting | Step 7 |
 | `git-issue-updater` | Progress updates to GitHub issues | Step 8 (GitHub) |
 
@@ -164,7 +165,8 @@ If Single selected:
 **Available Labels** (handled by `git-issue-labeler`):
 - `bug`, `enhancement`, `documentation`, `good first issue`, `help wanted`
 - `question`, `invalid`, `wontfix`, `duplicate`
-- `major`, `minor`, `patch` (semantic versioning)
+- `priority: critical`, `priority: high`, `priority: medium`, `priority: low`
+- `major`, `minor`, `patch` (semantic versioning — PRs only)
 
 **For Single Issue**:
 ```bash
@@ -197,6 +199,17 @@ done
 ```
 
 #### JIRA Tickets
+
+**Issue Type Detection** — delegate to `jira-ticket-labeler` skill:
+```
+# Use jira-ticket-labeler to determine appropriate issue type and priority
+# The skill analyzes ticket content and maps to JIRA types (Bug, Story, Task, Epic)
+# See: skills/jira-ticket-labeler-skill/SKILL.md
+```
+
+**Available Types** (handled by `jira-ticket-labeler`):
+- Bug, Story, Task, Epic
+- Priority: Highest, High, Medium, Low, Lowest
 
 **Select JIRA Project** (if not specified):
 ```bash

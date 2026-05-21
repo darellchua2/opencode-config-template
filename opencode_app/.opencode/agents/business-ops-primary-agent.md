@@ -8,6 +8,7 @@ permission:
   skill:
     docx-creation: allow
     construction-bd-skill: allow
+    jira-ticket-labeler: allow
   read: allow
   edit: ask
   bash: ask

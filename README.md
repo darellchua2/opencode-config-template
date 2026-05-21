@@ -19,8 +19,8 @@ opencode-config-template/
 │   ├── AGENTS.md                # Container-specific instructions
 │   ├── .dockerignore
 │   ├── .opencode/
-│   │   ├── agents/              # 32 subagent .md files
-│   │   └── skills/              # 59 skill directories
+│   │       ├── agents/              # 31 subagent .md files
+│   │   └── skills/              # 61 skill directories
 │   └── README.md                # Docker usage guide
 ├── docker-compose.yml           # Docker Compose service definition
 ├── .env.example                 # Environment variable template
@@ -204,9 +204,63 @@ Skills like `continuous-learning` persist knowledge across sessions using a dual
 - Review agents (architecture-review, code-review) save findings to both supermemory and markdown files
 - Agents discover learnings via AGENTS.md instructions (auto-loaded) + explicit file reads
 
+## CodeGraph
+
+[CodeGraph](https://github.com/colbymchenry/codegraph) is a pre-indexed code knowledge graph MCP server that enables agents to query symbol relationships, call graphs, and code structure instantly instead of scanning files with grep/glob/Read.
+
+### Performance
+
+| Metric | Without CodeGraph | With CodeGraph |
+|--------|-------------------|----------------|
+| Tool calls per exploration | 30-50+ | 1-6 |
+| Exploration time | 1-2 minutes | 15-35 seconds |
+| File reads | 10-20 | 0 |
+| API key required | — | No (100% local) |
+
+### Setup
+
+CodeGraph is enabled by default in `opencode_app/opencode.json`. No API keys needed — it uses a local SQLite database.
+
+**Per-project initialization** (required before tools work):
+
+```bash
+cd your-project
+codegraph init -i
+```
+
+This creates a `.codegraph/` directory with an indexed SQLite database. Add `.codegraph/` to `.gitignore`. A file watcher auto-syncs changes as you code.
+
+### MCP Tools
+
+| Tool | Purpose |
+|------|---------|
+| `codegraph_search` | Find symbols by name across the codebase |
+| `codegraph_explore` | Full exploration with source code sections (explore agents only) |
+| `codegraph_context` | Build relevant code context for a task (explore agents only) |
+| `codegraph_callers` | Find what calls a function |
+| `codegraph_callees` | Find what a function calls |
+| `codegraph_impact` | Analyze what code is affected by changing a symbol |
+| `codegraph_node` | Get details about a specific symbol |
+| `codegraph_files` | Get indexed file structure |
+| `codegraph_status` | Check index health and statistics |
+
+### Supported Languages
+
+TypeScript, JavaScript, Python, Go, Rust, Java, C#, PHP, Ruby, C, C++, Swift, Kotlin, Dart, Svelte, Liquid, Pascal/Delphi, Scala, Vue (19+ languages).
+
+### Subagent Benefits
+
+| Subagent | CodeGraph Benefit |
+|----------|-------------------|
+| `explore` (built-in) | `codegraph_explore` replaces grep/glob chains |
+| `code-review-subagent` | `codegraph_impact` assesses change radius before review |
+| `refactoring-subagent` | `codegraph_callers`/`callees` for safe refactoring |
+| `architecture-review-subagent` | Call graph analysis for design evaluation |
+| `testing-subagent` | `codegraph_affected` finds impacted tests by changed files |
+
 ## Skill Modularization
 
-This repository implements **skill modularization** with 54 skills organized across 10 categories. Skills are designed with clear separation of concerns and explicit dependencies.
+This repository implements **skill modularization** with 61 skills organized across 10 categories. Skills are designed with clear separation of concerns and explicit dependencies.
 
 ### Skill Categories
 
@@ -219,7 +273,7 @@ This repository implements **skill modularization** with 54 skills organized acr
 | **OpenTofu** (7) | opentofu-aws-explorer, opentofu-keycloak-explorer, opentofu-kubernetes-explorer, opentofu-neon-explorer, opentofu-provider-setup, opentofu-provisioning-workflow, opentofu-ecr-provision | Infrastructure as Code |
 | **Git/Workflow** (9) | ascii-diagram-creator, mermaid-diagram-creator, ticket-plan-workflow-skill, plan-execution-skill, git-issue-labeler, git-issue-updater, git-semantic-commits, semantic-release-convention, plan-updater | Diagrams, git operations, release conventions, and workflows |
 | **Documentation** (3) | coverage-readme-workflow, docstring-generator, documentation-sync-workflow | Documentation generation |
-| **JIRA** (2) | jira-status-updater, jira-git-integration | JIRA integration via MCP server |
+| **JIRA** (3) | jira-status-updater, jira-git-integration, jira-ticket-labeler | JIRA integration via MCP server |
 | **Code Quality** (7) | solid-principles, clean-code, clean-architecture, design-patterns, object-design, code-smells, complexity-management | Code quality analysis and patterns |
 | **Agent Optimization** (4) | continuous-learning, eval-harness, strategic-compact, verification-loop | AI agent session optimization and quality assurance |
 | **Startup/Business** (3) | startup-pitch-deck-skill, startup-business-docs-skill, construction-bd-skill | Startup pitch decks, business documentation, construction proposals |
@@ -229,7 +283,7 @@ This repository implements **skill modularization** with 54 skills organized acr
 
 ### Agents
 
-34 agents provide specialized task handling (5 primary + 29 subagents):
+33 agents provide specialized task handling (5 primary + 28 subagents):
 
 #### Primary Agents
 
@@ -253,7 +307,6 @@ This repository implements **skill modularization** with 54 skills organized acr
 | **documentation-subagent** | Documentation generation | docstring-generator, coverage-readme-workflow | — |
 | **coverage-subagent** | Coverage reporting | coverage-readme-workflow | — |
 | **opentofu-explorer-subagent** | Infrastructure as code | 7 OpenTofu skills (AWS, K8s, Keycloak, Neon, ECR) | — |
-| **code-quality-subagent** | SOLID, clean code, code smells | solid-principles, clean-code, code-smells | — |
 | **architecture-review-subagent** | Architecture and design patterns | clean-architecture, design-patterns, complexity-management, continuous-learning, verification-loop | `explore` |
 | **code-review-subagent** | Comprehensive code review | All 7 Code Quality skills + continuous-learning, complexity-management | `explore`, `general` |
 | **refactoring-subagent** | Code refactoring | solid-principles, code-smells, clean-code | `explore`, `general` |
@@ -353,11 +406,10 @@ This repository includes 7 new code quality skills for writing senior-engineer q
 | `complexity-management` | Essential vs accidental complexity - language-agnostic |
 
 ### Code Quality Subagents
-3 new subagents provide specialized code quality analysis:
+2 subagents provide specialized code quality analysis:
 
 | Subagent | Purpose | Skills Used | Built-in Delegation |
 |----------|---------|-------------|---------------------|
-| `code-quality-subagent` | SOLID principles, clean code, code smells | solid-principles, clean-code, code-smells | — |
 | `architecture-review-subagent` | Architecture review and design patterns | clean-architecture, design-patterns, complexity-management, continuous-learning, verification-loop | `explore` |
 | `code-review-subagent` | Comprehensive code review (all quality skills) | All 7 quality skills + continuous-learning, complexity-management | `explore`, `general` |
 
