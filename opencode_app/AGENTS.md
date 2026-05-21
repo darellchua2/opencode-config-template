@@ -65,3 +65,5 @@ The following subagents have CodeGraph instructions in their `.md` files and wil
 | `architecture-review-subagent` | `codegraph_callers`/`callees`, `codegraph_explore`, `codegraph_impact` |
 | `refactoring-subagent` | `codegraph_callers`, `codegraph_impact`, `codegraph_search` |
 | `testing-subagent` | `codegraph_files`, `codegraph_search` |
+| `linting-subagent` | `codegraph_files`, `codegraph_search` |
+| `error-resolver-subagent` | `codegraph_node`, `codegraph_callers`, `codegraph_search` |

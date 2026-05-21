@@ -83,7 +83,7 @@ When `.codegraph/` exists in the project, use CodeGraph tools for architecture a
 - **Symbol relationships**: Use `codegraph_search` to find interface implementations and cross-module references
 - **When delegating to `explore`**: Request "use codegraph_explore for dependency analysis" in the prompt
 
-If `.codegraph/` does not exist, proceed with import-based analysis.
+If `.codegraph/` does not exist, fall back to grep/glob/read normally.
 
 ## Built-in Subagent Delegation
 

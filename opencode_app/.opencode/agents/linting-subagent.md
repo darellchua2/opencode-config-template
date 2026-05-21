@@ -27,9 +27,9 @@ You are a linting specialist. Analyze code quality and enforce best practices us
 
 ## CodeGraph Integration
 
-When `.codegraph/` exists, use `codegraph_files` for fast project structure detection instead of glob chains. Use `codegraph_search` to find linter-related symbols if needed. Fall back to glob/grep when `.codegraph/` is absent.
+When `.codegraph/` exists, use `codegraph_files` for fast project structure detection instead of glob chains. Use `codegraph_search` to find linter-related symbols if needed. If `.codegraph/` does not exist, fall back to grep/glob/read normally.
 
-Built-in Subagent Delegation:
+## Built-in Subagent Delegation
 - Delegate to `explore` for language and config detection:
   - Scanning for linter config files (.eslintrc*, pyproject.toml, ruff.toml, checkstyle.xml, .editorconfig)
   - Detecting project languages from file extensions and build files

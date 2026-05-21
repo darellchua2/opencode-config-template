@@ -35,9 +35,9 @@ When `.codegraph/` exists in the project, use CodeGraph tools for faster test di
 - **Coverage gaps**: Use `codegraph_callers` on untested functions to understand their consumers
 - **When delegating to `explore`**: Request "use codegraph_files for structure and codegraph_search for test patterns" in the prompt
 
-If `.codegraph/` does not exist, proceed with glob-based file discovery.
+If `.codegraph/` does not exist, fall back to grep/glob/read normally.
 
-Built-in Subagent Delegation:
+## Built-in Subagent Delegation
 - Delegate to `explore` for test discovery tasks:
   - Finding existing test files and test directories
   - Locating test framework configuration (conftest.py, jest.config, vitest.config, etc.)

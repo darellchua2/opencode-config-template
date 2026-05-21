@@ -148,7 +148,7 @@ When `.codegraph/` exists in the project, use CodeGraph tools to enhance structu
 - **Symbol analysis**: Use `codegraph_node` to inspect symbol signatures and dependencies without reading full files
 - **When delegating to `explore`**: Request "use codegraph_explore for structural analysis" in the prompt
 
-If `.codegraph/` does not exist, proceed with grep/glob-based exploration.
+If `.codegraph/` does not exist, fall back to grep/glob/read normally.
 
 ## Built-in Subagent Delegation
 

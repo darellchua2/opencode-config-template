@@ -72,9 +72,9 @@ When `.codegraph/` exists in the project, use CodeGraph tools for safe refactori
 - **Interface mapping**: Use `codegraph_callers`/`callees` to map interface implementations before restructuring
 - **When delegating to `explore`**: Request "use codegraph_explore for pattern analysis" in the prompt
 
-If `.codegraph/` does not exist, proceed with grep/glob-based analysis.
+If `.codegraph/` does not exist, fall back to grep/glob/read normally.
 
-Built-in Subagent Delegation:
+## Built-in Subagent Delegation
 - Delegate to `explore` for codebase analysis:
   - Finding duplicate code patterns across files
   - Mapping class hierarchies and interface implementations
