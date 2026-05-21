@@ -47,7 +47,7 @@ opencode-config-template/
 │   ├── .dockerignore    # Build exclusions
 │   └── .opencode/
 │       ├── agents/      # 31 subagent .md files (single source of truth)
-│       └── skills/      # 60 skill directories (single source of truth)
+│       └── skills/      # 61 skill directories (single source of truth)
 ├── PLANS/               # Execution plans (git-committed)
 ├── LEARNINGS/           # Knowledge persistence template (auto-provisioned in target projects)
 │   ├── _index.md        # Auto-generated index
@@ -64,7 +64,7 @@ opencode-config-template/
 
 Agents and skills have a **single source of truth** in `opencode_app/.opencode/`:
 - `opencode_app/.opencode/agents/` — All 31 subagent definitions
-- `opencode_app/.opencode/skills/` — All 60 skill directories
+- `opencode_app/.opencode/skills/` — All 61 skill directories
 
 For **user-space**: `setup.sh` and `setup.ps1` copy from `opencode_app/.opencode/` to `~/.config/opencode/`
 For **Docker**: The Dockerfile `COPY . /app/` includes `.opencode/` in the container
@@ -144,6 +144,17 @@ TypeScript, JavaScript, Python, Go, Rust, Java, C#, PHP, Ruby, C, C++, Swift, Ko
 ## Adding New Subagents or Skills
 
 When adding a new subagent or skill, you MUST update these files to maintain synchronization:
+
+### Mandatory Sync Triggers
+
+The following changes require updating `setup.sh` and `setup.ps1`:
+
+| Trigger | What to Update |
+|---------|---------------|
+| New/removed MCP server | MCP count, auto-start listing, help text |
+| New/removed skill | Skill count, category listing, banner |
+| New/removed agent | Agent count, help text listing |
+| Config changes (`opencode.json`) | MCP server entries if added/removed |
 
 ### Files to Update
 

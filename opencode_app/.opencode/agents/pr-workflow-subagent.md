@@ -17,6 +17,7 @@ permission:
     pr-creation-workflow: allow
     nextjs-pr-workflow: allow
     jira-status-updater: allow
+    jira-ticket-labeler: allow
     plan-updater: allow
     changelog-python-cliff: allow
 ---

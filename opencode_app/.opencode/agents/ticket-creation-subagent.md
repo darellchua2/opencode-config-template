@@ -14,6 +14,7 @@ permission:
     ticket-plan-workflow-skill: allow
     git-issue-updater: allow
     git-issue-labeler: allow
+    jira-ticket-labeler: allow
     git-semantic-commits: allow
     plan-updater: allow
 ---
@@ -49,6 +50,7 @@ When delegating to this subagent, provide:
 **Optional Information**:
 - **Project Key** (JIRA): e.g., "IBIS", "PROJ"
 - **Labels** (GitHub): e.g., "bug", "enhancement", "documentation"
+- **Issue Type** (JIRA): Bug, Story, Task, or Epic (see `jira-ticket-labeler-skill`)
 - **Technical Notes**: Implementation considerations
 - **Parent Issue**: For sub-issues/subtasks
 
@@ -66,12 +68,14 @@ After execution, this subagent provides:
 ### GitHub Issues
 - Create issues with semantic formatting and labels
 - Auto-detect appropriate labels (bug, enhancement, documentation)
+- Auto-detect priority labels (priority: critical/high/medium/low)
 - Create branches linked to issues
 - Generate PLAN files with implementation phases
 - Update issues with commit progress
 
 ### JIRA Tickets
-- Create tickets via Atlassian MCP tools
+- Create tickets via Atlassian MCP tools with correct issue type (Bug, Story, Task, Epic)
+- Auto-detect issue type and priority using `jira-ticket-labeler-skill`
 - Support for Stories with Subtasks
 - Support for standalone Tasks
 - Create branches from ticket keys
@@ -83,7 +87,8 @@ After execution, this subagent provides:
 | Skill | Purpose |
 |-------|---------|
 | ticket-plan-workflow-skill | Unified GitHub/JIRA workflow with PLAN.md |
-| git-issue-labeler | Automatic label assignment (GitHub) |
+| git-issue-labeler | GitHub label assignment with auto-create |
+| jira-ticket-labeler | JIRA issue type and priority classification |
 | git-issue-updater | Progress updates |
 | git-semantic-commits | Commit message formatting |
 
