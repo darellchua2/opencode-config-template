@@ -1,3 +1,10 @@
+# [1.50.0](https://github.com/darellchua2/opencode-config-template/compare/v1.49.0...v1.50.0) (2026-05-21)
+
+
+### Features
+
+* add CodeGraph MCP server, split label skills, and remove code-quality-subagent ([#187](https://github.com/darellchua2/opencode-config-template/issues/187)) ([80d074b](https://github.com/darellchua2/opencode-config-template/commit/80d074b67b8c1cf496cfbb8d7dbe0fdfd74980aa)), closes [#186](https://github.com/darellchua2/opencode-config-template/issues/186) [#188](https://github.com/darellchua2/opencode-config-template/issues/188)
+
 # [1.49.0](https://github.com/darellchua2/opencode-config-template/compare/v1.48.0...v1.49.0) (2026-05-17)
 
 
