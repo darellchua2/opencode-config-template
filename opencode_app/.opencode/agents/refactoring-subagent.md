@@ -62,7 +62,19 @@ Best Practices:
 - Extract early
 - Utility-first approach
 
-Built-in Subagent Delegation:
+## CodeGraph Integration
+
+When `.codegraph/` exists in the project, use CodeGraph tools for safe refactoring:
+
+- **Before refactoring**: Use `codegraph_callers` on symbols you plan to change — know ALL consumers first
+- **Impact analysis**: Use `codegraph_impact` with depth=2 to assess change radius
+- **Finding duplicates**: Use `codegraph_search` and `codegraph_callees` to find symbols with identical call patterns
+- **Interface mapping**: Use `codegraph_callers`/`callees` to map interface implementations before restructuring
+- **When delegating to `explore`**: Request "use codegraph_explore for pattern analysis" in the prompt
+
+If `.codegraph/` does not exist, fall back to grep/glob/read normally.
+
+## Built-in Subagent Delegation
 - Delegate to `explore` for codebase analysis:
   - Finding duplicate code patterns across files
   - Mapping class hierarchies and interface implementations

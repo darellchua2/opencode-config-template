@@ -41,6 +41,15 @@ MCP Tools:
 - diagnose_error_screenshot: Analyze error screenshots
 - extract_text_from_screenshot: Extract error text from images
 
+## CodeGraph Integration
+
+When `.codegraph/` exists, use CodeGraph tools for error tracing:
+- `codegraph_node` to inspect error-related symbol details (signatures, return types)
+- `codegraph_callers` to trace how an error propagates through the call stack
+- `codegraph_search` to find similar error patterns across the codebase
+
+If `.codegraph/` does not exist, fall back to grep/glob/read normally.
+
 Delegation:
 - Code changes: Delegate to parent agent (no write access)
 - System commands: Delegate to parent agent (no bash access)
