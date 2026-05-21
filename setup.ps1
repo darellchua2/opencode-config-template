@@ -177,11 +177,17 @@ function Read-YesNo {
     }
 
     $defaultDisplay = if ($DefaultYes) { "Y/n" } else { "y/N" }
-    $response = Read-Host "$Message [$defaultDisplay]"
-    if ([string]::IsNullOrWhiteSpace($response)) {
-        return $DefaultYes
+
+    while ($true) {
+        $response = Read-Host "$Message [$defaultDisplay]"
+        if ([string]::IsNullOrWhiteSpace($response)) {
+            return $DefaultYes
+        }
+        if ($response -match "^[YyNn]$") {
+            return $response -match "^[Yy]"
+        }
+        Write-Host "Invalid input. Please enter y or n." -ForegroundColor Yellow
     }
-    return $response -match "^[Yy]"
 }
 
 function New-FileBackup {

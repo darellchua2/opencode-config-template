@@ -770,8 +770,14 @@ prompt_yes_no() {
     if [ "$AUTO_ACCEPT" = true ]; then
         result="$default_value"
     else
-        read -p "${prompt_message} [${default_value}]: " result
-        result="${result:-$default_value}"
+        while true; do
+            read -p "${prompt_message} [${default_value}]: " result
+            result="${result:-$default_value}"
+            if [[ "$result" =~ ^[YyNn]$ ]]; then
+                break
+            fi
+            echo "Invalid input. Please enter y or n."
+        done
     fi
 
     [[ "$result" =~ ^[Yy]$ ]]
