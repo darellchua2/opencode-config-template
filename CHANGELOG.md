@@ -1,3 +1,10 @@
+## [1.50.2](https://github.com/darellchua2/opencode-config-template/compare/v1.50.1...v1.50.2) (2026-05-21)
+
+
+### Bug Fixes
+
+* **config:** add missing codegraph MCP server to root config.json [[#190](https://github.com/darellchua2/opencode-config-template/issues/190)] ([#191](https://github.com/darellchua2/opencode-config-template/issues/191)) ([015dc14](https://github.com/darellchua2/opencode-config-template/commit/015dc14ccde090d11b3e0de3da370ebcb2a7ea44))
+
 ## [1.50.1](https://github.com/darellchua2/opencode-config-template/compare/v1.50.0...v1.50.1) (2026-05-21)
 
 
