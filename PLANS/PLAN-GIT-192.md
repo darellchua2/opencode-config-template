@@ -42,45 +42,45 @@ If `.codegraph/` does not exist, fall back to grep/glob/read normally.
 
 ### 1.1 `explorer-subagent.md` — CodeGraph as primary exploration tool
 
-- [ ] Add `## CodeGraph Integration` section after existing tool guidance
-- [ ] `codegraph_explore` replaces multi-file grep/glob chains (primary tool for exploration)
-- [ ] `codegraph_context` replaces manual context building
-- [ ] `codegraph_search` replaces grep for symbol name lookups
-- [ ] `codegraph_files` replaces glob for file structure queries
-- [ ] `codegraph_node` replaces Read for single symbol details
-- [ ] Document fallback to grep/glob/read when `.codegraph/` doesn't exist
-- [ ] Exception: remote GitHub repos use `zai-zread` (CodeGraph is local-only)
+- [x] Add `## CodeGraph Integration` section after existing tool guidance
+- [x] `codegraph_explore` replaces multi-file grep/glob chains (primary tool for exploration)
+- [x] `codegraph_context` replaces manual context building
+- [x] `codegraph_search` replaces grep for symbol name lookups
+- [x] `codegraph_files` replaces glob for file structure queries
+- [x] `codegraph_node` replaces Read for single symbol details
+- [x] Document fallback to grep/glob/read when `.codegraph/` doesn't exist
+- [x] Exception: remote GitHub repos use `zai-zread` (CodeGraph is local-only)
 
 ### 1.2 `code-review-subagent.md` — CodeGraph for structural reviews
 
-- [ ] Add `## CodeGraph Integration` section after existing review methodology
-- [ ] `codegraph_impact` on changed files before starting review
-- [ ] `codegraph_callers`/`callees` to verify changed symbols don't break consumers
-- [ ] `codegraph_search` to find similar patterns across codebase
-- [ ] When delegating to `explore`: request "use codegraph_explore for structural analysis"
+- [x] Add `## CodeGraph Integration` section after existing review methodology
+- [x] `codegraph_impact` on changed files before starting review
+- [x] `codegraph_callers`/`callees` to verify changed symbols don't break consumers
+- [x] `codegraph_search` to find similar patterns across codebase
+- [x] When delegating to `explore`: request "use codegraph_explore for structural analysis"
 
 ### 1.3 `architecture-review-subagent.md` — CodeGraph for dependency analysis
 
-- [ ] Add `## CodeGraph Integration` section after existing analysis methodology
-- [ ] `codegraph_callers`/`callees` to map actual dependency graphs (not just imports)
-- [ ] `codegraph_explore` to verify dependency direction (domain -> infrastructure)
-- [ ] `codegraph_impact` with depth=3 to find high-coupling modules
-- [ ] When delegating to `explore`: request "use codegraph_explore for dependency analysis"
+- [x] Add `## CodeGraph Integration` section after existing analysis methodology
+- [x] `codegraph_callers`/`callees` to map actual dependency graphs (not just imports)
+- [x] `codegraph_explore` to verify dependency direction (domain -> infrastructure)
+- [x] `codegraph_impact` with depth=3 to find high-coupling modules
+- [x] When delegating to `explore`: request "use codegraph_explore for dependency analysis"
 
 ### 1.4 `refactoring-subagent.md` — CodeGraph for safe refactoring
 
-- [ ] Add `## CodeGraph Integration` section after existing refactoring methodology
-- [ ] `codegraph_callers` on symbols before changing — know ALL consumers first
-- [ ] `codegraph_impact` with depth=2 to assess change radius
-- [ ] `codegraph_search` + `codegraph_callees` to find symbols with identical call patterns
-- [ ] When delegating to `explore`: request "use codegraph_explore for pattern analysis"
+- [x] Add `## CodeGraph Integration` section after existing refactoring methodology
+- [x] `codegraph_callers` on symbols before changing — know ALL consumers first
+- [x] `codegraph_impact` with depth=2 to assess change radius
+- [x] `codegraph_search` + `codegraph_callees` to find symbols with identical call patterns
+- [x] When delegating to `explore`: request "use codegraph_explore for pattern analysis"
 
 ### 1.5 `testing-subagent.md` — CodeGraph for test discovery
 
-- [ ] Add `## CodeGraph Integration` section after existing test methodology
-- [ ] `codegraph_files` instead of glob chains for project layout
-- [ ] `codegraph_search` to find test-related symbols
-- [ ] When delegating to `explore`: request "use codegraph_files for structure and codegraph_search for test patterns"
+- [x] Add `## CodeGraph Integration` section after existing test methodology
+- [x] `codegraph_files` instead of glob chains for project layout
+- [x] `codegraph_search` to find test-related symbols
+- [x] When delegating to `explore`: request "use codegraph_files for structure and codegraph_search for test patterns"
 
 ---
 
@@ -88,9 +88,9 @@ If `.codegraph/` does not exist, fall back to grep/glob/read normally.
 
 ### 2.1 `opencode_app/AGENTS.md` — Add condensed CodeGraph section
 
-- [ ] Add CodeGraph tool priority table
-- [ ] Document per-project setup requirement (`codegraph init -i`)
-- [ ] Keep section concise (Docker AGENTS.md is a summary document)
+- [x] Add CodeGraph tool priority table
+- [x] Document per-project setup requirement (`codegraph init -i`)
+- [x] Keep section concise (Docker AGENTS.md is a summary document)
 
 ---
 
@@ -98,11 +98,11 @@ If `.codegraph/` does not exist, fall back to grep/glob/read normally.
 
 ### 3.1 `linting-subagent.md` — Brief CodeGraph mention
 
-- [ ] Add brief `codegraph_files` mention for project structure detection
+- [x] Add brief `codegraph_files` mention for project structure detection
 
 ### 3.2 `error-resolver-subagent.md` — Brief CodeGraph mention
 
-- [ ] Add brief `codegraph_node`/`codegraph_callers` mention for error tracing
+- [x] Add brief `codegraph_node`/`codegraph_callers` mention for error tracing
 
 ---
 
@@ -115,10 +115,10 @@ If `.codegraph/` does not exist, fall back to grep/glob/read normally.
 ## Validation
 
 After all phases:
-- [ ] Grep `opencode_app/.opencode/agents/*.md` for "CodeGraph" — expect 7 files (5 critical + 2 optional)
-- [ ] Grep `opencode_app/AGENTS.md` for "CodeGraph" — expect at least 1 match
-- [ ] Verify each critical file has a tool priority table
-- [ ] Verify each critical file documents fallback behavior
+- [x] Grep `opencode_app/.opencode/agents/*.md` for "CodeGraph" — expect 7 files (5 critical + 2 optional)
+- [x] Grep `opencode_app/AGENTS.md` for "CodeGraph" — expect at least 1 match
+- [x] Verify each critical file has a tool priority table
+- [x] Verify each critical file documents fallback behavior
 
 ---
 

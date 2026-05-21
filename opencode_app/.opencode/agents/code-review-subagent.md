@@ -138,6 +138,18 @@ After completing the review, use the `continuous-learning` skill to persist find
 
 The continuous-learning skill auto-provisions `LEARNINGS/` if it doesn't exist in the project.
 
+## CodeGraph Integration
+
+When `.codegraph/` exists in the project, use CodeGraph tools to enhance structural reviews:
+
+- **Before review**: Use `codegraph_impact` on changed files to understand change radius and affected consumers
+- **During review**: Use `codegraph_callers`/`callees` to verify changed symbols don't break downstream consumers
+- **Pattern detection**: Use `codegraph_search` to find similar patterns across the codebase (duplication, inconsistent implementations)
+- **Symbol analysis**: Use `codegraph_node` to inspect symbol signatures and dependencies without reading full files
+- **When delegating to `explore`**: Request "use codegraph_explore for structural analysis" in the prompt
+
+If `.codegraph/` does not exist, proceed with grep/glob-based exploration.
+
 ## Built-in Subagent Delegation
 
 - Delegate to `explore` for codebase scanning tasks:

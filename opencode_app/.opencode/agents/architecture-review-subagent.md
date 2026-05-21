@@ -73,6 +73,18 @@ After completing the review, use the `continuous-learning` skill to persist find
 
 The continuous-learning skill auto-provisions `LEARNINGS/` if it doesn't exist in the project.
 
+## CodeGraph Integration
+
+When `.codegraph/` exists in the project, use CodeGraph tools for architecture analysis:
+
+- **Dependency analysis**: Use `codegraph_callers`/`callees` to map actual dependency graphs (not just imports)
+- **Layer boundaries**: Use `codegraph_explore` to verify dependency direction (domain -> infrastructure)
+- **Complexity hotspots**: Use `codegraph_impact` with depth=3 to find high-coupling modules
+- **Symbol relationships**: Use `codegraph_search` to find interface implementations and cross-module references
+- **When delegating to `explore`**: Request "use codegraph_explore for dependency analysis" in the prompt
+
+If `.codegraph/` does not exist, proceed with import-based analysis.
+
 ## Built-in Subagent Delegation
 
 - Delegate to `explore` for initial codebase scanning:
