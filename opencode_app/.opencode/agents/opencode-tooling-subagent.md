@@ -28,13 +28,13 @@ You are deployed globally from a configurator repo (`opencode-config-template`) 
 
 Before any action, determine the current project type:
 
-1. Check for configurator repo indicators: `setup.sh` + `skills/` + `agents/` all at repo root
+1. Check for configurator repo indicators: `deploy/setup.sh` + `opencode_app/.opencode/` at repo root
 2. If detected, use the question tool to confirm: "This appears to be an OpenCode configurator repo. Is that correct?"
 3. The answer changes your workflow:
 
 **Configurator repo** (e.g., `opencode-config-template`):
-- `skills/` and `agents/` at root are the SOURCE of truth (deployed to user space)
-- After any change to skills/agents, MUST run doc sync (setup.sh, setup.ps1, README.md, AGENTS.md)
+- `opencode_app/.opencode/` is the SOURCE of truth (deployed to user space)
+- After any change to skills/agents, MUST run doc sync (deploy/setup.sh, deploy/setup.ps1, README.md, AGENTS.md)
 - Creating a new skill/agent here means it gets deployed to ALL user projects
 
 **Regular project**:
@@ -57,7 +57,7 @@ Before creating any artifact, ask the user via question tool:
 - "User level (global)" — personal, all projects, not shared
 ```
 
-If in a configurator repo and user says "user level", the artifact goes into `skills/` or `agents/` at root (which setup.sh deploys to `~/.config/opencode/`).
+If in a configurator repo and user says "user level", the artifact goes into `opencode_app/.opencode/` (which deploy/setup.sh deploys to `~/.config/opencode/`).
 
 ## Step 2: Use Skills for Creation
 
@@ -83,10 +83,10 @@ If in a configurator repo and user says "user level", the artifact goes into `sk
 
 | Artifact | Location | Deploys To |
 |----------|----------|------------|
-| Skills | `skills/<name>/SKILL.md` | `~/.config/opencode/skills/<name>/SKILL.md` |
-| Agents | `agents/<name>.md` | `~/.config/opencode/agents/<name>.md` |
-| Config | `config.json` | `~/.config/opencode/config.json` |
-| User Rules | `.AGENTS.md` | `~/.config/opencode/AGENTS.md` |
+| Skills | `opencode_app/.opencode/skills/<name>/SKILL.md` | `~/.config/opencode/skills/<name>/SKILL.md` |
+| Agents | `opencode_app/.opencode/agents/<name>.md` | `~/.config/opencode/agents/<name>.md` |
+| Config | `deploy/config.json` | `~/.config/opencode/config.json` |
+| User Rules | `deploy/.AGENTS.md` | `~/.config/opencode/AGENTS.md` |
 
 ## Agent Frontmatter Standard
 
@@ -187,61 +187,66 @@ When a user wants to create their own OpenCode configurator repo (to manage and 
    - Include CI/CD for validation? (default: yes)
    - Target platforms: Linux/macOS (`setup.sh`), Windows (`setup.ps1`), or both
 
-3. **Scaffold the full configurator structure**:
-   ```
-   <repo-name>/
-   ├── .AGENTS.md              # User-space rules (deploys to ~/.config/opencode/AGENTS.md)
-   ├── .gitignore
-   ├── AGENTS.md               # Repo-level instructions
-   ├── config.json             # Agent definitions and MCP config
-   ├── LICENSE
-   ├── README.md               # Auto-generated with skill/agent counts and tables
-   ├── setup.sh                # Deployment script (Linux/macOS)
-   ├── setup.ps1               # Deployment script (Windows)
-   ├── agents/                 # Global subagents (deployed to user space)
-   │   └── opencode-tooling-subagent.md
-   ├── skills/                 # Skills (deployed to user space)
-   │   └── <example-skill>/SKILL.md
-   └── .opencode/
-       └── agents/             # Project-level subagents (NOT deployed)
-   ```
+    3. **Scaffold the full configurator structure**:
+    ```
+    <repo-name>/
+    ├── deploy/                 # User-space deployment files
+    │   ├── .AGENTS.md          # User-space rules (deploys to ~/.config/opencode/AGENTS.md)
+    │   ├── config.json         # Agent definitions and MCP config
+    │   ├── setup.sh            # Deployment script (Linux/macOS)
+    │   └── setup.ps1           # Deployment script (Windows)
+    ├── .gitignore
+    ├── AGENTS.md               # Repo-level instructions
+    ├── LICENSE
+    ├── README.md               # Auto-generated with skill/agent counts and tables
+    ├── opencode_app/           # Docker standalone mode + single source of truth
+    │   ├── Dockerfile
+    │   ├── opencode.json
+    │   ├── .opencode/
+    │   │   ├── agents/         # Global subagents (deployed to user space)
+    │   │   │   └── opencode-tooling-subagent.md
+    │   │   └── skills/         # Skills (deployed to user space)
+    │   │       └── <example-skill>/SKILL.md
+    └── .opencode/
+        └── agents/             # Project-level subagents (NOT deployed)
+    ```
 
-4. **Generate `setup.sh`** with:
-   - Color-coded output and banners
-   - Deployment of `config.json` → `~/.config/opencode/config.json`
-   - Deployment of `.AGENTS.md` → `~/.config/opencode/AGENTS.md`
-   - Deployment of `agents/*.md` → `~/.config/opencode/agents/`
-   - Deployment of `skills/*/` → `~/.config/opencode/skills/`
-   - Skill/agent count validation
-   - Backup of existing config before overwriting
-   - Category-grouped skill listing
+    4. **Generate `deploy/setup.sh`** with:
+    - Color-coded output and banners
+    - Deployment of `deploy/config.json` → `~/.config/opencode/config.json`
+    - Deployment of `deploy/.AGENTS.md` → `~/.config/opencode/AGENTS.md`
+    - Deployment of `opencode_app/.opencode/agents/*.md` → `~/.config/opencode/agents/`
+    - Deployment of `opencode_app/.opencode/skills/*/` → `~/.config/opencode/skills/`
+    - Skill/agent count validation
+    - Backup of existing config before overwriting
+    - Category-grouped skill listing
 
-5. **Generate `setup.ps1`** (if Windows requested) — PowerShell equivalent of `setup.sh`
+    5. **Generate `deploy/setup.ps1`** (if Windows requested) — PowerShell equivalent of `deploy/setup.sh`
 
-6. **Generate `config.json`** — minimal OpenCode config with:
-   - Primary agent definition
-   - MCP server placeholders
-   - Model configuration
+    6. **Generate `deploy/config.json`** — minimal OpenCode config with:
+    - Primary agent definition
+    - MCP server placeholders
+    - Model configuration
 
-7. **Generate `README.md`** with:
-   - Overview, file structure, quick start
-   - Skill categories table
-   - Subagents table
-   - Deployment instructions for both platforms
+    7. **Generate `README.md`** with:
+    - Overview, file structure, quick start
+    - Skill categories table
+    - Subagents table
+    - Deployment instructions for both platforms
 
-8. **Generate `.AGENTS.md`** — user-space routing rules (task delegation order, external file loading)
+    8. **Generate `deploy/.AGENTS.md`** — user-space routing rules (task delegation order, external file loading)
 
-9. **Generate `AGENTS.md`** — repo-level instructions (file structure, sync checklist, deployment notes)
+    9. **Generate `AGENTS.md`** — repo-level instructions (file structure, sync checklist, deployment notes)
 
 10. **Initialize git repo**: `git init`, create initial commit
 
-11. **Suggest next steps** via question tool:
-    - "Add your first custom skill?"
-    - "Add your first custom agent?"
-    - "Push to GitHub?"
-    - "Run setup.sh to deploy?"
+    11. **Suggest next steps** via question tool:
+     - "Add your first custom skill?"
+     - "Add your first custom agent?"
+     - "Push to GitHub?"
+     - "Run deploy/setup.sh to deploy?"
 
-**Key principle**: A configurator repo is the SOURCE of truth for a user's global OpenCode config. Everything in `skills/` and `agents/` at root gets deployed to `~/.config/opencode/` via the setup scripts. This lets users version-control their OpenCode configuration and share it across machines.
+**Key principle**: A configurator repo is the SOURCE of truth for a user's global OpenCode config. Everything in `opencode_app/.opencode/` gets deployed to `~/.config/opencode/` via the setup scripts in `deploy/`. This lets users version-control their OpenCode configuration and share it across machines.
 
 ### Creating Project-Specific Rules (AGENTS.md)
 1. Ask scope → read project context
@@ -310,7 +315,7 @@ permission:
 ### Synchronizing Documentation (Configurator Repo Only)
 1. Load `documentation-sync-workflow` skill
 2. Count actual skills/subagents vs documented counts
-3. Fix discrepancies across: `setup.sh`, `setup.ps1`, `README.md`, `AGENTS.md`
+3. Fix discrepancies across: `deploy/setup.sh`, `deploy/setup.ps1`, `README.md`, `AGENTS.md`
 4. Validate counts match
 
 ## Validation Checklist

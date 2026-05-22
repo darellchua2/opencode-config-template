@@ -48,7 +48,10 @@ Set-StrictMode -Version Latest
 $ScriptDir = $PSScriptRoot
 if (-not $ScriptDir) { $ScriptDir = Get-Location }
 
-$VersionFile = Join-Path $ScriptDir "VERSION"
+# Resolve repo root (setup.ps1 lives in deploy/, repo root is one level up)
+$RepoDir = (Resolve-Path (Join-Path $ScriptDir "..")).Path
+
+$VersionFile = Join-Path $RepoDir "VERSION"
 if (Test-Path $VersionFile) {
     $ScriptVersion = (Get-Content $VersionFile -Raw).Trim()
 } else {
@@ -58,7 +61,7 @@ if (Test-Path $VersionFile) {
 $ConfigDir = Join-Path $HOME ".config\opencode"
 $ConfigFile = Join-Path $ConfigDir "config.json"
 $SkillsDir = Join-Path $ConfigDir "skills"
-$AgentsSrcDir = Join-Path $ScriptDir "opencode_app\.opencode\agents"
+$AgentsSrcDir = Join-Path $RepoDir "opencode_app\.opencode\agents"
 $AgentsDestDir = Join-Path $ConfigDir "agents"
 $BackupDir = Join-Path $HOME ".opencode-backup-$(Get-Date -Format 'yyyyMMdd_HHmmss')"
 $LogFile = Join-Path $HOME ".opencode-setup.log"
@@ -1211,7 +1214,7 @@ function Deploy-Skills {
     Write-Host ""
     Write-LogInfo "Setting up skills directory..."
 
-    $skillsSrc = Join-Path $ScriptDir "opencode_app\.opencode\skills"
+    $skillsSrc = Join-Path $RepoDir "opencode_app\.opencode\skills"
 
     if (-not $DryRun) {
         if (-not (Test-Path $SkillsDir)) {
@@ -1297,8 +1300,8 @@ function Deploy-Skills {
         Write-Host "    Startup/Business (3):"
         Write-Host "      - startup-pitch-deck-skill, startup-business-docs-skill"
         Write-Host "      - construction-bd-skill"
-        Write-Host "    Configuration (1):"
-        Write-Host "      - microsoft-m365-config-skill"
+        Write-Host "    Configuration (2):"
+        Write-Host "      - microsoft-m365-config-skill, codegraph-setup-skill"
         Write-Host ""
         Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
         Write-Host ""

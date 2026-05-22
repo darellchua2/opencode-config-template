@@ -74,7 +74,7 @@ docker run --rm --entrypoint whoami opencode_app-opencode
 
 Agents and skills live in `.opencode/agents/` and `.opencode/skills/`. These are the **single source of truth** shared with the user-space deployment (`setup.sh` copies from these same directories).
 
-After modifying agents or skills:
+After modifying agents or skills (note: user-space uses `deploy/setup.sh`):
 
 ```bash
 docker compose build --no-cache
