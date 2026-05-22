@@ -1,3 +1,10 @@
+## [1.50.3](https://github.com/darellchua2/opencode-config-template/compare/v1.50.2...v1.50.3) (2026-05-22)
+
+
+### Bug Fixes
+
+* **ci:** update release workflow paths for deploy/ restructure ([#196](https://github.com/darellchua2/opencode-config-template/issues/196)) ([93295d3](https://github.com/darellchua2/opencode-config-template/commit/93295d3b044fb7ddf5c7b3ecc0f64662b1bac6c7)), closes [#194](https://github.com/darellchua2/opencode-config-template/issues/194)
+
 ## [Unreleased](https://github.com/darellchua2/opencode-config-template/compare/v1.50.2...HEAD)
 
 ### Code Refactoring
