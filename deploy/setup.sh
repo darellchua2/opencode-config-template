@@ -61,9 +61,12 @@ set -o nounset   # Error on undefined variables
 # GLOBAL VARIABLES
 ################################################################################
 
-# Read version from VERSION file
+# Resolve directories (setup.sh lives in deploy/, repo root is one level up)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-VERSION_FILE="${SCRIPT_DIR}/VERSION"
+REPO_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
+# Read version from VERSION file
+VERSION_FILE="${REPO_DIR}/VERSION"
 if [ -f "$VERSION_FILE" ]; then
     SCRIPT_VERSION=$(cat "$VERSION_FILE" | tr -d '[:space:]')
 else
@@ -76,7 +79,7 @@ LOG_FILE="${HOME}/.opencode-setup.log"
 CONFIG_DIR="${HOME}/.config/opencode"
 CONFIG_FILE="${CONFIG_DIR}/config.json"
 SKILLS_DIR="${CONFIG_DIR}/skills"
-AGENTS_SRC_DIR="${SCRIPT_DIR}/opencode_app/.opencode/agents"
+AGENTS_SRC_DIR="${REPO_DIR}/opencode_app/.opencode/agents"
 AGENTS_DEST_DIR="${CONFIG_DIR}/agents"
 BACKUP_DIR="${HOME}/.opencode-backup-$(date +%Y%m%d_%H%M%S)"
 LAST_UPDATE_CHECK="${CONFIG_DIR}/.last-update-check"
@@ -1689,7 +1692,7 @@ setup_config() {
     log_info "Created ${SKILLS_DIR} directory"
 
     # Check if skills folder exists in script directory
-    if [ -d "${SCRIPT_DIR}/opencode_app/.opencode/skills" ]; then
+    if [ -d "${REPO_DIR}/opencode_app/.opencode/skills" ]; then
         # Check if skills directory already has content
         if [ -d "${SKILLS_DIR}" ] && [ "$(ls -A ${SKILLS_DIR} 2>/dev/null)" ]; then
             log_warn "Skills directory already contains files"
@@ -1708,11 +1711,11 @@ setup_config() {
 
         # Copy skills folder (excluding _archived)
         if command -v rsync &> /dev/null; then
-            run_cmd "rsync -av --exclude='_archived' ${SCRIPT_DIR}/opencode_app/.opencode/skills/ ${SKILLS_DIR}/"
+            run_cmd "rsync -av --exclude='_archived' ${REPO_DIR}/opencode_app/.opencode/skills/ ${SKILLS_DIR}/"
         else
             # Fallback: copy all except _archived
             mkdir -p "${SKILLS_DIR}"
-            for item in "${SCRIPT_DIR}/opencode_app/.opencode/skills"/*; do
+            for item in "${REPO_DIR}/opencode_app/.opencode/skills"/*; do
                 item_name=$(basename "$item")
                 if [[ "$item_name" != "_archived" ]]; then
                     cp -r "$item" "${SKILLS_DIR}/"
@@ -1721,7 +1724,7 @@ setup_config() {
         fi
         log_success "Skills copied successfully to ${SKILLS_DIR}"
     else
-        log_warn "skills/ folder not found in ${SCRIPT_DIR}/opencode_app/.opencode/skills"
+        log_warn "skills/ folder not found in ${REPO_DIR}/opencode_app/.opencode/skills"
     fi
 
     return 0
@@ -2606,7 +2609,7 @@ generate_and_inject_skills() {
     local temp_config="${SCRIPT_DIR}/config.json.tmp"
     
     # Check if Python script exists
-    local gen_script="${SCRIPT_DIR}/scripts/generate-skills.py"
+    local gen_script="${REPO_DIR}/scripts/generate-skills.py"
     if [ ! -f "$gen_script" ]; then
         log_warn "Skills generator script not found: ${gen_script}"
         log_info "Skipping skills section generation"
