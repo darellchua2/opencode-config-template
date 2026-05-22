@@ -67,3 +67,18 @@ The following subagents have CodeGraph instructions in their `.md` files and wil
 | `testing-subagent` | `codegraph_files`, `codegraph_search` |
 | `linting-subagent` | `codegraph_files`, `codegraph_search` |
 | `error-resolver-subagent` | `codegraph_node`, `codegraph_callers`, `codegraph_search` |
+
+### Built-In Subagent CodeGraph Injection
+
+When spawning built-in `explore` or `general` subagents via the Task tool, if a `.codegraph/` directory exists in the mounted project, include this guidance in the Task prompt:
+
+"CodeGraph is available in this project. Prioritize these tools:
+- `codegraph_explore` for multi-symbol exploration
+- `codegraph_search` for symbol lookups
+- `codegraph_files` for file structure
+- `codegraph_context` for task-relevant code context
+- `codegraph_callers`/`codegraph_callees` for dependency tracing
+- `codegraph_impact` for change radius analysis
+Fall back to grep/glob/read only if CodeGraph tools return no results."
+
+This ensures built-in subagents get the same CodeGraph benefits as custom subagents, even when tasks are handled directly without delegating to a specialized subagent.
