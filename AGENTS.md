@@ -6,16 +6,16 @@ This file contains project-specific instructions for agents working in this repo
 
 This is `opencode-config-template` - a dual-mode configurator repository for OpenCode:
 
-1. **User-Space Deploy**: Running `setup.sh` copies config, agents, and skills to `~/.config/opencode/`
+1. **User-Space Deploy**: Running `./deploy/setup.sh` copies config, agents, and skills to `~/.config/opencode/`
 2. **Docker Standalone**: A `docker-compose.yml` + `opencode_app/` launches OpenCode as a web endpoint
 
 ## Deployment Modes
 
 ### Mode 1: User-Space Deploy
 
-Run `setup.sh` to deploy configuration:
-- `config.json` → `~/.config/opencode/config.json`
-- `.AGENTS.md` → `~/.config/opencode/AGENTS.md`
+Run `./deploy/setup.sh` to deploy configuration:
+- `deploy/config.json` → `~/.config/opencode/config.json`
+- `deploy/.AGENTS.md` → `~/.config/opencode/AGENTS.md`
 - `opencode_app/.opencode/skills/*` → `~/.config/opencode/skills/`
 - `opencode_app/.opencode/agents/*` → `~/.config/opencode/agents/`
 
@@ -30,11 +30,12 @@ docker compose up -d   # Start OpenCode on http://localhost:4097
 
 ```
 opencode-config-template/
-├── config.json          # Agent definitions and MCP config (user-space)
-├── .AGENTS.md           # User-space subagent routing (deployed)
+├── deploy/              # User-space deployment files
+│   ├── config.json      # Agent definitions and MCP config (user-space)
+│   ├── .AGENTS.md       # User-space subagent routing (deployed)
+│   ├── setup.sh         # User-space deployment script
+│   └── setup.ps1        # User-space deployment script (Windows)
 ├── AGENTS.md            # Repo-level instructions (this file)
-├── setup.sh             # User-space deployment script
-├── setup.ps1            # User-space deployment script (Windows)
 ├── docker-compose.yml   # Docker Compose for standalone mode
 ├── .env.example         # Environment variable template
 ├── .env                 # Local environment (git-ignored)
@@ -66,12 +67,12 @@ Agents and skills have a **single source of truth** in `opencode_app/.opencode/`
 - `opencode_app/.opencode/agents/` — All 31 subagent definitions
 - `opencode_app/.opencode/skills/` — All 61 skill directories
 
-For **user-space**: `setup.sh` and `setup.ps1` copy from `opencode_app/.opencode/` to `~/.config/opencode/`
+For **user-space**: `deploy/setup.sh` and `deploy/setup.ps1` copy from `opencode_app/.opencode/` to `~/.config/opencode/`
 For **Docker**: The Dockerfile `COPY . /app/` includes `.opencode/` in the container
 
 ## Project Learnings
 
-This repository includes a `LEARNINGS/` template directory. When skills (like `continuous-learning`) are deployed to target projects via `setup.sh`, they auto-provision a `LEARNINGS/` directory in the target project root on first use.
+This repository includes a `LEARNINGS/` template directory. When skills (like `continuous-learning`) are deployed to target projects via `./deploy/setup.sh`, they auto-provision a `LEARNINGS/` directory in the target project root on first use.
 
 **Dual storage strategy for knowledge persistence:**
 
@@ -89,7 +90,7 @@ When reviewing code or architecture, check `LEARNINGS/` for existing patterns an
 
 | Location | Scope | Deployment |
 |----------|-------|------------|
-| `opencode_app/.opencode/agents/*.md` | Global (all projects) | Copied to `~/.config/opencode/agents/` by setup.sh |
+| `opencode_app/.opencode/agents/*.md` | Global (all projects) | Copied to `~/.config/opencode/agents/` by deploy/setup.sh |
 | `.opencode/agents/*.md` | Project-only | Stays in repo, not deployed |
 
 **Project-Level Subagents:**
@@ -147,7 +148,7 @@ When adding a new subagent or skill, you MUST update these files to maintain syn
 
 ### Mandatory Sync Triggers
 
-The following changes require updating `setup.sh` and `setup.ps1`:
+The following changes require updating `deploy/setup.sh` and `deploy/setup.ps1`:
 
 | Trigger | What to Update |
 |---------|---------------|
@@ -160,8 +161,8 @@ The following changes require updating `setup.sh` and `setup.ps1`:
 
 | File | Update Type |
 |------|-------------|
-| `setup.sh` | Skill/agent listings and counts |
-| `setup.ps1` | Skill/agent listings and counts |
+| `deploy/setup.sh` | Skill/agent listings and counts |
+| `deploy/setup.ps1` | Skill/agent listings and counts |
 | `README.md` | Skill Categories and Subagents tables |
 | `opencode_app/README.md` | Docker-specific docs if relevant |
 
@@ -169,7 +170,7 @@ The following changes require updating `setup.sh` and `setup.ps1`:
 
 For new skills:
 - [ ] Add skill directory to `opencode_app/.opencode/skills/`
-- [ ] Increment total skill count in setup.sh and setup.ps1
+- [ ] Increment total skill count in deploy/setup.sh and deploy/setup.ps1
 - [ ] Add skill to appropriate category in both setup files
 - [ ] Update README.md Skill Categories table
 
@@ -180,7 +181,7 @@ For new **global** subagents:
 
 For new **project-level** subagents (in `.opencode/agents/`):
 - [ ] Do NOT add to README.md (not deployed globally)
-- [ ] Do NOT update setup.sh or setup.ps1 counts
+- [ ] Do NOT update deploy/setup.sh or deploy/setup.ps1 counts
 
 ### Use the Sync Workflow
 

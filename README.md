@@ -2,16 +2,17 @@
 
 A dual-mode OpenCode configurator repository:
 
-1. **User-Space Deploy** — Run `setup.sh` to copy config, agents, and skills to `~/.config/opencode/` for global use
+1. **User-Space Deploy** — Run `./deploy/setup.sh` to copy config, agents, and skills to `~/.config/opencode/` for global use
 2. **Docker Standalone** — Run `docker compose up -d` to launch OpenCode as a web endpoint
 
 ## Repository Structure
 
 ```
 opencode-config-template/
-├── config.json                  # User-space config (agents, MCP servers, providers)
-├── .AGENTS.md                   # User-space subagent routing (deployed)
-├── setup.sh / setup.ps1         # User-space deployment scripts
+├── deploy/                      # User-space deployment files
+│   ├── config.json              # User-space config (agents, MCP servers, providers)
+│   ├── .AGENTS.md               # User-space subagent routing (deployed)
+│   ├── setup.sh / setup.ps1     # User-space deployment scripts
 ├── opencode_app/                # Docker standalone mode
 │   ├── Dockerfile               # Container image
 │   ├── docker-entrypoint.sh     # API key injection + opencode serve
@@ -48,38 +49,38 @@ Two setup scripts are provided for different platforms:
 
 ```bash
 # Interactive setup (recommended for first-time)
-./setup.sh
+./deploy/setup.sh
 
 # Quick setup - config + skills only (skip dependency checks)
-./setup.sh --quick
+./deploy/setup.sh --quick
 
 # Skills-only deployment (requires opencode-ai installed)
-./setup.sh --skills-only
+./deploy/setup.sh --skills-only
 
 # Non-interactive mode
-./setup.sh --yes
+./deploy/setup.sh --yes
 
 # Preview actions without making changes
-./setup.sh --dry-run
+./deploy/setup.sh --dry-run
 
 # Update OpenCode CLI only
-./setup.sh --update
+./deploy/setup.sh --update
 ```
 
 ### Windows (PowerShell)
 
 ```powershell
 # Interactive setup
-powershell -ExecutionPolicy Bypass -File .\setup.ps1
+powershell -ExecutionPolicy Bypass -File .\deploy\setup.ps1
 
 # Quick setup
-powershell -ExecutionPolicy Bypass -File .\setup.ps1 -Quick
+powershell -ExecutionPolicy Bypass -File .\deploy\setup.ps1 -Quick
 
 # Non-interactive
-powershell -ExecutionPolicy Bypass -File .\setup.ps1 -Quick -Yes
+powershell -ExecutionPolicy Bypass -File .\deploy\setup.ps1 -Quick -Yes
 
 # Show help with all options
-powershell -ExecutionPolicy Bypass -File .\setup.ps1 -Help
+powershell -ExecutionPolicy Bypass -File .\deploy\setup.ps1 -Help
 ```
 
 ### Docker Standalone
@@ -199,8 +200,8 @@ Skills like `continuous-learning` persist knowledge across sessions using a dual
 | `~/.config/opencode/learnings/` | User-level, cross-project | Personal preferences and patterns |
 
 **How it works:**
-- `setup.sh` / `setup.ps1` creates `~/.config/opencode/learnings/` with 5 subfolders at user level
-- When `continuous-learning` skill runs in a target project, it auto-provisions `LEARNINGS/` in that project root
+- `deploy/setup.sh` / `deploy/setup.ps1` creates `~/.config/opencode/learnings/` with 5 subfolders at user level
+- When `continuous-learning` skill runs in a target project, it auto-provisions a `LEARNINGS/` directory in that project root
 - Review agents (architecture-review, code-review) save findings to both supermemory and markdown files
 - Agents discover learnings via AGENTS.md instructions (auto-loaded) + explicit file reads
 
@@ -365,9 +366,9 @@ Skills follow a modular architecture:
 ### Configuration Files
 
 The setup scripts automatically:
-- Copies `.AGENTS.md` to `~/.config/opencode/AGENTS.md` (renaming it)
-- Copies `skills/` folder to `~/.config/opencode/skills/`
-- Copies `config.json` to `~/.config/opencode/config.json`
+- Copies `deploy/.AGENTS.md` to `~/.config/opencode/AGENTS.md` (renaming it)
+- Copies `opencode_app/.opencode/skills/` folder to `~/.config/opencode/skills/`
+- Copies `deploy/config.json` to `~/.config/opencode/config.json`
 - Backs up existing files before overwriting
 
 ### Environment Variable Persistence

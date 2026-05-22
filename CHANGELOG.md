@@ -1,3 +1,10 @@
+## [Unreleased](https://github.com/darellchua2/opencode-config-template/compare/v1.50.2...HEAD)
+
+### Code Refactoring
+
+* **refactor:** move user-space deployment files into deploy/ folder for clearer separation ([#194](https://github.com/darellchua2/opencode-config-template/issues/194))
+* **docs(codegraph):** add built-in subagent CodeGraph injection to AGENTS.md files ([#194](https://github.com/darellchua2/opencode-config-template/issues/194))
+
 ## [1.50.2](https://github.com/darellchua2/opencode-config-template/compare/v1.50.1...v1.50.2) (2026-05-21)
 
 
