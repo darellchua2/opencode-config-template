@@ -34,7 +34,7 @@ Use this skill when:
 - "consistency check"
 - "validate documentation"
 
-## Complementary Skills
+## Related Skills
 
 | Skill | Relationship |
 |-------|-------------|
@@ -74,8 +74,8 @@ ACTUAL_AGENTS=$(ls opencode_app/.opencode/agents/*.md 2>/dev/null | wc -l)
 |------|--------------------|
 | `deploy/setup.sh` | `SKILLS (` — total count and per-category counts |
 | `deploy/setup.ps1` | `SKILLS (` — total count and per-category counts |
-| `README.md` | `73 skills` or `## Skill Modularization` intro + Skill Categories table |
-| `AGENTS.md` | `73 skill` references and directory tree comments |
+| `README.md` | `<N> skills` or `## Skill Modularization` intro + Skill Categories table |
+| `AGENTS.md` | `<N> skill` references and directory tree comments |
 
 ### Validation Commands
 

@@ -267,7 +267,7 @@ This repository implements **skill modularization** with 74 skills organized acr
 
 | Category | Skills | Purpose |
 |-----------|---------|---------|
-| **Framework** (13) | test-generator-framework, linting-workflow, pr-creation-workflow, error-resolver-workflow, tdd-workflow, docx-creation, pptx-specialist, xlsx-specialist, pdf-specialist, frontend-design, api-design-skill, performance-optimization-skill | Generic workflows, testing patterns, document creation, UI design, API design, and performance |
+| **Framework** (13) | test-generator-framework, linting-workflow, pr-creation-workflow, pr-merge-workflow, error-resolver-workflow, tdd-workflow, docx-creation, pptx-specialist, xlsx-specialist, pdf-specialist, frontend-design, api-design-skill, performance-optimization-skill | Generic workflows, testing patterns, document creation, UI design, API design, and performance |
 | **Language-Specific** (6) | python-pytest-creator, python-ruff-linter, javascript-eslint-linter, changelog-python-cliff, python-backend-skill, python-packaging-skill | Language-specific test, linting, project scaffolding, and packaging |
 | **Framework-Specific** (6) | nextjs-pr-workflow, nextjs-unit-test-creator, nextjs-standard-setup, nextjs-image-usage, typescript-dry-principle, accessibility-a11y-skill | Next.js 16, TypeScript, and accessibility workflows |
 | **OpenCode Meta** (4) | opencode-agent-creation, opencode-skill-creation, opencode-skills-maintainer, documentation-consistency-skill | Agent and skill creation/maintenance, documentation consistency auditing |
