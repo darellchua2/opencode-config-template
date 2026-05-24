@@ -1,6 +1,6 @@
 ---
 name: git-semantic-commits-skill
-description: Format Git commit messages following Conventional Commits specification with semantic versioning support for proper commit type detection and versioning
+description: Format and write Git commit messages following the Conventional Commits specification. Triggers when user says: "commit and push", "commit changes", "make a commit", "commit this", "write a commit message", "create a commit", "git commit", "commit message format", "semantic commit". Detects commit type (feat, fix, docs, refactor, etc.), adds scopes, identifies breaking changes, and provides semantic versioning guidance. Use for structuring commit messages properly — NOT for making commits shorter or more compact (use git-compact-commits-skill for that).
 license: Apache-2.0
 compatibility: opencode
 metadata:
