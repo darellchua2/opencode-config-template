@@ -1,3 +1,10 @@
+# [1.57.0](https://github.com/darellchua2/opencode-config-template/compare/v1.56.0...v1.57.0) (2026-05-24)
+
+
+### Features
+
+* **agents,skills:** add ECC-inspired search-first, context-budget, and language reviewers [BT-55] ([#206](https://github.com/darellchua2/opencode-config-template/issues/206)) ([9360feb](https://github.com/darellchua2/opencode-config-template/commit/9360feb188ba77f677a8b7c01b2081d2a55b1822))
+
 # [1.56.0](https://github.com/darellchua2/opencode-config-template/compare/v1.55.0...v1.56.0) (2026-05-24)
 
 
