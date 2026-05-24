@@ -1,23 +1,36 @@
 ---
 name: continuous-learning-skill
-description: Extract and store reusable patterns, decisions, and insights from coding sessions for future reference and skill improvement
+description: Extract and store reusable patterns, decisions, and insights from coding sessions with confidence scoring, project scoping, and instinct evolution for future reference and skill improvement
 license: Apache-2.0
 compatibility: opencode
 metadata:
   audience: developers, agents
   workflow: learning, optimization
   trigger: explicit-only
+version: 2
 ---
 
 ## What I do
 
-I extract and persist actionable knowledge from coding sessions using a dual-strategy approach:
+I extract and persist actionable knowledge from coding sessions using an instinct-based learning model with confidence scoring and project scoping:
 
 1. **Pattern Extraction**: Identify recurring code patterns, architectural decisions, and problem-solving approaches
-2. **Insight Capture**: Record why specific decisions were made (rationale, trade-offs, alternatives considered)
-3. **Dual Storage**: Save to both `supermemory` (searchable, primary) and markdown files (curated, reviewable)
-4. **Session Summaries**: Generate concise summaries of what was learned or decided
-5. **Cross-Session Learning**: Build a knowledge base that improves agent performance over time
+2. **Instinct Model**: Store learnings as atomic "instincts" with confidence scores (0.3-0.9) that evolve over time
+3. **Project Scoping**: Isolate project-specific knowledge from universal patterns to prevent cross-project contamination
+4. **Dual Storage**: Save to both `supermemory` (searchable, primary) and markdown files (curated, reviewable)
+5. **Instinct Evolution**: Cluster related instincts into skills, commands, or agent improvements
+6. **Cross-Session Learning**: Build a knowledge base that improves agent performance over time
+
+## What's New in v2
+
+| Feature | v1 | v2 |
+|---------|----|----|
+| Granularity | Full patterns | Atomic "instincts" with confidence scoring |
+| Scoping | All learnings global | Project-scoped + global instincts |
+| Confidence | low/medium/high text | Numeric 0.3-0.9 weighted score |
+| Evolution | Store only | Instincts can evolve into skills/agents |
+| Cross-project | Contamination risk | Isolated by default, promoted when seen in 2+ projects |
+| Retrieval | Search only | Search + confidence-weighted application |
 
 ## When to use me
 
@@ -28,6 +41,7 @@ Use this skill when:
 - You need to document architectural decisions made during implementation
 - A complex debugging session reveals non-obvious solutions worth recording
 - A review agent detects the same issue in 3+ files (systemic pattern)
+- You want to promote project-specific patterns to global knowledge
 
 **Trigger phrases**:
 - "learn from this session"
@@ -35,6 +49,48 @@ Use this skill when:
 - "save what we learned"
 - "capture this decision"
 - "remember this approach"
+- "promote to global"
+- "evolve instincts"
+
+## The Instinct Model
+
+An instinct is a small, atomic learned behavior:
+
+```
+id: prefer-functional-style
+trigger: "when writing new functions"
+confidence: 0.7
+domain: "code-style"
+source: "session-observation"
+scope: project
+project_id: "my-react-app"
+```
+
+**Properties:**
+- **Atomic** — one trigger, one action
+- **Confidence-weighted** — 0.3 = tentative, 0.9 = near certain
+- **Domain-tagged** — code-style, testing, git, debugging, workflow, architecture, security
+- **Scope-aware** — `project` (default) or `global`
+- **Evidence-backed** — tracks what observations created it
+
+### Confidence Scoring
+
+| Score | Meaning | Behavior |
+|-------|---------|----------|
+| 0.3 | Tentative | Suggested but not enforced |
+| 0.5 | Moderate | Applied when relevant |
+| 0.7 | Strong | Auto-approved for application |
+| 0.9 | Near-certain | Core behavior |
+
+**Confidence increases** when:
+- Pattern is repeatedly observed
+- User doesn't correct the suggested behavior
+- Similar instincts from other sources agree
+
+**Confidence decreases** when:
+- User explicitly corrects the behavior
+- Pattern isn't observed for extended periods
+- Contradicting evidence appears
 
 ## Dual Storage Strategy
 
@@ -47,7 +103,7 @@ Knowledge is stored in TWO places with different strengths:
 | Tool | `supermemory` (mode: `add`) |
 | Access | `supermemory` (mode: `search`) |
 | Scope | `project` for project-specific, `user` for cross-project |
-| Best for | Quick facts, decisions, anti-patterns, solutions |
+| Best for | Quick facts, decisions, anti-patterns, solutions, instincts |
 | Strength | Relevance-based search, no file I/O needed |
 
 **When to use supermemory ONLY (no markdown file):**
@@ -56,6 +112,7 @@ Knowledge is stored in TWO places with different strengths:
 - Anti-patterns ("Avoid mutable default args in Python")
 - Solutions ("Fix race condition with mutex")
 - Facts about the project ("Uses Drizzle ORM, not Prisma")
+- Atomic instincts with confidence scores
 
 ### Secondary: `LEARNINGS/` markdown files (curated, reviewable, git-committed)
 
@@ -63,15 +120,48 @@ Knowledge is stored in TWO places with different strengths:
 |----------|--------|
 | Location (project) | `LEARNINGS/<category>/<slug>.md` at repo root |
 | Location (user) | `~/.config/opencode/learnings/<category>/<slug>.md` |
-| Best for | Detailed patterns, formal ADRs, team conventions |
+| Best for | Detailed patterns, formal ADRs, team conventions, evolved instincts |
 | Strength | Human-readable, git-history, PR-reviewable |
 
 **When to use markdown files (also write to supermemory):**
 - Complex architectural decisions with trade-offs
 - Detailed pattern descriptions with code examples
 - Team conventions that need documentation
-- Anti-patterns with thorough explanations and alternatives
+- Evolved instinct clusters (multiple instincts merged into a skill)
 - Knowledge that benefits from human review and version history
+
+## Scope Decision Guide
+
+| Pattern Type | Scope | Examples |
+|-------------|-------|---------|
+| Language/framework conventions | **project** | "Use React hooks", "Follow Django REST patterns" |
+| File structure preferences | **project** | "Tests in `__tests__/`", "Components in src/components/" |
+| Code style | **project** | "Use functional style", "Prefer dataclasses" |
+| Error handling strategies | **project** | "Use Result type for errors" |
+| Security practices | **global** | "Validate user input", "Sanitize SQL" |
+| General best practices | **global** | "Write tests first", "Always handle errors" |
+| Tool workflow preferences | **global** | "Grep before Edit", "Read before Write" |
+| Git practices | **global** | "Conventional commits", "Small focused commits" |
+
+### Project Detection
+
+Automatically determine project scope:
+1. Git remote URL — hashed for portable project ID
+2. Git repo path — fallback for machine-specific ID
+3. Global fallback — if no project detected, instincts go to global scope
+
+### Instinct Promotion (Project → Global)
+
+When the same instinct appears in multiple projects with high confidence, promote to global scope:
+
+**Auto-promotion criteria:**
+- Same instinct ID observed in 2+ projects
+- Average confidence >= 0.8
+
+**How to promote:**
+- Review the instinct's evidence across projects
+- If criteria met, re-save with `scope: global`
+- Remove project-scoped duplicates
 
 ## Storage Locations
 
@@ -150,8 +240,33 @@ Review the current session for extractable knowledge:
 - Patterns used (design patterns, code structures, naming conventions)
 - Dependencies added or configured
 - Configuration changes and why
+- User corrections (high-value signal — indicates wrong assumption)
 
-### Step 2: Categorize Findings
+### Step 2: Extract Instincts
+
+Break findings into atomic instincts:
+
+```
+Instinct 1:
+  id: prefer-explicit-errors
+  trigger: "when handling errors"
+  action: "Use explicit error types instead of generic Error"
+  confidence: 0.7
+  domain: "code-style"
+  scope: project
+  evidence: "User corrected generic Error to CustomError in 3 places"
+
+Instinct 2:
+  id: always-validate-input
+  trigger: "when accepting user input"
+  action: "Validate with zod schema before processing"
+  confidence: 0.9
+  domain: "security"
+  scope: global
+  evidence: "Applied consistently across 5 endpoints"
+```
+
+### Step 3: Categorize Findings
 
 Classify extracted knowledge into categories:
 
@@ -163,29 +278,31 @@ Classify extracted knowledge into categories:
 | **Convention** | `conventions/` | "Use kebab-case for file names" | supermemory + markdown |
 | **Anti-pattern** | `anti-patterns/` | "Avoid mutable global state in tests" | supermemory only |
 
-**Rule of thumb**: If it has trade-offs or code examples, write a markdown file too. If it's a one-liner insight, supermemory is sufficient.
-
-### Step 3: Write to Supermemory (ALWAYS)
+### Step 4: Write to Supermemory (ALWAYS)
 
 Every learning goes to supermemory first:
 
 ```
-supermemory(mode: "add", content: "<structured learning>", scope: "project"|"user", type: "learned-pattern"|"decision"|"preference")
+supermemory(mode: "add", content: "<structured instinct>", scope: "project"|"user", type: "learned-pattern"|"decision"|"preference")
 ```
 
 Format for supermemory content:
 ```
 [Category]: [Title]
-Context: [When/where this applies]
-Detail: [What the pattern/decision is]
-Rationale: [Why this approach]
-Confidence: [high/medium/low]
+Scope: [project|global]
+Confidence: [0.3-0.9]
+Trigger: [when this applies]
+Action: [what to do]
+Context: [when/where this applies]
+Detail: [what the pattern/decision is]
+Rationale: [why this approach]
+Evidence: [what observations support this]
 Files: [related file paths, if any]
 ```
 
-### Step 4: Write Markdown File (IF warranted)
+### Step 5: Write Markdown File (IF warranted)
 
-For complex learnings, also create a markdown file:
+For complex learnings or evolved instinct clusters, also create a markdown file:
 
 ```markdown
 ## [Category]: [Title]
@@ -197,17 +314,12 @@ For complex learnings, also create a markdown file:
 **Trade-offs**: Pros and cons of this approach
 **Code Example**: (if applicable)
 **References**: Related files, docs, or external links
-**Confidence**: high | medium | low
+**Confidence**: 0.3-0.9
+**Scope**: project | global
 **Date**: YYYY-MM-DD
 ```
 
-**File naming**: Use descriptive slugs (e.g., `event-driven-modules.md`), not dated or numbered prefixes. The category is determined by the subfolder.
-
-**Choosing scope**:
-- Project-level (`LEARNINGS/`): Team conventions, project-specific decisions, architecture patterns
-- User-level (`~/.config/opencode/learnings/`): Personal preferences, cross-project patterns, tool configurations
-
-### Step 5: Update Index
+### Step 6: Update Index
 
 After writing a markdown file, append an entry to the relevant `_index.md`:
 
@@ -216,37 +328,77 @@ After writing a markdown file, append an entry to the relevant `_index.md`:
 
 - **Category**: pattern | decision | anti-pattern | solution | convention
 - **File**: `<category>/<slug>.md`
+- **Confidence**: 0.3-0.9
+- **Scope**: project | global
 - **Summary**: One-line summary
 - **Date**: YYYY-MM-DD
 ```
 
-### Step 6: Suggest Applications
+### Step 7: Suggest Applications
 
 After storing, suggest where this knowledge could be applied:
 
 - Similar codebases or projects
 - Future sessions with related tasks
 - Skills or agents that could benefit from this knowledge
+- Whether the instinct should be promoted to global scope
+
+## Instinct Evolution
+
+Related instincts can be clustered and evolved into higher-level artifacts:
+
+### Evolution Path
+
+```
+Raw observations (session activity)
+    ↓
+Atomic instincts (individual learned behaviors)
+    ↓
+Clustered instincts (related behaviors grouped)
+    ↓
+Evolved artifacts:
+  - Skills (workflow definitions)
+  - Conventions (coding standards)
+  - Agent improvements (behavior modifications)
+```
+
+### When to Evolve
+
+- 3+ instincts in the same domain with confidence >= 0.7
+- A pattern recurs across multiple sessions
+- User explicitly requests consolidation ("make a skill from these patterns")
+
+### How to Evolve
+
+1. Identify a cluster of related instincts
+2. Extract the common workflow or pattern
+3. Draft a new skill section, convention entry, or agent modification
+4. Store the evolved artifact as a markdown file
+5. Link back to the source instincts for traceability
 
 ## Post-Review Integration
 
 When invoked by review agents (architecture-review, code-review), follow this behavior:
 
-1. **Detect systemic patterns**: If the same issue appears in 3+ files, create a learning entry
+1. **Detect systemic patterns**: If the same issue appears in 3+ files, create an instinct
 2. **Capture decisions**: If the review recommends an architectural approach, record it
 3. **Record anti-patterns**: If the review finds code that should be avoided, save it
 4. **Note good patterns**: If the review finds exemplary code, flag it for replication
-5. **Write to both stores**: supermemory (always) + markdown (if warranted by complexity)
+5. **Track confidence**: Each observation increases confidence; corrections decrease it
+6. **Write to both stores**: supermemory (always) + markdown (if warranted by complexity)
 
 ## Learning Formats
 
-### Short-Form (Quick Capture — supermemory only)
+### Short-Form Instinct (Quick Capture — supermemory only)
 
 ```
 Decision: Use path aliases for imports
+Scope: project
+Confidence: 0.7
+Trigger: when setting up new TypeScript project
+Action: Configure @/ aliases in tsconfig.json
 Why: Avoids ../../../ relative paths, cleaner imports
-Config: tsconfig.json paths + next.config.js alias
-Pattern: @/components/... maps to src/components/...
+Evidence: Applied successfully in current project
 ```
 
 ### Long-Form (Detailed Analysis — supermemory + markdown file)
@@ -273,6 +425,10 @@ Use an event bus for cross-module communication:
 ### Code Example
 [Relevant code snippet]
 
+### Instincts Extracted
+- prefer-event-driven-comm (0.7, project)
+- avoid-circular-imports (0.8, global)
+
 ### References
 - src/events/bus.ts
 - src/modules/user/events.ts
@@ -287,23 +443,29 @@ When an agent needs to recall past learnings:
    supermemory(mode: "search", query: "authentication pattern", scope: "project")
    ```
 
-2. **For details**: Read the markdown file referenced in the supermemory result
+2. **Filter by confidence**: Apply instincts with confidence >= 0.7 automatically; suggest those with 0.3-0.6
+
+3. **For details**: Read the markdown file referenced in the supermemory result
    ```
    read(filePath: "LEARNINGS/patterns/event-driven-modules.md")
    ```
 
-3. **For browsing**: Glob the learnings directory
+4. **For browsing**: Glob the learnings directory
    ```
    glob(pattern: "LEARNINGS/**/*.md")
    ```
+
+5. **Check scope**: Only apply project-scoped instincts in the matching project; global instincts apply everywhere
 
 ## Integration with Other Skills
 
 | Skill | Integration |
 |-------|-------------|
 | `verification-loop` | Verify learned patterns are correctly applied |
-| `strategic-compact` | Compact session context but preserve learned insights |
+| `strategic-compact` | Compact session context but preserve high-confidence instincts |
 | `eval-harness` | Evaluate if learned patterns improve code quality |
+| `context-budget` | Audit whether stored learnings are consuming too much context |
+| `search-first` | Search-first decisions feed into continuous learning as instincts |
 | `code-smells` | Patterns may reference anti-patterns detected by this skill |
 | `design-patterns` | Learned patterns may align with or extend GoF patterns |
 
@@ -317,6 +479,7 @@ When an agent needs to recall past learnings:
 - Error patterns and their resolutions
 - Architecture decisions and their trade-offs
 - Systemic code review findings (same issue in 3+ files)
+- User corrections (highest-value signal — indicates wrong assumption)
 
 ### What NOT to Capture
 
@@ -325,12 +488,21 @@ When an agent needs to recall past learnings:
 - Temporary workarounds without long-term value
 - Sensitive information (API keys, credentials, internal URLs)
 
+### Confidence Calibration
+
+- Start new instincts at 0.5 (moderate)
+- Increase by 0.1 for each additional observation
+- Decrease by 0.2 for user corrections
+- Floor at 0.3, ceiling at 0.9
+- Promote to global only at >= 0.8
+
 ### Quality Criteria
 
-- Each learning should be **actionable**: someone can apply it
-- Include **context**: when/where this applies
+- Each instinct should be **actionable**: someone can apply it
+- Include **trigger context**: when/where this applies
 - Provide **rationale**: why this approach was chosen
 - Set **confidence**: how certain are we this is correct
+- Track **evidence**: what observations support this instinct
 
 ## Example Usage
 
@@ -342,9 +514,10 @@ When an agent needs to recall past learnings:
 
 The skill will:
 1. Review the session's auth-related changes
-2. Extract the flow pattern (middleware -> session check -> redirect)
-3. Save to supermemory (always) and markdown (if complex)
-4. Update index if markdown file was created
+2. Extract atomic instincts (e.g., "use middleware for auth checks" at 0.7)
+3. Save to supermemory with project scope
+4. Save markdown file if the decision is complex
+5. Update index if markdown file was created
 
 ### Post-Review Capture
 
@@ -354,26 +527,40 @@ The skill will:
 
 The skill will:
 1. Review the findings from the code review
-2. Identify systemic patterns (3+ occurrences)
+2. Extract instincts with confidence based on occurrence count
 3. Save anti-patterns to supermemory + markdown
 4. Save good patterns for replication
-5. Update index
+5. Suggest evolution if 3+ instincts cluster in same domain
 
-### End-of-Session Summary
+### Promote to Global
 
 ```
-"Summarize everything worth remembering from this session"
+"Promote the 'always validate input' instinct to global scope"
 ```
 
 The skill will:
-1. Scan all files changed in this session
-2. Identify patterns, decisions, and solutions
-3. Generate a structured summary
-4. Save to supermemory + markdown (where warranted)
-5. Update index
+1. Check the instinct's evidence across projects
+2. Verify confidence >= 0.8
+3. Re-save with `scope: global`
+4. Remove project-scoped duplicate
+
+### Evolve Instincts
+
+```
+"Evolve the testing-related instincts into a convention"
+```
+
+The skill will:
+1. Find all instincts in the "testing" domain
+2. Cluster related instincts
+3. Draft a convention entry
+4. Store as markdown in `LEARNINGS/conventions/`
+5. Link back to source instincts
 
 ## References
 
 - `strategic-compact` - Manages context window efficiently
 - `verification-loop` - Verifies implementations against requirements
 - `eval-harness` - Evaluates code and skill quality
+- `context-budget` - Audit learning overhead
+- `search-first` - Research decisions feed into learning

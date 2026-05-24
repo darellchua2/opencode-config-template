@@ -601,8 +601,10 @@ USAGE:
                                design-patterns-skill, object-design-skill, code-smells-skill,
                                complexity-management-skill
 
-     Agent Optimization (4):  continuous-learning-skill, eval-harness-skill,
-                               strategic-compact-skill, verification-loop-skill
+      Agent Optimization (7):  continuous-learning-skill, eval-harness-skill,
+                                strategic-compact-skill, verification-loop-skill,
+                                search-first-skill, context-budget-skill,
+                                agent-introspection-debugging-skill
 
             Startup/Business (3): startup-pitch-deck-skill, startup-business-docs-skill,
                                   construction-bd-skill
@@ -1620,12 +1622,12 @@ setup_config() {
             log_success "config.json copied successfully"
 
             echo ""
-             echo "✓ Configured 33 agents:"
+             echo "✓ Configured 38 agents:"
              echo "    - build (default) - Full-featured coding agent"
              echo "    - plan - Planning agent (read-only)"
              echo "    - explore - Codebase exploration and analysis"
              echo "    - image-analyzer-subagent - Image/screenshot analysis"
-             echo "    - ... and 30 more agents"
+             echo "    - ... and 34 more agents"
             echo ""
              echo "✓ Configured MCP servers:"
              echo "    Local (auto-start): atlassian, zai-vision-mcp-server, codegraph, mermaid"
@@ -2324,13 +2326,13 @@ print_next_steps() {
     echo "         opencode \"prompt\" (uses build)"
      echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "                     📦 74 Skills Available"
+    echo "                     📦 77 Skills Available"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
     echo "  Framework (11) • Language-Specific (4) • Framework-Specific (5)"
     echo "  OpenCode Meta (4) • OpenTofu (7) • Git/Workflow (10)"
     echo "  Documentation (3) • JIRA (3) • Code Quality (7)"
-    echo "  Agent Optimization (4)"
+    echo "  Agent Optimization (7)"
     echo ""
     echo "  Run 'opencode --list-skills' for detailed descriptions"
     echo "  Run 'opencode --skill <name> \"prompt\"' to use a skill"
