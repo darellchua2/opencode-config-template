@@ -34,6 +34,7 @@ This is a **governance skill** - it defines conventions that other skills and ag
 | Skill | What It Consumes |
 |-------|-----------------|
 | `git-semantic-commits` | Commit type definitions and format rules |
+| `git-compact-commits` | Length budgets (72-char subject, 150-word body), semantic grouping strategy, commitlint config authority |
 | `pr-creation-workflow` | PR title format, label mapping, merge conventions, JIRA image handling |
 | `nextjs-pr-workflow` | Inherits via `pr-creation-workflow` |
 | `git-issue-labeler` | Semver label definitions and detection |
@@ -276,6 +277,8 @@ Four workflows enforce and automate these conventions:
 
 **Trigger**: Push to any branch
 
+> **Note**: The commitlint configuration with extended length rules (72-char subject, 150-word body, custom word-count plugin) is maintained in `git-compact-commits-skill`. That skill is the **authority** for `commitlint.config.js` and the word-count plugin. The workflow below uses that config.
+
 ```yaml
 name: Commit Lint
 on: [push]
@@ -287,6 +290,8 @@ jobs:
         with:
           fetch-depth: 0
       - uses: wagoid/commitlint-github-action@v6
+        with:
+          configFile: commitlint.config.js
 ```
 
 ### 6.2. PR Title Validation
