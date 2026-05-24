@@ -1,3 +1,10 @@
+# [1.53.0](https://github.com/darellchua2/opencode-config-template/compare/v1.52.0...v1.53.0) (2026-05-24)
+
+
+### Features
+
+* **skills:** add 11 new skills — security, devops, api, python [IBIS-215] ([#200](https://github.com/darellchua2/opencode-config-template/issues/200)) ([b1bb9b8](https://github.com/darellchua2/opencode-config-template/commit/b1bb9b82550488d93f39125c493627abc6b5e390)), closes [hi#value](https://github.com/hi/issues/value)
+
 # [1.52.0](https://github.com/darellchua2/opencode-config-template/compare/v1.51.0...v1.52.0) (2026-05-24)
 
 
