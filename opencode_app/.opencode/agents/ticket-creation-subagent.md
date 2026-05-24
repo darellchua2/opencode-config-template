@@ -49,6 +49,17 @@ I will now create a GitHub issue with these details. Proceed? (yes/no/modify)
 
 **Never assume** — always confirm. If the user provides incomplete information, ask for clarification rather than guessing.
 
+### Two Prompting Mechanisms
+
+This subagent uses two distinct prompting patterns:
+
+| Mechanism | When | Tool | Format |
+|-----------|------|------|--------|
+| **Structured selection** | Initial workflow choice (ticket-only vs full-workflow) | `question` tool | JSON with labeled options |
+| **Free-text confirmation** | All other steps (gather info, confirm details, proceed to next step) | Direct text output | "Proceed? (yes/no/modify)" |
+
+The `question` tool is used **only** for the Interactive Workflow Selection prompt (see that section). All other confirmations use the free-text prompt-first pattern above.
+
 ## Purpose
 
 Delegate to this subagent for all ticket/issue creation and management tasks. This includes creating, updating, and tracking GitHub issues and JIRA tickets with proper labeling, branch creation, and PLAN.md generation.
@@ -124,57 +135,159 @@ After execution, this subagent provides:
 | git-semantic-commits | Commit message formatting |
 | plan-updater | PLAN.md progress sync on re-entry |
 
+## Interactive Workflow Selection
+
+**CRITICAL: Always prompt the user BEFORE creating anything.** Use the `question` tool to present exactly these two options:
+
+```json
+{
+  "questions": [
+    {
+      "question": "How would you like to proceed with this [JIRA ticket / GitHub issue]?",
+      "header": "Workflow",
+      "multiple": false,
+      "options": [
+        {
+          "label": "Create ticket only",
+          "description": "Just create the ticket — no branch, no PLAN, no push. Use when you want to plan later or track work without starting immediately."
+        },
+        {
+          "label": "Full workflow (Recommended)",
+          "description": "Create ticket → checkout new branch → generate PLAN.md → commit & push. Complete end-to-end setup ready for implementation."
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Rules:**
+- Present this prompt IMMEDIATELY after parsing the ticket type (JIRA vs GitHub)
+- Do NOT create the ticket until the user selects an option
+- If the user's invocation matches one of these explicit bypass phrases, skip the prompt and set `WORKFLOW_MODE` directly:
+  - `"just create a ticket"` / `"ticket only"` / `"create issue without branch"` / `"no branch"` → set `"ticket-only"`
+  - `"full workflow"` / `"create branch and plan"` / `"ticket with plan"` / `"set up everything"` → set `"full-workflow"`
+- Store the selection as `WORKFLOW_MODE`: either `"ticket-only"` or `"full-workflow"`
+
 ## Workflow
 
-1. **Parse ticket requirement** — Identify platform (GitHub or JIRA) and extract known details
-2. **Prompt user for missing information** — Use the prompt-first pattern to gather title, overview, acceptance criteria, and scope. Confirm understanding before proceeding.
-3. **Prompt user on ticket scope** — Ask: "Should this be broken into smaller sub-issues/subtasks?" Present options and wait for selection.
-4. **Confirm ticket details** — Summarize all gathered info and ask: "I will create the ticket with these details. Proceed? (yes/no/modify)"
-5. **Create ticket** — Create ticket with appropriate metadata using platform-specific tools
-6. **Show ticket details** — Display created ticket key/URL and ask: "Ticket created. Proceed to create branch and PLAN file? (yes/no)"
-7. **Create branch** — Create branch linked to ticket identifier
-8. **Generate PLAN file** — Create comprehensive plan with phases in `PLANS/` directory
-9. **Show PLAN summary** — Display plan overview and ask: "Plan generated. Proceed to commit and push? (yes/no/modify)"
-10. **Commit and push PLAN file** — Commit with semantic message and push to remote
-11. **Update ticket** — Post progress comment to the ticket
-12. **Prompt for architecture review** — Ask: "Would you like the architecture-review-subagent to review the plan file? (yes/no)"
-    - If **yes**: Spawn `architecture-review-subagent` via Task tool with the PLAN file path and request a plan review
-    - If **no**: Continue to return
-13. **Return ticket details** — Return all details to caller
+### Step 1: Parse & Prompt (Both Modes)
 
-**This subagent does NOT execute the plan.** Plan execution is outside the scope of this workflow. The user or parent agent handles execution separately.
+1. Parse ticket requirement — detect platform (GitHub or JIRA) from context
+2. Gather missing information from user (title, overview, acceptance criteria, scope)
+3. **Present the Interactive Workflow Selection prompt** (see above)
+4. Set `WORKFLOW_MODE` based on user's selection
 
-### Architecture Review (Step 12 Detail)
+### Step 2: Create Ticket (Both Modes)
 
-If the user selects **Yes** at step 12, spawn `architecture-review-subagent` via Task tool:
+5. Create ticket with appropriate metadata (labels, type, priority)
+   - GitHub: Use `gh issue create` with `git-issue-labeler` skill for labels
+   - JIRA: Use `atlassian_createJiraIssue` with `jira-ticket-labeler` skill for type/priority
+6. Capture ticket key/number and URL
 
-```
-Task tool:
-  subagent_type: architecture-review-subagent
-  prompt: |
-    Review the PLAN file at PLANS/$PLAN_FILE on branch $BRANCH_NAME.
-    Evaluate the plan for:
-    - Clear layer boundaries and separation of concerns
-    - Appropriate design patterns
-    - Complexity assessment of proposed phases
-    - Missing considerations or risks
-    
-    This is a plan review, not a code review. Focus on the architectural
-    soundness of the proposed implementation approach.
-    
-    Project context:
-    - Ticket: $TICKET_ID
-    - Title: $TITLE
-    - Scope: $SCOPE
-```
+**If `WORKFLOW_MODE` is `"ticket-only"`:**
+- Skip to Step 4 (Return)
 
-Note: When returning to work on an existing ticket/branch, invoke plan-updater skill to sync PLAN.md with current progress.
+**If `WORKFLOW_MODE` is `"full-workflow"`:**
+- Continue to Step 3
+
+### Step 3: Branch, PLAN & Push (Full Workflow Only)
+
+7. Check for existing PLAN file:
+   ```
+   glob: PLANS/PLAN-{ticket-key}.md or PLANS/PLAN-GIT-{issue-number}.md
+   ```
+   - If exists: Inform user, ask whether to update or overwrite
+8. Create branch named after ticket identifier:
+   - JIRA: `{TICKET_KEY}` (e.g., `IBIS-123`)
+   - GitHub: `issue-{NUMBER}` (e.g., `issue-456`)
+9. Generate PLAN file using `ticket-plan-workflow-skill` template in `PLANS/` directory
+10. Commit PLAN file with semantic message: `docs(plan): add PLAN-{id}.md for {ticket-key}`
+11. Push branch to remote
+12. Post progress comment to ticket (GitHub: `gh issue comment`, JIRA: `atlassian_addCommentToJiraIssue`)
+
+### Step 4: Return Results
+
+13. Return ticket details to caller (see "What This Subagent Returns" section)
+
+---
+
+**Resuming existing work**: When returning to work on an existing ticket/branch, invoke `plan-updater` skill to sync PLAN.md with current progress.
 
 ## Examples
 
-### Example 1: Create JIRA Ticket
+### Example 1: Create JIRA Ticket (Full Workflow)
 ```
 Delegate: "Create a JIRA ticket for adding user authentication to the IBIS project"
+
+Subagent detects: JIRA platform
+
+Subagent prompts user:
+┌─────────────────────────────────────────────────────┐
+│ How would you like to proceed with this JIRA ticket? │
+│                                                       │
+│ ○ Create ticket only                                 │
+│ ○ Full workflow (Recommended)                        │
+└─────────────────────────────────────────────────────┘
+
+User selects: "Full workflow"
+
+Subagent gathers:
+- Title: "Implement user authentication"
+- Overview: "Add JWT-based auth endpoints"
+- Acceptance Criteria: ["Users can register", "Users can login", "Protected routes work"]
+- Scope: "src/api/auth/, src/middleware/"
+
+Output:
+- Ticket: IBIS-456
+- Branch: IBIS-456
+- PLAN: PLANS/PLAN-IBIS-456.md
+- URL: https://company.atlassian.net/browse/IBIS-456
+```
+
+### Example 2: Create GitHub Issue (Ticket Only)
+```
+Delegate: "Create a GitHub issue for fixing the login bug"
+
+Subagent detects: GitHub platform
+
+Subagent prompts user:
+┌──────────────────────────────────────────────────────┐
+│ How would you like to proceed with this GitHub issue? │
+│                                                       │
+│ ○ Create ticket only                                 │
+│ ○ Full workflow (Recommended)                        │
+└──────────────────────────────────────────────────────┘
+
+User selects: "Create ticket only"
+
+Subagent gathers:
+- Title: "Fix login page crash"
+- Overview: "Login page crashes on invalid credentials"
+- Acceptance Criteria: ["Login handles errors gracefully", "User sees error message"]
+- Scope: "src/pages/login.tsx"
+
+Output:
+- Issue: #789
+- URL: https://github.com/org/repo/issues/789
+- Labels: bug
+```
+
+### Example 3: Full Workflow with Confirmations (Detailed)
+```
+Delegate: "Create a JIRA ticket for adding user authentication to the IBIS project"
+
+Subagent detects: JIRA platform
+
+Subagent prompts user (question tool):
+┌─────────────────────────────────────────────────────┐
+│ How would you like to proceed with this JIRA ticket? │
+│                                                       │
+│ ○ Create ticket only                                 │
+│ ○ Full workflow (Recommended)                        │
+└─────────────────────────────────────────────────────┘
+
+User selects: "Full workflow"
 
 [Subagent prompts]: I need a few details:
 1. Title: [suggested] "Implement user authentication" — correct?
@@ -219,9 +332,21 @@ Would you like the architecture-review-subagent to review the plan file?
 [User: yes → spawns architecture-review-subagent]
 ```
 
-### Example 2: Create GitHub Issue
+### Example 4: Create GitHub Issue (Full Workflow)
 ```
 Delegate: "Create a GitHub issue for fixing the login bug"
+
+Subagent detects: GitHub platform
+
+Subagent prompts user (question tool):
+┌──────────────────────────────────────────────────────┐
+│ How would you like to proceed with this GitHub issue? │
+│                                                       │
+│ ○ Create ticket only                                 │
+│ ○ Full workflow (Recommended)                        │
+└──────────────────────────────────────────────────────┘
+
+User selects: "Full workflow"
 
 [Subagent prompts]: I need a few details:
 1. Title: [suggested] "Fix login page crash" — correct?
