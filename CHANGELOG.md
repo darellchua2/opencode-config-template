@@ -1,3 +1,10 @@
+# [1.52.0](https://github.com/darellchua2/opencode-config-template/compare/v1.51.0...v1.52.0) (2026-05-24)
+
+
+### Features
+
+* **skills:** add git-compact-commits-skill [BT-54] ([#199](https://github.com/darellchua2/opencode-config-template/issues/199)) ([759bdd6](https://github.com/darellchua2/opencode-config-template/commit/759bdd6b31defbb6e1c9e8cf664552992a002d08))
+
 # [1.51.0](https://github.com/darellchua2/opencode-config-template/compare/v1.50.3...v1.51.0) (2026-05-24)
 
 
