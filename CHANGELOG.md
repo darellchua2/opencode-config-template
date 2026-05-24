@@ -1,3 +1,10 @@
+# [1.54.0](https://github.com/darellchua2/opencode-config-template/compare/v1.53.0...v1.54.0) (2026-05-24)
+
+
+### Features
+
+* **agents:** update ticket-creation-subagent with prompt-first workflow and architecture review [#201](https://github.com/darellchua2/opencode-config-template/issues/201) ([#202](https://github.com/darellchua2/opencode-config-template/issues/202)) ([55cce55](https://github.com/darellchua2/opencode-config-template/commit/55cce5527a603981ccc3f166ade9c3e7ae58235a))
+
 # [1.53.0](https://github.com/darellchua2/opencode-config-template/compare/v1.52.0...v1.53.0) (2026-05-24)
 
 
