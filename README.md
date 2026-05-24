@@ -21,7 +21,7 @@ opencode-config-template/
 │   ├── .dockerignore
 │   ├── .opencode/
 │   │       ├── agents/              # 31 subagent .md files
-│   │       └── skills/              # 62 skill directories
+│   │       └── skills/              # 73 skill directories
 │   └── README.md                # Docker usage guide
 ├── docker-compose.yml           # Docker Compose service definition
 ├── .env.example                 # Environment variable template
@@ -261,15 +261,15 @@ TypeScript, JavaScript, Python, Go, Rust, Java, C#, PHP, Ruby, C, C++, Swift, Ko
 
 ## Skill Modularization
 
-This repository implements **skill modularization** with 62 skills organized across 10 categories. Skills are designed with clear separation of concerns and explicit dependencies.
+This repository implements **skill modularization** with 73 skills organized across 12 categories. Skills are designed with clear separation of concerns and explicit dependencies.
 
 ### Skill Categories
 
 | Category | Skills | Purpose |
 |-----------|---------|---------|
-| **Framework** (10) | test-generator-framework, linting-workflow, pr-creation-workflow, error-resolver-workflow, tdd-workflow, docx-creation, pptx-specialist, xlsx-specialist, pdf-specialist, frontend-design | Generic workflows, testing patterns, document creation, and UI design |
-| **Language-Specific** (4) | python-pytest-creator, python-ruff-linter, javascript-eslint-linter, changelog-python-cliff | Language-specific test, linting, and documentation |
-| **Framework-Specific** (5) | nextjs-pr-workflow, nextjs-unit-test-creator, nextjs-standard-setup, nextjs-image-usage, typescript-dry-principle | Next.js 16 and TypeScript workflows |
+| **Framework** (13) | test-generator-framework, linting-workflow, pr-creation-workflow, error-resolver-workflow, tdd-workflow, docx-creation, pptx-specialist, xlsx-specialist, pdf-specialist, frontend-design, api-design-skill, performance-optimization-skill | Generic workflows, testing patterns, document creation, UI design, API design, and performance |
+| **Language-Specific** (6) | python-pytest-creator, python-ruff-linter, javascript-eslint-linter, changelog-python-cliff, python-backend-skill, python-packaging-skill | Language-specific test, linting, project scaffolding, and packaging |
+| **Framework-Specific** (6) | nextjs-pr-workflow, nextjs-unit-test-creator, nextjs-standard-setup, nextjs-image-usage, typescript-dry-principle, accessibility-a11y-skill | Next.js 16, TypeScript, and accessibility workflows |
 | **OpenCode Meta** (3) | opencode-agent-creation, opencode-skill-creation, opencode-skills-maintainer | Agent and skill creation/maintenance |
 | **OpenTofu** (7) | opentofu-aws-explorer, opentofu-keycloak-explorer, opentofu-kubernetes-explorer, opentofu-neon-explorer, opentofu-provider-setup, opentofu-provisioning-workflow, opentofu-ecr-provision | Infrastructure as Code |
 | **Git/Workflow** (10) | ascii-diagram-creator, mermaid-diagram-creator, ticket-plan-workflow-skill, plan-execution-skill, git-issue-labeler, git-issue-updater, git-semantic-commits, semantic-release-convention, git-compact-commits, plan-updater | Diagrams, git operations, release conventions, compact commits, and workflows |
@@ -278,7 +278,9 @@ This repository implements **skill modularization** with 62 skills organized acr
 | **Code Quality** (7) | solid-principles, clean-code, clean-architecture, design-patterns, object-design, code-smells, complexity-management | Code quality analysis and patterns |
 | **Agent Optimization** (4) | continuous-learning, eval-harness, strategic-compact, verification-loop | AI agent session optimization and quality assurance |
 | **Startup/Business** (3) | startup-pitch-deck-skill, startup-business-docs-skill, construction-bd-skill | Startup pitch decks, business documentation, construction proposals |
-| **Configuration** (1) | microsoft-m365-config-skill | Microsoft 365 MCP server setup and configuration |
+| **Configuration** (2) | microsoft-m365-config-skill, codegraph-setup-skill | Microsoft 365 MCP and CodeGraph setup |
+| **Security** (2) | security-audit-skill, authentication-authorization-skill | Security auditing, vulnerability scanning, and auth implementation |
+| **DevOps** (4) | docker-containerization-skill, monorepo-management-skill, database-migration-skill, logging-observability-skill | Containerization, monorepos, database migrations, and observability |
 
 > **Note**: 6 redundant skills archived to `skills/_archived/`: `nextjs-complete-setup`, `python-docstring-generator`, `nextjs-tsdoc-documentor`, `git-pr-creator`, `git-issue-plan-workflow`, `jira-ticket-plan-workflow`. Use `docstring-generator` for all language docstrings (Python PEP 257, TypeScript TSDoc, Java Javadoc, C# XML docs). Use `ticket-plan-workflow-skill` for unified GitHub/JIRA ticket planning. 
 
