@@ -49,6 +49,17 @@ I will now create a GitHub issue with these details. Proceed? (yes/no/modify)
 
 **Never assume** — always confirm. If the user provides incomplete information, ask for clarification rather than guessing.
 
+### Two Prompting Mechanisms
+
+This subagent uses two distinct prompting patterns:
+
+| Mechanism | When | Tool | Format |
+|-----------|------|------|--------|
+| **Structured selection** | Initial workflow choice (ticket-only vs full-workflow) | `question` tool | JSON with labeled options |
+| **Free-text confirmation** | All other steps (gather info, confirm details, proceed to next step) | Direct text output | "Proceed? (yes/no/modify)" |
+
+The `question` tool is used **only** for the Interactive Workflow Selection prompt (see that section). All other confirmations use the free-text prompt-first pattern above.
+
 ## Purpose
 
 Delegate to this subagent for all ticket/issue creation and management tasks. This includes creating, updating, and tracking GitHub issues and JIRA tickets with proper labeling, branch creation, and PLAN.md generation.
@@ -153,7 +164,9 @@ After execution, this subagent provides:
 **Rules:**
 - Present this prompt IMMEDIATELY after parsing the ticket type (JIRA vs GitHub)
 - Do NOT create the ticket until the user selects an option
-- If the user's invocation already implies the workflow (e.g., "just create a ticket"), respect that intent and skip the prompt
+- If the user's invocation matches one of these explicit bypass phrases, skip the prompt and set `WORKFLOW_MODE` directly:
+  - `"just create a ticket"` / `"ticket only"` / `"create issue without branch"` / `"no branch"` → set `"ticket-only"`
+  - `"full workflow"` / `"create branch and plan"` / `"ticket with plan"` / `"set up everything"` → set `"full-workflow"`
 - Store the selection as `WORKFLOW_MODE`: either `"ticket-only"` or `"full-workflow"`
 
 ## Workflow
@@ -264,6 +277,18 @@ Output:
 ```
 Delegate: "Create a JIRA ticket for adding user authentication to the IBIS project"
 
+Subagent detects: JIRA platform
+
+Subagent prompts user (question tool):
+┌─────────────────────────────────────────────────────┐
+│ How would you like to proceed with this JIRA ticket? │
+│                                                       │
+│ ○ Create ticket only                                 │
+│ ○ Full workflow (Recommended)                        │
+└─────────────────────────────────────────────────────┘
+
+User selects: "Full workflow"
+
 [Subagent prompts]: I need a few details:
 1. Title: [suggested] "Implement user authentication" — correct?
 2. Overview: What should this accomplish?
@@ -310,6 +335,18 @@ Would you like the architecture-review-subagent to review the plan file?
 ### Example 4: Create GitHub Issue (Full Workflow)
 ```
 Delegate: "Create a GitHub issue for fixing the login bug"
+
+Subagent detects: GitHub platform
+
+Subagent prompts user (question tool):
+┌──────────────────────────────────────────────────────┐
+│ How would you like to proceed with this GitHub issue? │
+│                                                       │
+│ ○ Create ticket only                                 │
+│ ○ Full workflow (Recommended)                        │
+└──────────────────────────────────────────────────────┘
+
+User selects: "Full workflow"
 
 [Subagent prompts]: I need a few details:
 1. Title: [suggested] "Fix login page crash" — correct?
