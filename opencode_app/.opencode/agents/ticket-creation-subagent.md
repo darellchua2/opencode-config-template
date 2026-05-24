@@ -1,8 +1,8 @@
 ---
 description: Create and manage GitHub issues and JIRA tickets. Triggers on "create issue", "new issue", "bug report", "feature request", "git issue", "jira ticket", "open issue". Handles issue creation, labeling, branch creation, and semantic formatting.
-mode: all
-model: zai-coding-plan/glm-5-turbo
-steps: 25
+mode: subagent
+model: zai-coding-plan/glm-5.1
+steps: 30
 permission:
   read: allow
   edit: allow
@@ -122,6 +122,7 @@ After execution, this subagent provides:
 | jira-ticket-labeler | JIRA issue type and priority classification |
 | git-issue-updater | Progress updates |
 | git-semantic-commits | Commit message formatting |
+| plan-updater | PLAN.md progress sync on re-entry |
 
 ## Workflow
 
@@ -143,20 +144,9 @@ After execution, this subagent provides:
 
 **This subagent does NOT execute the plan.** Plan execution is outside the scope of this workflow. The user or parent agent handles execution separately.
 
-## Architecture Review Step
+### Architecture Review (Step 12 Detail)
 
-After pushing the PLAN file to the new branch, the subagent MUST prompt:
-
-```
-The plan has been committed and pushed to branch: $BRANCH_NAME
-
-Would you like the architecture-review-subagent to review the plan file
-before proceeding with implementation?
-- Yes: architecture-review-subagent will review PLANS/$PLAN_FILE for design quality
-- No: Workflow complete. Execute the plan when ready.
-```
-
-If the user selects **Yes**, spawn `architecture-review-subagent` via Task tool:
+If the user selects **Yes** at step 12, spawn `architecture-review-subagent` via Task tool:
 
 ```
 Task tool:
