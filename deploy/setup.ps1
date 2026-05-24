@@ -373,45 +373,52 @@ USAGE:
     Usage: opencode --agent build 'implement auth feature'
             opencode --agent explore 'find all API routes'
  
-        SKILLS (62):
-             Framework (11):       test-generator-framework, linting-workflow,
-                                     pr-creation-workflow, pr-merge-workflow,
-                                     error-resolver-workflow, tdd-workflow,
-                                     docx-creation, pptx-specialist,
-                                     xlsx-specialist, pdf-specialist, frontend-design
+        SKILLS (73):
+             Framework (13):       test-generator-framework, linting-workflow,
+                                      pr-creation-workflow, pr-merge-workflow,
+                                      error-resolver-workflow, tdd-workflow,
+                                      docx-creation, pptx-specialist,
+                                      xlsx-specialist, pdf-specialist, frontend-design,
+                                      api-design-skill, performance-optimization-skill
 
-           Language-Specific (4): python-pytest-creator, python-ruff-linter,
-                                 javascript-eslint-linter, changelog-python-cliff
+            Language-Specific (6): python-pytest-creator, python-ruff-linter,
+                                  javascript-eslint-linter, changelog-python-cliff,
+                                  python-backend-skill, python-packaging-skill
 
-          Framework-Specific (5): nextjs-pr-workflow, nextjs-unit-test-creator,
-                                nextjs-standard-setup, nextjs-image-usage,
-                                 typescript-dry-principle
-          OpenCode Meta (3):    opencode-agent-creation, opencode-skill-creation,
-                                opencode-skills-maintainer
-          OpenTofu (7):         opentofu-aws-explorer, opentofu-keycloak-explorer,
-                                opentofu-kubernetes-explorer, opentofu-neon-explorer,
-                                opentofu-provider-setup, opentofu-provisioning-workflow,
-                                opentofu-ecr-provision
-          Git/Workflow (10):    ascii-diagram-creator, mermaid-diagram-creator,
-                                 ticket-plan-workflow-skill, plan-execution-skill,
-                                 git-issue-labeler, git-issue-updater,
-                                 git-semantic-commits, semantic-release-convention,
-                                 git-compact-commits, plan-updater
-         Documentation (3):    coverage-readme-workflow, docstring-generator,
-                                documentation-sync-workflow
+           Framework-Specific (6): nextjs-pr-workflow, nextjs-unit-test-creator,
+                                 nextjs-standard-setup, nextjs-image-usage,
+                                  typescript-dry-principle, accessibility-a11y-skill
+           OpenCode Meta (3):    opencode-agent-creation, opencode-skill-creation,
+                                 opencode-skills-maintainer
+           OpenTofu (7):         opentofu-aws-explorer, opentofu-keycloak-explorer,
+                                 opentofu-kubernetes-explorer, opentofu-neon-explorer,
+                                 opentofu-provider-setup, opentofu-provisioning-workflow,
+                                 opentofu-ecr-provision
+           Git/Workflow (10):    ascii-diagram-creator, mermaid-diagram-creator,
+                                  ticket-plan-workflow-skill, plan-execution-skill,
+                                  git-issue-labeler, git-issue-updater,
+                                  git-semantic-commits, semantic-release-convention,
+                                  git-compact-commits, plan-updater
+          Documentation (3):    coverage-readme-workflow, docstring-generator,
+                                 documentation-sync-workflow
 
-         JIRA (3):             jira-status-updater, jira-git-integration, jira-ticket-labeler
-         Code Quality (7):     solid-principles, clean-code, clean-architecture,
-                               design-patterns, object-design, code-smells,
-                               complexity-management
+          JIRA (3):             jira-status-updater, jira-git-integration, jira-ticket-labeler
+          Code Quality (7):     solid-principles, clean-code, clean-architecture,
+                                design-patterns, object-design, code-smells,
+                                complexity-management
 
      Agent Optimization (4):  continuous-learning, eval-harness,
-                               strategic-compact, verification-loop
+                                strategic-compact, verification-loop
 
-           Startup/Business (3): startup-pitch-deck-skill, startup-business-docs-skill,
-                                 construction-bd-skill
+            Startup/Business (3): startup-pitch-deck-skill, startup-business-docs-skill,
+                                  construction-bd-skill
 
-          Configuration (2):    microsoft-m365-config-skill, codegraph-setup-skill
+           Configuration (2):    microsoft-m365-config-skill, codegraph-setup-skill
+
+              Security (2):     security-audit-skill, authentication-authorization-skill
+
+                 DevOps (4):     docker-containerization-skill, monorepo-management-skill,
+                                 database-migration-skill, logging-observability-skill
 
     Run 'opencode --list-skills' for detailed descriptions
     Run 'opencode --skill <name> \"prompt\"' to invoke a skill
