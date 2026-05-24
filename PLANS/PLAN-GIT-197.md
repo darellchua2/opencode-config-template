@@ -34,6 +34,7 @@ Replace with MCP server (`@peng-shawn/mermaid-mcp-server`) + single rewritten sk
   }
   ```
 - [ ] Add identical mermaid MCP server entry to `opencode_app/opencode.json`
+- [ ] Add `mermaid*` tool permission to both config.json files (in tools section)
 
 ## Phase 3: Rewrite Skill
 
@@ -45,18 +46,44 @@ Replace with MCP server (`@peng-shawn/mermaid-mcp-server`) + single rewritten sk
 
 ## Phase 4: Update Setup Scripts
 
-- [ ] Update agent counts 35→33 in `deploy/setup.sh` (L503, L518-519)
-- [ ] Update agent counts 35→33 in `deploy/setup.ps1` (L338, L353-354)
-- [ ] Remove `Set-MermaidCLI` function from `deploy/setup.ps1`
-- [ ] Remove `setup_mermaid_cli` function from `deploy/setup.sh`
-- [ ] Update Mermaid CLI recommendation — replace "install mmdc globally" with "MCP auto-starts via npx"
+### deploy/setup.sh
+
+- [ ] Update agent counts 35→33 in help text (L503)
+- [ ] Remove `diagram` and `mermaid-diagram` from AGENTS listing in help text (L518-519)
+- [ ] Update MCP SERVER count 16→17 in help text (L543)
+- [ ] Update Mermaid CLI recommendation in REQUIREMENTS section — replace with "MCP auto-starts via npx"
+- [ ] Remove `setup_mermaid_cli` function definition (~L1456-1503)
+- [ ] Remove `setup_mermaid_cli || true` function CALL at L2565 in main execution flow
+- [ ] Update ALL summary sections that print "35 agents" or reference diagram agents (L1667-1674, L2222-2228, L2360-2366)
+
+### deploy/setup.ps1
+
+- [ ] Update agent counts 35→33 in help text (L338)
+- [ ] Remove `diagram` and `mermaid-diagram` from AGENTS listing in help text (L353-354)
+- [ ] Update MCP server count 16→17 (L1765 and summary sections)
+- [ ] Update Mermaid CLI recommendation in REQUIREMENTS section
+- [ ] Remove `Set-MermaidCLI` function definition (L1014-1057)
+- [ ] Remove `Set-MermaidCLI` function CALL at L1921 in Main function
+- [ ] Update `Set-Configuration` output that prints "diagram-creator" as featured agent (L1194-1199)
+- [ ] Update `Show-NextSteps` output that prints "diagram-creator" and "Agents (35)" (L1742-1747)
 
 ## Phase 5: Update Documentation
 
-- [ ] Update `README.md` — remove 2 agent rows from Subagents table, update counts
-- [ ] Fix `AGENTS.md` — remove `mermaid-diagram-subagent` from project-level subagents list
+- [ ] Update `README.md`:
+  - Remove 2 agent rows from Subagents table (L318-319)
+  - Update "33 agents (5 primary + 28 subagents)" → "31 agents (5 primary + 26 subagents)" (L287)
+- [ ] Fix `AGENTS.md` (repo root):
+  - Remove `mermaid-diagram-subagent` from project-level subagents list (L97)
+  - Update "31 subagent .md files" → "29" (L50, L67)
+- [ ] Update `opencode_app/.opencode/agents/startup-founder-primary-agent.md`:
+  - Change `diagram-subagent` delegation reference at L39 to `mermaid-diagram-creator-skill`
 
-## Phase 6: Sync Verification
+## Phase 6: Docker Verification
+
+- [ ] Check if `opencode_app/Dockerfile` needs `chromium` added to apt-get install (mermaid MCP server uses Puppeteer)
+- [ ] If yes, add `chromium` or `chromium-browser` to Dockerfile dependencies
+
+## Phase 7: Sync Verification
 
 - [ ] Run `documentation-sync-workflow` skill to verify all counts and listings are consistent
 
@@ -71,9 +98,13 @@ Replace with MCP server (`@peng-shawn/mermaid-mcp-server`) + single rewritten sk
 | SVG default | Resolution-independent |
 | `CONTENT_IMAGE_SUPPORTED=false` | Forces file-to-disk (OpenCode can't handle inline images) |
 | Agent count 35→33 | Two agents removed |
+| MCP count 16→17 | New mermaid MCP server added |
+| Subagent count 31→29 | Two agent .md files deleted |
+| Tool permissions needed | `mermaid*` entry in tools section of both configs |
 
 ## Breaking Changes
 
 - `mermaid-diagram-subagent` removed
 - `diagram-subagent` removed
 - Users must use `mermaid-diagram-creator-skill` instead
+- `startup-founder-primary-agent` delegation target updated
