@@ -2,7 +2,7 @@
 
 **Issue**: [#201](https://github.com/darellchua2/opencode-config-template/issues/201)
 **Branch**: `issue-201`
-**Status**: In Progress
+**Status**: Ready for Review
 
 ---
 
@@ -39,19 +39,19 @@ Refactor the subagent to adopt a prompt-first behavior pattern, remove plan exec
 
 - [x] Add standardized return contract section (Status/Output/Summary/Issues)
 - [x] Add "do NOT return" list to prevent context bloat
-- [x] Increase step budget from 20 to 25
+- [x] Increase step budget from 20 to 30
 - [x] Update examples to show prompt-first interaction pattern
 
 ---
 
 ## Acceptance Criteria
 
-- [ ] Prompt-first confirmation added before ticket creation, after gathering info, at decision points, and after PLAN generation
-- [ ] Plan execution removed from workflow — subagent stops after creating the plan
-- [ ] Architecture review step added — asks user if they want architecture-review-subagent to review the plan
-- [ ] `task` permission updated: architecture-review-subagent allow, explore allow (deny all others)
-- [ ] Standardized return contract format added
-- [ ] Step budget increased from 20 to 25
+- [x] Prompt-first confirmation added before ticket creation, after gathering info, at decision points, and after PLAN generation
+- [x] Plan execution removed from workflow — subagent stops after creating the plan
+- [x] Architecture review step added — asks user if they want architecture-review-subagent to review the plan
+- [x] `task` permission updated: architecture-review-subagent allow, explore allow (deny all others)
+- [x] Standardized return contract format added
+- [x] Step budget increased from 20 to 30
 
 ## Scope
 
