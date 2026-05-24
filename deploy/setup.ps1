@@ -408,8 +408,10 @@ USAGE:
                                 design-patterns, object-design, code-smells,
                                 complexity-management
 
-     Agent Optimization (4):  continuous-learning, eval-harness,
-                                strategic-compact, verification-loop
+      Agent Optimization (7):  continuous-learning, eval-harness,
+                                 strategic-compact, verification-loop,
+                                 search-first, context-budget,
+                                 agent-introspection-debugging
 
             Startup/Business (3): startup-pitch-deck-skill, startup-business-docs-skill,
                                   construction-bd-skill
@@ -1147,7 +1149,7 @@ function Set-Configuration {
             Write-LogSuccess "config.json copied successfully"
 
             Write-Host ""
-            Write-Host "Configured 5 agents:" -ForegroundColor Green
+             Write-Host "Configured 38 agents:" -ForegroundColor Green
             Write-Host "    - build (default) - Full-featured coding agent"
             Write-Host "    - plan - Planning agent (read-only)"
             Write-Host "    - explore - Codebase exploration and analysis"
@@ -1252,9 +1254,11 @@ function Deploy-Skills {
         Write-Host "      - solid-principles, clean-code, clean-architecture"
         Write-Host "      - design-patterns, object-design, code-smells"
         Write-Host "      - complexity-management"
-        Write-Host "    Agent Optimization (4):"
+        Write-Host "    Agent Optimization (7):"
         Write-Host "      - continuous-learning, eval-harness"
         Write-Host "      - strategic-compact, verification-loop"
+        Write-Host "      - search-first, context-budget"
+        Write-Host "      - agent-introspection-debugging"
         Write-Host "    Startup/Business (3):"
         Write-Host "      - startup-pitch-deck-skill, startup-business-docs-skill"
         Write-Host "      - construction-bd-skill"
@@ -1708,13 +1712,13 @@ function Show-NextSteps {
     Write-Host "         opencode `"prompt`" (uses build)"
      Write-Host ""
     Write-Host "=====================================================================" -ForegroundColor White
-     Write-Host "                     74 Skills Available" -ForegroundColor White
+     Write-Host "                     77 Skills Available" -ForegroundColor White
     Write-Host "=====================================================================" -ForegroundColor White
     Write-Host ""
     Write-Host "  Framework (11) • Language-Specific (4) • Framework-Specific (5)"
     Write-Host "  OpenCode Meta (4) • OpenTofu (7) • Git/Workflow (10)"
     Write-Host "  Documentation (3) • JIRA (3) • Code Quality (7)"
-    Write-Host "  Agent Optimization (4)"
+     Write-Host "  Agent Optimization (7)"
     Write-Host ""
     Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
     Write-Host "  Run 'opencode --skill <name> `"prompt`"' to invoke a skill"
