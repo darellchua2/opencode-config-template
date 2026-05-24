@@ -47,7 +47,7 @@ opencode-config-template/
 │   ├── README.md        # Docker usage guide
 │   ├── .dockerignore    # Build exclusions
 │   └── .opencode/
-│       ├── agents/      # 31 subagent .md files (single source of truth)
+│       ├── agents/      # 29 subagent .md files (single source of truth)
 │       └── skills/      # 61 skill directories (single source of truth)
 ├── PLANS/               # Execution plans (git-committed)
 ├── LEARNINGS/           # Knowledge persistence template (auto-provisioned in target projects)
@@ -64,7 +64,7 @@ opencode-config-template/
 ## Shared Config Strategy
 
 Agents and skills have a **single source of truth** in `opencode_app/.opencode/`:
-- `opencode_app/.opencode/agents/` — All 31 subagent definitions
+- `opencode_app/.opencode/agents/` — All 29 subagent definitions
 - `opencode_app/.opencode/skills/` — All 61 skill directories
 
 For **user-space**: `deploy/setup.sh` and `deploy/setup.ps1` copy from `opencode_app/.opencode/` to `~/.config/opencode/`
@@ -94,7 +94,7 @@ When reviewing code or architecture, check `LEARNINGS/` for existing patterns an
 | `.opencode/agents/*.md` | Project-only | Stays in repo, not deployed |
 
 **Project-Level Subagents:**
-- `mermaid-diagram-subagent` - Creates Mermaid diagrams with PNG conversion and integrated with planning workflows
+- (none currently)
 
 ## CodeGraph MCP Server
 

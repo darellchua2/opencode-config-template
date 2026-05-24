@@ -284,7 +284,7 @@ This repository implements **skill modularization** with 61 skills organized acr
 
 ### Agents
 
-33 agents provide specialized task handling (5 primary + 28 subagents):
+31 agents provide specialized task handling (5 primary + 26 subagents):
 
 #### Primary Agents
 
@@ -315,8 +315,6 @@ This repository implements **skill modularization** with 61 skills organized acr
 | **nextjs-setup-subagent** | Next.js project setup | nextjs-standard-setup (also see docstring-generator for TSDoc) | — |
 | **opencode-tooling-subagent** | Skills, agents, and rules creation + doc sync | opencode-skill-creation, opencode-agent-creation, opencode-skills-maintainer, documentation-sync-workflow | — |
 | **docx-creation-subagent** | Word document creation | docx-creation | — |
-| **diagram-subagent** | ASCII diagrams and images | ascii-diagram-creator, mermaid-diagram-creator | — |
-| **mermaid-diagram-subagent** | Mermaid diagrams with PNG conversion | mermaid-diagram-creator | — |
 | **image-analyzer-subagent** | Image analysis and conversion | (built-in capabilities) | — |
 | **google-mcp-specialist-subagent** | Google Cloud MCP setup and usage | google-bigquery, google-maps, google-gce, google-gke | — |
 | **autodesk-specialist-subagent** | Autodesk API integration | autodesk-revit, autodesk-model-data, autodesk-fusion | — |

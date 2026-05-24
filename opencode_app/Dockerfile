@@ -17,8 +17,13 @@ RUN apt-get update \
         curl \
         git \
         openssh-client \
+        chromium \
+        fonts-liberation \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium \
+    PUPPETEER_SKIP_DOWNLOAD=true
 
 RUN npm install -g "opencode-ai@${OPENCODE_VERSION}" \
     typescript \
