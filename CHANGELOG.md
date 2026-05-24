@@ -1,3 +1,10 @@
+# [1.56.0](https://github.com/darellchua2/opencode-config-template/compare/v1.55.0...v1.56.0) (2026-05-24)
+
+
+### Features
+
+* **skills:** add documentation-consistency-skill — audit + auto-fix doc drift ([#205](https://github.com/darellchua2/opencode-config-template/issues/205)) ([865b844](https://github.com/darellchua2/opencode-config-template/commit/865b8448a91f73a60ce1fdb74c952f5826a2cd11)), closes [#204](https://github.com/darellchua2/opencode-config-template/issues/204)
+
 # [1.55.0](https://github.com/darellchua2/opencode-config-template/compare/v1.54.0...v1.55.0) (2026-05-24)
 
 
