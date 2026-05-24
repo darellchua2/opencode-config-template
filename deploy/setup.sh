@@ -561,12 +561,12 @@ USAGE:
       microsoft-copilot  M365 Copilot conversations
       microsoft-dataverse Business data (Dynamics 365)
 
-   SKILLS (61):
+   SKILLS (62):
               Framework (11):       test-generator-framework, linting-workflow,
-                                    pr-creation-workflow, pr-merge-workflow,
-                                    error-resolver-workflow, tdd-workflow,
-                                    docx-creation, pptx-specialist,
-                                    xlsx-specialist, pdf-specialist, frontend-design
+                                     pr-creation-workflow, pr-merge-workflow,
+                                     error-resolver-workflow, tdd-workflow,
+                                     docx-creation, pptx-specialist,
+                                     xlsx-specialist, pdf-specialist, frontend-design
 
            Language-Specific (4): python-pytest-creator, python-ruff-linter,
                                  javascript-eslint-linter, changelog-python-cliff
@@ -583,11 +583,11 @@ USAGE:
                                 opentofu-provider-setup, opentofu-provisioning-workflow,
                                 opentofu-ecr-provision
 
-          Git/Workflow (9):     ascii-diagram-creator, mermaid-diagram-creator,
-                                 ticket-plan-workflow-skill, plan-execution-skill,
-                                 git-issue-labeler, git-issue-updater,
-                                 git-semantic-commits, semantic-release-convention,
-                                 plan-updater
+           Git/Workflow (10):    ascii-diagram-creator, mermaid-diagram-creator,
+                                  ticket-plan-workflow-skill, plan-execution-skill,
+                                  git-issue-labeler, git-issue-updater,
+                                  git-semantic-commits, semantic-release-convention,
+                                  git-compact-commits, plan-updater
 
          Documentation (3):    coverage-readme-workflow, docstring-generator,
                                 documentation-sync-workflow
@@ -2189,10 +2189,11 @@ print_summary() {
     if [ -d "$SKILLS_DIR" ] && [ "$(ls -A ${SKILLS_DIR} 2>/dev/null)" ]; then
         local skill_count=$(find ${SKILLS_DIR} -name "SKILL.md" 2>/dev/null | wc -l)
         echo "✓ skills: ${skill_count} skills deployed to ${SKILLS_DIR}/"
-        echo "    - Framework (10):"
+        echo "    - Framework (11):"
         echo "      - test-generator-framework"
         echo "      - linting-workflow"
         echo "      - pr-creation-workflow"
+        echo "      - pr-merge-workflow"
         echo "      - error-resolver-workflow"
         echo "      - tdd-workflow"
         echo "      - docx-creation"
@@ -2223,7 +2224,7 @@ print_summary() {
         echo "      - opentofu-provider-setup"
         echo "      - opentofu-provisioning-workflow"
         echo "      - opentofu-ecr-provision"
-        echo "    - Git/Workflow (9):"
+        echo "    - Git/Workflow (10):"
         echo "      - ascii-diagram-creator"
         echo "      - mermaid-diagram-creator"
         echo "      - ticket-plan-workflow-skill"
@@ -2232,6 +2233,7 @@ print_summary() {
         echo "      - git-issue-updater"
         echo "      - git-semantic-commits"
         echo "      - semantic-release-convention"
+        echo "      - git-compact-commits"
         echo "      - plan-updater"
         echo "    - Documentation (3):"
         echo "      - coverage-readme-workflow"
@@ -2313,11 +2315,11 @@ print_next_steps() {
     echo "         opencode \"prompt\" (uses build)"
      echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "                     📦 61 Skills Available"
+    echo "                     📦 62 Skills Available"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "  Framework (10) • Language-Specific (4) • Framework-Specific (5)"
-    echo "  OpenCode Meta (3) • OpenTofu (7) • Git/Workflow (9)"
+    echo "  Framework (11) • Language-Specific (4) • Framework-Specific (5)"
+    echo "  OpenCode Meta (3) • OpenTofu (7) • Git/Workflow (10)"
     echo "  Documentation (3) • JIRA (3) • Code Quality (7)"
     echo "  Agent Optimization (4)"
     echo ""

@@ -412,7 +412,10 @@ Update your API clients accordingly.
 3. **Subject Check**: Must be in imperative mood, no period at end
 4. **Subject Length**: Should be under 72 characters
 5. **Body Format**: Each line should be under 72 characters
-6. **Breaking Change**: Must be clearly indicated
+6. **Body Word Count**: Should be under 150 words
+7. **Breaking Change**: Must be clearly indicated
+
+> **Note**: For extended length enforcement (72-char subject hard limit, 150-word body limit, semantic grouping, commitlint config with custom word-count plugin, and GitHub Actions workflow), see `git-compact-commits-skill`. That skill is the authority for commitlint configuration and compact writing guidance.
 
 ### Validation Script
 

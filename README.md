@@ -21,7 +21,7 @@ opencode-config-template/
 │   ├── .dockerignore
 │   ├── .opencode/
 │   │       ├── agents/              # 31 subagent .md files
-│   │   └── skills/              # 61 skill directories
+│   │       └── skills/              # 62 skill directories
 │   └── README.md                # Docker usage guide
 ├── docker-compose.yml           # Docker Compose service definition
 ├── .env.example                 # Environment variable template
@@ -261,7 +261,7 @@ TypeScript, JavaScript, Python, Go, Rust, Java, C#, PHP, Ruby, C, C++, Swift, Ko
 
 ## Skill Modularization
 
-This repository implements **skill modularization** with 61 skills organized across 10 categories. Skills are designed with clear separation of concerns and explicit dependencies.
+This repository implements **skill modularization** with 62 skills organized across 10 categories. Skills are designed with clear separation of concerns and explicit dependencies.
 
 ### Skill Categories
 
@@ -272,7 +272,7 @@ This repository implements **skill modularization** with 61 skills organized acr
 | **Framework-Specific** (5) | nextjs-pr-workflow, nextjs-unit-test-creator, nextjs-standard-setup, nextjs-image-usage, typescript-dry-principle | Next.js 16 and TypeScript workflows |
 | **OpenCode Meta** (3) | opencode-agent-creation, opencode-skill-creation, opencode-skills-maintainer | Agent and skill creation/maintenance |
 | **OpenTofu** (7) | opentofu-aws-explorer, opentofu-keycloak-explorer, opentofu-kubernetes-explorer, opentofu-neon-explorer, opentofu-provider-setup, opentofu-provisioning-workflow, opentofu-ecr-provision | Infrastructure as Code |
-| **Git/Workflow** (9) | ascii-diagram-creator, mermaid-diagram-creator, ticket-plan-workflow-skill, plan-execution-skill, git-issue-labeler, git-issue-updater, git-semantic-commits, semantic-release-convention, plan-updater | Diagrams, git operations, release conventions, and workflows |
+| **Git/Workflow** (10) | ascii-diagram-creator, mermaid-diagram-creator, ticket-plan-workflow-skill, plan-execution-skill, git-issue-labeler, git-issue-updater, git-semantic-commits, semantic-release-convention, git-compact-commits, plan-updater | Diagrams, git operations, release conventions, compact commits, and workflows |
 | **Documentation** (3) | coverage-readme-workflow, docstring-generator, documentation-sync-workflow | Documentation generation |
 | **JIRA** (3) | jira-status-updater, jira-git-integration, jira-ticket-labeler | JIRA integration via MCP server |
 | **Code Quality** (7) | solid-principles, clean-code, clean-architecture, design-patterns, object-design, code-smells, complexity-management | Code quality analysis and patterns |
