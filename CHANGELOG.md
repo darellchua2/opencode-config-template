@@ -1,3 +1,10 @@
+# [1.51.0](https://github.com/darellchua2/opencode-config-template/compare/v1.50.3...v1.51.0) (2026-05-24)
+
+
+### Features
+
+* **mermaid:** MCP server + skill-only architecture, remove 2 diagram agents ([#198](https://github.com/darellchua2/opencode-config-template/issues/198)) ([fce0873](https://github.com/darellchua2/opencode-config-template/commit/fce0873a63959d97436efa03a08a8a670acc1eb8)), closes [#197](https://github.com/darellchua2/opencode-config-template/issues/197)
+
 ## [1.50.3](https://github.com/darellchua2/opencode-config-template/compare/v1.50.2...v1.50.3) (2026-05-22)
 
 
