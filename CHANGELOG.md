@@ -1,3 +1,10 @@
+# [1.55.0](https://github.com/darellchua2/opencode-config-template/compare/v1.54.0...v1.55.0) (2026-05-24)
+
+
+### Features
+
+* **agents:** add interactive workflow selection to ticket-creation-subagent ([#203](https://github.com/darellchua2/opencode-config-template/issues/203)) ([4caab48](https://github.com/darellchua2/opencode-config-template/commit/4caab480e3056af25c858d4f9e5397bc864dd654))
+
 # [1.54.0](https://github.com/darellchua2/opencode-config-template/compare/v1.53.0...v1.54.0) (2026-05-24)
 
 
