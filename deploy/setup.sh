@@ -561,7 +561,7 @@ USAGE:
       microsoft-copilot  M365 Copilot conversations
       microsoft-dataverse Business data (Dynamics 365)
 
-   SKILLS (73):
+   SKILLS (74):
                Framework (13):       test-generator-framework, linting-workflow,
                                       pr-creation-workflow, pr-merge-workflow,
                                       error-resolver-workflow, tdd-workflow,
@@ -577,8 +577,9 @@ USAGE:
                                  nextjs-standard-setup, nextjs-image-usage,
                                  typescript-dry-principle, accessibility-a11y-skill
 
-           OpenCode Meta (3):    opencode-agent-creation, opencode-skill-creation,
-                                 opencode-skills-maintainer
+           OpenCode Meta (4):    opencode-agent-creation, opencode-skill-creation,
+                                 opencode-skills-maintainer,
+                                 documentation-consistency-skill
 
            OpenTofu (7):         opentofu-aws-explorer, opentofu-keycloak-explorer,
                                  opentofu-kubernetes-explorer, opentofu-neon-explorer,
@@ -2219,10 +2220,11 @@ print_summary() {
         echo "      - nextjs-standard-setup"
         echo "      - nextjs-image-usage"
         echo "      - typescript-dry-principle"
-        echo "    - OpenCode Meta (3):"
+        echo "    - OpenCode Meta (4):"
         echo "      - opencode-agent-creation"
         echo "      - opencode-skill-creation"
         echo "      - opencode-skills-maintainer"
+        echo "      - documentation-consistency-skill"
         echo "    - OpenTofu (7):"
         echo "      - opentofu-aws-explorer"
         echo "      - opentofu-keycloak-explorer"
@@ -2322,11 +2324,11 @@ print_next_steps() {
     echo "         opencode \"prompt\" (uses build)"
      echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "                     📦 62 Skills Available"
+    echo "                     📦 74 Skills Available"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
     echo "  Framework (11) • Language-Specific (4) • Framework-Specific (5)"
-    echo "  OpenCode Meta (3) • OpenTofu (7) • Git/Workflow (10)"
+    echo "  OpenCode Meta (4) • OpenTofu (7) • Git/Workflow (10)"
     echo "  Documentation (3) • JIRA (3) • Code Quality (7)"
     echo "  Agent Optimization (4)"
     echo ""
