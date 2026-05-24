@@ -373,7 +373,7 @@ USAGE:
     Usage: opencode --agent build 'implement auth feature'
             opencode --agent explore 'find all API routes'
  
-        SKILLS (73):
+        SKILLS (74):
              Framework (13):       test-generator-framework, linting-workflow,
                                       pr-creation-workflow, pr-merge-workflow,
                                       error-resolver-workflow, tdd-workflow,
@@ -388,8 +388,9 @@ USAGE:
            Framework-Specific (6): nextjs-pr-workflow, nextjs-unit-test-creator,
                                  nextjs-standard-setup, nextjs-image-usage,
                                   typescript-dry-principle, accessibility-a11y-skill
-           OpenCode Meta (3):    opencode-agent-creation, opencode-skill-creation,
-                                 opencode-skills-maintainer
+           OpenCode Meta (4):    opencode-agent-creation, opencode-skill-creation,
+                                 opencode-skills-maintainer,
+                                 documentation-consistency-skill
            OpenTofu (7):         opentofu-aws-explorer, opentofu-keycloak-explorer,
                                  opentofu-kubernetes-explorer, opentofu-neon-explorer,
                                  opentofu-provider-setup, opentofu-provisioning-workflow,
@@ -1226,9 +1227,10 @@ function Deploy-Skills {
         Write-Host "      - nextjs-pr-workflow, nextjs-unit-test-creator"
         Write-Host "      - nextjs-standard-setup, nextjs-image-usage"
         Write-Host "      - typescript-dry-principle"
-        Write-Host "    OpenCode Meta (3):"
+        Write-Host "    OpenCode Meta (4):"
         Write-Host "      - opencode-agent-creation, opencode-skill-creation"
         Write-Host "      - opencode-skills-maintainer"
+        Write-Host "      - documentation-consistency-skill"
         Write-Host "    OpenTofu (7):"
         Write-Host "      - opentofu-aws-explorer, opentofu-keycloak-explorer"
         Write-Host "      - opentofu-kubernetes-explorer, opentofu-neon-explorer"
@@ -1706,11 +1708,11 @@ function Show-NextSteps {
     Write-Host "         opencode `"prompt`" (uses build)"
      Write-Host ""
     Write-Host "=====================================================================" -ForegroundColor White
-     Write-Host "                     62 Skills Available" -ForegroundColor White
+     Write-Host "                     74 Skills Available" -ForegroundColor White
     Write-Host "=====================================================================" -ForegroundColor White
     Write-Host ""
     Write-Host "  Framework (11) • Language-Specific (4) • Framework-Specific (5)"
-    Write-Host "  OpenCode Meta (3) • OpenTofu (7) • Git/Workflow (10)"
+    Write-Host "  OpenCode Meta (4) • OpenTofu (7) • Git/Workflow (10)"
     Write-Host "  Documentation (3) • JIRA (3) • Code Quality (7)"
     Write-Host "  Agent Optimization (4)"
     Write-Host ""
