@@ -222,11 +222,20 @@
         "POWER_PLATFORM_ENV_ID": "${env:POWER_PLATFORM_ENV_ID}"
       },
       "enabled": false
+    },
+    "mermaid": {
+      "type": "local",
+      "command": ["npx", "-y", "@peng-shawn/mermaid-mcp-server"],
+      "environment": {
+        "CONTENT_IMAGE_SUPPORTED": "false"
+      },
+      "enabled": true
     }
   },
   "tools": {
     "codegraph*": true,
     "atlassian*": true,
+    "mermaid*": true,
     "zai-web-reader*": true,
     "zai-vision-mcp-server*": false,
     "zai-zread*": false,

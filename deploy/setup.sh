@@ -500,7 +500,7 @@ USAGE:
                          CONFIGURED FEATURES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-   AGENTS (35):
+   AGENTS (33):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
@@ -515,8 +515,6 @@ USAGE:
     coverage             Test coverage reporting and badges
     documentation        Docstring generation (PEP 257, JSDoc, Javadoc)
     tdd                  Test Driven Development workflow guidance
-    diagram              Diagrams (architecture, flowcharts, UML)
-    mermaid-diagram      Mermaid diagrams with PNG conversion
     pptx-specialist      PowerPoint presentation creation and editing
     docx-creation        Word document creation and manipulation
     xlsx-specialist      Spreadsheet creation and analysis
@@ -540,11 +538,12 @@ USAGE:
     Usage: opencode --agent build "implement auth feature"
            opencode --agent explore "find all API routes"
 
-  MCP SERVERS (16):
+  MCP SERVERS (17):
     Auto-start (npx):
       codegraph           Pre-indexed code knowledge graph (100% local)
       atlassian          JIRA and Confluence integration
       zai-vision-mcp-server     Image analysis and video processing
+      mermaid            Mermaid diagram rendering (SVG/PNG)
 
     Remote (requires ZAI_API_KEY):
       web-reader         Web page content extraction
@@ -622,7 +621,6 @@ USAGE:
   Recommended:
     nvm                   Node Version Manager (macOS/Linux)
     git                   For version control integration
-    Mermaid CLI           For diagram generation (npm install -g @mermaid-js/mermaid-cli)
 
   API Keys (prompted during setup):
      ZAI_API_KEY           Required for: web-reader, web-search-prime, zread
@@ -1452,56 +1450,6 @@ setup_opencode() {
     return 0
 }
 
-# Setup Mermaid CLI
-setup_mermaid_cli() {
-    echo ""
-    echo "=== Checking Mermaid CLI ==="
-
-    if command_exists mmdc; then
-        local installed_version
-        installed_version=$(mmdc --version 2>/dev/null | grep -oP '\d+\.\d+\.\d+' || echo "unknown")
-        log_info "Mermaid CLI is installed (v${installed_version})"
-
-        local latest_version
-        latest_version=$(npm view @mermaid-js/mermaid-cli version 2>/dev/null || echo "unknown")
-
-        if [ "$latest_version" != "unknown" ]; then
-            log_info "Latest version: v${latest_version}"
-
-            if [ "$installed_version" != "$latest_version" ]; then
-                log_warn "A newer version of Mermaid CLI is available!"
-                if prompt_yes_no "Update Mermaid CLI to v${latest_version}?" "y"; then
-                    run_cmd "npm install -g @mermaid-js/mermaid-cli@latest"
-                    log_success "Mermaid CLI updated successfully"
-                fi
-            else
-                log_success "Mermaid CLI is up to date"
-            fi
-        fi
-    else
-        log_info "Mermaid CLI is not installed"
-        echo ""
-        echo "  Mermaid CLI is required for diagram generation skills."
-        echo "  Alternatively, use npx for zero-install: npx @mermaid-js/mermaid-cli"
-        echo ""
-
-        if prompt_yes_no "Install Mermaid CLI?" "y"; then
-            run_cmd "npm install -g @mermaid-js/mermaid-cli"
-
-            if command_exists mmdc; then
-                log_success "Mermaid CLI installed successfully"
-            else
-                log_error "Mermaid CLI installation failed"
-                log_info "You can use npx as fallback: npx @mermaid-js/mermaid-cli"
-            fi
-        else
-            log_info "Skipping Mermaid CLI installation (npx fallback available)"
-        fi
-    fi
-
-    return 0
-}
-
 # Update OpenCode CLI only
 update_opencode_cli() {
     echo ""
@@ -1664,17 +1612,15 @@ setup_config() {
             log_success "config.json copied successfully"
 
             echo ""
-             echo "✓ Configured 35 agents:"
+             echo "✓ Configured 33 agents:"
              echo "    - build (default) - Full-featured coding agent"
              echo "    - plan - Planning agent (read-only)"
              echo "    - explore - Codebase exploration and analysis"
              echo "    - image-analyzer-subagent - Image/screenshot analysis"
-             echo "    - diagram-creator - Diagram creation"
-             echo "    - mermaid-diagram-subagent - Mermaid diagrams with PNG conversion"
              echo "    - ... and 30 more agents"
             echo ""
-             echo "✓ Configured 6 MCP servers:"
-             echo "    Local (auto-start): atlassian, zai-vision-mcp-server, codegraph"
+             echo "✓ Configured MCP servers:"
+             echo "    Local (auto-start): atlassian, zai-vision-mcp-server, codegraph, mermaid"
              echo "    Remote (needs key): web-reader, web-search-prime, zread"
             echo ""
         else
@@ -2219,25 +2165,24 @@ print_summary() {
 
     # Agents configured
     if [ -f "$CONFIG_FILE" ]; then
-        echo "✓ Configured 35 agents:"
+        echo "✓ Configured 33 agents:"
         echo "    - build (default) - Full-featured coding agent"
         echo "    - plan - Planning agent (read-only)"
         echo "    - explore - Codebase exploration and analysis"
         echo "    - image-analyzer-subagent - Image/screenshot analysis"
-        echo "    - diagram-creator - Diagram creation"
-        echo "    - mermaid-diagram-subagent - Mermaid diagrams with PNG conversion"
         echo "    - ... and 30 more agents"
     fi
 
     # MCP servers configured
     if [ -f "$CONFIG_FILE" ]; then
-         echo "✓ Configured 6 MCP servers:"
+         echo "✓ Configured MCP servers:"
          echo "    - atlassian - JIRA and Confluence integration (auto-start)"
          echo "    - web-reader - Web page reading (needs ZAI_API_KEY)"
          echo "    - web-search-prime - Web search (needs ZAI_API_KEY)"
          echo "    - zai-vision-mcp-server - Image analysis (auto-start)"
          echo "    - zread - GitHub repo search (needs ZAI_API_KEY)"
          echo "    - codegraph - Code knowledge graph (auto-start)"
+         echo "    - mermaid - Diagram rendering SVG/PNG (auto-start)"
     fi
 
     # skills directory status
@@ -2357,12 +2302,11 @@ print_next_steps() {
     echo "                        🚀 Quick Start"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "🤖 Agents (35):"
+    echo "🤖 Agents (33):"
     echo "  - build (default) - Full-featured coding agent"
     echo "  - plan - Planning agent (read-only)"
     echo "  - explore - Fast codebase exploration and analysis"
     echo "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
-    echo "  - diagram-creator - Diagrams (architecture, flowcharts, UML)"
     echo "  - ... and 30 more agents"
     echo ""
     echo "  Usage: opencode --agent <name> \"prompt\""
@@ -2562,7 +2506,6 @@ main() {
         setup_nvm || true
         setup_nodejs || true
         setup_opencode || true
-        setup_mermaid_cli || true
     else
         if [ "$QUICK_SETUP" = true ]; then
             log_info "Running quick setup: config.json and skills deployment only"

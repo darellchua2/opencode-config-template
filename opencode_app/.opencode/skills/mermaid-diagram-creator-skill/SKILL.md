@@ -1,6 +1,6 @@
 ---
 name: mermaid-diagram-creator-skill
-description: Create Mermaid diagrams (.mmd) and convert to PNG images for visual documentation and git commits
+description: Create Mermaid diagrams using the Mermaid MCP server — SVG by default, no CLI install needed
 license: Apache-2.0
 compatibility: opencode
 metadata:
@@ -10,12 +10,12 @@ metadata:
 
 ## What I do
 
-I create professional Mermaid diagrams from natural language descriptions and save them as both source files and rendered images:
+I create professional Mermaid diagrams from natural language descriptions using the Mermaid MCP server. No global CLI install required — `npx` auto-provisions the server.
 
 1. **Parse Diagram Request**: Analyze the user's description to understand diagram type and structure
 2. **Generate Mermaid Syntax**: Create valid Mermaid `.mmd` source code
-3. **Convert to PNG**: Render diagrams to high-quality PNG images (default: 1920x1080)
-4. **Save to PLAN Directories**: Store outputs in `PLANS/PLAN-[issue/ticket-number]/`
+3. **Render via MCP**: Use the `generate` tool from the Mermaid MCP server to produce SVG (default) or PNG
+4. **Save Source Files**: Preserve `.mmd` files for future editing
 5. **Handle Complex Diagrams**: Split large diagrams into multiple files when needed
 
 Supported diagram types:
@@ -39,74 +39,49 @@ Use this workflow when:
 - You need to include diagrams in git commits or PLAN files
 - You're creating planning documents for GitHub issues or JIRA tickets
 - You need to document code logic or system flows visually
-- You want diagrams that can be edited later (source .mmd files preserved)
+- You want diagrams that can be edited later (source `.mmd` files preserved)
 
-## Rendering Options
+## MCP Server
 
-### Option 1: Mermaid CLI (Recommended for local use)
-
-Install via npm for direct command-line usage:
-
-```bash
-npm install -g @mermaid-js/mermaid-cli
-mmdc -i diagram.mmd -o diagram.png
-```
-
-### Option 2: Mermaid MCP Server (Recommended for AI integration)
-
-Use `@peng-shawn/mermaid-mcp-server` for AI-powered diagram generation:
+This skill uses the **Mermaid MCP server** (`@peng-shawn/mermaid-mcp-server`), which is pre-configured in `config.json` / `opencode.json`.
 
 - **npm**: `@peng-shawn/mermaid-mcp-server`
 - **GitHub**: https://github.com/peng-shawn/mermaid-mcp-server
-- **Stars**: 225
 - **License**: MIT
+- **Rendering engine**: Puppeteer (headless Chrome)
+- **Config**: `CONTENT_IMAGE_SUPPORTED=false` — saves files to disk instead of inline images
+
+The MCP server exposes a single tool: **`generate`**
+
+### `generate` Tool Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `code` | string | Yes | — | Mermaid syntax code |
+| `name` | string | No | `"diagram"` | Output filename (without extension) |
+| `folder` | string | No | `"diagrams"` | Output directory path |
+| `outputFormat` | string | No | `"png"` | `"svg"` or `"png"` |
+| `theme` | string | No | `"default"` | `"default"`, `"dark"`, `"forest"`, `"neutral"`, `"null"` |
+| `backgroundColor` | string | No | `"white"` | Background color (e.g., `"white"`, `"transparent"`) |
+
+### Configuration (already in config.json)
 
 ```json
-{
-  "mcpServers": {
-    "mermaid": {
-      "command": "npx",
-      "args": ["-y", "@peng-shawn/mermaid-mcp-server"]
-    }
-  }
+"mermaid": {
+  "type": "local",
+  "command": ["npx", "-y", "@peng-shawn/mermaid-mcp-server"],
+  "environment": {
+    "CONTENT_IMAGE_SUPPORTED": "false"
+  },
+  "enabled": true
 }
 ```
 
-### Option 3: npx Zero-Install (Fallback)
-
-```bash
-npx @mermaid-js/mermaid-cli -i diagram.mmd -o diagram.png
-```
-
-## Prerequisites
-
-- **Mermaid CLI** (`mmdc`) or **npx** for rendering
-- Node.js 18+ for Mermaid CLI
-- Write permissions to output directory
+Tool permission: `"mermaid*": true`
 
 ## Steps
 
-### Step 1: Check for Mermaid CLI Installation
-
-Before proceeding, verify that Mermaid CLI is available:
-
-```bash
-# Check if mmdc is installed
-if command -v mmdc &> /dev/null; then
-    echo "✓ Mermaid CLI is installed"
-    mmdc --version
-else
-    echo "⚠️  Mermaid CLI (mmdc) is not installed."
-    echo ""
-    echo "To install Mermaid CLI, run one of:"
-    echo "  npm install -g @mermaid-js/mermaid-cli"
-    echo ""
-    echo "Or use npx for zero-install (slower):"
-    echo "  npx @mermaid-js/mermaid-cli -i diagram.mmd -o diagram.png"
-fi
-```
-
-### Step 2: Analyze the Diagram Request
+### Step 1: Analyze the Diagram Request
 
 - Parse the user's description
 - Identify the diagram type needed:
@@ -119,6 +94,16 @@ fi
   - **Pie**: Data distribution
   - **Mindmap**: Hierarchical concepts
   - **Gitgraph**: Branch visualization
+  - **Timeline**: Chronological events
+  - **User Journey**: User experience flows
+
+### Step 2: Determine Output Directory
+
+| Source | Directory |
+|--------|-----------|
+| GitHub Issue | `PLANS/PLAN-GIT-[issue-number]/` |
+| JIRA Ticket | `PLANS/PLAN-[ticket-key]/` |
+| General | `diagrams/` |
 
 ### Step 3: Generate Mermaid Syntax
 
@@ -133,27 +118,13 @@ flowchart TD
     D --> E
 ```
 
-### Step 4: Determine Output Directory
+### Step 4: Save Mermaid Source File
 
-Store diagrams in the appropriate PLAN directory:
-
-| Source | Directory |
-|--------|-----------|
-| GitHub Issue | `PLANS/PLAN-[issue-number]/` |
-| JIRA Ticket | `PLANS/PLAN-[ticket-number]/` |
-| General | `diagrams/` |
+Always save the `.mmd` source file for future editing:
 
 ```bash
-# Create directory if it doesn't exist
-mkdir -p PLANS/PLAN-136
-```
-
-### Step 5: Save Mermaid Source File
-
-Save the `.mmd` source file for future editing:
-
-```bash
-cat > PLANS/PLAN-136/architecture.mmd << 'EOF'
+mkdir -p PLANS/PLAN-GIT-136
+cat > PLANS/PLAN-GIT-136/architecture.mmd << 'EOF'
 flowchart TD
     A[Start] --> B{Decision}
     B -->|Yes| C[Action 1]
@@ -163,26 +134,42 @@ flowchart TD
 EOF
 ```
 
-### Step 6: Convert to PNG
+### Step 5: Render via MCP `generate` Tool
 
-Render the Mermaid diagram to PNG:
+Call the `generate` tool with the Mermaid code. Use SVG as the default format:
 
-```bash
-# Using mmdc (if installed)
-mmdc -i PLANS/PLAN-136/architecture.mmd -o PLANS/PLAN-136/architecture.png -w 1920 -H 1080 -b white
-
-# Using npx (fallback)
-npx @mermaid-js/mermaid-cli -i PLANS/PLAN-136/architecture.mmd -o PLANS/PLAN-136/architecture.png -w 1920 -H 1080
+**Example: SVG (default, recommended)**:
+```
+Tool: generate
+Parameters:
+  code: "flowchart TD\n    A[Start] --> B{Decision}\n    B -->|Yes| C[Action 1]\n    B -->|No| D[Action 2]\n    C --> E[End]\n    D --> E"
+  name: "architecture"
+  folder: "PLANS/PLAN-GIT-136"
+  outputFormat: "svg"
+  theme: "default"
+  backgroundColor: "white"
 ```
 
-### Step 7: Verify and Report
+**Example: PNG (when raster images are needed)**:
+```
+Tool: generate
+Parameters:
+  code: "flowchart TD\n    A[Start] --> B[Process]\n    ..."
+  name: "architecture"
+  folder: "PLANS/PLAN-GIT-136"
+  outputFormat: "png"
+  theme: "default"
+  backgroundColor: "white"
+```
 
-- Verify the PNG was created successfully
+### Step 6: Verify and Report
+
+- Verify the output file was created successfully
 - Display the file paths to the user
-- Offer to open or include in documentation
+- Report both the `.mmd` source and rendered file
 
 ```bash
-ls -la PLANS/PLAN-136/
+ls -la PLANS/PLAN-GIT-136/architecture.*
 ```
 
 ## File Storage Convention
@@ -191,13 +178,28 @@ ls -la PLANS/PLAN-136/
 PLANS/
 ├── PLAN-GIT-136/
 │   ├── architecture-flowchart.mmd
-│   ├── architecture-flowchart.png
+│   ├── architecture-flowchart.svg
 │   ├── sequence-diagram.mmd
-│   └── sequence-diagram.png
+│   └── sequence-diagram.svg
 └── PLAN-IBIS-456/
     ├── deployment-flow.mmd
-    └── deployment-flow.png
+    └── deployment-flow.svg
 ```
+
+## SVG vs PNG
+
+| Aspect | SVG | PNG |
+|--------|-----|-----|
+| Resolution | Infinite (vector) | Fixed (raster) |
+| File size | Smaller | Larger |
+| Git diff | Readable text | Binary blob |
+| Pixelation | Never | At high zoom |
+| Browser support | Universal | Universal |
+| Default choice | **Yes** | No |
+
+**Default to SVG**. Use PNG only when:
+- Embedding in contexts that don't support SVG
+- Specific tooling requires raster images
 
 ## Diagram Types Reference
 
@@ -310,41 +312,42 @@ When diagrams exceed rendering limits or become too complex:
 
 **Example Split Strategy**:
 ```
-PLANS/PLAN-136/
+PLANS/PLAN-GIT-136/
 ├── architecture-overview.mmd      # High-level view
-├── architecture-overview.png
+├── architecture-overview.svg
 ├── architecture-auth-flow.mmd     # Auth subsystem
-├── architecture-auth-flow.png
+├── architecture-auth-flow.svg
 ├── architecture-data-flow.mmd     # Data subsystem
-└── architecture-data-flow.png
+└── architecture-data-flow.svg
 ```
 
 ## Common Issues
 
-### Mermaid CLI Not Installed
+### MCP Server Not Starting
 
-**Issue**: `mmdc: command not found`
+**Issue**: `generate` tool not available
 
-**Solution**:
-```bash
-# Install globally
-npm install -g @mermaid-js/mermaid-cli
+**Solution**: The MCP server auto-starts via `npx`. Ensure:
+- Node.js 18+ is installed
+- The `mermaid` entry exists in `config.json` with `"enabled": true`
+- `"mermaid*": true` is in the `tools` section
 
-# Or use npx for zero-install
-npx @mermaid-js/mermaid-cli -i diagram.mmd -o diagram.png
-```
+### Puppeteer/Chrome Issues
 
-### Puppeteer/Chrome Issues (MCP Server)
-
-**Issue**: Browser-related errors with MCP server
+**Issue**: Browser-related errors (Linux headless environments)
 
 **Solution**:
 ```bash
 # Install Chrome dependencies (Linux)
-sudo apt-get install -y libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2
+sudo apt-get install -y chromium-browser
 
-# Or use CLI instead of MCP server
-npm install -g @mermaid-js/mermaid-cli
+# Or set Puppeteer to use system Chrome
+export PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+```
+
+For Docker, add to Dockerfile:
+```dockerfile
+RUN apt-get update && apt-get install -y chromium && rm -rf /var/lib/apt/lists/*
 ```
 
 ### Mermaid Syntax Errors
@@ -357,28 +360,15 @@ npm install -g @mermaid-js/mermaid-cli
 - Ensure proper indentation
 - Verify diagram type declaration
 
-### Image Quality Issues
-
-**Issue**: PNG is blurry or small
-
-**Solution**:
-```bash
-# Increase dimensions
-mmdc -i diagram.mmd -o diagram.png -w 2560 -H 1440
-
-# Use higher scale
-mmdc -i diagram.mmd -o diagram.png -w 1920 -H 1080 --scale 2
-```
-
 ## Best Practices
 
 - **Keep source files**: Always save `.mmd` files for future editing
 - **Use descriptive names**: `auth-flow.mmd` not `diagram1.mmd`
-- **Default to HD**: Use 1920x1080 minimum for PNG output
+- **Default to SVG**: Resolution-independent, smaller, diff-friendly
 - **Theme consistency**: Use consistent theme (default, dark, forest, neutral)
-- **White background**: Use `-b white` for better compatibility
+- **White background**: Use `backgroundColor: "white"` for better compatibility
 - **Organize by PLAN**: Store related diagrams together in PLAN directories
-- **Document context**: Include comments in .mmd files
+- **Document context**: Include comments in `.mmd` files
 
 ## Integration with Planning Workflows
 
@@ -387,49 +377,39 @@ mmdc -i diagram.mmd -o diagram.png -w 1920 -H 1080 --scale 2
 When creating plans for GitHub issues or JIRA tickets, diagrams are stored alongside PLAN files:
 
 **GitHub Issues**:
-```bash
-# After creating issue plan
-mkdir -p PLANS/PLAN-136
-# Create diagram
-mmdc -i PLANS/PLAN-136/flow.mmd -o PLANS/PLAN-136/flow.png
-# Reference in PLAN.md
-echo "![Flow Diagram](./PLAN-136/flow.png)" >> PLANS/PLAN-GIT-136.md
+```
+generate tool:
+  code: <mermaid syntax>
+  name: "flow"
+  folder: "PLANS/PLAN-GIT-136"
+  outputFormat: "svg"
+```
+
+Then reference in PLAN.md:
+```markdown
+![Flow Diagram](./PLAN-GIT-136/flow.svg)
 ```
 
 **JIRA Tickets**:
-```bash
-mkdir -p PLANS/PLAN-PROJ-123
-mmdc -i PLANS/PLAN-PROJ-123/architecture.mmd -o PLANS/PLAN-PROJ-123/architecture.png
 ```
-
-## Verification Commands
-
-```bash
-# Check Mermaid CLI version
-mmdc --version
-
-# List diagrams in PLAN directory
-ls -la PLANS/PLAN-136/*.png
-
-# Validate Mermaid syntax (dry run)
-mmdc -i diagram.mmd -o /dev/null
-
-# View image info
-file PLANS/PLAN-136/architecture.png
-identify PLANS/PLAN-136/architecture.png  # ImageMagick
+generate tool:
+  code: <mermaid syntax>
+  name: "architecture"
+  folder: "PLANS/PLAN-PROJ-123"
+  outputFormat: "svg"
 ```
 
 ## Troubleshooting Checklist
 
 Before creating the diagram:
-- [ ] Mermaid CLI is installed or npx is available
-- [ ] Output directory exists or can be created
+- [ ] Mermaid MCP server is configured and enabled in config.json
+- [ ] `mermaid*` tool permission is set to `true`
+- [ ] Output directory path is determined
 - [ ] Diagram type is appropriate for the content
 - [ ] Mermaid syntax is valid
 
 After creating the diagram:
 - [ ] `.mmd` source file saved
-- [ ] PNG file was created successfully
-- [ ] Image dimensions are appropriate
-- [ ] Files are in correct PLAN directory
+- [ ] Rendered file (.svg or .png) was created successfully
+- [ ] Files are in correct directory
 - [ ] File paths reported to user
