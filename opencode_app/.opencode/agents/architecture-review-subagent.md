@@ -71,7 +71,7 @@ Before starting the review, assess scope:
 
 After completing the review, use the `continuous-learning` skill to persist findings:
 
-**Always save to supermemory:**
+**Always save to memory tool:**
 - Architectural decisions discovered or recommended
 - Anti-patterns found (especially if systemic — same issue in 3+ files)
 - Good patterns worth replicating across the project

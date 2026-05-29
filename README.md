@@ -195,14 +195,14 @@ Skills like `continuous-learning` persist knowledge across sessions using a dual
 
 | Storage | Scope | Purpose |
 |---------|-------|---------|
-| `supermemory` tool | Primary, searchable by relevance | Quick facts, decisions, anti-patterns |
+| `memory` tool | Primary, searchable by relevance | Quick facts, decisions, anti-patterns |
 | `LEARNINGS/` in target projects | Curated, git-committed | Detailed patterns, ADRs, team conventions |
 | `~/.config/opencode/learnings/` | User-level, cross-project | Personal preferences and patterns |
 
 **How it works:**
 - `deploy/setup.sh` / `deploy/setup.ps1` creates `~/.config/opencode/learnings/` with 5 subfolders at user level
 - When `continuous-learning` skill runs in a target project, it auto-provisions a `LEARNINGS/` directory in that project root
-- Review agents (architecture-review, code-review) save findings to both supermemory and markdown files
+- Review agents (architecture-review, code-review) save findings to both memory tool and markdown files
 - Agents discover learnings via AGENTS.md instructions (auto-loaded) + explicit file reads
 
 ## CodeGraph

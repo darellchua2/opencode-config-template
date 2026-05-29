@@ -5,7 +5,7 @@
   "plugin": [
     "@franlol/opencode-md-table-formatter@latest",
     "opencode-dynamic-context-pruning",
-    "opencode-supermemory",
+    "opencode-superlocalmemory",
     "opencode-notificator",
     "opencode-pty",
     "opencode-vibeguard",
