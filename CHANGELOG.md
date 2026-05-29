@@ -1,3 +1,10 @@
+# [1.58.0](https://github.com/darellchua2/opencode-config-template/compare/v1.57.0...v1.58.0) (2026-05-29)
+
+
+### Features
+
+* replace opencode-supermemory with opencode-superlocalmemory (100% local) ([#208](https://github.com/darellchua2/opencode-config-template/issues/208)) ([2be10ab](https://github.com/darellchua2/opencode-config-template/commit/2be10ab7429ae8b259c9c11ddaa28f0d3f959214)), closes [#207](https://github.com/darellchua2/opencode-config-template/issues/207)
+
 # [1.57.0](https://github.com/darellchua2/opencode-config-template/compare/v1.56.0...v1.57.0) (2026-05-24)
 
 
