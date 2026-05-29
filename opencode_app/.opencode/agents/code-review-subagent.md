@@ -139,7 +139,7 @@ Not all code deserves the same review depth:
 
 After completing the review, use the `continuous-learning` skill to persist findings:
 
-**Always save to supermemory:**
+**Always save to memory tool:**
 - Recurring code smells (especially if found in 3+ files — systemic pattern)
 - Good patterns discovered ("This error handling approach is excellent — consider as team convention")
 - Anti-patterns to avoid

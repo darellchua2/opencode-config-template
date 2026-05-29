@@ -17,7 +17,7 @@ I extract and persist actionable knowledge from coding sessions using an instinc
 1. **Pattern Extraction**: Identify recurring code patterns, architectural decisions, and problem-solving approaches
 2. **Instinct Model**: Store learnings as atomic "instincts" with confidence scores (0.3-0.9) that evolve over time
 3. **Project Scoping**: Isolate project-specific knowledge from universal patterns to prevent cross-project contamination
-4. **Dual Storage**: Save to both `supermemory` (searchable, primary) and markdown files (curated, reviewable)
+4. **Dual Storage**: Save to both `memory` tool (searchable, primary) and markdown files (curated, reviewable)
 5. **Instinct Evolution**: Cluster related instincts into skills, commands, or agent improvements
 6. **Cross-Session Learning**: Build a knowledge base that improves agent performance over time
 
@@ -96,17 +96,17 @@ project_id: "my-react-app"
 
 Knowledge is stored in TWO places with different strengths:
 
-### Primary: `supermemory` (searchable, always available)
+### Primary: `memory` tool (searchable, always available)
 
 | Property | Detail |
 |----------|--------|
-| Tool | `supermemory` (mode: `add`) |
-| Access | `supermemory` (mode: `search`) |
+| Tool | `memory` (mode: `add`) |
+| Access | `memory` (mode: `search`) |
 | Scope | `project` for project-specific, `user` for cross-project |
 | Best for | Quick facts, decisions, anti-patterns, solutions, instincts |
 | Strength | Relevance-based search, no file I/O needed |
 
-**When to use supermemory ONLY (no markdown file):**
+**When to use memory tool ONLY (no markdown file):**
 - Quick capture during active development
 - Simple decisions ("Chose Zod for validation")
 - Anti-patterns ("Avoid mutable default args in Python")
@@ -123,7 +123,7 @@ Knowledge is stored in TWO places with different strengths:
 | Best for | Detailed patterns, formal ADRs, team conventions, evolved instincts |
 | Strength | Human-readable, git-history, PR-reviewable |
 
-**When to use markdown files (also write to supermemory):**
+**When to use markdown files (also write to memory tool):**
 - Complex architectural decisions with trade-offs
 - Detailed pattern descriptions with code examples
 - Team conventions that need documentation
@@ -185,7 +185,7 @@ User-level (created by setup.sh/setup.ps1, personal, cross-project):
   └── conventions/
 
 Searchable memory (primary, always available):
-  supermemory tool — mode: add/search, scope: project/user
+  memory tool — mode: add/search, scope: project/user
 ```
 
 ### Auto-Provisioning
@@ -225,7 +225,7 @@ The `LEARNINGS/` directory does NOT need to exist before this skill runs. When w
 
 **Important**: OpenCode does NOT auto-scan `LEARNINGS/` directories. Agents discover learnings through:
 1. AGENTS.md instructions (auto-loaded at session start) — tells agents where to look
-2. `supermemory` search — primary retrieval mechanism
+2. `memory` tool search — primary retrieval mechanism
 3. Explicit `glob`/`read` tool calls — for detailed markdown review
 
 ## Core Workflow
@@ -272,21 +272,21 @@ Classify extracted knowledge into categories:
 
 | Category | Folder | Examples | Default Storage |
 |----------|--------|----------|----------------|
-| **Pattern** | `patterns/` | "Repository pattern for data access", "Error boundary in React" | supermemory + markdown |
-| **Decision** | `decisions/` | "Chose SQLite over PostgreSQL for local-first" | supermemory + markdown |
-| **Solution** | `solutions/` | "Fix race condition with mutex" | supermemory only |
-| **Convention** | `conventions/` | "Use kebab-case for file names" | supermemory + markdown |
-| **Anti-pattern** | `anti-patterns/` | "Avoid mutable global state in tests" | supermemory only |
+| **Pattern** | `patterns/` | "Repository pattern for data access", "Error boundary in React" | memory + markdown |
+| **Decision** | `decisions/` | "Chose SQLite over PostgreSQL for local-first" | memory + markdown |
+| **Solution** | `solutions/` | "Fix race condition with mutex" | memory only |
+| **Convention** | `conventions/` | "Use kebab-case for file names" | memory + markdown |
+| **Anti-pattern** | `anti-patterns/` | "Avoid mutable global state in tests" | memory only |
 
-### Step 4: Write to Supermemory (ALWAYS)
+### Step 4: Write to Memory Tool (ALWAYS)
 
-Every learning goes to supermemory first:
+Every learning goes to memory tool first:
 
 ```
-supermemory(mode: "add", content: "<structured instinct>", scope: "project"|"user", type: "learned-pattern"|"decision"|"preference")
+memory(mode: "add", content: "<structured instinct>", scope: "project"|"user", type: "learned-pattern"|"decision"|"preference")
 ```
 
-Format for supermemory content:
+Format for memory content:
 ```
 [Category]: [Title]
 Scope: [project|global]
@@ -385,11 +385,11 @@ When invoked by review agents (architecture-review, code-review), follow this be
 3. **Record anti-patterns**: If the review finds code that should be avoided, save it
 4. **Note good patterns**: If the review finds exemplary code, flag it for replication
 5. **Track confidence**: Each observation increases confidence; corrections decrease it
-6. **Write to both stores**: supermemory (always) + markdown (if warranted by complexity)
+6. **Write to both stores**: memory tool (always) + markdown (if warranted by complexity)
 
 ## Learning Formats
 
-### Short-Form Instinct (Quick Capture — supermemory only)
+### Short-Form Instinct (Quick Capture — memory tool only)
 
 ```
 Decision: Use path aliases for imports
@@ -401,7 +401,7 @@ Why: Avoids ../../../ relative paths, cleaner imports
 Evidence: Applied successfully in current project
 ```
 
-### Long-Form (Detailed Analysis — supermemory + markdown file)
+### Long-Form (Detailed Analysis — memory tool + markdown file)
 
 ```markdown
 ## Pattern: Event-Driven Module Communication
@@ -438,14 +438,14 @@ Use an event bus for cross-module communication:
 
 When an agent needs to recall past learnings:
 
-1. **First**: Search supermemory by relevance
+1. **First**: Search memory by relevance
    ```
-   supermemory(mode: "search", query: "authentication pattern", scope: "project")
+   memory(mode: "search", query: "authentication pattern", scope: "project")
    ```
 
 2. **Filter by confidence**: Apply instincts with confidence >= 0.7 automatically; suggest those with 0.3-0.6
 
-3. **For details**: Read the markdown file referenced in the supermemory result
+3. **For details**: Read the markdown file referenced in the memory result
    ```
    read(filePath: "LEARNINGS/patterns/event-driven-modules.md")
    ```
@@ -515,7 +515,7 @@ When an agent needs to recall past learnings:
 The skill will:
 1. Review the session's auth-related changes
 2. Extract atomic instincts (e.g., "use middleware for auth checks" at 0.7)
-3. Save to supermemory with project scope
+3. Save to memory with project scope
 4. Save markdown file if the decision is complex
 5. Update index if markdown file was created
 
@@ -528,7 +528,7 @@ The skill will:
 The skill will:
 1. Review the findings from the code review
 2. Extract instincts with confidence based on occurrence count
-3. Save anti-patterns to supermemory + markdown
+3. Save anti-patterns to memory + markdown
 4. Save good patterns for replication
 5. Suggest evolution if 3+ instincts cluster in same domain
 

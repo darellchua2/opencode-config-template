@@ -24,6 +24,6 @@
 **Storage paths:**
 - Project-level: `LEARNINGS/` (this directory, git-committed)
 - User-level: `~/.config/opencode/learnings/` (personal, cross-project)
-- Searchable memory: `supermemory` tool (primary for quick retrieval)
+- Searchable memory: `memory` tool (primary for quick retrieval)
 
 **Naming convention:** Use descriptive slugs (e.g., `event-driven-modules.md`), not dated or numbered prefixes. The category is determined by the subfolder.

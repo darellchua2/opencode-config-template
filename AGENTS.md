@@ -78,7 +78,7 @@ This repository includes a `LEARNINGS/` template directory. When skills (like `c
 
 | Storage | Scope | Access Pattern |
 |---------|-------|----------------|
-| `supermemory` tool | Primary, searchable by relevance | On-demand via `supermemory(mode: "search")` |
+| `memory` tool | Primary, searchable by relevance | On-demand via `memory(mode: "search")` |
 | `LEARNINGS/*.md` | Secondary, curated, git-committed | Explicit `glob`/`read` tool calls |
 | `~/.config/opencode/learnings/` | User-level, cross-project | Explicit `glob`/`read` tool calls |
 
