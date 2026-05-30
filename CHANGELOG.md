@@ -1,3 +1,10 @@
+# [1.59.0](https://github.com/darellchua2/opencode-config-template/compare/v1.58.0...v1.59.0) (2026-05-30)
+
+
+### Features
+
+* update explore agent model to glm-5-turbo ([57d6009](https://github.com/darellchua2/opencode-config-template/commit/57d60096ec6ede77d176571f02b216c975cacd0e))
+
 # [1.58.0](https://github.com/darellchua2/opencode-config-template/compare/v1.57.0...v1.58.0) (2026-05-29)
 
 
