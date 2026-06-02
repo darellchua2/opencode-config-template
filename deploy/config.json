@@ -9,7 +9,11 @@
     "opencode-notificator",
     "opencode-pty",
     "opencode-vibeguard",
-    "opencode-gemini-auth@latest"
+    "opencode-gemini-auth@latest",
+    "opencode-goal-plugin",
+    "opencode-shell-strategy",
+    "@nick-vi/opencode-type-inject",
+    "@bastiangx/opencode-unmoji"
   ],
   "instructions": ["AGENTS.md"],
   "provider": {
