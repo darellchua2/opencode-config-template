@@ -9,8 +9,18 @@
     "opencode-notificator",
     "opencode-pty",
     "opencode-vibeguard",
-    "opencode-gemini-auth@latest"
+    "opencode-gemini-auth@latest",
+    "opencode-goal-plugin",
+    "@nick-vi/opencode-type-inject",
+    "@bastiangx/opencode-unmoji"
   ],
+  "command": {
+    "goal": {
+      "description": "Set a session-scoped goal and auto-continue until complete.",
+      "template": "$ARGUMENTS",
+      "agent": "build"
+    }
+  },
   "instructions": ["AGENTS.md"],
   "provider": {
     "lmstudio": {
