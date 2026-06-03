@@ -1,3 +1,10 @@
+# [1.61.0](https://github.com/darellchua2/opencode-config-template/compare/v1.60.0...v1.61.0) (2026-06-03)
+
+
+### Features
+
+* add opencode-goal-plugin, shell-strategy, type-inject, and unmoji plugins ([#210](https://github.com/darellchua2/opencode-config-template/issues/210)) ([feaf8a9](https://github.com/darellchua2/opencode-config-template/commit/feaf8a90a9b22c186f16443e662b620975d3603c)), closes [#209](https://github.com/darellchua2/opencode-config-template/issues/209)
+
 # [1.60.0](https://github.com/darellchua2/opencode-config-template/compare/v1.59.0...v1.60.0) (2026-05-30)
 
 
