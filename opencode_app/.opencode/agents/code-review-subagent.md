@@ -18,17 +18,17 @@ permission:
     go-reviewer-subagent: allow
     rust-reviewer-subagent: allow
   skill:
-    solid-principles: allow
-    clean-code: allow
-    code-smells: allow
-    design-patterns: allow
-    object-design: allow
-    complexity-management: allow
-    react-nextjs-antipatterns: allow
-    security-audit: allow
-    typescript-dry-principle: allow
-    continuous-learning: allow
-    context-budget: allow
+    solid-principles-skill: allow
+    clean-code-skill: allow
+    code-smells-skill: allow
+    design-patterns-skill: allow
+    object-design-skill: allow
+    complexity-management-skill: allow
+    react-nextjs-antipatterns-skill: allow
+    security-audit-skill: allow
+    typescript-dry-principle-skill: allow
+    continuous-learning-skill: allow
+    context-budget-skill: allow
 ---
 
 ## Prompt Defense Baseline

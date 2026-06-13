@@ -13,10 +13,10 @@ permission:
     explore: allow
     loop-operator-subagent: allow
   skill:
-    linting-workflow: allow
-    python-ruff-linter: allow
-    javascript-eslint-linter: allow
-    continuous-learning: allow
+    linting-workflow-skill: allow
+    python-ruff-linter-skill: allow
+    javascript-eslint-linter-skill: allow
+    continuous-learning-skill: allow
 ---
 
 ## Prompt Defense Baseline

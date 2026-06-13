@@ -14,13 +14,13 @@ permission:
     explore: allow
     general: allow
   skill:
-    solid-principles: allow
-    clean-code: allow
-    code-smells: allow
-    design-patterns: allow
-    python-backend: allow
-    continuous-learning: allow
-    search-first: allow
+    solid-principles-skill: allow
+    clean-code-skill: allow
+    code-smells-skill: allow
+    design-patterns-skill: allow
+    python-backend-skill: allow
+    continuous-learning-skill: allow
+    search-first-skill: allow
 ---
 
 You are a Python code review specialist. Perform thorough quality analysis with Python-specific expertise.

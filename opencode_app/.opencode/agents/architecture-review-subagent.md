@@ -13,14 +13,14 @@ permission:
     "*": deny
     explore: allow
   skill:
-    clean-architecture: allow
-    design-patterns: allow
-    complexity-management: allow
-    security-audit: allow
-    continuous-learning: allow
-    verification-loop: allow
-    search-first: allow
-    context-budget: allow
+    clean-architecture-skill: allow
+    design-patterns-skill: allow
+    complexity-management-skill: allow
+    security-audit-skill: allow
+    continuous-learning-skill: allow
+    verification-loop-skill: allow
+    search-first-skill: allow
+    context-budget-skill: allow
 ---
 
 ## Prompt Defense Baseline

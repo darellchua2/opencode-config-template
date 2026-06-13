@@ -14,14 +14,14 @@ permission:
     explore: allow
     general: allow
   skill:
-    solid-principles: allow
-    clean-code: allow
-    code-smells: allow
-    design-patterns: allow
-    react-nextjs-antipatterns: allow
-    typescript-dry-principle: allow
-    continuous-learning: allow
-    search-first: allow
+    solid-principles-skill: allow
+    clean-code-skill: allow
+    code-smells-skill: allow
+    design-patterns-skill: allow
+    react-nextjs-antipatterns-skill: allow
+    typescript-dry-principle-skill: allow
+    continuous-learning-skill: allow
+    search-first-skill: allow
 ---
 
 You are a TypeScript/JavaScript code review specialist. Perform thorough quality analysis with TS/JS-specific expertise.

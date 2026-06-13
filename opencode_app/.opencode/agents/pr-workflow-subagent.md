@@ -13,13 +13,13 @@ permission:
     explore: allow
     general: allow
   skill:
-    semantic-release-convention: allow
-    pr-creation-workflow: allow
-    nextjs-pr-workflow: allow
-    jira-status-updater: allow
-    jira-ticket-labeler: allow
-    plan-updater: allow
-    changelog-python-cliff: allow
+    semantic-release-convention-skill: allow
+    pr-creation-workflow-skill: allow
+    nextjs-pr-workflow-skill: allow
+    jira-status-updater-skill: allow
+    jira-ticket-labeler-skill: allow
+    plan-updater-skill: allow
+    changelog-python-cliff-skill: allow
     search-first-skill: allow
 ---
 

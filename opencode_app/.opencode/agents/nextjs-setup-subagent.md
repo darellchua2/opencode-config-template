@@ -9,10 +9,10 @@ permission:
   grep: allow
   bash: deny
   skill:
-    nextjs-standard-setup: allow
-    docstring-generator: allow
-    nextjs-image-usage: allow
-    react-nextjs-antipatterns: allow
+    nextjs-standard-setup-skill: allow
+    docstring-generator-skill: allow
+    nextjs-image-usage-skill: allow
+    react-nextjs-antipatterns-skill: allow
 ---
 
 ## Prompt Defense Baseline

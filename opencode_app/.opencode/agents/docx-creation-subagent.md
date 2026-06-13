@@ -9,7 +9,7 @@ permission:
   grep: allow
   bash: deny
   skill:
-    docx-creation: allow
+    docx-creation-skill: allow
 ---
 
 ## Prompt Defense Baseline

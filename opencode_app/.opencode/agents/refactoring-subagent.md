@@ -13,14 +13,14 @@ permission:
     explore: allow
     general: allow
   skill:
-    typescript-dry-principle: allow
-    solid-principles: allow
-    design-patterns: allow
-    code-smells: allow
-    clean-code: allow
-    plan-updater: allow
-    search-first: allow
-    continuous-learning: allow
+    typescript-dry-principle-skill: allow
+    solid-principles-skill: allow
+    design-patterns-skill: allow
+    code-smells-skill: allow
+    clean-code-skill: allow
+    plan-updater-skill: allow
+    search-first-skill: allow
+    continuous-learning-skill: allow
 ---
 
 ## Prompt Defense Baseline

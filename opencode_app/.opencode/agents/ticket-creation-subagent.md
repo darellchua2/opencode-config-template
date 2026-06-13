@@ -14,13 +14,13 @@ permission:
     architecture-review-subagent: allow
     explore: allow
   skill:
-    semantic-release-convention: allow
+    semantic-release-convention-skill: allow
     ticket-plan-workflow-skill: allow
-    git-issue-updater: allow
-    git-issue-labeler: allow
-    jira-ticket-labeler: allow
-    git-semantic-commits: allow
-    plan-updater: allow
+    git-issue-updater-skill: allow
+    git-issue-labeler-skill: allow
+    jira-ticket-labeler-skill: allow
+    git-semantic-commits-skill: allow
+    plan-updater-skill: allow
 ---
 
 ## Prompt Defense Baseline

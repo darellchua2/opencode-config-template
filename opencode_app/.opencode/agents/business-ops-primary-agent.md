@@ -6,9 +6,9 @@ temperature: 0.7
 steps: 40
 permission:
   skill:
-    docx-creation: allow
-    construction-bd: allow
-    jira-ticket-labeler: allow
+    docx-creation-skill: allow
+    construction-bd-skill: allow
+    jira-ticket-labeler-skill: allow
   read: allow
   edit: ask
   bash: ask

@@ -14,10 +14,10 @@ permission:
     explore: allow
     general: allow
   skill:
-    opencode-agent-creation: allow
-    opencode-skill-creation: allow
-    opencode-skills-maintainer: allow
-    documentation-sync-workflow: allow
+    opencode-agent-creation-skill: allow
+    opencode-skill-creation-skill: allow
+    opencode-skills-maintainer-skill: allow
+    documentation-sync-workflow-skill: allow
 ---
 
 ## Prompt Defense Baseline

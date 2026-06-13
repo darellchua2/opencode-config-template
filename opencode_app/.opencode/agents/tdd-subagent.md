@@ -9,8 +9,8 @@ permission:
   grep: allow
   bash: deny
   skill:
-    tdd-workflow: allow
-    plan-updater: allow
+    tdd-workflow-skill: allow
+    plan-updater-skill: allow
 ---
 
 ## Prompt Defense Baseline

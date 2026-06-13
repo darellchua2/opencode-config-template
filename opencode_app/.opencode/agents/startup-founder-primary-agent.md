@@ -11,8 +11,8 @@ permission:
   webfetch: allow
   task: allow
   skill:
-    docx-creation: allow
-    startup-business-docs: allow
+    docx-creation-skill: allow
+    startup-business-docs-skill: allow
 ---
 
 ## Prompt Defense Baseline

@@ -9,8 +9,8 @@ permission:
   grep: allow
   bash: deny
   skill:
-    docstring-generator: allow
-    coverage-readme-workflow: allow
+    docstring-generator-skill: allow
+    coverage-readme-workflow-skill: allow
 ---
 
 ## Prompt Defense Baseline

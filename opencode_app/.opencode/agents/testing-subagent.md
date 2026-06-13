@@ -13,12 +13,12 @@ permission:
     explore: allow
     loop-operator-subagent: allow
   skill:
-    test-generator-framework: allow
-    tdd-workflow: allow
-    python-pytest-creator: allow
-    nextjs-unit-test-creator: allow
-    plan-updater: allow
-    continuous-learning: allow
+    test-generator-framework-skill: allow
+    tdd-workflow-skill: allow
+    python-pytest-creator-skill: allow
+    nextjs-unit-test-creator-skill: allow
+    plan-updater-skill: allow
+    continuous-learning-skill: allow
     search-first-skill: allow
 ---
 

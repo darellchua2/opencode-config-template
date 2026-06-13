@@ -14,10 +14,10 @@ permission:
     explore: allow
     general: allow
   skill:
-    solid-principles: allow
-    clean-code: allow
-    code-smells: allow
-    continuous-learning: allow
+    solid-principles-skill: allow
+    clean-code-skill: allow
+    code-smells-skill: allow
+    continuous-learning-skill: allow
     search-first-skill: allow
 ---
 

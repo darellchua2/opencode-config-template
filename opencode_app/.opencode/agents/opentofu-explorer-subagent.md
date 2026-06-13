@@ -9,13 +9,13 @@ permission:
   grep: allow
   bash: deny
   skill:
-    opentofu-kubernetes-explorer: allow
-    opentofu-neon-explorer: allow
-    opentofu-aws-explorer: allow
-    opentofu-keycloak-explorer: allow
-    opentofu-provisioning-workflow: allow
-    opentofu-provider-setup: allow
-    opentofu-ecr-provision: allow
+    opentofu-kubernetes-explorer-skill: allow
+    opentofu-neon-explorer-skill: allow
+    opentofu-aws-explorer-skill: allow
+    opentofu-keycloak-explorer-skill: allow
+    opentofu-provisioning-workflow-skill: allow
+    opentofu-provider-setup-skill: allow
+    opentofu-ecr-provision-skill: allow
 ---
 
 ## Prompt Defense Baseline

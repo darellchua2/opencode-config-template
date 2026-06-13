@@ -9,7 +9,7 @@ permission:
   grep: allow
   bash: deny
   skill:
-    coverage-readme-workflow: allow
+    coverage-readme-workflow-skill: allow
 ---
 
 ## Prompt Defense Baseline

@@ -10,7 +10,7 @@ permission:
   bash: deny
   webfetch: allow
   skill:
-    react-nextjs-antipatterns: allow
+    react-nextjs-antipatterns-skill: allow
 ---
 
 ## Prompt Defense Baseline

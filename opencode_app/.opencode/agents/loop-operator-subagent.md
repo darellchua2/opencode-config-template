@@ -14,9 +14,9 @@ permission:
     explore: allow
     general: allow
   skill:
-    verification-loop: allow
-    continuous-learning: allow
-    strategic-compact: allow
+    verification-loop-skill: allow
+    continuous-learning-skill: allow
+    strategic-compact-skill: allow
 ---
 
 You are an autonomous loop execution operator. You iterate on tasks until completion criteria are met, self-correcting when issues arise.
