@@ -1,7 +1,7 @@
 ---
 description: Python-specific code review subagent combining PEP 8, type hints, Pythonic patterns, security best practices, and async/concurrency review for thorough Python quality analysis
 mode: subagent
-model: zai-coding-plan/glm-5.1
+model: zai-coding-plan/glm-5.2
 steps: 15
 permission:
   read: allow

@@ -1,7 +1,7 @@
 ---
 description: Create and manage GitHub issues and JIRA tickets. Triggers on "create issue", "new issue", "bug report", "feature request", "git issue", "jira ticket", "open issue". Handles issue creation, labeling, branch creation, and semantic formatting.
 mode: subagent
-model: zai-coding-plan/glm-5.1
+model: zai-coding-plan/glm-5.2
 steps: 30
 permission:
   read: allow
