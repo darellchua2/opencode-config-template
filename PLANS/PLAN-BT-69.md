@@ -54,59 +54,59 @@ Distill 48 generic learnings from 9 repos into skills — 1 new (`react-nextjs-a
 
 ## Phase 1: Create NEW `react-nextjs-antipatterns-skill` (19 learnings)
 
-- [ ] **1.1** Create `opencode_app/.opencode/skills/react-nextjs-antipatterns-skill/SKILL.md` with frontmatter
-- [ ] **1.2** Section A: Critical Anti-Patterns — `revalidatepath-try-catch`, `fail-open-rbac`, `derived-state-props`, `ref-guard-early-return`, `route-removal-runtime-nav`
-- [ ] **1.3** Section B: Memory & Performance — `module-scope-map-cache`, `loading-state-usecallback-deps`, `inline-computed-usememo-dep`, `reset-refs-on-effect-restart`
-- [ ] **1.4** Section C: React-Specific — `fragment-key-in-map`, `unsafe-json-parse-handler`, `inconsistent-visibility-toggle`, `duplicated-status-mappings`, `duplicate-type-definitions`
-- [ ] **1.5** Section D: Next.js-Specific — `ssr-false-hydration-mismatch`, `chunked-cookie-secure-prefix-mismatch`
-- [ ] **1.6** Section E: Recommended Patterns — `hook-decomposition`, `folder-tabs-theme-driven`
-- [ ] **1.7** Section F: Testing — `browserName-playwright-routing`
-- [ ] **1.8** Add `Related Skills` cross-links + before/after code examples
+- [x] **1.1** Create `opencode_app/.opencode/skills/react-nextjs-antipatterns-skill/SKILL.md` with frontmatter
+- [x] **1.2** Section A: Critical Anti-Patterns — `revalidatepath-try-catch`, `fail-open-rbac`, `derived-state-props`, `ref-guard-early-return`, `route-removal-runtime-nav`
+- [x] **1.3** Section B: Memory & Performance — `module-scope-map-cache`, `loading-state-usecallback-deps`, `inline-computed-usememo-dep`, `reset-refs-on-effect-restart`
+- [x] **1.4** Section C: React-Specific — `fragment-key-in-map`, `unsafe-json-parse-handler`, `inconsistent-visibility-toggle`, `duplicated-status-mappings`, `duplicate-type-definitions`
+- [x] **1.5** Section D: Next.js-Specific — `ssr-false-hydration-mismatch`, `chunked-cookie-secure-prefix-mismatch`
+- [x] **1.6** Section E: Recommended Patterns — `hook-decomposition`, `folder-tabs-theme-driven`
+- [x] **1.7** Section F: Testing — `browserName-playwright-routing`
+- [x] **1.8** Add `Related Skills` cross-links + before/after code examples
 
 ## Phase 2: Augment Python/Backend Skills (11 learnings)
 
-- [ ] **2.1** `python-backend-skill` — SQLAlchemy sessions (`detached-orm`, `pydantic-jsonb`, `instance-check`), async SSE (`asyncio-queue-sse`, `sse-backpressure`), async API (`blocking-poll`, `enum-strategy`)
-- [ ] **2.2** `database-migration-skill` — JSONB+asyncpg `bulk_insert` gotcha
-- [ ] **2.3** `python-pytest-creator-skill` — MagicMock truthy headers, session boundary integration test
+- [x] **2.1** `python-backend-skill` — SQLAlchemy sessions (`detached-orm`, `pydantic-jsonb`, `instance-check`), async SSE (`asyncio-queue-sse`, `sse-backpressure`), async API (`blocking-poll`, `enum-strategy`)
+- [x] **2.2** `database-migration-skill` — JSONB+asyncpg `bulk_insert` gotcha
+- [x] **2.3** `python-pytest-creator-skill` — MagicMock truthy headers, session boundary integration test
 
 ## Phase 3: Augment Security & Auth Skills (6 learnings)
 
-- [ ] **3.1** `security-audit-skill` — fail-open RBAC detection, debug panel leak, Lambda public without auth
-- [ ] **3.2** `authentication-authorization-skill` — cookie/session timing, two-layer Keycloak authz, cookie prefix consistency
+- [x] **3.1** `security-audit-skill` — fail-open RBAC detection, debug panel leak, Lambda public without auth
+- [x] **3.2** `authentication-authorization-skill` — cookie/session timing, two-layer Keycloak authz, cookie prefix consistency
 
 ## Phase 4: Augment Code Quality Skills (11 learnings)
 
-- [ ] **4.1** `design-patterns-skill` — Strategy+Enum, Facade Client, Mixin composition
-- [ ] **4.2** `code-smells-skill` — inline header parsing, duplicated LLM parsing, duplicate service account check, scattered z-index magic numbers
-- [ ] **4.3** `clean-code-skill` — single level of abstraction, fail loudly not silently
-- [ ] **4.4** `object-design-skill` — replace primitive with Enum, Enum as Value Object
-- [ ] **4.5** `typescript-dry-principle-skill` — canonical type import, shared status mapping utility
+- [x] **4.1** `design-patterns-skill` — Strategy+Enum, Facade Client, Mixin composition
+- [x] **4.2** `code-smells-skill` — inline header parsing, duplicated LLM parsing, duplicate service account check, scattered z-index magic numbers
+- [x] **4.3** `clean-code-skill` — single level of abstraction, fail loudly not silently
+- [x] **4.4** `object-design-skill` — replace primitive with Enum, Enum as Value Object
+- [x] **4.5** `typescript-dry-principle-skill` — canonical type import, shared status mapping utility
 
 ## Phase 5: Augment Frontend/Perf/API Skills (6 learnings)
 
-- [ ] **5.1** `performance-optimization-skill` — N+1 enrichment queries, module-scope cache leak
-- [ ] **5.2** `api-design-skill` — multi-source schema consistency, async polling API pattern
-- [ ] **5.3** `accessibility-a11y-skill` — dynamic error banners ARIA
-- [ ] **5.4** `logging-observability-skill` — silent async failure detection
+- [x] **5.1** `performance-optimization-skill` — N+1 enrichment queries, module-scope cache leak
+- [x] **5.2** `api-design-skill` — multi-source schema consistency, async polling API pattern
+- [x] **5.3** `accessibility-a11y-skill` — dynamic error banners ARIA
+- [x] **5.4** `logging-observability-skill` — silent async failure detection
 
 ## Phase 6: Augment OpenTofu/Infra Skills (6 learnings)
 
-- [ ] **6.1** `opentofu-provider-setup-skill` — local state warning (migrate to S3+DynamoDB)
-- [ ] **6.2** `opentofu-aws-explorer-skill` — Lambda function URL with CNAME
-- [ ] **6.3** `opentofu-ecr-provision-skill` — ECR lowercase naming
-- [ ] **6.4** `opentofu-provisioning-workflow-skill` — GHA artifact name mismatch, no-rollback-on-deploy
+- [x] **6.1** `opentofu-provider-setup-skill` — local state warning (migrate to S3+DynamoDB)
+- [x] **6.2** `opentofu-aws-explorer-skill` — Lambda function URL with CNAME
+- [x] **6.3** `opentofu-ecr-provision-skill` — ECR lowercase naming
+- [x] **6.4** `opentofu-provisioning-workflow-skill` — GHA artifact name mismatch, no-rollback-on-deploy
 
 ## Phase 7: Documentation Sync
 
-- [ ] **7.1** `deploy/setup.sh` + `deploy/setup.ps1` — increment skill count (77→78), add `react-nextjs-antipatterns-skill` to category listing
-- [ ] **7.2** `README.md` — update skill count, add to Skill Categories table
-- [ ] **7.3** `AGENTS.md` — add skill routing row
-- [ ] **7.4** Verify bidirectional cross-links for all 10 cross-skill references
-- [ ] **7.5** Run `documentation-consistency-skill` audit
+- [x] **7.1** `deploy/setup.sh` + `deploy/setup.ps1` — increment skill count (77→78), add `react-nextjs-antipatterns-skill` to category listing
+- [x] **7.2** `README.md` — update skill count, add to Skill Categories table
+- [x] **7.3** `AGENTS.md` — add skill routing row
+- [x] **7.4** Verify bidirectional cross-links for all 10 cross-skill references
+- [x] **7.5** Run `documentation-consistency-skill` audit
 
 ## Phase 8: Testing & PR
 
-- [ ] **8.1** Verify no existing skill content regressed
-- [ ] **8.2** Spot-check 3-5 augmented skills for correct formatting
-- [ ] **8.3** Verify setup scripts list 78 skills
-- [ ] **8.4** Commit, push, create PR targeting `main`
+- [x] **8.1** Verify no existing skill content regressed
+- [x] **8.2** Spot-check 3-5 augmented skills for correct formatting
+- [x] **8.3** Verify setup scripts list 78 skills
+- [x] **8.4** Commit, push, create PR targeting `main`
