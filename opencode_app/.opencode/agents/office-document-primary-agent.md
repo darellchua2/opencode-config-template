@@ -12,9 +12,9 @@ permission:
     xlsx-specialist-subagent: allow
     microsoft-m365-specialist-subagent: allow
   skill:
-    pptx-specialist-skill: allow
-    docx-creation-skill: allow
-    xlsx-specialist-skill: allow
+    pptx-specialist: allow
+    docx-creation: allow
+    xlsx-specialist: allow
 ---
 
 ## Prompt Defense Baseline

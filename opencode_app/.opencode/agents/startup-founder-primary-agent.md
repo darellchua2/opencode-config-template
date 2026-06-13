@@ -12,7 +12,7 @@ permission:
   task: allow
   skill:
     docx-creation: allow
-    startup-business-docs-skill: allow
+    startup-business-docs: allow
 ---
 
 ## Prompt Defense Baseline

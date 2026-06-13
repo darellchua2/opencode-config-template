@@ -18,10 +18,10 @@ permission:
     clean-code: allow
     code-smells: allow
     design-patterns: allow
-    react-nextjs-antipatterns-skill: allow
+    react-nextjs-antipatterns: allow
     typescript-dry-principle: allow
     continuous-learning: allow
-    search-first-skill: allow
+    search-first: allow
 ---
 
 You are a TypeScript/JavaScript code review specialist. Perform thorough quality analysis with TS/JS-specific expertise.
@@ -96,7 +96,7 @@ You are a TypeScript/JavaScript code review specialist. Perform thorough quality
 | **Node.js** | Stream handling, proper error events, graceful shutdown, no synchronous I/O |
 | **Express/Fastify** | Middleware ordering, error handling middleware, request validation |
 
-**React/Next.js Anti-Patterns**: Use `react-nextjs-antipatterns-skill` to detect runtime issues — swallowed redirects, fail-open RBAC, stale derived state, hydration mismatches, module-scope memory leaks.
+**React/Next.js Anti-Patterns**: Use `react-nextjs-antipatterns` to detect runtime issues — swallowed redirects, fail-open RBAC, stale derived state, hydration mismatches, module-scope memory leaks.
 
 **TypeScript DRY**: Use `typescript-dry-principle` to detect duplicate type definitions and duplicated status mappings that drift across components.
 

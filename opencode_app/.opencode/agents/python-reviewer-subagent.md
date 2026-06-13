@@ -18,9 +18,9 @@ permission:
     clean-code: allow
     code-smells: allow
     design-patterns: allow
-    python-backend-skill: allow
+    python-backend: allow
     continuous-learning: allow
-    search-first-skill: allow
+    search-first: allow
 ---
 
 You are a Python code review specialist. Perform thorough quality analysis with Python-specific expertise.
@@ -91,7 +91,7 @@ You are a Python code review specialist. Perform thorough quality analysis with 
 | **Flask** | Blueprint organization, proper app factory, request context |
 | **SQLAlchemy** | Session management, relationship loading, migration compatibility |
 
-**Backend Patterns**: Use `python-backend-skill` to check for SQLAlchemy detached-instance bugs, Pydantic-on-JSONB pitfalls, async SSE durability issues, and enum strategy resolution patterns.
+**Backend Patterns**: Use `python-backend` to check for SQLAlchemy detached-instance bugs, Pydantic-on-JSONB pitfalls, async SSE durability issues, and enum strategy resolution patterns.
 
 ## Severity Scoring
 

@@ -7,7 +7,7 @@ steps: 40
 permission:
   skill:
     docx-creation: allow
-    construction-bd-skill: allow
+    construction-bd: allow
     jira-ticket-labeler: allow
   read: allow
   edit: ask

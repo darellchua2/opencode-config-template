@@ -10,9 +10,9 @@ permission:
   bash: deny
   skill:
     error-resolver-workflow: allow
-    react-nextjs-antipatterns-skill: allow
+    react-nextjs-antipatterns: allow
     continuous-learning: allow
-    agent-introspection-debugging-skill: allow
+    agent-introspection-debugging: allow
 ---
 
 ## Prompt Defense Baseline

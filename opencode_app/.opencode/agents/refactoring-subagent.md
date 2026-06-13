@@ -19,7 +19,7 @@ permission:
     code-smells: allow
     clean-code: allow
     plan-updater: allow
-    search-first-skill: allow
+    search-first: allow
     continuous-learning: allow
 ---
 
