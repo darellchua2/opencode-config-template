@@ -96,6 +96,137 @@ Excessive coupling between classes.
 | **Inappropriate Intimacy** | Classes know too much about each other | Move Method, Extract Class |
 | **Message Chains** | `a.getB().getC().getD()` | Hide Delegate |
 | **Middle Man** | Class only delegates | Inline Class |
+| **Inline HTTP Header Parsing** | Location headers parsed inline in 5+ handlers | Extract to shared helper |
+| **Duplicated Response Parsing** | Identical 25-line parsing in multiple nodes | Extract to mixin method |
+| **Duplicate Service Account Check** | Same method called twice in one method | Extract to local variable |
+| **Scattered Z-Index Magic Numbers** | Z-index hardcoded in 10+ files | Centralize as CSS custom properties |
+
+---
+
+## Extended Code Smells with Refactoring Guidance
+
+### 8. Inline HTTP Header Parsing in Handlers (Couplers)
+
+**Symptom:** Parsing `Location` response headers inline across 5+ handler methods.
+
+```python
+# SMELL: repeated in every handler
+def create_report(self, data):
+    response = self.client.post("/reports", json=data)
+    location = response.headers.get("Location", "")
+    report_id = location.split("/")[-1] if location else None
+    return report_id
+
+def create_schedule(self, data):
+    response = self.client.post("/schedules", json=data)
+    location = response.headers.get("Location", "")
+    schedule_id = location.split("/")[-1] if location else None
+    return schedule_id
+```
+
+```python
+# REFACTORED: shared helper
+def extract_resource_id(headers: dict) -> str | None:
+    location = headers.get("Location", "")
+    return location.rstrip("/").split("/")[-1] if location else None
+
+def create_report(self, data):
+    response = self.client.post("/reports", json=data)
+    return extract_resource_id(response.headers)
+```
+
+### 9. Duplicated Response Parsing in LLM Nodes (Dispensables)
+
+**Symptom:** Identical 25-line response-parsing logic copied into multiple LangChain node functions.
+
+```python
+# SMELL: same 25 lines in parse_agent_output, parse_tool_result, etc.
+def parse_agent_output(result):
+    if not result:
+        return None
+    try:
+        data = json.loads(result)
+        if "error" in data:
+            raise ValueError(data["error"])
+        return data.get("output", {}).get("text")
+    except json.JSONDecodeError:
+        match = re.search(r'"text":\s*"([^"]*)"', result)
+        return match.group(1) if match else None
+```
+
+```python
+# REFACTORED: mixin method
+class OutputParserMixin:
+    def parse_response(self, result: str | dict) -> str | None:
+        if not result:
+            return None
+        data = result if isinstance(result, dict) else self._try_parse_json(result)
+        if isinstance(data, dict) and "error" in data:
+            raise ValueError(data["error"])
+        return data.get("output", {}).get("text") if isinstance(data, dict) else self._fallback_extract(result)
+
+    def _try_parse_json(self, raw: str) -> dict | str:
+        try:
+            return json.loads(raw)
+        except json.JSONDecodeError:
+            return raw
+
+    def _fallback_extract(self, raw: str) -> str | None:
+        match = re.search(r'"text":\s*"([^"]*)"', raw)
+        return match.group(1) if match else None
+```
+
+### 10. Duplicate Service Account Check (Dispensables)
+
+**Symptom:** Same expensive method called twice in a single function body.
+
+```python
+# SMELL: two calls, two network round-trips
+def process_payment(self, order):
+    if self.auth_service.get_service_account() is None:
+        raise NoServiceAccount()
+    account = self.auth_service.get_service_account()
+    self.charge(account, order.total)
+```
+
+```python
+# REFACTORED: single call, local variable
+def process_payment(self, order):
+    account = self.auth_service.get_service_account()
+    if account is None:
+        raise NoServiceAccount()
+    self.charge(account, order.total)
+```
+
+### 11. Scattered Z-Index Magic Numbers (Bloaters)
+
+**Symptom:** Z-index values hardcoded in 10+ CSS/TSX files, making layering impossible to reason about.
+
+```css
+/* SMELL: scattered across 10+ files */
+.modal-overlay { z-index: 9999; }
+.dropdown-menu  { z-index: 1000; }
+.toast          { z-index: 8000; }
+.sidebar        { z-index: 500; }
+```
+
+```css
+/* REFACTORED: single source of truth */
+:root {
+  --z-sidebar:    100;
+  --z-dropdown:   200;
+  --z-sticky:     300;
+  --z-modal-backdrop: 400;
+  --z-modal:      500;
+  --z-popover:    600;
+  --z-toast:      700;
+}
+
+.modal-overlay { z-index: var(--z-modal-backdrop); }
+.dropdown-menu  { z-index: var(--z-dropdown); }
+.toast          { z-index: var(--z-toast); }
+.sidebar        { z-index: var(--z-sidebar); }
+```
 
 ---
 

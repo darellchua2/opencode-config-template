@@ -10,6 +10,7 @@ permission:
   bash: deny
   skill:
     error-resolver-workflow: allow
+    react-nextjs-antipatterns-skill: allow
     continuous-learning: allow
     agent-introspection-debugging-skill: allow
 ---

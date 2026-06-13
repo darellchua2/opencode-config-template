@@ -24,6 +24,9 @@ permission:
     design-patterns: allow
     object-design: allow
     complexity-management: allow
+    react-nextjs-antipatterns-skill: allow
+    security-audit-skill: allow
+    typescript-dry-principle: allow
     continuous-learning: allow
     context-budget-skill: allow
 ---
@@ -45,6 +48,9 @@ Skills:
 - design-patterns: Pattern identification and recommendations
 - object-design: Object stereotypes, value objects, aggregates
 - complexity-management: Cyclomatic/cognitive complexity assessment
+- react-nextjs-antipatterns-skill: React/Next.js runtime anti-patterns (hydration, RBAC, memory leaks)
+- security-audit-skill: Security vulnerability detection during review
+- typescript-dry-principle: DRY violations in TypeScript code
 - continuous-learning: Persist code review findings across sessions
 
 ## Review Checklist

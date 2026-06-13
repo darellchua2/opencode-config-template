@@ -1,6 +1,6 @@
 ---
 description: Primary agent for business operations — proposal summarization, quotation preparation, document generation, and Atlassian integration. Routes to industry-specific skills based on context.
-mode: all
+mode: subagent
 model: zai-coding-plan/glm-4.7
 temperature: 0.7
 steps: 40

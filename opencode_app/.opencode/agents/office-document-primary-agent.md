@@ -1,6 +1,6 @@
 ---
 description: Unified primary agent for office document operations (docx, pptx, xlsx). Routes to specialized subagents based on file type.
-mode: all
+mode: subagent
 model: zai-coding-plan/glm-4.7
 steps: 25
 permission:

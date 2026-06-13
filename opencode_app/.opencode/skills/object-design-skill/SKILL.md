@@ -294,6 +294,82 @@ class User:
 | Small, focused | Can be complex |
 | `Money`, `Email`, `Address` | `User`, `Order`, `Product` |
 
+#### Learning: `primitive-obsession-report-type`
+
+Raw `String` used for `reportType` across API layer, service layer, and domain layer provides zero compile-time safety. A typo like `"pfd"` silently passes through. Replace with an enum value object.
+
+```python
+# BAD: raw string, no safety
+def generate_report(report_type: str, data: dict):
+    if report_type == "pdf":
+        return PDFGenerator().render(data)
+    elif report_type == "html":
+        return HTMLGenerator().render(data)
+    # "pfd" silently falls through
+
+def schedule_report(report_type: str, cron: str):
+    db.execute("INSERT INTO jobs (report_type, cron) VALUES (?, ?)", report_type, cron)
+
+# GOOD: enum value object, compile-time safety
+from enum import Enum
+
+class ReportType(str, Enum):
+    PDF = "pdf"
+    HTML = "html"
+    CSV = "csv"
+
+def generate_report(report_type: ReportType, data: dict):
+    generator = _GENERATORS[report_type]
+    return generator.render(data)
+
+def schedule_report(report_type: ReportType, cron: str):
+    db.execute("INSERT INTO jobs (report_type, cron) VALUES (?, ?)", report_type.value, cron)
+
+# schedule_report("pfd", "* * * * *")  -> TypeError from ReportType("pfd")
+```
+
+#### Learning: `enum-strategy-resolution`
+
+An enum can serve as both a type identifier (value object) and a strategy dispatcher. Each enum member knows its own strategy, eliminating external mapping.
+
+```python
+from enum import Enum
+
+class OutputFormat(str, Enum):
+    JSON = "json"
+    CSV = "csv"
+    XML = "xml"
+
+    @property
+    def content_type(self) -> str:
+        return _CONTENT_TYPES[self]
+
+    @property
+    def extension(self) -> str:
+        return self.value
+
+    def serialize(self, data: dict) -> bytes:
+        serializer = _SERIALIZERS[self]
+        return serializer(data)
+
+_CONTENT_TYPES = {
+    OutputFormat.JSON: "application/json",
+    OutputFormat.CSV:  "text/csv",
+    OutputFormat.XML:  "application/xml",
+}
+
+_SERIALIZERS = {
+    OutputFormat.JSON: lambda d: json.dumps(d, indent=2).encode(),
+    OutputFormat.CSV:  lambda d: _to_csv(d).encode(),
+    OutputFormat.XML:  lambda d: _to_xml(d).encode(),
+}
+
+# Usage — the enum IS the strategy
+fmt = OutputFormat.JSON
+response = Response(content=fmt.serialize(data), content_type=fmt.content_type)
+filename = f"report.{fmt.extension}"
+```
+
 ---
 
 ## Aggregates

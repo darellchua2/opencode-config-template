@@ -18,6 +18,7 @@ permission:
     clean-code: allow
     code-smells: allow
     design-patterns: allow
+    python-backend-skill: allow
     continuous-learning: allow
     search-first-skill: allow
 ---
@@ -89,6 +90,8 @@ You are a Python code review specialist. Perform thorough quality analysis with 
 | **Django** | ORM efficiency (select_related/prefetch_related), middleware, view patterns |
 | **Flask** | Blueprint organization, proper app factory, request context |
 | **SQLAlchemy** | Session management, relationship loading, migration compatibility |
+
+**Backend Patterns**: Use `python-backend-skill` to check for SQLAlchemy detached-instance bugs, Pydantic-on-JSONB pitfalls, async SSE durability issues, and enum strategy resolution patterns.
 
 ## Severity Scoring
 

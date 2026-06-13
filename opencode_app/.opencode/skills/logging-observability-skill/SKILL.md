@@ -139,6 +139,61 @@ with structlog.contextvars.bound_contextvars(request_id=request_id, user_id=user
     log.info("processing_order", order_id=order.id)
 ```
 
+### Silent Failure in Sequential Async (`silent-failure-sequential-async`)
+
+Helper functions that catch failures with only `console.error` swallow errors silently. Callers proceed with missing or stale data, and the failure becomes invisible in production. Either rethrow (let the caller decide) or return a discriminated union so the caller can handle success/failure explicitly.
+
+```typescript
+// BEFORE: Failure swallowed — caller has no way to react
+async function fetchSidebarData(userId: string) {
+  try {
+    return await api.get(`/users/${userId}/sidebar`)
+  } catch (error) {
+    console.error("Failed to fetch sidebar data", error)
+    return null
+  }
+}
+
+// Caller proceeds with null, showing empty sidebar with no explanation
+const sidebar = await fetchSidebarData(userId)
+renderSidebar(sidebar) // renders nothing, user sees blank space
+
+// AFTER (option 1): Rethrow — let the caller handle the error
+async function fetchSidebarData(userId: string) {
+  return api.get(`/users/${userId}/sidebar`) // no try/catch
+}
+
+// Caller can show fallback UI
+try {
+  const sidebar = await fetchSidebarData(userId)
+  renderSidebar(sidebar)
+} catch (error) {
+  renderSidebarFallback(error)
+}
+
+// AFTER (option 2): Discriminated union — caller gets structured result
+type Result<T> = { ok: true; value: T } | { ok: false; error: Error }
+
+async function fetchSidebarData(userId: string): Promise<Result<Sidebar>> {
+  try {
+    const data = await api.get(`/users/${userId}/sidebar`)
+    return { ok: true, value: data }
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error : new Error(String(error)) }
+  }
+}
+
+const result = await fetchSidebarData(userId)
+if (!result.ok) {
+  log.error("sidebar_fetch_failed", { userId, error: result.error.message })
+  renderSidebarFallback(result.error)
+} else {
+  renderSidebar(result.value)
+}
+```
+
+**Rule**: Never silently swallow errors in async helpers. Either rethrow or return a discriminated union that forces the caller to acknowledge both outcomes.
+
 ---
 
 ## Step 2: Log Levels

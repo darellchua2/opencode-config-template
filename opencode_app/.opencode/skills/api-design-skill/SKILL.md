@@ -334,6 +334,57 @@ def setup_loaders(db):
     return DataLoader(load_fn=load_orders)
 ```
 
+## Step 5.5: Multi-Source Response Schema Consistency
+
+### `multi-source-response-schema-drift`
+
+When an API response is assembled from multiple sources (e.g., a fast DB path and a slower Temporal workflow path), adding a field to one path without updating all others causes invisible data loss. Consumers see the field present in some responses and absent in others with no error.
+
+```typescript
+// PROBLEM: New `summary` field only added to the DB fast path
+async function getReport(id: string) {
+  const cached = await cache.get(id)
+  if (cached) {
+    // Fast path: DB/cached response — has the new `summary` field
+    return { ...cached, summary: cached.summary }
+  }
+
+  // Slow path: Temporal workflow result — missing `summary`
+  const workflowResult = await temporalClient.result(workflowId)
+  return workflowResult // no `summary` field
+}
+
+// FIX: Validate response against a shared schema before returning
+import { z } from "zod"
+
+const ReportResponseSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  status: z.enum(["draft", "submitted", "approved"]),
+  summary: z.string().nullable(),
+  createdAt: z.string().datetime(),
+})
+
+const ReportResponseSchemaWithoutSummary = ReportResponseSchema.partial({ summary: undefined })
+
+function normalizeReport(data: unknown): Report {
+  const result = ReportResponseSchemaWithoutSummary.parse(data)
+  return { ...result, summary: result.summary ?? null }
+}
+
+async function getReport(id: string) {
+  const cached = await cache.get(id)
+  if (cached) return normalizeReport(cached)
+
+  const workflowResult = await temporalClient.result(workflowId)
+  return normalizeReport(workflowResult)
+}
+```
+
+**Rule**: When adding fields to a multi-source response, update all code paths that produce that response and validate output against a shared schema.
+
+---
+
 ## Step 6: API Versioning Strategies
 
 | Strategy | URL Example | Pros | Cons |
@@ -344,6 +395,49 @@ def setup_loaders(db):
 | Content negotiation | `Accept: application/vnd.api+json; version=1` | Most RESTful | Complex |
 
 **Recommended**: URL path versioning (`/api/v1/`) — most explicit and easiest for consumers.
+
+## Step 5.6: Async Polling API Pattern
+
+### `async-api-blocking-poll-pattern`
+
+Model long-running operations with a submit→poll→download lifecycle instead of blocking the HTTP connection. Return a status endpoint the client can poll until the work is complete.
+
+```text
+POST   /api/v1/reports           → 202 Accepted (returns jobId)
+GET    /api/v1/reports/{jobId}    → 200 { status: "processing"|"completed"|"failed", resultUrl? }
+GET    /api/v1/reports/{jobId}/download → 200 (file download, only when status=completed)
+```
+
+```python
+@app.post("/api/v1/reports", status_code=202)
+async def submit_report(request: ReportRequest):
+    job_id = str(uuid.uuid4())
+    await job_queue.enqueue("generate_report", job_id=job_id, params=request.model_dump())
+    return {"jobId": job_id, "status": "queued", "pollUrl": f"/api/v1/reports/{job_id}"}
+
+@app.get("/api/v1/reports/{job_id}")
+async def get_report_status(job_id: str):
+    job = await job_store.get(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    response = {"jobId": job_id, "status": job.status, "createdAt": job.created_at}
+    if job.status == "completed":
+        response["downloadUrl"] = f"/api/v1/reports/{job_id}/download"
+    elif job.status == "failed":
+        response["error"] = job.error_message
+    return response
+
+@app.get("/api/v1/reports/{job_id}/download")
+async def download_report(job_id: str):
+    job = await job_store.get(job_id)
+    if not job or job.status != "completed":
+        raise HTTPException(status_code=409, detail="Report not ready")
+    return FileResponse(job.result_path, media_type="application/pdf", filename=f"report-{job_id}.pdf")
+```
+
+**Status codes**: 202 (accepted), 200 (polling result), 404 (unknown job), 409 (not ready yet), 410 (expired).
+
+---
 
 ## Step 7: Rate Limiting
 

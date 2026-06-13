@@ -16,6 +16,7 @@ permission:
     clean-architecture: allow
     design-patterns: allow
     complexity-management: allow
+    security-audit-skill: allow
     continuous-learning: allow
     verification-loop: allow
     search-first-skill: allow
@@ -36,6 +37,7 @@ Skills:
 - clean-architecture: Vertical slicing, dependency rule, layer separation
 - design-patterns: GoF patterns (Creational, Structural, Behavioral)
 - complexity-management: Essential vs accidental complexity
+- security-audit-skill: Security architecture review (fail-open RBAC, data leakage, cloud security)
 - continuous-learning: Persist architectural patterns and decisions across sessions
 - verification-loop: Verify architecture against requirements/acceptance criteria
 

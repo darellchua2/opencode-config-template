@@ -373,7 +373,7 @@ USAGE:
     Usage: opencode --agent build 'implement auth feature'
             opencode --agent explore 'find all API routes'
  
-        SKILLS (74):
+        SKILLS (78):
              Framework (13):       test-generator-framework, linting-workflow,
                                       pr-creation-workflow, pr-merge-workflow,
                                       error-resolver-workflow, tdd-workflow,
@@ -385,9 +385,10 @@ USAGE:
                                   javascript-eslint-linter, changelog-python-cliff,
                                   python-backend-skill, python-packaging-skill
 
-           Framework-Specific (6): nextjs-pr-workflow, nextjs-unit-test-creator,
+           Framework-Specific (7): nextjs-pr-workflow, nextjs-unit-test-creator,
                                  nextjs-standard-setup, nextjs-image-usage,
-                                  typescript-dry-principle, accessibility-a11y-skill
+                                 typescript-dry-principle, accessibility-a11y-skill,
+                                 react-nextjs-antipatterns-skill
            OpenCode Meta (4):    opencode-agent-creation, opencode-skill-creation,
                                  opencode-skills-maintainer,
                                  documentation-consistency-skill
@@ -1225,10 +1226,11 @@ function Deploy-Skills {
         Write-Host "    Language-Specific (4):"
         Write-Host "      - python-pytest-creator, python-ruff-linter"
         Write-Host "      - javascript-eslint-linter, changelog-python-cliff"
-        Write-Host "    Framework-Specific (5):"
+        Write-Host "    Framework-Specific (7):"
         Write-Host "      - nextjs-pr-workflow, nextjs-unit-test-creator"
         Write-Host "      - nextjs-standard-setup, nextjs-image-usage"
-        Write-Host "      - typescript-dry-principle"
+        Write-Host "      - typescript-dry-principle, accessibility-a11y-skill"
+        Write-Host "      - react-nextjs-antipatterns-skill"
         Write-Host "    OpenCode Meta (4):"
         Write-Host "      - opencode-agent-creation, opencode-skill-creation"
         Write-Host "      - opencode-skills-maintainer"
@@ -1712,10 +1714,10 @@ function Show-NextSteps {
     Write-Host "         opencode `"prompt`" (uses build)"
      Write-Host ""
     Write-Host "=====================================================================" -ForegroundColor White
-     Write-Host "                     77 Skills Available" -ForegroundColor White
+     Write-Host "                     78 Skills Available" -ForegroundColor White
     Write-Host "=====================================================================" -ForegroundColor White
     Write-Host ""
-    Write-Host "  Framework (11) • Language-Specific (4) • Framework-Specific (5)"
+    Write-Host "  Framework (13) • Language-Specific (6) • Framework-Specific (7)"
     Write-Host "  OpenCode Meta (4) • OpenTofu (7) • Git/Workflow (10)"
     Write-Host "  Documentation (3) • JIRA (3) • Code Quality (7)"
      Write-Host "  Agent Optimization (7)"

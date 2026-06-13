@@ -15,6 +15,7 @@ permission:
   skill:
     typescript-dry-principle: allow
     solid-principles: allow
+    design-patterns: allow
     code-smells: allow
     clean-code: allow
     plan-updater: allow
@@ -35,6 +36,7 @@ You are a code refactoring specialist. Apply DRY principle, SOLID principles, an
 Skills:
 - typescript-dry-principle: Apply DRY to TypeScript projects
 - solid-principles: Enforce SOLID principles during refactoring
+- design-patterns: Apply appropriate patterns when refactoring (Strategy+Enum, Facade, Mixin)
 - code-smells: Detect and fix code smells
 - clean-code: Apply clean code practices
 

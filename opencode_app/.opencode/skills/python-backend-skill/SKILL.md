@@ -30,6 +30,8 @@ Use this skill when:
 - Implementing environment-based configuration
 - Setting up Python project standards (ruff, mypy, pytest)
 - Migrating between Python frameworks
+- Debugging SQLAlchemy session errors (detached instances, cross-session mutations)
+- Implementing SSE/streaming endpoints with proper backpressure
 
 ## Related Skills
 
@@ -403,4 +405,242 @@ REDIS_URL=redis://localhost:6379/0
 SECRET_KEY=change-me-in-production
 LOG_LEVEL=DEBUG
 ALLOWED_ORIGINS=["http://localhost:3000"]
+```
+
+---
+
+## Step 7: SQLAlchemy Session Management
+
+### Detached ORM Across Sessions
+
+**Learning**: `detached-orm-across-sessions`
+
+Never fetch an ORM object in one session, mutate it, then commit in another. Use a single session for the entire read-modify-write lifecycle. Mock-only tests mask this bug because mocks don't enforce session boundaries.
+
+```python
+# WRONG — object fetched in session A, committed in session B (detached)
+async def update_user_bad(user_id: str, new_name: str):
+    async with async_session() as s1:
+        user = await s1.get(User, user_id)  # loaded in s1
+    # s1 closes — user is now DETACHED
+    async with async_session() as s2:
+        user.name = new_name  # modifies detached object — changes NOT tracked
+        await s2.commit()     # no-op, nothing flushed
+
+# CORRECT — single session for read-modify-write
+async def update_user_good(user_id: str, new_name: str):
+    async with async_session() as session:
+        async with session.begin():
+            user = await session.get(User, user_id)
+            user.name = new_name
+        # commit happens here — flush is automatic
+```
+
+### Pydantic on JSONB Columns
+
+**Learning**: `pydantic-on-jsonb-columns`
+
+Never assign a Pydantic `BaseModel` instance directly to a JSONB column. SQLAlchemy expects a dict-compatible type. Use `model_dump()` before assignment. This caused ALL 47 node registrations to fail in production.
+
+```python
+from pydantic import BaseModel
+
+class NodeConfig(BaseModel):
+    api_url: str
+    timeout: int = 30
+
+# WRONG — Pydantic object assigned to JSONB column
+config = NodeConfig(api_url="https://api.example.com")
+node.config = config  # Type: NodeConfig, NOT dict — asyncpg rejects this
+
+# CORRECT — serialize to dict first
+node.config = config.model_dump()  # Type: dict — asyncpg handles this
+```
+
+### Instance Check Over Field Lists
+
+**Learning**: `instance-check-over-field-lists`
+
+Use `isinstance(value, BaseModel)` instead of hardcoded field-name frozensets to detect Pydantic instances. Simpler, future-proof, and handles arbitrary model schemas.
+
+```python
+# WRONG — fragile, must list every possible Pydantic field name
+PYDANTIC_FIELDS = frozenset(["config", "metadata", "settings", "options"])
+if column_name in PYDANTIC_FIELDS:
+    value = value.model_dump()
+
+# CORRECT — detects any Pydantic BaseModel instance automatically
+if isinstance(value, BaseModel):
+    value = value.model_dump()
+```
+
+---
+
+## Step 8: Database Migration Gotchas
+
+> See **database-migration-skill** for full migration workflows, rollback strategies, and CI patterns.
+
+### `bulk_insert` JSONB with asyncpg
+
+**Learning**: `migration-jsonb-dicts`
+
+When using Alembic `bulk_insert` with asyncpg, JSONB columns require Python dicts — not JSON strings. asyncpg does not auto-serialize `json.dumps()` output; it expects native Python types.
+
+```python
+import json
+
+# WRONG — JSON string passed to asyncpg JSONB column
+op.bulk_insert(
+    sa.table("nodes"),
+    [{"id": "n1", "config": json.dumps({"key": "val"})}],
+)
+# asyncpg error: expected dict, got str
+
+# CORRECT — native Python dict
+op.bulk_insert(
+    sa.table("nodes"),
+    [{"id": "n1", "config": {"key": "val"}}],
+)
+```
+
+---
+
+## Step 9: Async Streaming & SSE Durability
+
+### asyncio.Queue as Sole Event Store
+
+**Learning**: `asyncio-queue-sole-event-store-sse`
+
+Never use `asyncio.Queue` as the ONLY event store for SSE endpoints. Queue events are lost on client reconnect or across multiple worker processes. Always pair with a persistent store (database, Redis pub/sub).
+
+```python
+# WRONG — queue-only, events lost on reconnect
+queue: asyncio.Queue = asyncio.Queue()
+@app.post("/events")
+async def post_event(event: Event):
+    await queue.put(event)  # if no SSE client connected, silently dropped
+
+@app.get("/stream")
+async def stream():
+    async def generate():
+        while True:
+            event = await queue.get()  # missed events after reconnect
+            yield f"data: {event.json()}\n\n"
+    return StreamingResponse(generate(), media_type="text/event-stream")
+
+# CORRECT — DB-backed with queue as delivery layer
+@app.post("/events")
+async def post_event(event: Event, db: AsyncSession):
+    await db.execute(insert(EventLog).values(data=event.model_dump()))
+    await db.commit()
+    await queue.put(event)  # deliver to active connections
+
+@app.get("/stream")
+async def stream(db: AsyncSession):
+    last_id = int(request.headers.get("Last-Event-ID", 0))
+    async def generate():
+        async for event in await get_events_since(db, last_id):  # replay missed
+            yield f"id: {event.id}\ndata: {event.data}\n\n"
+        while True:
+            event = await queue.get()
+            yield f"id: {event.id}\ndata: {event.json()}\n\n"
+    return StreamingResponse(generate(), media_type="text/event-stream")
+```
+
+### SSE Backpressure with LLM Chunks
+
+**Learning**: `sse-backpressure-llm-chunks`
+
+On SSE queue overflow, close the connection instead of dropping oldest events. LLM streaming chunks are cumulative — dropping one corrupts the rest of the response.
+
+```python
+# WRONG — drops middle of LLM response
+try:
+    event = await asyncio.wait_for(queue.get(), timeout=1.0)
+except asyncio.TimeoutError:
+    queue.get_nowait()  # drop oldest — corrupts partial JSON/Markdown
+    continue
+
+# CORRECT — close connection, client can reconnect with Last-Event-ID
+try:
+    event = await asyncio.wait_for(queue.get(), timeout=5.0)
+except asyncio.TimeoutError:
+    break  # exit generator — closes the SSE connection cleanly
+```
+
+---
+
+## Step 10: Async API Patterns
+
+### Blocking Poll Pattern
+
+**Learning**: `async-api-blocking-poll-pattern`
+
+Model external async APIs as blocking nodes with a submit → poll → download lifecycle. This decouples the async wait from the HTTP request, avoids long-lived connections, and provides resumability.
+
+```python
+import asyncio
+
+class ExternalAPIClient:
+    async def submit(self, job: JobPayload) -> str:
+        resp = await http_client.post("https://api.example.com/jobs", json=job)
+        return resp.json()["job_id"]
+
+    async def poll(self, job_id: str) -> JobStatus:
+        resp = await http_client.get(f"https://api.example.com/jobs/{job_id}")
+        return JobStatus(**resp.json())
+
+    async def download(self, job_id: str) -> bytes:
+        resp = await http_client.get(f"https://api.example.com/jobs/{job_id}/result")
+        return resp.content
+
+# Usage in endpoint — non-blocking submit, separate poll/download
+@app.post("/generate")
+async def submit_job(payload: JobPayload):
+    job_id = await client.submit(payload)
+    return {"job_id": job_id, "status": "pending"}
+
+@app.get("/generate/{job_id}/status")
+async def get_status(job_id: str):
+    status = await client.poll(job_id)
+    return status.model_dump()
+
+@app.get("/generate/{job_id}/result")
+async def get_result(job_id: str):
+    if (await client.poll(job_id)).status != "completed":
+        raise HTTPException(425, "Job not yet complete")
+    return StreamingResponse(
+        BytesIO(await client.download(job_id)),
+        media_type="application/octet-stream",
+    )
+```
+
+### Enum Strategy Resolution
+
+**Learning**: `enum-strategy-resolution`
+
+Use `str` with `Enum` and a default member for backward-compatible strategy dispatch. This lets you accept both enum members and string values while maintaining a single source of truth.
+
+```python
+from enum import Enum
+
+class ProcessingStrategy(str, Enum):
+    FAST = "fast"
+    THOROUGH = "thorough"
+    DEFAULT = "default"  # backward-compat fallback
+
+def process(data: dict, strategy: str | ProcessingStrategy = ProcessingStrategy.DEFAULT):
+    strategy = ProcessingStrategy(strategy) if isinstance(strategy, str) else strategy
+    match strategy:
+        case ProcessingStrategy.FAST:
+            return fast_process(data)
+        case ProcessingStrategy.THOROUGH:
+            return thorough_process(data)
+        case ProcessingStrategy.DEFAULT:
+            return standard_process(data)
+
+# All of these work:
+process({"k": "v"})                            # default
+process({"k": "v"}, "fast")                   # string
+process({"k": "v"}, ProcessingStrategy.THOROUGH)  # enum member
 ```

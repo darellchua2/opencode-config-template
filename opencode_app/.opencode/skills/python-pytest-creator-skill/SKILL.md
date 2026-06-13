@@ -226,6 +226,7 @@ Python-specific best practices:
 - **Async Testing**: Use pytest-asyncio for async functions
 - **Type Hints**: Include type hints for better test coverage
 - **Mocking**: Use pytest-mock or unittest.mock appropriately
+- **Integration Tests**: Always include at least one integration test with real database sessions — mock-only tests mask session boundary bugs
 
 ## Common Issues
 
@@ -257,6 +258,50 @@ pip install pytest-asyncio
 **Solution**: Add source to PYTHONPATH:
 ```bash
 export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+```
+
+### MagicMock Truthy Headers
+**Issue**: `MagicMock` for `response.headers` creates truthy auto-created mocks, causing false positives in header-checking code.
+
+```python
+# WRONG — MagicMock auto-creates `response.headers.get()` as truthy
+mock_response = MagicMock()
+mock_response.headers.get.return_value = "Bearer test-token"
+assert mock_response.headers.get("Authorization") == "Bearer test-token"  # passes
+# But also: mock_response.headers.get("X-Missing") returns a MagicMock (truthy!)
+
+# CORRECT — use a real dict for headers
+mock_response = MagicMock()
+mock_response.headers = {"Authorization": "Bearer test-token"}  # real dict
+assert mock_response.headers.get("Authorization") == "Bearer test-token"
+assert mock_response.headers.get("X-Missing") is None  # correctly returns None
+```
+
+### Detached ORM Across Sessions (Mocking Pitfall)
+**Issue**: Mock-only tests mask session boundary bugs. When an ORM object is fetched in one session and mutated in another, mocks won't catch the detached state.
+
+```python
+# WRONG — mock hides the bug: test passes but production fails
+mock_session = MagicMock()
+mock_session.get.return_value = User(id="u1", name="old")
+repo = UserRepository(mock_session)
+repo.update_name("u1", "new")
+mock_session.commit.assert_called_once()  # passes, but nothing actually flushed
+
+# CORRECT — include at least one integration test with real sessions
+@pytest.mark.asyncio
+async def test_update_user_real_session(test_db_session):
+    user = User(id="u1", name="old")
+    test_db_session.add(user)
+    await test_db_session.commit()
+
+    # fetch and update in the SAME session
+    fetched = await test_db_session.get(User, "u1")
+    fetched.name = "new"
+    await test_db_session.commit()
+
+    result = await test_db_session.get(User, "u1")
+    assert result.name == "new"
 ```
 
 ## Troubleshooting Checklist

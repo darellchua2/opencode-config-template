@@ -766,6 +766,139 @@ npm run lint
 
 ## Advanced Refactoring Patterns
 
+### Canonical Type Import
+
+Local component types that duplicate canonical types drift apart over time. Always import from the single source of truth.
+
+**Before — duplicate definitions that silently diverge:**
+```typescript
+// In components/ReportStatusBadge.tsx
+interface ReportStatus {
+  status: string
+  updatedAt: string
+}
+
+function ReportStatusBadge({ status }: { status: ReportStatus }) {
+  return <span>{status.status}</span>
+}
+
+// In pages/ReportPage.tsx
+interface ReportStatus {
+  id: string
+  status: string
+  createdAt: string  // added here, missing in the other
+  updatedAt: string
+}
+
+function ReportPage({ report }: { report: ReportStatus }) {
+  return <ReportStatusBadge status={report} />  // type mismatch!
+}
+```
+
+**After — single canonical type:**
+```typescript
+// In types/report.ts
+export interface ReportStatus {
+  id: string
+  status: string
+  createdAt: string
+  updatedAt: string
+}
+
+// In components/ReportStatusBadge.tsx
+import type { ReportStatus } from '../types/report'
+
+function ReportStatusBadge({ status }: { status: ReportStatus }) {
+  return <span>{status.status}</span>
+}
+
+// In pages/ReportPage.tsx
+import type { ReportStatus } from '../types/report'
+
+function ReportPage({ report }: { report: ReportStatus }) {
+  return <ReportStatusBadge status={report} />
+}
+```
+
+### Shared Status Mapping Utility
+
+Near-identical status-to-icon/color switch statements scattered across components should be extracted into a shared utility with a size parameter.
+
+**Before — duplicated switch statements:**
+```typescript
+// In components/OrderStatus.tsx
+function OrderStatus({ status }: { status: string }) {
+  switch (status) {
+    case 'pending':   return <Icon name="clock" color="yellow" size={16} />
+    case 'processing': return <Icon name="spinner" color="blue" size={16} />
+    case 'completed':  return <Icon name="check" color="green" size={16} />
+    case 'failed':    return <Icon name="x" color="red" size={16} />
+    default:          return <Icon name="question" color="gray" size={16} />
+  }
+}
+
+// In components/InvoiceStatus.tsx
+function InvoiceStatus({ status }: { status: string }) {
+  switch (status) {
+    case 'pending':   return <Icon name="clock" color="yellow" size={20} />
+    case 'processing': return <Icon name="spinner" color="blue" size={20} />
+    case 'paid':      return <Icon name="check" color="green" size={20} />
+    case 'overdue':   return <Icon name="alert" color="red" size={20} />
+    default:          return <Icon name="question" color="gray" size={20} />
+  }
+}
+```
+
+**After — shared mapping utility:**
+```typescript
+// In utils/statusMap.ts
+interface StatusIconConfig {
+  icon: string
+  color: string
+}
+
+const ORDER_STATUS_MAP: Record<string, StatusIconConfig> = {
+  pending:    { icon: 'clock',   color: 'yellow' },
+  processing: { icon: 'spinner', color: 'blue'   },
+  completed:  { icon: 'check',   color: 'green'  },
+  failed:     { icon: 'x',       color: 'red'    },
+}
+
+const INVOICE_STATUS_MAP: Record<string, StatusIconConfig> = {
+  pending:   { icon: 'clock',  color: 'yellow' },
+  processing: { icon: 'spinner', color: 'blue'   },
+  paid:      { icon: 'check',  color: 'green'  },
+  overdue:   { icon: 'alert', color: 'red'    },
+}
+
+const DEFAULT_STATUS: StatusIconConfig = { icon: 'question', color: 'gray' }
+
+export function getStatusIcon(
+  status: string,
+  map: Record<string, StatusIconConfig>,
+  size: number = 16,
+) {
+  const config = map[status] ?? DEFAULT_STATUS
+  return <Icon name={config.icon} color={config.color} size={size} />
+}
+
+// In components/OrderStatus.tsx
+import { getStatusIcon } from '../utils/statusMap'
+import { ORDER_STATUS_MAP } from '../utils/statusMap'
+
+function OrderStatus({ status }: { status: string }) {
+  return getStatusIcon(status, ORDER_STATUS_MAP, 16)
+}
+
+// In components/InvoiceStatus.tsx
+import { getStatusIcon } from '../utils/statusMap'
+import { INVOICE_STATUS_MAP } from '../utils/statusMap'
+
+function InvoiceStatus({ status }: { status: string }) {
+  return getStatusIcon(status, INVOICE_STATUS_MAP, 20)
+}
+```
+
 ### Higher-Order Components
 
 Wrap components with additional behavior:

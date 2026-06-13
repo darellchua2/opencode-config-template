@@ -18,6 +18,8 @@ permission:
     clean-code: allow
     code-smells: allow
     design-patterns: allow
+    react-nextjs-antipatterns-skill: allow
+    typescript-dry-principle: allow
     continuous-learning: allow
     search-first-skill: allow
 ---
@@ -93,6 +95,10 @@ You are a TypeScript/JavaScript code review specialist. Perform thorough quality
 | **React 19** | Server Components, Suspense boundaries, use() hook, transition patterns |
 | **Node.js** | Stream handling, proper error events, graceful shutdown, no synchronous I/O |
 | **Express/Fastify** | Middleware ordering, error handling middleware, request validation |
+
+**React/Next.js Anti-Patterns**: Use `react-nextjs-antipatterns-skill` to detect runtime issues — swallowed redirects, fail-open RBAC, stale derived state, hydration mismatches, module-scope memory leaks.
+
+**TypeScript DRY**: Use `typescript-dry-principle` to detect duplicate type definitions and duplicated status mappings that drift across components.
 
 ## Severity Scoring
 

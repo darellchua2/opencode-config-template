@@ -325,3 +325,32 @@ jobs:
 | With seed data | Verify data integrity |
 | With production-like volume | Verify performance |
 | Concurrent access | Verify no deadlocks |
+
+---
+
+## Step 7: Migration Pitfalls
+
+### `bulk_insert` JSONB with asyncpg
+
+**Learning**: `migration-jsonb-dicts`
+
+When using Alembic `bulk_insert` with asyncpg, JSONB columns require Python dicts — not JSON strings. asyncpg does not auto-serialize `json.dumps()` output; it expects native Python types.
+
+```python
+import json
+
+# WRONG — JSON string passed to asyncpg JSONB column
+op.bulk_insert(
+    sa.table("nodes"),
+    [{"id": "n1", "config": json.dumps({"key": "val"})}],
+)
+# asyncpg error: expected dict, got str
+
+# CORRECT — native Python dict
+op.bulk_insert(
+    sa.table("nodes"),
+    [{"id": "n1", "config": {"key": "val"}}],
+)
+```
+
+> **Cross-reference**: This pitfall is also documented in **python-backend-skill** Step 8.

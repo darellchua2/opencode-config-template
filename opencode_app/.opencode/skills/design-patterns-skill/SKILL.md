@@ -240,6 +240,39 @@ class OldPaymentAdapter(PaymentGateway):
         return ChargeResult.success() if success else ChargeResult.failed()
 ```
 
+#### Learning: `zai-client-class`
+
+Instead of per-endpoint adapters, wrap all API endpoints in a single client class that handles key resolution, base URL configuration, and error mapping centrally. This is a combined Adapter + Facade pattern.
+
+```python
+import os
+
+class ZaiClient:
+    def __init__(self):
+        self.base_url = os.getenv("ZAI_API_URL", "https://api.zai.dev/v1")
+        self._api_key = os.getenv("ZAI_API_KEY")
+        if not self._api_key:
+            raise RuntimeError("ZAI_API_KEY environment variable is required")
+
+    def _headers(self) -> dict:
+        return {"Authorization": f"Bearer {self._api_key}", "Content-Type": "application/json"}
+
+    def _request(self, method: str, path: str, **kwargs) -> dict:
+        response = requests.request(method, f"{self.base_url}{path}", headers=self._headers(), **kwargs)
+        if response.status_code >= 400:
+            raise ZaiApiError(response.status_code, response.json().get("error", "Unknown error"))
+        return response.json()
+
+    def search(self, query: str) -> list[dict]:
+        return self._request("GET", "/search", params={"q": query})
+
+    def summarize(self, url: str) -> dict:
+        return self._request("POST", "/summarize", json={"url": url})
+
+    def analyze(self, text: str) -> dict:
+        return self._request("POST", "/analyze", json={"text": text})
+```
+
 ### Decorator
 
 **Purpose:** Add behavior to objects dynamically.
@@ -414,6 +447,45 @@ cart.add_item(100)
 print(cart.calculate_total())  # 50
 ```
 
+#### Learning: `enum-strategy-resolution`
+
+Use `str` + `Enum` with a default member for backward-compatible dispatch. This gives you a single dispatch point, satisfies the Open/Closed principle (add new strategies without modifying the dispatcher), and lets callers pass raw strings or enum members interchangeably.
+
+```python
+from enum import Enum
+
+class ReportType(str, Enum):
+    PDF = "pdf"
+    HTML = "html"
+    CSV = "csv"
+    UNKNOWN = "unknown"
+
+class ReportGenerator:
+    _generators: dict[ReportType, Callable] = {}
+
+    def __init__(self):
+        self._generators = {
+            ReportType.PDF: self._generate_pdf,
+            ReportType.HTML: self._generate_html,
+            ReportType.CSV:  self._generate_csv,
+        }
+
+    def generate(self, report_type: str | ReportType) -> bytes:
+        key = ReportType(report_type)
+        generator = self._generators.get(key, self._generators[ReportType.UNKNOWN])
+        return generator()
+
+    def _generate_pdf(self) -> bytes: ...
+    def _generate_html(self) -> bytes: ...
+    def _generate_csv(self) -> bytes: ...
+
+# Usage — raw string or enum both work
+gen = ReportGenerator()
+gen.generate("pdf")                # resolves via ReportType("pdf")
+gen.generate(ReportType.CSV)        # direct match
+gen.generate("xlsx")                 # falls through to UNKNOWN
+```
+
 ### Observer
 
 **Purpose:** Notify multiple objects about state changes.
@@ -575,6 +647,52 @@ history.undo();  // Removes item
 | Event notification | Observer | Multiple listeners |
 | Algorithm with variations | Template Method | Same steps, different details |
 | Undo/redo operations | Command | Action history |
+
+---
+
+#### Learning: `zai-node-mixin`
+
+Prefer a mixin over deep inheritance when you need to selectively adopt methods. A mixin respects `__init_subclass__`, avoids fragile base class issues, and lets subclasses pick only the behaviors they need.
+
+```python
+class CacheMixin:
+    """Provides caching behavior to any node."""
+
+    def get_cached(self, key: str):
+        return self._cache.get(key)
+
+    def set_cached(self, key: str, value):
+        self._cache[key] = value
+
+    def invalidate_cache(self, key: str):
+        self._cache.pop(key, None)
+
+class RetryMixin:
+    """Provides retry behavior to any service call."""
+
+    def with_retry(self, fn, max_retries: int = 3, delay: float = 1.0):
+        for attempt in range(max_retries):
+            try:
+                return fn()
+            except Exception as e:
+                if attempt == max_retries - 1:
+                    raise
+                time.sleep(delay * (attempt + 1))
+
+class DataPipeline(CacheMixin, RetryMixin):
+    def __init__(self):
+        self._cache = {}
+
+    def fetch(self, url: str):
+        cached = self.get_cached(url)
+        if cached:
+            return cached
+        result = self.with_retry(lambda: requests.get(url).json())
+        self.set_cached(url, result)
+        return result
+
+# DataPipeline has both caching and retry — no deep inheritance chain
+```
 
 ---
 

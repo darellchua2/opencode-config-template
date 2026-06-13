@@ -681,6 +681,37 @@ jobs:
           docker push <repository-url>:latest
 ```
 
+## Learnings
+
+### ecr-lowercase-naming
+
+**Problem**: ECR repository names only allow lowercase `[a-z0-9_-]`. If your `name_prefix` variable uses `upper()` (e.g., `"BETEKK"`), passing it directly to `aws_ecr_repository.name` causes a validation error.
+
+**Solution**: Create a separate lowercase local for ECR names.
+
+```hcl
+variable "name_prefix" {
+  type    = string
+  default = "BETEKK"
+}
+
+# WRONG — ECR rejects uppercase
+# resource "aws_ecr_repository" "repo" {
+#   name = "${var.name_prefix}-my-service"
+# }
+
+# CORRECT — derive lowercase local
+locals {
+  ecr_prefix = lower(var.name_prefix)
+}
+
+resource "aws_ecr_repository" "repo" {
+  name = "${local.ecr_prefix}-my-service"
+}
+```
+
+**When**: Any project where naming conventions use `upper()` for IAM roles or other resources that allow uppercase, but also need ECR repositories which require lowercase.
+
 ## Reference Documentation
 
 - **AWS ECR Documentation**: https://docs.aws.amazon.com/AmazonECR/

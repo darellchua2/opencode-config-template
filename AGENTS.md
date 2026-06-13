@@ -48,7 +48,7 @@ opencode-config-template/
 │   ├── .dockerignore    # Build exclusions
 │   └── .opencode/
 │       ├── agents/      # 34 subagent .md files (single source of truth)
-│       └── skills/      # 77 skill directories (single source of truth)
+│       └── skills/      # 78 skill directories (single source of truth)
 ├── PLANS/               # Execution plans (git-committed)
 ├── LEARNINGS/           # Knowledge persistence template (auto-provisioned in target projects)
 │   ├── _index.md        # Auto-generated index
@@ -65,7 +65,7 @@ opencode-config-template/
 
 Agents and skills have a **single source of truth** in `opencode_app/.opencode/`:
 - `opencode_app/.opencode/agents/` — All 34 subagent definitions
-- `opencode_app/.opencode/skills/` — All 77 skill directories
+- `opencode_app/.opencode/skills/` — All 78 skill directories
 
 For **user-space**: `deploy/setup.sh` and `deploy/setup.ps1` copy from `opencode_app/.opencode/` to `~/.config/opencode/`
 For **Docker**: The Dockerfile `COPY . /app/` includes `.opencode/` in the container
