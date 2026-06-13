@@ -282,6 +282,62 @@ export const config = {
 }
 ```
 
+### two-layer-keycloak-authorization
+
+Defense-in-depth with Keycloak: use coarse Policy Enforcer (route-level) for bulk access control + fine-grained app-layer composite roles for business logic. Never rely on a single authorization layer.
+
+```
+┌─────────────────────────────────────────────────────┐
+│                    Request Flow                      │
+│                                                      │
+│  Client ──► API Gateway ──► Policy Enforcer ──► App  │
+│                (Layer 1)        (Layer 2)            │
+│                                                      │
+│  Layer 1: Keycloak Policy Enforcer (coarse)          │
+│    - Route-level: /admin/* requires role=admin       │
+│    - Method-level: DELETE requires role=editor        │
+│    - Enforced by Keycloak Authorization Services      │
+│                                                      │
+│  Layer 2: App-layer composite roles (fine-grained)   │
+│    - Business rules: user.ownOrg === resource.orgId  │
+│    - Attribute checks: user.department === "finance"  │
+│    - Data scoping: WHERE tenant_id = user.tenant_id   │
+│                                                      │
+│   Layer 2 runs EVEN IF Layer 1 passes.             │
+│     Never skip Layer 2 — Policy Enforcer alone        │
+│     cannot enforce data-level authorization.          │
+└─────────────────────────────────────────────────────┘
+```
+
+```typescript
+// Layer 1: Policy Enforcer config (keycloak.json)
+{
+  "policy-enforcer": {
+    "enforcement-mode": "PERMISSIVE",
+    "paths": [
+      { "path": "/admin/*", "roles-allowed": ["admin"] },
+      { "path": "/api/v1/resources/*", "method-scopes": {
+          "DELETE": "resources:delete"
+        }
+      }
+    ]
+  }
+}
+
+// Layer 2: App-layer fine-grained check (always runs)
+async function deleteResource(req, res) {
+  const user = req.kauth.grant.access_token.content
+
+  // Layer 1 already verified role — now check data ownership
+  const resource = await getResource(req.params.id)
+  if (resource.tenantId !== user.tenant_id) {
+    return res.status(403).json({ error: 'Cross-tenant access denied' })
+  }
+
+  await deleteResource(req.params.id)
+}
+```
+
 ---
 
 ## Step 4: Password Security
@@ -381,4 +437,98 @@ async def revoke_token(jti: str):
 
 async def is_token_revoked(jti: str) -> bool:
     return await redis_client.exists(f"{BLOCKLIST_KEY}:{jti}")
+
+### stateless-cookie-cache-maxage-match-session
+
+When using JWE (JSON Web Encryption) cookies, the `cookieCache.maxAge` (how long the cached decryption result lives) must be `>= session.expiresIn`. If the JWE cached entry expires before the session itself, `findSession()` returns `null` and silently deletes the session — users get logged out mid-session without any error.
+
+```typescript
+// VULNERABLE — cookieCache expires before session
+const sessionConfig = {
+  secret: process.env.SESSION_SECRET,
+  cookie: {
+    maxAge: 24 * 60 * 60, // session lives 24h
+    httpOnly: true,
+    secure: true,
+    sameSite: 'lax',
+  },
+  // cookieCache decryption result expires in 1h — session dies at 1h
+}
+
+// SECURE — cookieCache maxAge >= cookie maxAge
+const sessionConfig = {
+  secret: process.env.SESSION_SECRET,
+  cookie: {
+    maxAge: 24 * 60 * 60, // session lives 24h
+    httpOnly: true,
+    secure: true,
+    sameSite: 'lax',
+  },
+  cookieCache: {
+    maxAge: 24 * 60 * 60, // >= session maxAge — decryption cache never causes premature logout
+  },
+}
+```
+
+**Rule**: Always set `cookieCache.maxAge >= session.cookie.maxAge`. The cache is just an optimization — it should never be the reason a session terminates.
+
+---
+
+## Step 7: Cookie Security
+
+### chunked-cookie-secure-prefix-mismatch
+
+Always use a shared cookie utility for setting and reading cookies — never roll your own `__Secure-` prefix logic. Browsers silently reject `__Secure-` cookies that are missing `Secure` flag or set over HTTP, while `__Host-` cookies additionally require `Path=/` and no `Domain`. Inconsistent prefix handling across hand-rolled code leads to cookies being silently dropped, causing session loss or CSRF token mismatch.
+
+**Warning**: If one module sets `__Secure-session` and another reads `session`, the read finds nothing. If one sets `__Secure-session` without the `Secure` flag, the browser drops it silently.
+
+```typescript
+// VULNERABLE — hand-rolled prefix logic scattered across codebase
+// Module A
+document.cookie = `__Secure-session=${token}; path=/; SameSite=Lax`
+
+// Module B (forgets prefix, reads wrong cookie name)
+function getSession() {
+  return document.cookie
+    .split('; ')
+    .find(row => row.startsWith('session='))
+    ?.split('=')[1]
+}
+
+// SECURE — shared cookie utility
+const cookies = {
+  set(name: string, value: string, options: CookieOptions) {
+    const prefix = options.secure ? '__Secure-' : ''
+    const fullName = `${prefix}${name}`
+    const parts = [`${fullName}=${value}`]
+    if (options.secure) parts.push('Secure')
+    if (options.httpOnly) parts.push('HttpOnly')
+    if (options.sameSite) parts.push(`SameSite=${options.sameSite}`)
+    if (options.path) parts.push(`Path=${options.path}`)
+    if (options.maxAge) parts.push(`Max-Age=${options.maxAge}`)
+    document.cookie = parts.join('; ')
+  },
+
+  get(name: string): string | undefined {
+    // Try both prefixed and non-prefixed names
+    for (const prefix of ['__Secure-', '__Host-', '']) {
+      const fullName = `${prefix}${name}`
+      const match = document.cookie
+        .split('; ')
+        .find(row => row.startsWith(`${fullName}=`))
+      if (match) return match.split('=')[1]
+    }
+    return undefined
+  },
+}
+
+// Usage — consistent everywhere
+cookies.set('session', token, {
+  secure: true,
+  httpOnly: true,
+  sameSite: 'lax',
+  path: '/',
+  maxAge: 86400,
+})
+const session = cookies.get('session') // always finds it
 ```

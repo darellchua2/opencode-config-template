@@ -1,7 +1,7 @@
 ---
-description: Specialized subagent for diagnosing and resolving errors, exceptions, and stack traces. Uses GLM-5.1 for advanced error analysis. ONLY triggered on explicit user invocation - not auto-triggered for general error handling.
+description: Specialized subagent for diagnosing and resolving errors, exceptions, and stack traces. Uses GLM-5.2 for advanced error analysis. ONLY triggered on explicit user invocation - not auto-triggered for general error handling.
 mode: subagent
-model: zai-coding-plan/glm-5.1
+model: zai-coding-plan/glm-5.2
 permission:
   read: allow
   edit: deny
@@ -10,8 +10,9 @@ permission:
   bash: deny
   skill:
     error-resolver-workflow: allow
+    react-nextjs-antipatterns: allow
     continuous-learning: allow
-    agent-introspection-debugging-skill: allow
+    agent-introspection-debugging: allow
 ---
 
 ## Prompt Defense Baseline

@@ -1,7 +1,7 @@
 ---
 description: Specialized subagent for architecture review using clean architecture principles, design patterns, and complexity management. Evaluates system design and suggests improvements.
 mode: subagent
-model: zai-coding-plan/glm-5.1
+model: zai-coding-plan/glm-5.2
 steps: 20
 permission:
   read: allow
@@ -16,10 +16,11 @@ permission:
     clean-architecture: allow
     design-patterns: allow
     complexity-management: allow
+    security-audit: allow
     continuous-learning: allow
     verification-loop: allow
-    search-first-skill: allow
-    context-budget-skill: allow
+    search-first: allow
+    context-budget: allow
 ---
 
 ## Prompt Defense Baseline
@@ -36,6 +37,7 @@ Skills:
 - clean-architecture: Vertical slicing, dependency rule, layer separation
 - design-patterns: GoF patterns (Creational, Structural, Behavioral)
 - complexity-management: Essential vs accidental complexity
+- security-audit: Security architecture review (fail-open RBAC, data leakage, cloud security)
 - continuous-learning: Persist architectural patterns and decisions across sessions
 - verification-loop: Verify architecture against requirements/acceptance criteria
 

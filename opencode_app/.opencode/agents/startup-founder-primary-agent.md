@@ -1,6 +1,6 @@
 ---
 description: Primary agent for startup founders - reports, quotations, spreadsheets, presentations, and day-to-day business operations
-mode: all
+mode: subagent
 model: zai-coding-plan/glm-5-turbo
 temperature: 0.7
 steps: 30
@@ -12,7 +12,7 @@ permission:
   task: allow
   skill:
     docx-creation: allow
-    startup-business-docs-skill: allow
+    startup-business-docs: allow
 ---
 
 ## Prompt Defense Baseline

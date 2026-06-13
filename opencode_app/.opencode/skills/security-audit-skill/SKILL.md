@@ -116,6 +116,38 @@ repos:
 - [ ] Test for privilege escalation paths
 - [ ] Confirm directory traversal is prevented
 
+#### fail-open-rbac-middleware
+
+Audit all middleware/guards — verify every error path returns `401`/`403`, never `next()`. A single missed `return` in an `if (!authorized)` branch silently grants access.
+
+**Default-deny pattern**: Middleware MUST return an error response as the *only* continuation on failure. Never fall through.
+
+```bash
+# Detection: find middleware functions that DON'T return an error response on failure paths
+rg '(if\s*\(!.*auth|if\s*\(.*error|if\s*\(!.*role|if\s*\(!.*permission)' --type ts --type tsx -A 3 | \
+  grep -v 'return.*401\|return.*403\|return.*NextResponse\.\|return.*res\.\(status\|send\|json\|redirect\)'
+```
+
+```typescript
+// VULNERABLE — falls through to next() on failure
+function requireAdmin(req, res, next) {
+  const role = req.user?.role
+  if (role !== 'admin') {
+    res.status(403) // missing return!
+  }
+  next() // reached even when unauthorized
+}
+
+// SECURE — explicit return on every failure path
+function requireAdmin(req, res, next) {
+  const role = req.user?.role
+  if (role !== 'admin') {
+    return res.status(403).json({ error: 'Forbidden' })
+  }
+  next()
+}
+```
+
 ### A02: Cryptographic Failures
 
 - [ ] Verify TLS 1.2+ enforced everywhere
@@ -183,6 +215,79 @@ repos:
 - [ ] Check for allow-lists on outbound requests
 - [ ] Review cloud metadata endpoint access
 - [ ] Confirm response filtering for external requests
+
+## Step 3b: Production Data Leakage
+
+### debug-viewer-without-env-guard
+
+Debug panels rendering API responses must be `NODE_ENV` gated. A `JSON.stringify` dump in a debug component can leak full user records, tokens, and internal IDs in production.
+
+```bash
+# Detection: find debug panels or raw console.log dumps that lack environment guards
+rg '<Debug|console\.log\(JSON\.stringify' --type tsx --type ts -B 2 -A 1 | \
+  grep -v 'NODE_ENV\|process\.env\.NODE_ENV\|import\.meta\.env'
+```
+
+```typescript
+// VULNERABLE — always renders in all environments
+function ApiDebugPanel({ response }: { response: unknown }) {
+  return (
+    <div className="debug-panel">
+      <pre>{JSON.stringify(response, null, 2)}</pre>
+    </div>
+  )
+}
+
+// SECURE — gated behind NODE_ENV check
+function ApiDebugPanel({ response }: { response: unknown }) {
+  if (process.env.NODE_ENV !== 'development') return null
+
+  return (
+    <div className="debug-panel">
+      <pre>{JSON.stringify(response, null, 2)}</pre>
+    </div>
+  )
+}
+```
+
+```typescript
+// VULNERABLE — console.log in production
+console.log('API response:', JSON.stringify(response))
+
+// SECURE — conditional logging
+if (process.env.NODE_ENV === 'development') {
+  console.log('API response:', JSON.stringify(response))
+}
+```
+
+## Step 3c: Cloud Security
+
+### lambda-public-without-auth
+
+Lambda Function URL with `auth_type=NONE` bypasses all IAM and authorizer security, making the function publicly accessible to anyone on the internet. This is commonly introduced during Lambda migrations from API Gateway to Function URL.
+
+```hcl
+# Detection: scan for Lambda Function URLs with auth_type = NONE
+# OpenTofu/Terraform
+resource "aws_lambda_function_url" "bad" {
+  function_name    = aws_lambda_function.my_func.function_name
+  authorization_type = "NONE"  # ⚠️ PUBLIC — anyone can invoke
+}
+
+resource "aws_lambda_function_url" "good" {
+  function_name    = aws_lambda_function.my_func.function_name
+  authorization_type = "AWS_IAM"  # ✅ IAM auth required
+}
+```
+
+```bash
+# CLI detection: find Lambda functions with public Function URLs
+aws lambda list-functions --query 'Functions[*].FunctionName' --output text | \
+  xargs -I{} aws lambda get-function-url-config --function-name {} 2>/dev/null | \
+  jq 'select(.AuthType == "NONE")'
+```
+
+**Audit rule**: On every Lambda migration from API Gateway to Function URL, verify `authorization_type` is `AWS_IAM` (or the authorizer is attached). Never use `NONE` unless the function is intentionally public and rate-limited at the VPC/WAF level.
 
 ## Step 4: Security Headers Review
 

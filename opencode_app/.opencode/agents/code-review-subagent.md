@@ -1,7 +1,7 @@
 ---
 description: Comprehensive code review subagent combining SOLID principles, clean code, code smells, design patterns, and object design for thorough quality analysis. Ideal for pre-commit reviews and quality gates.
 mode: subagent
-model: zai-coding-plan/glm-5.1
+model: zai-coding-plan/glm-5.2
 steps: 15
 permission:
   read: allow
@@ -24,8 +24,11 @@ permission:
     design-patterns: allow
     object-design: allow
     complexity-management: allow
+    react-nextjs-antipatterns: allow
+    security-audit: allow
+    typescript-dry-principle: allow
     continuous-learning: allow
-    context-budget-skill: allow
+    context-budget: allow
 ---
 
 ## Prompt Defense Baseline
@@ -45,6 +48,9 @@ Skills:
 - design-patterns: Pattern identification and recommendations
 - object-design: Object stereotypes, value objects, aggregates
 - complexity-management: Cyclomatic/cognitive complexity assessment
+- react-nextjs-antipatterns: React/Next.js runtime anti-patterns (hydration, RBAC, memory leaks)
+- security-audit: Security vulnerability detection during review
+- typescript-dry-principle: DRY violations in TypeScript code
 - continuous-learning: Persist code review findings across sessions
 
 ## Review Checklist

@@ -206,6 +206,28 @@ def process_order(order):
 
 Use early returns, guard clauses, or polymorphism.
 
+#### Learning: `duplicate-service-account-check`
+
+Don't call the same expensive method twice in one function. Extract to a local variable — single call, clear intent, no redundant work.
+
+```python
+# BAD: two calls, two network round-trips
+def process_payment(self, order):
+    if self.auth_service.get_service_account() is None:
+        raise NoServiceAccount()
+    account = self.auth_service.get_service_account()
+    self.charge(account, order.total)
+
+# GOOD: single call, local variable
+def process_payment(self, order):
+    account = self.auth_service.get_service_account()
+    if account is None:
+        raise NoServiceAccount()
+    self.charge(account, order.total)
+```
+
+#### Rule 2 continued: Don't Use the ELSE Keyword
+
 ```typescript
 // BAD: else
 function getDiscount(user: User): number {
@@ -403,6 +425,38 @@ if (user.subscriptionLevel >= 2 && !user.isBanned) { }
 
 // GOOD: Self-documenting
 if (user.canAccessPremiumFeatures()) { }
+```
+
+---
+
+### Learning: `brittle-single-strategy-data-extraction`
+
+Hardcoding a single extraction path silently returns `null` when it fails — the caller never knows why. Implement multi-strategy extraction with ordered fallbacks and a clear error when all strategies fail.
+
+```python
+# BAD: single path, silent failure
+def extract_report_id(response: requests.Response) -> str | None:
+    try:
+        return response.json()["data"]["report_id"]
+    except (KeyError, ValueError):
+        return None  # Caller has no idea what went wrong
+
+# GOOD: multi-strategy with fallbacks
+def extract_report_id(response: requests.Response) -> str:
+    strategies = [
+        lambda: response.json()["data"]["report_id"],
+        lambda: response.headers["Location"].rstrip("/").split("/")[-1],
+        lambda: response.json()["report_id"],
+    ]
+    for strategy in strategies:
+        try:
+            return strategy()
+        except (KeyError, IndexError, ValueError, TypeError):
+            continue
+    raise ExtractionError(
+        f"Could not extract report_id from response "
+        f"(status={response.status_code}, body={response.text[:200]})"
+    )
 ```
 
 ---

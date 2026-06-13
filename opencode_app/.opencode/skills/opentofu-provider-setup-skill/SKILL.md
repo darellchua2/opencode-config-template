@@ -365,6 +365,37 @@ provider "azurerm" {
 - **Workspace Management**: Use Terraform workspaces for multiple environments
 - **Validation**: Use `tofu validate` to check configuration syntax
 
+## Learnings
+
+### local-terraform-state-production
+
+**Problem**: Using local state (`terraform.tfstate` on disk) for production environments means no state locking, no backup, and no concurrency safety — two engineers applying simultaneously will corrupt state.
+
+**Solution**: Migrate to a remote backend (S3 + DynamoDB for AWS, Azure Storage, or GCS). The remote backend provides locking, encryption, versioning, and team collaboration.
+
+```hcl
+# Before (dangerous for production)
+# No backend block — uses local terraform.tfstate
+
+# After — remote backend with locking
+terraform {
+  backend "s3" {
+    bucket         = "my-terraform-state"
+    key            = "prod/terraform.tfstate"
+    region         = "us-east-1"
+    encrypt        = true
+    dynamodb_table = "terraform-locks"
+  }
+}
+```
+
+```bash
+# Migration (no downtime — state file moves, resources stay)
+tofu init -migrate-state
+```
+
+**When**: Any environment shared by more than one person, or any production/mission-critical workload.
+
 ## Next Steps
 
 After configuring providers, explore:

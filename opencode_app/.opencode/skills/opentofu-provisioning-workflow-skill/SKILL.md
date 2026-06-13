@@ -715,6 +715,87 @@ tofu destroy
 - **State isolation**: Use separate state files for different environments
 - **Version control**: Store configuration in Git (but not state files!)
 
+## CI/CD Anti-Patterns
+
+### gha-artifact-name-mismatch
+
+**Problem**: In a GitHub Actions plan-then-apply workflow, if the upload and download artifact names don't match exactly, the apply job silently downloads an empty artifact and applies nothing — or fails with a confusing error.
+
+**Solution**: Use a single consistent artifact name (including environment/branch prefix) and pin the artifact action version.
+
+```yaml
+# CORRECT — matching artifact names
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: tofu plan -out=tfplan
+      - uses: actions/upload-artifact@v4
+        with:
+          name: terraform-plan-${{ github.sha }}
+          path: tfplan
+
+  apply:
+    needs: plan
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: terraform-plan-${{ github.sha }}
+      - run: tofu apply tfplan
+```
+
+```yaml
+# WRONG — name mismatch causes silent failure
+# upload:  name: plan-file
+# download: name: tfplan  ← won't find it
+```
+
+**When**: Any GHA workflow that separates plan and apply into different jobs.
+
+### no-rollback-on-deploy
+
+**Problem**: Deploying a new Lambda container image without capturing the previous image means a failed smoke test leaves the service broken with no way to automatically revert.
+
+**Solution**: Capture the previous image URI before deploying, run a smoke test, and rollback on failure.
+
+```bash
+#!/bin/bash
+set -euo pipefail
+
+FUNCTION_NAME="my-function"
+NEW_IMAGE="${ECR_REGISTRY}/${ECR_REPO}:${IMAGE_TAG}"
+
+PREVIOUS_IMAGE=$(aws lambda get-function \
+  --function-name "$FUNCTION_NAME" \
+  --query 'Code.ImageUri' \
+  --output text)
+
+aws lambda update-function-code \
+  --function-name "$FUNCTION_NAME" \
+  --image-uri "$NEW_IMAGE"
+
+aws lambda wait function-updated \
+  --function-name "$FUNCTION_NAME"
+
+if smoke_test "$FUNCTION_NAME"; then
+  echo "Deploy succeeded"
+else
+  echo "Smoke test failed — rolling back to $PREVIOUS_IMAGE"
+  aws lambda update-function-code \
+    --function-name "$FUNCTION_NAME" \
+    --image-uri "$PREVIOUS_IMAGE"
+  aws lambda wait function-updated \
+    --function-name "$FUNCTION_NAME"
+  exit 1
+fi
+```
+
+**When**: Any Lambda deployment pipeline that updates function code/images.
+
 ## Next Steps
 
 After mastering provisioning workflows, explore:

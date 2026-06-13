@@ -230,6 +230,52 @@ users = User.objects.select_related('profile').prefetch_related(
 )
 ```
 
+### N+1 Enrichment Queries
+
+Enrichment pipelines that loop over a list and fire individual queries per item are a common N+1 variant. Batch-fetch with an IN clause and group results by ID into a Map.
+
+```typescript
+// BEFORE: N+1 enrichment — ~4 queries per report
+async function enrichReports(reports: Report[]): Promise<EnrichedReport[]> {
+  return Promise.all(
+    reports.map(async (report) => {
+      const user = await getUserById(report.userId)
+      const project = await getProjectById(report.projectId)
+      const metrics = await getMetricsForReport(report.id)
+      const template = await getTemplateById(report.templateId)
+      return { ...report, user, project, metrics, template }
+    })
+  )
+}
+
+// AFTER: Batch-fetch with IN clause, group by ID into Map
+async function enrichReports(reports: Report[]): Promise<EnrichedReport[]> {
+  const userIds = [...new Set(reports.map((r) => r.userId))]
+  const projectIds = [...new Set(reports.map((r) => r.projectId))]
+  const reportIds = reports.map((r) => r.id)
+  const templateIds = [...new Set(reports.map((r) => r.templateId))]
+
+  const [users, projects, metricsMap, templates] = await Promise.all([
+    getUsersByIds(userIds),
+    getProjectsByIds(projectIds),
+    getMetricsByReportIds(reportIds),
+    getTemplatesByIds(templateIds),
+  ])
+
+  const userMap = new Map(users.map((u) => [u.id, u]))
+  const projectMap = new Map(projects.map((p) => [p.id, p]))
+  const templateMap = new Map(templates.map((t) => [t.id, t]))
+
+  return reports.map((report) => ({
+    ...report,
+    user: userMap.get(report.userId)!,
+    project: projectMap.get(report.projectId)!,
+    metrics: metricsMap.get(report.id)!,
+    template: templateMap.get(report.templateId)!,
+  }))
+}
+```
+
 ### SQL Query Logging (Development)
 
 ```python
@@ -317,6 +363,35 @@ if (global.gc) {
 | Global caches growing unbounded | Memory grows linearly | Use LRU cache with max size |
 | Timers not cleared | Callbacks hold references | `clearInterval`/`clearTimeout` |
 | Circular references | GC can't collect | Use WeakMap/WeakSet |
+
+### Module-Scope Map Cache
+
+A module-level `Map` used as a cache in a SPA grows without bound as users navigate between pages. Entries are never evicted, causing linear memory growth. Use an LRU cache with a size cap, or clean up entries on component unmount.
+
+```typescript
+// BEFORE: Module-level Map grows without bound in SPA
+const reportCache = new Map<string, Report>()
+
+export function getReport(id: string): Report {
+  if (reportCache.has(id)) return reportCache.get(id)!
+  const report = fetchReport(id)
+  reportCache.set(id, report)
+  return report
+}
+
+// AFTER: LRU with max size cap
+import { LRUCache } from "lru-cache"
+
+const reportCache = new LRUCache<string, Report>({ max: 200, ttl: 5 * 60 * 1000 })
+
+export function getReport(id: string): Report {
+  const cached = reportCache.get(id)
+  if (cached) return cached
+  const report = fetchReport(id)
+  reportCache.set(id, report)
+  return report
+}
+```
 
 ### React Cleanup
 

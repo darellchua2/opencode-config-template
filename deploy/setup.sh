@@ -561,7 +561,7 @@ USAGE:
       microsoft-copilot  M365 Copilot conversations
       microsoft-dataverse Business data (Dynamics 365)
 
-   SKILLS (74):
+   SKILLS (78):
                Framework (13):       test-generator-framework, linting-workflow,
                                       pr-creation-workflow, pr-merge-workflow,
                                       error-resolver-workflow, tdd-workflow,
@@ -573,9 +573,10 @@ USAGE:
                                   javascript-eslint-linter, changelog-python-cliff,
                                   python-backend-skill, python-packaging-skill
 
-           Framework-Specific (6): nextjs-pr-workflow, nextjs-unit-test-creator,
+           Framework-Specific (7): nextjs-pr-workflow, nextjs-unit-test-creator,
                                  nextjs-standard-setup, nextjs-image-usage,
-                                 typescript-dry-principle, accessibility-a11y-skill
+                                 typescript-dry-principle, accessibility-a11y-skill,
+                                 react-nextjs-antipatterns-skill
 
            OpenCode Meta (4):    opencode-agent-creation, opencode-skill-creation,
                                  opencode-skills-maintainer,
@@ -2216,12 +2217,14 @@ print_summary() {
         echo "      - python-ruff-linter"
         echo "      - javascript-eslint-linter"
         echo "      - changelog-python-cliff"
-        echo "    - Framework-Specific (5):"
+        echo "    - Framework-Specific (7):"
         echo "      - nextjs-pr-workflow"
         echo "      - nextjs-unit-test-creator"
         echo "      - nextjs-standard-setup"
         echo "      - nextjs-image-usage"
         echo "      - typescript-dry-principle"
+        echo "      - accessibility-a11y-skill"
+        echo "      - react-nextjs-antipatterns-skill"
         echo "    - OpenCode Meta (4):"
         echo "      - opencode-agent-creation"
         echo "      - opencode-skill-creation"
@@ -2326,10 +2329,10 @@ print_next_steps() {
     echo "         opencode \"prompt\" (uses build)"
      echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "                     📦 77 Skills Available"
+    echo "                     📦 78 Skills Available"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "  Framework (11) • Language-Specific (4) • Framework-Specific (5)"
+    echo "  Framework (13) • Language-Specific (6) • Framework-Specific (7)"
     echo "  OpenCode Meta (4) • OpenTofu (7) • Git/Workflow (10)"
     echo "  Documentation (3) • JIRA (3) • Code Quality (7)"
     echo "  Agent Optimization (7)"

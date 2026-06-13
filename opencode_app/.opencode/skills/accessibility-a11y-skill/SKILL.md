@@ -109,6 +109,41 @@ Use this skill when:
 </div>
 ```
 
+#### Dynamic Error Banners (`aria-alert-dynamic-errors`)
+
+Conditionally rendered error banners are invisible to screen readers unless announced via `role="alert"`. Icon-only dismiss buttons need an explicit `aria-label`.
+
+```tsx
+// BEFORE: Error banner not announced, dismiss button has no label
+{error && (
+  <div className="rounded-md bg-red-50 p-4">
+    <p className="text-sm text-red-700">{error}</p>
+    <button onClick={() => setError(null)}>
+      <XIcon className="h-5 w-5 text-red-500" />
+    </button>
+  </div>
+)}
+
+// AFTER: role="alert" announces changes, aria-label on dismiss button
+{error && (
+  <div role="alert" className="rounded-md bg-red-50 p-4">
+    <p className="text-sm text-red-700">{error}</p>
+    <button
+      onClick={() => setError(null)}
+      aria-label="Dismiss error"
+      className="ml-2 text-red-500 hover:text-red-700"
+    >
+      <XIcon className="h-5 w-5" />
+    </button>
+  </div>
+)}
+```
+
+**Key points**:
+- `role="alert"` makes the container a live assertive region — screen readers announce content immediately on render
+- Icon-only buttons require `aria-label` describing the action (e.g., "Dismiss error", "Close notification")
+- Do NOT place `role="alert"` on a permanently visible container — only on dynamically shown/hidden content
+
 #### Disclosure/Accordion
 
 ```html

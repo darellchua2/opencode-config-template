@@ -1152,6 +1152,45 @@ resource "aws_s3_bucket_lifecycle_configuration" "data" {
 - **Validate Configuration**: Run `tofu validate` before applying
 - **Use Remote State**: Share state across configurations
 
+## Learnings
+
+### lambda-function-url-with-cname
+
+**Problem**: When pointing a custom domain to a Lambda Function URL, using `ALIAS` records in Route53 fails — Lambda Function URLs are not supported by Route53 alias targets (only ALBs, CloudFront distributions, API Gateway, etc.).
+
+**Solution**: Use `CNAME` records instead of `ALIAS` for Lambda Function URL domains.
+
+```hcl
+# Lambda Function URL
+resource "aws_lambda_function_url" "api" {
+  function_name              = aws_lambda_function.api.function_name
+  authorization_type         = "NONE"
+}
+
+# Route53 — use CNAME, NOT A (alias)
+resource "aws_route53_record" "api_cname" {
+  zone_id = aws_route53_zone.main.zone_id
+  name    = "api.example.com"
+  type    = "CNAME"
+  ttl     = 300
+  records = [aws_lambda_function_url.api.function_url]
+}
+
+# WRONG — this will fail
+# resource "aws_route53_record" "api_alias" {
+#   type    = "A"
+#   name    = "api.example.com"
+#   zone_id = aws_route53_zone.main.zone_id
+#   alias {
+#     name                   = aws_lambda_function_url.api.function_url
+#     zone_id                = ""  # Lambda URLs have no hosted zone
+#     evaluate_target_health = true
+#   }
+# }
+```
+
+**When**: Routing a custom domain to a Lambda Function URL. Consider API Gateway or CloudFront + Lambda if you need ALIAS support.
+
 ## Next Steps
 
 After mastering AWS provider, explore:

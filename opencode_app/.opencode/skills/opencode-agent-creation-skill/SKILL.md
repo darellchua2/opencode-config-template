@@ -51,7 +51,7 @@ Prompt the user for the following information:
 - **Mode**: `primary` or `subagent`
 
 **Configuration Options**:
-- **Model**: Provider/model-id (e.g., `zai-coding-plan/glm-5.1`, `openai/gpt-4`)
+- **Model**: Provider/model-id (e.g., `zai-coding-plan/glm-5.2`, `openai/gpt-4`)
 - **Temperature**: 0.0-1.0 (default: 0.7)
 - **Steps**: Max agentic iterations (default: 5)
 - **Hidden**: Hide from @ autocomplete (default: false, subagents only)
@@ -78,7 +78,7 @@ Example:
   - Name: code-reviewer
   - Description: Review code for quality, security, and best practices
   - Mode: subagent
-  - Model: zai-coding-plan/glm-5.1
+  - Model: zai-coding-plan/glm-5.2
   - Temperature: 0.3
   - Steps: 3
   - Scope: project
@@ -132,7 +132,7 @@ Create the frontmatter section based on agent type:
 ---
 description: Main coding assistant for Python development
 mode: primary
-model: zai-coding-plan/glm-5.1
+model: zai-coding-plan/glm-5.2
 temperature: 0.7
 steps: 10
 permission:
@@ -150,7 +150,7 @@ color: primary
 ---
 description: Review code for quality and security issues
 mode: subagent
-model: zai-coding-plan/glm-5.1
+model: zai-coding-plan/glm-5.2
 temperature: 0.3
 steps: 3
 hidden: true
@@ -384,7 +384,7 @@ grep -E "^(description|mode):" .opencode/agents/<name>.md
 ---
 description: Review code for quality, security, and best practices
 mode: subagent
-model: zai-coding-plan/glm-5.1
+model: zai-coding-plan/glm-5.2
 temperature: 0.3
 steps: 3
 hidden: true

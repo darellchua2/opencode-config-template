@@ -9,9 +9,10 @@ permission:
   grep: allow
   bash: deny
   skill:
-     nextjs-standard-setup: allow
-     docstring-generator: allow
-     nextjs-image-usage: allow
+    nextjs-standard-setup: allow
+    docstring-generator: allow
+    nextjs-image-usage: allow
+    react-nextjs-antipatterns: allow
 ---
 
 ## Prompt Defense Baseline
@@ -28,6 +29,7 @@ Skills:
 - nextjs-standard-setup: Create new Next.js 16 apps with shadcn, Tailwind v4, src directory
 - docstring-generator: Add TSDoc documentation to components (covers TypeScript)
 - nextjs-image-usage: Configure Next.js Image component with remote domains
+- react-nextjs-antipatterns: Anti-patterns to avoid during setup (hydration, RBAC, memory leaks)
 
 Workflow:
 1. Initialize Next.js 16 with TypeScript and Tailwind
