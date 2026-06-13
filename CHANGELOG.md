@@ -1,3 +1,10 @@
+## [1.62.1](https://github.com/darellchua2/opencode-config-template/compare/v1.62.0...v1.62.1) (2026-06-13)
+
+
+### Bug Fixes
+
+* **agents:** align skill permissions with actual skill names ([973210c](https://github.com/darellchua2/opencode-config-template/commit/973210c2726687250811e474a82a69c79cc1b719))
+
 # [1.62.0](https://github.com/darellchua2/opencode-config-template/compare/v1.61.0...v1.62.0) (2026-06-13)
 
 
