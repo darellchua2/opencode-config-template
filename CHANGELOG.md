@@ -1,3 +1,10 @@
+# [1.62.0](https://github.com/darellchua2/opencode-config-template/compare/v1.61.0...v1.62.0) (2026-06-13)
+
+
+### Features
+
+* **skills:** curate 48 learnings into 1 new + 18 existing skills [BT-69] ([#211](https://github.com/darellchua2/opencode-config-template/issues/211)) ([98cd42c](https://github.com/darellchua2/opencode-config-template/commit/98cd42c4d7ce972b17b70d01d986d0125347aed6))
+
 # [1.61.0](https://github.com/darellchua2/opencode-config-template/compare/v1.60.0...v1.61.0) (2026-06-03)
 
 
