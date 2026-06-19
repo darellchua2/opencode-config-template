@@ -286,7 +286,7 @@ This repository implements **skill modularization** with 78 skills organized acr
 
 ### Agents
 
-34 agents provide specialized task handling (5 primary + 29 subagents). 5 additional language-specific and operational subagents added in this release:
+34 agent `.md` files (plus 4 config-builtin agents defined directly in `config.json`: `build`, `plan`, `explore`, `general`) provide specialized task handling. Note: the 3 `*-primary-agent` files (`startup-founder`, `business-ops`, `office-document`) are routing hubs but are declared with `mode: subagent`.
 
 #### Primary Agents
 

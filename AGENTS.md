@@ -252,5 +252,5 @@ permission:
 | Pattern | Count | Notes |
 |---------|-------|-------|
 | `task: allow` | 1 | startup-founder-primary-agent |
-| `task: { "*": deny, ... }` | 9 | code-review, linting, pr-workflow, refactoring, testing, startup-ceo, office-document, opencode-tooling, architecture-review |
-| No `task` field | 21 | Defaults to full access |
+| `task: { "*": deny, ... }` | 15 | code-review, linting, pr-workflow, refactoring, testing, architecture-review, office-document, opencode-tooling, ticket-creation, startup-ceo, loop-operator, python-reviewer, typescript-reviewer, go-reviewer, rust-reviewer (all use deny-by-default) |
+| No `task` field | 18 | Defaults to full access |

@@ -335,21 +335,27 @@ USAGE:
                          CONFIGURED FEATURES
 =======================================================================
 
-   AGENTS (33):
+   AGENTS (39):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
     general              General-purpose multi-step research
     scout                External docs and dependency research
+    explorer             Codebase exploration and analysis (subagent)
     code-review          Code review with SOLID/clean-code analysis
+    python-reviewer      Python code review (PEP 8, type hints, async)
+    typescript-reviewer  TypeScript/JS code review (type safety, React/Next)
+    go-reviewer          Go code review (idioms, concurrency, errors)
+    rust-reviewer        Rust code review (ownership, unsafe, Result/Option)
     testing              Test generation with framework detection
     pr-workflow          PR creation with quality gates and JIRA integration
     linting              Code linting with auto-fix for Python/JS/TS
     refactoring          Code refactoring with DRY/SOLID patterns
     architecture-review  Architecture review with clean architecture principles
+    tdd                  Test Driven Development workflow guidance
     coverage             Test coverage reporting and badges
     documentation        Docstring generation (PEP 257, JSDoc, Javadoc)
-    tdd                  Test Driven Development workflow guidance
+    loop-operator        Autonomous loop execution with self-correction
     pptx-specialist      PowerPoint presentation creation and editing
     docx-creation        Word document creation and manipulation
     xlsx-specialist      Spreadsheet creation and analysis

@@ -500,21 +500,27 @@ USAGE:
                          CONFIGURED FEATURES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-   AGENTS (33):
+   AGENTS (39):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
     general              General-purpose multi-step research
     scout                External docs and dependency research
+    explorer             Codebase exploration and analysis (subagent)
     code-review          Code review with SOLID/clean-code analysis
+    python-reviewer      Python code review (PEP 8, type hints, async)
+    typescript-reviewer  TypeScript/JS code review (type safety, React/Next)
+    go-reviewer          Go code review (idioms, concurrency, errors)
+    rust-reviewer        Rust code review (ownership, unsafe, Result/Option)
     testing              Test generation with framework detection
     pr-workflow          PR creation with quality gates and JIRA integration
     linting              Code linting with auto-fix for Python/JS/TS
     refactoring          Code refactoring with DRY/SOLID patterns
     architecture-review  Architecture review with clean architecture principles
+    tdd                  Test Driven Development workflow guidance
     coverage             Test coverage reporting and badges
     documentation        Docstring generation (PEP 257, JSDoc, Javadoc)
-    tdd                  Test Driven Development workflow guidance
+    loop-operator        Autonomous loop execution with self-correction
     pptx-specialist      PowerPoint presentation creation and editing
     docx-creation        Word document creation and manipulation
     xlsx-specialist      Spreadsheet creation and analysis
@@ -538,12 +544,14 @@ USAGE:
     Usage: opencode --agent build "implement auth feature"
            opencode --agent explore "find all API routes"
 
-  MCP SERVERS (17):
+  MCP SERVERS (26):
     Auto-start (npx):
       codegraph           Pre-indexed code knowledge graph (100% local)
       atlassian          JIRA and Confluence integration
       zai-vision-mcp-server     Image analysis and video processing
       mermaid            Mermaid diagram rendering (SVG/PNG)
+      filesystem         Local filesystem read/write access
+      next-devtools      Next.js DevTools integration
 
     Remote (requires ZAI_API_KEY):
       web-reader         Web page content extraction
@@ -560,6 +568,18 @@ USAGE:
       microsoft-user     User profile and org info
       microsoft-copilot  M365 Copilot conversations
       microsoft-dataverse Business data (Dynamics 365)
+
+    Autodesk (requires Autodesk access token):
+      autodesk-revit     Revit model data and APIs
+      autodesk-fusion    Fusion 360 integration
+      autodesk-model-data  Autodesk Model Data API
+      autodesk-help      Autodesk Help knowledge base
+
+    Google Cloud (requires Google auth):
+      google-bigquery    BigQuery analytics queries
+      google-maps        Google Maps geocoding/routes
+      google-gce         Google Compute Engine management
+      google-gke         Google Kubernetes Engine management
 
    SKILLS (78):
                Framework (13):       test-generator-framework, linting-workflow,
@@ -2176,7 +2196,7 @@ print_summary() {
 
     # Agents configured
     if [ -f "$CONFIG_FILE" ]; then
-        echo "✓ Configured 33 agents:"
+        echo "✓ Configured 38 agents:"
         echo "    - build (default) - Full-featured coding agent"
         echo "    - plan - Planning agent (read-only)"
         echo "    - explore - Codebase exploration and analysis"

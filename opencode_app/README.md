@@ -23,7 +23,7 @@ opencode_app/
 ├── .dockerignore          # Excludes _archived, .env, node_modules
 └── .opencode/
     ├── agents/            # 34 agent .md files (single source of truth)
-    └── skills/            # 62 skill directories (single source of truth)
+    └── skills/            # 78 skill directories (single source of truth)
 ```
 
 ## How It Works
@@ -99,4 +99,4 @@ OpenCode supports subagent-to-subagent delegation via the Task tool, controlled 
 - Agent name = filename minus `.md` (e.g., `code-review-subagent.md` -> `code-review-subagent`)
 - Each spawned subagent gets its own session, context window, and step budget
 - Hub-and-spoke (primary agent -> subagent) remains the recommended pattern
-- 9 of 30 agents have explicit `task` permissions; the remaining 21 default to full access
+- 16 of 34 agents have explicit `task` permissions; the remaining 18 default to full access
