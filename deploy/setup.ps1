@@ -1164,7 +1164,8 @@ function Set-Configuration {
             Write-Host ""
             Write-Host "Configured MCP servers:" -ForegroundColor Green
             Write-Host "    - Local (auto-start): atlassian, zai-vision-mcp-server, codegraph, mermaid"
-            Write-Host "    - Remote (needs key): web-reader, web-search-prime, zread"
+            Write-Host "    - Remote (needs key): web-reader, zread"
+            Write-Host "    - Available but disabled (opt-in): web-search-prime, filesystem, next-devtools"
             Write-Host ""
         } else {
             Write-LogError "config.json not found in $ScriptDir"
