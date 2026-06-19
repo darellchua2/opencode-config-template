@@ -583,7 +583,7 @@ USAGE:
       google-gce         Google Compute Engine management
       google-gke         Google Kubernetes Engine management
 
-   SKILLS (79):
+   SKILLS (82):
                Framework (13):       test-generator-framework, linting-workflow,
                                       pr-creation-workflow, pr-merge-workflow,
                                       error-resolver-workflow, tdd-workflow,
@@ -609,11 +609,12 @@ USAGE:
                                  opentofu-provider-setup, opentofu-provisioning-workflow,
                                  opentofu-ecr-provision
 
-           Git/Workflow (11):   ascii-diagram-creator, mermaid-diagram-creator,
+           Git/Workflow (12):   ascii-diagram-creator, mermaid-diagram-creator,
                                   ticket-plan-workflow-skill, plan-execution-skill,
                                   git-issue-labeler, git-issue-updater,
                                   git-semantic-commits, semantic-release-convention,
-                                  git-compact-commits, plan-updater, version-bump-standard
+                                  git-compact-commits, plan-updater, version-bump-standard,
+                                  git-branch-workflow-setup-skill
 
           Documentation (3):    coverage-readme-workflow, docstring-generator,
                                  documentation-sync-workflow
@@ -2260,7 +2261,7 @@ print_summary() {
         echo "      - opentofu-provider-setup"
         echo "      - opentofu-provisioning-workflow"
         echo "      - opentofu-ecr-provision"
-        echo "    - Git/Workflow (10):"
+        echo "    - Git/Workflow (12):"
         echo "      - ascii-diagram-creator"
         echo "      - mermaid-diagram-creator"
         echo "      - ticket-plan-workflow-skill"
@@ -2272,6 +2273,7 @@ print_summary() {
         echo "      - git-compact-commits"
         echo "      - plan-updater"
         echo "      - version-bump-standard"
+        echo "      - git-branch-workflow-setup-skill"
         echo "    - Documentation (3):"
         echo "      - coverage-readme-workflow"
         echo "      - docstring-generator"
@@ -2352,11 +2354,11 @@ print_next_steps() {
     echo "         opencode \"prompt\" (uses build)"
      echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "                     📦 79 Skills Available"
+    echo "                     📦 82 Skills Available"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
     echo "  Framework (13) • Language-Specific (6) • Framework-Specific (7)"
-    echo "  OpenCode Meta (4) • OpenTofu (7) • Git/Workflow (10)"
+    echo "  OpenCode Meta (4) • OpenTofu (7) • Git/Workflow (12)"
     echo "  Documentation (3) • JIRA (3) • Code Quality (7)"
     echo "  Agent Optimization (7)"
     echo ""

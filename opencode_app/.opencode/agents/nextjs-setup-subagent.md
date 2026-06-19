@@ -39,6 +39,7 @@ Workflow:
 5. Create Tekk-prefixed component architecture
 6. Configure proper imports and exports
 7. Add TSDoc documentation standards (via docstring-generator)
+8. Post-scaffold branch-workflow detection: use `glob`/`read` to check for existing release tooling (`.github/workflows/*release*`, `.releaserc*`, `release-please-config.json`, `.changeset/`) and the skip marker (`.opencode/branch-workflow-skipped`). If ALL absent, include `NEEDS_GIT_BRANCH_SETUP: true` in the Return Contract so the primary agent can offer branch-workflow setup.
 
 Always follow Next.js best practices:
 - Use next/image for all images
