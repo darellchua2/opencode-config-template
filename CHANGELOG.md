@@ -1,3 +1,10 @@
+# [1.64.0](https://github.com/darellchua2/opencode-config-template/compare/v1.63.0...v1.64.0) (2026-06-19)
+
+
+### Features
+
+* **agents:** mandatory learning gate + filesystem MCP doc accuracy [[#214](https://github.com/darellchua2/opencode-config-template/issues/214)] ([#215](https://github.com/darellchua2/opencode-config-template/issues/215)) ([9c78c30](https://github.com/darellchua2/opencode-config-template/commit/9c78c303d01fb5ddd2b97be3cf676921930ae51c))
+
 # [1.63.0](https://github.com/darellchua2/opencode-config-template/compare/v1.62.1...v1.63.0) (2026-06-19)
 
 
