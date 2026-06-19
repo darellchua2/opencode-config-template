@@ -1,7 +1,7 @@
 ---
 description: Create and manage GitHub issues and JIRA tickets. Triggers on "create issue", "new issue", "bug report", "feature request", "git issue", "jira ticket", "open issue". Handles issue creation, labeling, branch creation, and semantic formatting.
 mode: subagent
-model: zai-coding-plan/glm-5.2
+model: zai-coding-plan/glm-5-turbo
 steps: 30
 permission:
   read: allow
@@ -211,7 +211,7 @@ After execution, this subagent provides:
    - GitHub: `issue-{NUMBER}` (e.g., `issue-456`)
 9. Generate PLAN file using `ticket-plan-workflow-skill` template in `PLANS/` directory
    - **MANDATORY format**: every step MUST be atomic and carry **Why** + **Done when** + **Consumers affected**. The PLAN MUST include a top-level **Dependency & Consumer Map** section.
-   - **Atomicity self-check (blocks commit)**: before committing, verify every `- [ ] **N.M**` step has a `— **Why:**` line. If ANY step lacks a "Why", **block the commit** — do not commit/push. Surface the malformed steps to the user, ask them to supply rationale, regenerate, and re-check. Only proceed to step 10 once the self-check passes (zero malformed steps).
+   - **Atomicity self-check (blocks commit)**: before committing, verify every `- [ ] **N.M**` step carries the full rationale triple — `— **Why:**`, `— **Done when:**`, and `— **Consumers affected:**`. If ANY step is missing any of the three, **block the commit** — do not commit/push. Surface the malformed steps to the user, ask them to supply the missing fields, regenerate, and re-check. Only proceed to step 10 once the self-check passes (zero malformed steps).
 10. Commit PLAN file with semantic message: `docs(plan): add PLAN-{id}.md for {ticket-key}`
 11. Push branch to remote
 12. Post progress comment to ticket (GitHub: `gh issue comment`, JIRA: `atlassian_addCommentToJiraIssue`)

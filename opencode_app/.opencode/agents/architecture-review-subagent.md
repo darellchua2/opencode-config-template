@@ -1,7 +1,7 @@
 ---
 description: Specialized subagent for architecture review using clean architecture principles, design patterns, and complexity management. Evaluates system design and suggests improvements.
 mode: subagent
-model: zai-coding-plan/glm-5.2
+model: zai-coding-plan/glm-5.1
 steps: 20
 permission:
   read: allow
@@ -91,7 +91,7 @@ The continuous-learning skill auto-provisions `LEARNINGS/` if it doesn't exist i
 
 **This is a blocking gate, not optional guidance.** Before sign-off, you MUST map every changed symbol's consumers. The review verdict is capped at `partial` if any changed symbol's consumers were not inspected.
 
-- **Primary**: `codegraph_callers` on each changed symbol at depth ≥ 2 to enumerate downstream consumers. Follow with `codegraph_impact` (depth 2–3) on changed files to confirm change radius.
+- **Primary**: `codegraph_callers` on each changed symbol to enumerate downstream consumers. Follow with `codegraph_impact` (depth 2–3) on changed files to confirm change radius.
 - **Fallback (no `.codegraph/`)**: grep/glob for importers and references of every changed symbol/file. Do NOT skip traversal just because CodeGraph is absent.
 - **Gate rule**: if a changed symbol has consumers that were not reviewed for breakage, return `Status: partial` with the uninspected consumers listed under **Issues**. Only return `success` when all consumers of all changed symbols have been inspected.
 

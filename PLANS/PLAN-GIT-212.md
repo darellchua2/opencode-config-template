@@ -141,6 +141,27 @@ Surfaces which nodes each change depends on (predecessors) and who consumes each
 
 ---
 
+## Phase 5: Subagent Model Tiering (folded into #212)
+
+_Right-size subagent models — only the primary session needs the 1M-context `glm-5.2`. Verified against [models.dev](https://models.dev/providers/zai-coding-plan/): 5.2 is the only 1M model; 5.1/5-turbo/5v-turbo/4.7 are all ~200K._
+
+- [x] **5.1** Migrate the 10 reasoning subagents off `glm-5.2` to tier-appropriate models (reviewers/refactor/tdd/opentofu/loop-op/opencode-tooling → `glm-5.1`; error-resolver → `glm-5v-turbo` [vision]; ticket-creation → `glm-5-turbo`), and re-tier the 4.7 specialists/setup agents → `glm-5-turbo`
+    — **Why:** `glm-5.2`'s only distinguishing feature is 1M context, which no scoped subagent needs; reserving it for the orchestrator cuts wasted context budget and standardizes the tier. `glm-5v-turbo` is the sole vision model (required by error-resolver's screenshot diagnosis and image-analyzer).
+    — **Done when:** All 34 agents carry a real model field and none (except primary config) is on `glm-5.2`.
+    — **Consumers affected:** All subagents; primary session unchanged.
+
+- [x] **5.2** Fix two model-field bugs: `image-analyzer-subagent` (no model → `glm-5v-turbo`) and `opencode-tooling-subagent` (invalid `provider/model-id` placeholder in frontmatter → `glm-5.1`)
+    — **Why:** Both were silently falling back to the primary default (`glm-5.2`), defeating the tiering and running vision/config work on the wrong model.
+    — **Done when:** Both frontmatters declare a valid `zai-coding-plan/*` model.
+    — **Consumers affected:** image-analyzer, opencode-tooling.
+
+- [x] **5.3** Document the tiering in `AGENTS.md` (new "Subagent Model Tiering" section) and update `opencode-agent-creation-skill` examples (subagent examples → `glm-5.1`; primary example keeps `glm-5.2`; model option describes the tiers)
+    — **Why:** Without documenting the convention, future agents drift back to `glm-5.2` by copy-paste; the skill is the template new agents are built from.
+    — **Done when:** AGENTS.md has the tier table; the skill's only remaining `glm-5.2` references are the primary example + the tier description.
+    — **Consumers affected:** All future agent additions.
+
+---
+
 ## Risks & Mitigations
 
 | Risk | Mitigation |
@@ -150,6 +171,7 @@ Surfaces which nodes each change depends on (predecessors) and who consumes each
 | `codegraph` unavailable in a target project | 2.1/2.2 specify grep fallback explicitly; gate degrades, not fails. |
 | Markdown indentation breaks the multi-line step block | 4.3 render-sanity check; canonical format documented in this PLAN for copy-paste. |
 | Count drift introduced by accident | 4.2 re-confirms counts against pre-change baseline before merge. |
+| `error-resolver` on `glm-5v-turbo` loses reasoning depth vs `glm-5.2` | Vision is a hard requirement (screenshot diagnosis) and only 5v-turbo has it; deep text-only diagnosis may be slightly weaker. Acceptable trade-off; revisit if error-resolver quality regresses. |
 
 ---
 

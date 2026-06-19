@@ -96,6 +96,20 @@ When reviewing code or architecture, check `LEARNINGS/` for existing patterns an
 **Project-Level Subagents:**
 - (none currently)
 
+## Subagent Model Tiering
+
+Subagents are right-sized by purpose; only the primary session uses the 1M-context model. All model IDs are `zai-coding-plan/<id>` (verified against [models.dev](https://models.dev/providers/zai-coding-plan/)).
+
+| Model | Context | Use for |
+|-------|---------|---------|
+| `glm-5.2` | 1,000,000 | **Primary session only** (`config.json`/`opencode.json` top-level `model`) — holds the long orchestrator context. No subagent uses this. |
+| `glm-5.1` | 200,000 | Sound-reasoning subagents: reviewers (code/architecture/language), refactoring, tdd, opentofu-explorer, loop-operator, opencode-tooling |
+| `glm-5-turbo` | 200,000 | Exploratory / low-impact / coordination: explorer, testing, setup, specialists, document creators, pr-workflow, ticket-creation |
+| `glm-5v-turbo` | 200,000 | **Vision required**: image-analyzer, error-resolver (screenshot diagnosis). No structured output. |
+| `glm-4.7` | 204,800 | Docs/lint/reporting: documentation, linting, coverage |
+
+When adding a new subagent, pick the tier by what the agent *does* (correctness-critical → 5.1; exploratory/low-impact → 5-turbo; vision → 5v-turbo; docs/lint → 4.7). Never default a subagent to `glm-5.2`.
+
 ## CodeGraph MCP Server
 
 [CodeGraph](https://github.com/colbymchenry/codegraph) is a pre-indexed code knowledge graph MCP server integrated into this configurator. It builds a local SQLite database of symbol relationships, call graphs, and code structure — enabling agents to query the graph instantly instead of scanning files with grep/glob/Read.

@@ -244,16 +244,16 @@ fi
 A step that uses the `**N.M**` marker but is missing a **Why** line is **malformed** and must be flagged. This is the reusable flag primitive that `ticket-creation-subagent`'s commit-blocking self-check depends on.
 
 ```bash
-# Find atomic steps (N.M marker) and check each has a Why line
-# A well-formed block: the **N.M** line is followed by a "— **Why:**" line
-grep -nE '^\s*— \*\*Why:\*\*' "$PLAN_FILE" > /tmp/why_lines
+# Find atomic steps (N.M marker) and verify each carries the full rationale triple:
+# Why (step_no+1), Done when (step_no+2), Consumers affected (step_no+3)
 grep -nE '^\- \[.\] \*\*[0-9]+\.[0-9]+\*\*' "$PLAN_FILE" | while read -r step_line; do
   step_no=$(echo "$step_line" | cut -d: -f1)
-  # expect a Why line at step_no+1
-  if ! sed -n "$((step_no+1))p" "$PLAN_FILE" | grep -q "— \*\*Why:\*\*"; then
-    echo "WARNING: malformed step at line $step_no — missing a \"Why\" rationale:"
-    sed -n "${step_no}p" "$PLAN_FILE"
-  fi
+  for marker in "Why" "Done when" "Consumers affected"; do
+    if ! sed -n "$((step_no+1)),$((step_no+3))p" "$PLAN_FILE" | grep -q "— \*\*$marker:\*\*"; then
+      echo "WARNING: malformed step at line $step_no — missing a \"$marker\" line:"
+      sed -n "${step_no}p" "$PLAN_FILE"
+    fi
+  done
 done
 ```
 

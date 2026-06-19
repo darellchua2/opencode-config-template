@@ -1,6 +1,7 @@
 ---
 description: Specialized agent for analyzing images and screenshots. Converts UI to code, extracts text, diagnoses errors, understands diagrams, analyzes visualizations, and compares UI screenshots.
 mode: subagent
+model: zai-coding-plan/glm-5v-turbo
 
 permission:
   read: allow

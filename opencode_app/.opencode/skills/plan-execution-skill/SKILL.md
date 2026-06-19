@@ -108,14 +108,15 @@ Parse out, per step: `action`, `why`, `done_when`, `consumers`.
 Determine which phase to work on:
 
 ```bash
-# Find first incomplete phase
-CURRENT_PHASE=$(grep -A 10 "^### Phase" "$PLAN_FILE" | grep -B 5 "^- \[ \]" | head -1)
+# Find first incomplete phase — awk tracks the most recent ### Phase header
+# (robust to 4-line atomic steps; the old -A 10 window missed the 4th+ step)
+CURRENT_PHASE=$(awk '/^### Phase/{phase=$0} /^- \[ \]/{print phase; exit}' "$PLAN_FILE")
 
-# Find first incomplete task
-NEXT_TASK=$(grep "^- \[ \]" "$PLAN_FILE" | head -1)
+# Find first incomplete atomic step
+NEXT_STEP=$(grep "^- \[ \]" "$PLAN_FILE" | head -1)
 
 echo "Current phase: $CURRENT_PHASE"
-echo "Next task: $NEXT_TASK"
+echo "Next step: $NEXT_STEP"
 ```
 
 ### Step 4: Execute Tasks

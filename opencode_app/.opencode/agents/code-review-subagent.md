@@ -1,7 +1,7 @@
 ---
 description: Comprehensive code review subagent combining SOLID principles, clean code, code smells, design patterns, and object design for thorough quality analysis. Ideal for pre-commit reviews and quality gates.
 mode: subagent
-model: zai-coding-plan/glm-5.2
+model: zai-coding-plan/glm-5.1
 steps: 15
 permission:
   read: allow
@@ -95,7 +95,7 @@ Skills:
 
 Before starting the review, assess scope:
 - Count files to review
-- If reviewing >15 files, propose a focused strategy:
+- If reviewing >20 files, propose a focused strategy:
   - Deep review: business logic, API handlers, state mutations
   - Surface scan: config, tests, docs, formatting
 - Request diff/commit range from parent agent when available (review changes, not entire codebase)
@@ -164,7 +164,7 @@ The continuous-learning skill auto-provisions `LEARNINGS/` if it doesn't exist i
 
 - **Impact (mandatory)**: run `codegraph_impact` on changed files (grep/glob for importers if no `.codegraph/`). The review does not start until the change radius is known.
 - **Consumer coverage (mandatory)**: for every changed symbol, enumerate its consumers via `codegraph_callers` and verify none are broken. A changed symbol whose consumers were not inspected is an uninspected gap.
-- **Gate rule**: if any changed symbol has uninspected downstream consumers, report it under the Critical/Major issues and mark the consumer-coverage check incomplete. Surface this in the Output Format's "Consumer Coverage" line.
+- **Gate rule**: if any changed symbol has uninspected downstream consumers, report it under the Critical/Major issues and mark the consumer-coverage check incomplete. Surface this in the Output Format's "Consumer Coverage" line. **Return `Status: partial` if consumer coverage is incomplete; only return `success` when all consumers of all changed symbols are inspected.**
 
 ## Plan Atomicity Check
 

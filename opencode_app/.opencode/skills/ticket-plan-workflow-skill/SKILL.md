@@ -262,7 +262,7 @@ $SCOPE
 $TECHNICAL_NOTES
 
 ---
-*Tracking progress with ticket-plan-workflow-skill*"
+*Tracking progress with ticket-plan-workflow-skill*
 ---
 
 ## Dependency & Consumer Map
@@ -279,10 +279,10 @@ _Every step MUST be atomic (one reversible concern) and carry a rationale. Rejec
 
 ### Canonical step format (every step must follow this shape)
 
-    - [ ] **N.M** <single atomic action — verb + target + outcome>
-        — **Why:** <what this unblocks / why it must precede others>
-        — **Done when:** <objective, checkable completion signal>
-        — **Consumers affected:** <who depends on this; none if N/A>
+- [ ] **N.M** <single atomic action — verb + target + outcome>
+    — **Why:** <what this unblocks / why it must precede others>
+    — **Done when:** <objective, checkable completion signal>
+    — **Consumers affected:** <who depends on this; none if N/A>
 
 ### Phase 1: <name>
 - [ ] **1.1** <atomic action>
@@ -310,7 +310,7 @@ _Every step MUST be atomic (one reversible concern) and carry a rationale. Rejec
 
 ## Step Authoring Rules
 - **Atomic**: one reversible concern per step; if a step does two things, split it.
-- **Rationale mandatory**: every step MUST have a **Why**; a step without rationale is malformed and blocks commit (enforced by `ticket-creation-subagent` + `plan-updater-skill`).
+- **Rationale mandatory**: every step MUST have a **Why**; a step without rationale is malformed and blocks commit (enforced by `ticket-creation-subagent`; flagged by `plan-updater-skill`).
 - **Completion signal**: every step MUST have an objective **Done when** check, not a subjective "done".
 - **Consumers explicit**: list affected consumers so reviewers/execution know blast radius; write "none" if truly isolated.
 

@@ -324,8 +324,8 @@ Each `force-replacement` cascades to every resource that depends on it — enume
 **3. Grep cross-stack / cross-module consumers** of any changed resource:
 
 ```bash
-# Module references
-grep -rnE 'module "' modules/ .
+# Module references (single path — `.` already recurses into modules/)
+grep -rnE 'module "' .
 
 # Cross-stack state consumption
 grep -rn 'terraform_remote_state' .
@@ -338,6 +338,9 @@ grep -rnE 'data "' .
 
 # Outputs that other stacks consume
 grep -rnE 'output "' .
+
+# Refactoring-time stale references (moved/removed/import can dangle consumers)
+grep -rnE 'moved \{|removed \{|import \{' .
 ```
 
 **Gate rule**: do not `apply` until, for every changed resource, you have listed (a) its DAG dependents from `tofu graph`, (b) any `force-replacement` cascade, and (c) its module/remote-state/depends_on/data/output consumers from the greps above.
