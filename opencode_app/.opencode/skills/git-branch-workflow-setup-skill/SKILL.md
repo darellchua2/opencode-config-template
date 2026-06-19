@@ -109,7 +109,7 @@ If the `question` tool is **unavailable, times out, or the context is non-intera
 
 ## Option Matrix
 
-When the user selects "Standard" or "Custom", the following parameters are configurable. **All defaults and valid values are cross-references** — this skill contains ZERO inline convention values:
+When the user selects "Standard" or "Custom", the following parameters are configurable. **Defaults and valid values are cross-referenced** to governance skills — this skill does not define new conventions:
 
 | Parameter | Default | Valid Values | Reference |
 |-----------|---------|--------------|-----------|
@@ -138,6 +138,14 @@ When the user accepts (options 1, 2, or 3), delegate execution to `repo-ops-spec
 | `checklist` | reference | Yes | Point to `version-bump-standard-skill` §Onboarding Checklist — do NOT copy steps |
 
 **Delegation instruction:** Pass the payload above to `repo-ops-specialist-subagent` via the Task tool. The executor loads `version-bump-standard-skill` (execution) and `semantic-release-convention-skill` (governance) itself — they are already in its `permission.skill` allowlist.
+
+### Failure Handling
+
+If `repo-ops-specialist-subagent` returns `Status: failed` or `Status: partial`:
+
+1. Do NOT write the skip marker (the user may want to retry)
+2. Surface the error to the user with the executor's **Issues** field
+3. Offer retry or skip — only write the skip marker if the user explicitly chooses skip
 
 ## Compatibility
 

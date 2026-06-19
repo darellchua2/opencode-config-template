@@ -215,11 +215,11 @@ After execution, this subagent provides:
 10. Commit PLAN file with semantic message: `docs(plan): add PLAN-{id}.md for {ticket-key}`
 11. Push branch to remote
 12. Post progress comment to ticket (GitHub: `gh issue comment`, JIRA: `atlassian_addCommentToJiraIssue`)
-13. **Optional branch-workflow signal:** After full-workflow branch creation, use `glob`/`read` to check for existing release tooling (`.github/workflows/*release*`, `.releaserc*`, `release-please-config.json`, `.changeset/**`) and the skip marker (`.opencode/branch-workflow-skipped`). If ALL absent, include `NEEDS_GIT_BRANCH_SETUP: true` in the Return Contract so the primary agent can offer branch-workflow setup. Do NOT invoke the skill or spawn `repo-ops-specialist` directly (permission denied).
+13. **Optional branch-workflow signal:** After full-workflow branch creation, check detection signals per `git-branch-workflow-setup-skill` §Detection Logic and the skip marker (`.opencode/branch-workflow-skipped`). If all signals absent, include `NEEDS_GIT_BRANCH_SETUP: true` in the Return Contract so the primary agent can offer branch-workflow setup. Do NOT invoke the skill or spawn `repo-ops-specialist` directly (permission denied).
 
 ### Step 4: Return Results
 
-13. Return ticket details to caller (see "What This Subagent Returns" section)
+14. Return ticket details to caller (see "What This Subagent Returns" section)
 
 ---
 
