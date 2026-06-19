@@ -2,7 +2,7 @@
 
 **Issue**: [#212 — PLAN files: atomic steps with rationale + mandatory consumer traversal](https://github.com/darellchua2/opencode-config-template/issues/212)
 **Branch**: `issue-212`
-**Status**: In Progress
+**Status**: Completed
 
 ---
 
@@ -56,7 +56,7 @@ Surfaces which nodes each change depends on (predecessors) and who consumes each
 
 **Key ordering constraints:**
 - Phase 1 must precede Phase 3 — `ticket-creation-subagent` enforces the format defined in `ticket-plan-workflow-skill` and reuses `plan-updater-skill`'s malformed-step flag.
-- Phase 2 is independent of Phases 1 & 3 and may be interleaved, but steps within Phase 2 are independent of each other.
+- Phase 2 is independent of Phases 1 & 3 and may be interleaved. Within Phase 2: 2.1 and 2.2 are independent of each other; **2.3 must precede 2.4** (the provisioning skill mirrors the opentofu agent's traversal method).
 - Phase 4 verification gates merge — it re-checks all 7 prior steps.
 
 ---
@@ -72,17 +72,17 @@ Surfaces which nodes each change depends on (predecessors) and who consumes each
 
 ## Phase 1: PLAN Format — Skills (Requirement 1 core)
 
-- [ ] **1.1** Rewrite the PLAN template in `skills/ticket-plan-workflow-skill/SKILL.md` to the atomic+rationale format (Why / Done when / Consumers affected per step) and add a top-level **Dependency & Consumer Map** section
+- [x] **1.1** Rewrite the PLAN template in `skills/ticket-plan-workflow-skill/SKILL.md` to the atomic+rationale format (Why / Done when / Consumers affected per step) and add a top-level **Dependency & Consumer Map** section
     — **Why:** The skill is the single source of truth every PLAN is generated from; without redefining the template here, all downstream skills and the enforcement step have nothing concrete to parse or enforce.
     — **Done when:** The skill's "Implementation Phases" section shows the canonical multi-line step format and a Dependency & Consumer Map section, and no stray generic `- [ ] Implement primary functionality`-style lines remain in the skill.
     — **Consumers affected:** `plan-execution-skill`, `plan-updater-skill`, `ticket-creation-subagent`.
 
-- [ ] **1.2** Update `skills/plan-execution-skill/SKILL.md` to parse/handle atomic steps with rationale and surface a step's **Consumers affected** list before touching that step's target
+- [x] **1.2** Update `skills/plan-execution-skill/SKILL.md` to parse/handle atomic steps with rationale and surface a step's **Consumers affected** list before touching that step's target
     — **Why:** Execution must not mutate a target whose consumers were not surfaced first — the rationale + consumer lines exist specifically to force that pre-touch review; the executor is the runtime enforcer of the format.
     — **Done when:** The skill documents a parsing rule for the `**N.M** / **Why:** / **Done when:** / **Consumers affected:**` block and a "surface consumers before executing the step" instruction.
     — **Consumers affected:** `plan-updater-skill` (shares the parse model), plan-execution runs.
 
-- [ ] **1.3** Update `skills/plan-updater-skill/SKILL.md` to preserve Why/Done-when/Consumers lines verbatim when marking checkboxes and to flag malformed steps missing a "Why"
+- [x] **1.3** Update `skills/plan-updater-skill/SKILL.md` to preserve Why/Done-when/Consumers lines verbatim when marking checkboxes and to flag malformed steps missing a "Why"
     — **Why:** Checkbox updates must not corrupt the rationale metadata the new format mandates, and the malformed-flag is the reusable primitive the `ticket-creation-subagent` self-check (3.1) depends on — defining it here avoids duplication.
     — **Done when:** The skill states both behaviors (verbatim preservation + flag-on-missing-Why) and references the canonical step block.
     — **Consumers affected:** `ticket-creation-subagent` (3.1 reuses the flag rule), plan-updater runs.
@@ -91,22 +91,22 @@ Surfaces which nodes each change depends on (predecessors) and who consumes each
 
 ## Phase 2: Dependency/Consumer Traversal — Review & Explorer Agents (Requirement 2)
 
-- [ ] **2.1** Add a MANDATORY consumer-traversal gate to `agents/architecture-review-subagent.md`: require `codegraph_callers` depth>=2 + `codegraph_impact` (grep fallback), set review verdict to `partial` when any changed symbol's consumers were not inspected, and add a plan-atomicity check when reviewing a PLAN file
+- [x] **2.1** Add a MANDATORY consumer-traversal gate to `agents/architecture-review-subagent.md`: require `codegraph_callers` depth>=2 + `codegraph_impact` (grep fallback), set review verdict to `partial` when any changed symbol's consumers were not inspected, and add a plan-atomicity check when reviewing a PLAN file
     — **Why:** The core defect this issue fixes is consumer traversal being treated as optional; making it a blocking gate with a concrete fallback (grep) and a defined downgrade (`partial`) is what converts "should" into "must", and the plan-atomicity check ensures reviewed PLANs honor Requirement 1.
     — **Done when:** The agent's workflow has an explicit, mandatory traversal section naming `codegraph_callers`/`codegraph_impact` + grep fallback, a `partial`-verdict rule, and a PLAN-atomicity check clause.
     — **Consumers affected:** PLAN reviewers, `code-review-subagent` (parity reference).
 
-- [ ] **2.2** Add a MANDATORY `codegraph_impact` + consumer-coverage step to `agents/code-review-subagent.md` (before review begins) and a plan-atomicity check when reviewing a PLAN file
+- [x] **2.2** Add a MANDATORY `codegraph_impact` + consumer-coverage step to `agents/code-review-subagent.md` (before review begins) and a plan-atomicity check when reviewing a PLAN file
     — **Why:** Code review sign-off without impact analysis lets consumer regressions slip through; pairing with 2.1 gives the two review agents a consistent traversal contract, and the atomicity check keeps code review aligned with the PLAN format.
     — **Done when:** The agent requires `codegraph_impact` (with consumer coverage) as a prerequisite gate and contains a PLAN-atomicity check clause.
     — **Consumers affected:** review pipeline, PR quality gates.
 
-- [ ] **2.3** Add a new **Dependency & Consumer Traversal** section to `agents/opentofu-explorer-subagent.md` using `tofu graph` + grep for `module`, `terraform_remote_state`, `depends_on`, `data`, and cross-stack outputs (explicitly: no CodeGraph for HCL)
-    — **Why:** CodeGraph does not index HCL, so the codebase traversal contract from 2.1/2.2 does not apply to IaC — a dedicated HCL-aware method is required, and 2.4 (the provisioning skill) mirrors this agent's approach, so the agent must define it first.
-    — **Done when:** The agent has a traversal section listing `tofu graph` + the five grep patterns and a "no CodeGraph for HCL" note.
+- [x] **2.3** Add a new **Dependency & Consumer Traversal** section to `agents/opentofu-explorer-subagent.md` using `tofu graph` + grep for `module`, `terraform_remote_state`, `depends_on`, `data`, and cross-stack outputs; flip the agent frontmatter `bash: deny → allow` so `tofu graph`/`tofu plan` are runnable (explicitly: no CodeGraph for HCL)
+    — **Why:** CodeGraph does not index HCL, so the codebase traversal contract from 2.1/2.2 does not apply to IaC — a dedicated HCL-aware method is required. `tofu graph`/`tofu plan` are CLI commands that need `bash`, and the current `bash: deny` makes them unrunnable by the agent, so the permission must be flipped to make the traversal feasible. 2.4 (the provisioning skill) mirrors this agent's approach, so the agent must define it first.
+    — **Done when:** The agent has a traversal section listing `tofu graph` + the five grep patterns, a "no CodeGraph for HCL" note, and the frontmatter `bash` field is set to `allow`.
     — **Consumers affected:** `opentofu-provisioning-workflow-skill` (2.4 mirrors this).
 
-- [ ] **2.4** Add a **Dependency & Consumer Analysis** subsection to `skills/opentofu-provisioning-workflow-skill/SKILL.md` covering `tofu graph`, plan replace-detection, and grep patterns for remote-state/module/data
+- [x] **2.4** Add a **Dependency & Consumer Analysis** subsection to `skills/opentofu-provisioning-workflow-skill/SKILL.md` covering `tofu graph`, plan replace-detection, and grep patterns for remote-state/module/data
     — **Why:** Provisioning is where IaC changes actually apply; surfacing replace-detection + remote-state/module/data consumers at plan time prevents destructive cross-stack surprises, and it operationalizes the traversal method 2.3 defines.
     — **Done when:** The skill contains a Dependency & Consumer Analysis subsection naming `tofu graph`, plan replace-detection, and the grep patterns.
     — **Consumers affected:** IaC provisioning runs.
@@ -115,7 +115,7 @@ Surfaces which nodes each change depends on (predecessors) and who consumes each
 
 ## Phase 3: Plan Authoring Enforcement — ticket-creation-subagent (Requirement 1)
 
-- [ ] **3.1** Update `agents/ticket-creation-subagent.md` to enforce atomic+rationale PLAN generation and add an atomicity self-check that **blocks commit** if any step lacks a "Why"
+- [x] **3.1** Update `agents/ticket-creation-subagent.md` to enforce atomic+rationale PLAN generation and add an atomicity self-check that **blocks commit** if any step lacks a "Why"
     — **Why:** This is the only node that both consumes the format (from `ticket-plan-workflow-skill`, 1.1) and reuses the malformed-flag (from `plan-updater-skill`, 1.3); without a commit-blocking self-check at the authoring source, downstream parse/preserve/flag logic never receives well-formed plans to act on.
     — **Done when:** The agent's PLAN-generation step mandates the atomic+rationale format and includes a pre-commit self-check that fails the commit on any step missing a "Why" line.
     — **Consumers affected:** Every PLAN the subagent generates; all downstream execution.
@@ -124,17 +124,17 @@ Surfaces which nodes each change depends on (predecessors) and who consumes each
 
 ## Phase 4: Verification
 
-- [ ] **4.1** Grep the 8 edited files to confirm no stray old-format generic-phase examples remain (e.g., `Implement primary functionality`, `Update affected modules`)
+- [x] **4.1** Grep the 8 edited files to confirm no stray old-format generic-phase examples remain (e.g., `Implement primary functionality`, `Update affected modules`)
     — **Why:** Leftover old-format examples would contradict the new format and silently teach the wrong pattern; a grep pass is the objective signal the migration is complete.
     — **Done when:** A `grep` across the 8 files returns zero matches for the legacy generic-phase phrases.
     — **Consumers affected:** None (verification gate).
 
-- [ ] **4.2** Confirm counts in `deploy/setup.sh`, `deploy/setup.ps1`, and `README.md` are unchanged (modifications only — no agent/skill added/removed)
+- [x] **4.2** Confirm counts in `deploy/setup.sh`, `deploy/setup.ps1`, and `README.md` are unchanged (modifications only — no agent/skill added/removed)
     — **Why:** This issue's scope is content modifications; touching counts would imply structural additions and trigger unwanted deploy-sync side effects, violating the stated constraint.
     — **Done when:** Skill count, agent count, and MCP counts in the three files match their pre-change values.
     — **Consumers affected:** None (verification gate).
 
-- [ ] **4.3** Markdown-render sanity check: confirm Why/Done-when/Consumers lines render as intended in each edited file and the Dependency & Consumer Map table is well-formed
+- [x] **4.3** Markdown-render sanity check: confirm Why/Done-when/Consumers lines render as intended in each edited file and the Dependency & Consumer Map table is well-formed
     — **Why:** The structured lines use leading `— **Label:**` markers that must survive markdown rendering; a render check guards against indentation/escaping regressions that would make the format unparseable by the execution/updater skills.
     — **Done when:** Each of the 8 files renders the step block and map table without broken structure.
     — **Consumers affected:** None (verification gate).
@@ -145,7 +145,8 @@ Surfaces which nodes each change depends on (predecessors) and who consumes each
 
 | Risk | Mitigation |
 |------|------------|
-| Old-format examples survive in other skills not in scope | 4.1 is scoped to the 8 files; note any out-of-scope hits for a follow-up issue rather than expanding scope. |
+| `bash: allow` expands the opentofu agent's capability surface | The agent already holds `edit: allow` and its skills are tofu-CLI-based; enabling bash is consistent with its IaC-management purpose and required for `tofu graph`/`plan`. Still a frontmatter content edit — no count/deploy sync. |
+| Old-format examples survive in other skills not in scope | 4.1 is scoped to the 8 files; note any out-of-scope hits (incl. `skills/_archived/*`) for a follow-up issue rather than expanding scope. |
 | `codegraph` unavailable in a target project | 2.1/2.2 specify grep fallback explicitly; gate degrades, not fails. |
 | Markdown indentation breaks the multi-line step block | 4.3 render-sanity check; canonical format documented in this PLAN for copy-paste. |
 | Count drift introduced by accident | 4.2 re-confirms counts against pre-change baseline before merge. |

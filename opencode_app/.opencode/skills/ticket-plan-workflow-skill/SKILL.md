@@ -17,7 +17,7 @@ I implement a unified ticket/issue creation and planning workflow supporting bot
 3. **Determine Ticket Scope**: Ask if work should be broken into sub-issues/subtasks
 4. **Create Ticket**: Use GitHub CLI or Atlassian MCP tools to create the ticket with appropriate labels/type
 5. **Create Git Branch**: Generate branch from ticket identifier (e.g., `GIT-123` or `PROJ-456`)
-6. **Generate PLAN file**: Create comprehensive plan with phases and todo list in `PLANS/` directory
+6. **Generate PLAN file**: Create comprehensive plan with **atomic steps + rationale** (Why / Done when / Consumers affected) and a **Dependency & Consumer Map** in `PLANS/` directory
 7. **Commit and Push**: Commit PLAN file with semantic formatting and push to remote
 8. **Update Ticket**: Post progress comment to GitHub issue or JIRA ticket
 9. **Prompt Execution**: Ask user if they want to proceed with plan execution
@@ -265,39 +265,54 @@ $TECHNICAL_NOTES
 *Tracking progress with ticket-plan-workflow-skill*"
 ---
 
+## Dependency & Consumer Map
+
+_Before writing steps, list each touched file/module and who consumes it. Use `codegraph_callers` (code) or `tofu graph` + grep (IaC). This surfaces blast radius and execution order._
+
+| Node (file/module) | Depends on (must precede) | Consumers (who depends on this) | Change risk |
+|---------------------|---------------------------|---------------------------------|-------------|
+| `path/to/file`      | —                         | caller-A, module-B              | low/med/high |
+
 ## Implementation Phases
 
-### Phase 1: Setup & Analysis
-- [ ] Review existing codebase for affected areas
-- [ ] Identify dependencies and potential conflicts
-- [ ] Set up development environment if needed
-- [ ] Create feature flags (if applicable)
+_Every step MUST be atomic (one reversible concern) and carry a rationale. Reject any step missing a "Why" — see Step Authoring Rules below._
 
-### Phase 2: Core Implementation
-- [ ] Implement primary functionality
-- [ ] Add error handling and edge cases
-- [ ] Update affected modules/components
-- [ ] Add logging and monitoring
+### Canonical step format (every step must follow this shape)
 
-### Phase 3: Testing
-- [ ] Write unit tests for new functionality
-- [ ] Write integration tests
-- [ ] Perform manual testing
-- [ ] Test edge cases and error scenarios
+    - [ ] **N.M** <single atomic action — verb + target + outcome>
+        — **Why:** <what this unblocks / why it must precede others>
+        — **Done when:** <objective, checkable completion signal>
+        — **Consumers affected:** <who depends on this; none if N/A>
 
-### Phase 4: Documentation & Cleanup
-- [ ] Update code documentation/docstrings
-- [ ] Update README if applicable
-- [ ] Remove debug code and comments
-- [ ] Code review preparation
+### Phase 1: <name>
+- [ ] **1.1** <atomic action>
+    — **Why:** <rationale>
+    — **Done when:** <checkable signal>
+    — **Consumers affected:** <consumers or "none">
+- [ ] **1.2** <atomic action>
+    — **Why:** <rationale>
+    — **Done when:** <checkable signal>
+    — **Consumers affected:** <consumers or "none">
 
-### Phase 5: Final Validation
-- [ ] Run all tests (unit, integration, e2e)
-- [ ] Verify acceptance criteria met
-- [ ] Performance testing (if applicable)
-- [ ] Security review (if applicable)
+### Phase 2: <name>
+- [ ] **2.1** <atomic action>
+    — **Why:** <rationale>
+    — **Done when:** <checkable signal>
+    — **Consumers affected:** <consumers or "none">
+
+### Phase 3: <name>
+- [ ] **3.1** <atomic action>
+    — **Why:** <rationale>
+    — **Done when:** <checkable signal>
+    — **Consumers affected:** <consumers or "none">
 
 ---
+
+## Step Authoring Rules
+- **Atomic**: one reversible concern per step; if a step does two things, split it.
+- **Rationale mandatory**: every step MUST have a **Why**; a step without rationale is malformed and blocks commit (enforced by `ticket-creation-subagent` + `plan-updater-skill`).
+- **Completion signal**: every step MUST have an objective **Done when** check, not a subjective "done".
+- **Consumers explicit**: list affected consumers so reviewers/execution know blast radius; write "none" if truly isolated.
 
 ## Technical Notes
 $TECHNICAL_NOTES
@@ -362,12 +377,12 @@ gh issue comment "$ISSUE_NUMBER" --body "## Planning Complete - $(date '+%Y-%m-%
 ### Completed
 - [x] GitHub issue created
 - [x] Branch created and checked out
-- [x] PLAN file generated with implementation phases
+- [x] PLAN file generated (atomic steps + rationale + Dependency & Consumer Map)
 - [x] Initial commit pushed to remote
 
 ### Next Steps
 1. Review \`PLANS/PLAN-GIT-${ISSUE_NUMBER}.md\`
-2. Begin Phase 1: Setup & Analysis
+2. Begin Phase 1 (first atomic step)
 
 ---
 *Tracking progress with ticket-plan-workflow-skill*"
@@ -384,7 +399,7 @@ COMMENT="**Planning Complete**
 
 **Next Steps**:
 1. Review PLANS/PLAN-${TICKET_KEY}.md
-2. Begin Phase 1: Setup & Analysis"
+2. Begin Phase 1 (first atomic step)"
 
 atlassian_addCommentToJiraIssue \
   --cloudId "$CLOUD_ID" \
@@ -432,9 +447,10 @@ Would you like to proceed with executing the plan?
 - Keep it consistent with PLAN file naming
 
 ### PLAN File Structure
-- Start with phases for large work
-- Each phase has clear todo items
-- Todos are actionable and verifiable
+- Start with a **Dependency & Consumer Map** (blast radius before steps)
+- Group work into phases for large efforts
+- Every step is **atomic** (one reversible concern) and carries **Why** + **Done when** + **Consumers affected**
+- A step without a **Why** is malformed — it blocks commit
 - Include success criteria
 
 ### Commit Messages

@@ -210,6 +210,8 @@ After execution, this subagent provides:
    - JIRA: `{TICKET_KEY}` (e.g., `IBIS-123`)
    - GitHub: `issue-{NUMBER}` (e.g., `issue-456`)
 9. Generate PLAN file using `ticket-plan-workflow-skill` template in `PLANS/` directory
+   - **MANDATORY format**: every step MUST be atomic and carry **Why** + **Done when** + **Consumers affected**. The PLAN MUST include a top-level **Dependency & Consumer Map** section.
+   - **Atomicity self-check (blocks commit)**: before committing, verify every `- [ ] **N.M**` step has a `— **Why:**` line. If ANY step lacks a "Why", **block the commit** — do not commit/push. Surface the malformed steps to the user, ask them to supply rationale, regenerate, and re-check. Only proceed to step 10 once the self-check passes (zero malformed steps).
 10. Commit PLAN file with semantic message: `docs(plan): add PLAN-{id}.md for {ticket-key}`
 11. Push branch to remote
 12. Post progress comment to ticket (GitHub: `gh issue comment`, JIRA: `atlassian_addCommentToJiraIssue`)
@@ -396,9 +398,11 @@ Output after full workflow:
 When your task is complete, return ONLY this structure:
 
 **Status:** [success | partial | failed]
-**Output:** [Ticket ID, Branch, PLAN file path, Architecture review status]
+**Output:** [Ticket ID, Branch, PLAN file path, Architecture review status, Atomicity self-check: pass/fail]
 **Summary:** [2-3 sentences max describing what was done]
 **Issues:** [blockers, warnings, or "None"]
+
+> If the atomicity self-check blocked the commit (steps missing "Why"), return `Status: partial` with the malformed step list under **Issues** and do NOT report the PLAN as pushed.
 
 Do NOT return:
 - Full reasoning or chain-of-thought

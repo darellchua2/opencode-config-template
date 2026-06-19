@@ -7,7 +7,7 @@ permission:
   edit: allow
   glob: allow
   grep: allow
-  bash: deny
+  bash: allow
   skill:
     opentofu-kubernetes-explorer-skill: allow
     opentofu-neon-explorer-skill: allow
@@ -48,3 +48,22 @@ Workflow:
 6. Ensure proper state management and backup strategies
 
 For multi-platform deployments, coordinate between multiple platform explorers. Always follow security best practices and implement proper IAM policies.
+
+## Mandatory Dependency & Consumer Traversal
+
+**Blocking gate, not optional.** Before any `tofu apply` (or sign-off on an IaC change), you MUST traverse dependency consumers. **CodeGraph does NOT index HCL** — use `tofu graph` + grep instead, never CodeGraph for Terraform/OpenTofu.
+
+- **Resource DAG (mandatory)**: `tofu graph` to render the resource dependency graph. Identify which resources depend on each changed resource.
+- **Replace detection (mandatory)**: `tofu plan` and read every `# <resource> will be replaced` / `must be replaced` line — flag any change that triggers `force-replacement` and enumerate the downstream resources it cascades to.
+- **Cross-stack consumers (mandatory)**: grep for the five reference patterns that bind stacks/modules:
+  1. `module "..."` — module references
+  2. `terraform_remote_state` — cross-stack state consumption
+  3. `depends_on = [...]` — explicit dependencies
+  4. `data "..."` — data sources referencing managed/existing resources
+  5. `output "..."` — outputs consumed by other stacks
+
+**Gate rule**: if a changed resource has downstream consumers (via `depends_on`, module refs, remote state, or outputs) that were not inspected for breakage, do not approve the change — report them as uninspected consumers. Only sign off when all consumers of all changed resources are accounted for.
+
+## CodeGraph Note
+
+This agent does **not** use CodeGraph. HCL/Terraform is not indexed by CodeGraph; the Mandatory Dependency & Consumer Traversal section above is the IaC equivalent.

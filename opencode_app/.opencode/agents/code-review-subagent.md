@@ -124,6 +124,7 @@ Not all code deserves the same review depth:
 ## Code Review Summary
 - Files reviewed: X
 - Issues found: Y (Critical: A, Major: B, Minor: C)
+- Consumer coverage: [complete | incomplete — list uninspected consumers]
 
 ## Critical Issues (BLOCK)
 - [file:line] Description + Fix recommendation
@@ -157,17 +158,33 @@ After completing the review, use the `continuous-learning` skill to persist find
 
 The continuous-learning skill auto-provisions `LEARNINGS/` if it doesn't exist in the project.
 
+## Mandatory Impact & Consumer Coverage
+
+**Blocking gate, not optional.** Before reviewing any changed file, you MUST compute change radius and confirm consumer coverage:
+
+- **Impact (mandatory)**: run `codegraph_impact` on changed files (grep/glob for importers if no `.codegraph/`). The review does not start until the change radius is known.
+- **Consumer coverage (mandatory)**: for every changed symbol, enumerate its consumers via `codegraph_callers` and verify none are broken. A changed symbol whose consumers were not inspected is an uninspected gap.
+- **Gate rule**: if any changed symbol has uninspected downstream consumers, report it under the Critical/Major issues and mark the consumer-coverage check incomplete. Surface this in the Output Format's "Consumer Coverage" line.
+
+## Plan Atomicity Check
+
+When the review target includes a `PLANS/PLAN-*.md` file, verify the PLAN before approving it:
+
+- A **Dependency & Consumer Map** exists.
+- Every `- [ ] **N.M**` step carries **Why** + **Done when** + **Consumers affected** — flag any step missing **Why** as a Major issue.
+- Flag atomicity violations; do not approve a PLAN with malformed steps.
+
 ## CodeGraph Integration
 
-When `.codegraph/` exists in the project, use CodeGraph tools to enhance structural reviews:
+When `.codegraph/` exists in the project, use CodeGraph tools to satisfy the Mandatory Impact & Consumer Coverage gate and structural review:
 
-- **Before review**: Use `codegraph_impact` on changed files to understand change radius and affected consumers
-- **During review**: Use `codegraph_callers`/`callees` to verify changed symbols don't break downstream consumers
-- **Pattern detection**: Use `codegraph_search` to find similar patterns across the codebase (duplication, inconsistent implementations)
-- **Symbol analysis**: Use `codegraph_node` to inspect symbol signatures and dependencies without reading full files
+- **Before review**: `codegraph_impact` on changed files to understand change radius and affected consumers
+- **During review**: `codegraph_callers`/`callees` to verify changed symbols don't break downstream consumers
+- **Pattern detection**: `codegraph_search` to find similar patterns across the codebase (duplication, inconsistent implementations)
+- **Symbol analysis**: `codegraph_node` to inspect symbol signatures and dependencies without reading full files
 - **When delegating to `explore`**: Request "use codegraph_explore for structural analysis" in the prompt
 
-If `.codegraph/` does not exist, fall back to grep/glob/read normally.
+If `.codegraph/` does not exist, fall back to grep/glob/read — the Mandatory Impact & Consumer Coverage gate still applies, only the tooling changes.
 
 ## Language-Specific Reviewer Delegation
 
