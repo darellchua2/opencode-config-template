@@ -1,3 +1,10 @@
+## [1.65.1](https://github.com/darellchua2/opencode-config-template/compare/v1.65.0...v1.65.1) (2026-06-19)
+
+
+### Bug Fixes
+
+* model ([55451b0](https://github.com/darellchua2/opencode-config-template/commit/55451b0bcdfbaa12cafbdd48b78cb47b75a19d8f))
+
 # [1.65.0](https://github.com/darellchua2/opencode-config-template/compare/v1.64.0...v1.65.0) (2026-06-19)
 
 
