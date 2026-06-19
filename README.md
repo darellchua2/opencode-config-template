@@ -189,6 +189,23 @@ This template implements **skill permissions** to control which skills agents ca
 - ⚠️ Not Crush-compatible - Uses custom schema
 - ⚠️ Manual maintenance required - Adding skills requires editing agent prompts
 
+### MCP Servers
+
+The configuration ships 26 MCP server entries. **6 are enabled by default:**
+
+| Server | Type | Purpose |
+|--------|------|---------|
+| `codegraph` | local (npx) | Pre-indexed code knowledge graph |
+| `atlassian` | local (npx) | JIRA and Confluence |
+| `zai-vision-mcp-server` | local (npx) | Image/video analysis |
+| `mermaid` | local (npx) | Mermaid diagram rendering (SVG) |
+| `zai-web-reader` | remote | Web page content extraction |
+| `zai-zread` | remote | GitHub repository search/reading |
+
+The remaining 20 (Microsoft 365, Autodesk, Google Cloud, `filesystem`, `next-devtools`, `web-search-prime`, etc.) are `enabled: false` and opt-in. To enable one, set `"enabled": true` (and grant its tools in the `tools` block) in `config.json`.
+
+> **Note — `filesystem` MCP is intentionally disabled.** OpenCode's built-in `read`/`write`/`edit`/`glob`/`grep`/`bash` tools already provide full file I/O, so `@modelcontextprotocol/server-filesystem` is redundant. Enable it per-project **only** if a specific tool requires MCP filesystem access — and note the server command requires allowed-directory path arguments (e.g. append your project root), so it would start broken without them.
+
 ## Knowledge Persistence
 
 Skills like `continuous-learning` persist knowledge across sessions using a dual strategy:

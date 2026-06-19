@@ -545,12 +545,14 @@ USAGE:
            opencode --agent explore "find all API routes"
 
   MCP SERVERS (26):
-    Auto-start (npx):
+    Auto-start (local npx servers):
       codegraph           Pre-indexed code knowledge graph (100% local)
       atlassian          JIRA and Confluence integration
       zai-vision-mcp-server     Image analysis and video processing
       mermaid            Mermaid diagram rendering (SVG/PNG)
-      filesystem         Local filesystem read/write access
+
+    Available but disabled (opt-in — set enabled: true in config.json):
+      filesystem         Local filesystem read/write (redundant with built-in file tools)
       next-devtools      Next.js DevTools integration
 
     Remote (requires ZAI_API_KEY):
