@@ -379,7 +379,7 @@ USAGE:
     Usage: opencode --agent build 'implement auth feature'
             opencode --agent explore 'find all API routes'
  
-        SKILLS (79):
+         SKILLS (82):
              Framework (13):       test-generator-framework, linting-workflow,
                                       pr-creation-workflow, pr-merge-workflow,
                                       error-resolver-workflow, tdd-workflow,
@@ -402,11 +402,12 @@ USAGE:
                                  opentofu-kubernetes-explorer, opentofu-neon-explorer,
                                  opentofu-provider-setup, opentofu-provisioning-workflow,
                                  opentofu-ecr-provision
-           Git/Workflow (10):    ascii-diagram-creator, mermaid-diagram-creator,
+           Git/Workflow (12):    ascii-diagram-creator, mermaid-diagram-creator,
                                   ticket-plan-workflow-skill, plan-execution-skill,
                                   git-issue-labeler, git-issue-updater,
                                   git-semantic-commits, semantic-release-convention,
-                                  git-compact-commits, plan-updater, version-bump-standard
+                                  git-compact-commits, plan-updater, version-bump-standard,
+                                  git-branch-workflow-setup-skill
           Documentation (3):    coverage-readme-workflow, docstring-generator,
                                  documentation-sync-workflow
 
@@ -1247,7 +1248,7 @@ function Deploy-Skills {
         Write-Host "      - opentofu-kubernetes-explorer, opentofu-neon-explorer"
         Write-Host "      - opentofu-provider-setup, opentofu-provisioning-workflow"
         Write-Host "      - opentofu-ecr-provision"
-        Write-Host "    Git/Workflow (11):"
+        Write-Host "    Git/Workflow (12):"
         Write-Host "      - ascii-diagram-creator, mermaid-diagram-creator"
         Write-Host "      - ticket-plan-workflow-skill, plan-execution-skill"
         Write-Host "      - git-issue-labeler, git-issue-updater"
@@ -1255,6 +1256,7 @@ function Deploy-Skills {
         Write-Host "      - git-compact-commits"
         Write-Host "      - plan-updater"
         Write-Host "      - version-bump-standard"
+        Write-Host "      - git-branch-workflow-setup-skill"
         Write-Host "    Documentation (3):"
         Write-Host "      - coverage-readme-workflow, docstring-generator"
         Write-Host "      - documentation-sync-workflow"
@@ -1722,11 +1724,11 @@ function Show-NextSteps {
     Write-Host "         opencode `"prompt`" (uses build)"
      Write-Host ""
     Write-Host "=====================================================================" -ForegroundColor White
-     Write-Host "                     79 Skills Available" -ForegroundColor White
+     Write-Host "                     82 Skills Available" -ForegroundColor White
     Write-Host "=====================================================================" -ForegroundColor White
     Write-Host ""
     Write-Host "  Framework (13) • Language-Specific (6) • Framework-Specific (7)"
-    Write-Host "  OpenCode Meta (4) • OpenTofu (7) • Git/Workflow (10)"
+     Write-Host "  OpenCode Meta (4) • OpenTofu (7) • Git/Workflow (12)"
     Write-Host "  Documentation (3) • JIRA (3) • Code Quality (7)"
      Write-Host "  Agent Optimization (7)"
     Write-Host ""

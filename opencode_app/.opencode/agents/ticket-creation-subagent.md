@@ -215,6 +215,7 @@ After execution, this subagent provides:
 10. Commit PLAN file with semantic message: `docs(plan): add PLAN-{id}.md for {ticket-key}`
 11. Push branch to remote
 12. Post progress comment to ticket (GitHub: `gh issue comment`, JIRA: `atlassian_addCommentToJiraIssue`)
+13. **Optional branch-workflow signal:** After full-workflow branch creation, use `glob`/`read` to check for existing release tooling (`.github/workflows/*release*`, `.releaserc*`, `release-please-config.json`, `.changeset/**`) and the skip marker (`.opencode/branch-workflow-skipped`). If ALL absent, include `NEEDS_GIT_BRANCH_SETUP: true` in the Return Contract so the primary agent can offer branch-workflow setup. Do NOT invoke the skill or spawn `repo-ops-specialist` directly (permission denied).
 
 ### Step 4: Return Results
 
@@ -401,6 +402,7 @@ When your task is complete, return ONLY this structure:
 **Output:** [Ticket ID, Branch, PLAN file path, Architecture review status, Atomicity self-check: pass/fail]
 **Summary:** [2-3 sentences max describing what was done]
 **Issues:** [blockers, warnings, or "None"]
+**NEEDS_GIT_BRANCH_SETUP:** [true if release tooling absent and no skip marker; omit otherwise]
 
 > If the atomicity self-check blocked the commit (steps missing "Why"), return `Status: partial` with the malformed step list under **Issues** and do NOT report the PLAN as pushed.
 

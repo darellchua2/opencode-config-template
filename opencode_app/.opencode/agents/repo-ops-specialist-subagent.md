@@ -53,6 +53,7 @@ Invoke this subagent when the user uses phrases like:
 - "gh labels" / "create labels" / "GitHub labels"
 - "git best practices" / "branching strategy" / "git workflow"
 - "GitHub Actions" / "release workflow files" / "workflow templates"
+- "project setup" / "scaffold setup" / "new project setup" / "branch workflow setup"
 
 ## Domain Scope
 

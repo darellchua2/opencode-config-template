@@ -25,6 +25,18 @@ Agents are loaded from `.opencode/agents/` — these are symlinked from the repo
 
 Skills are loaded from `.opencode/skills/` — these are symlinked from the repository's `skills/` directory at build time.
 
+## Branch Workflow Setup Signal
+
+When any subagent returns `NEEDS_GIT_BRANCH_SETUP: true` in its Return Contract, the primary agent must handle it as follows:
+
+1. **Load** `git-branch-workflow-setup-skill` (extract-then-delegate pattern)
+2. **Perform detection** per the skill's §Detection Logic — check for existing release tooling and skip markers
+3. **If detection triggers:** use the `question` tool per the skill's §Question Tool Spec to prompt the user (or apply the §Non-Interactive Fallback → Skip)
+4. **If the user accepts:** delegate execution to `repo-ops-specialist-subagent` via the Task tool, passing the typed payload from the skill's §Delegation Spec
+5. **If the user skips:** write the skip marker (`.opencode/branch-workflow-skipped`) to prevent re-prompting
+
+> **Docker note:** In non-interactive contexts (no active web session, CI), apply the non-interactive fallback (default to Skip). Never block the flow.
+
 ## Docker-Specific Notes
 
 - Port: 4096 (internal), mapped to 4097 by default

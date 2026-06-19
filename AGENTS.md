@@ -48,7 +48,7 @@ opencode-config-template/
 │   ├── .dockerignore    # Build exclusions
 │   └── .opencode/
 │       ├── agents/      # 34 subagent .md files (single source of truth)
-│       └── skills/      # 79 skill directories (single source of truth)
+│       └── skills/      # 82 skill directories (single source of truth)
 ├── PLANS/               # Execution plans (git-committed)
 ├── LEARNINGS/           # Knowledge persistence template (auto-provisioned in target projects)
 │   ├── _index.md        # Auto-generated index
@@ -65,7 +65,7 @@ opencode-config-template/
 
 Agents and skills have a **single source of truth** in `opencode_app/.opencode/`:
 - `opencode_app/.opencode/agents/` — All 34 subagent definitions
-- `opencode_app/.opencode/skills/` — All 79 skill directories
+- `opencode_app/.opencode/skills/` — All 82 skill directories
 
 For **user-space**: `deploy/setup.sh` and `deploy/setup.ps1` copy from `opencode_app/.opencode/` to `~/.config/opencode/`
 For **Docker**: The Dockerfile `COPY . /app/` includes `.opencode/` in the container
@@ -215,11 +215,33 @@ All subagents follow a standardized return contract to minimize context bloat wh
 
 On failure, subagents MAY include additional diagnostic information. This convention is documented in each subagent's `.md` file and should be followed when creating new agents.
 
+### Optional Signal Fields
+
+Subagents MAY include additive signal fields beyond the required Status/Output/Summary/Issues quartet. These do not alter the required fields but prompt the primary agent to take a follow-up action:
+
+| Signal Field | Meaning | Primary Agent Action |
+|---|---|---|
+| `NEEDS_GIT_BRANCH_SETUP: true` | Project was scaffolded and may need a release branch workflow | Load `git-branch-workflow-setup-skill`, detect, prompt user, delegate to `repo-ops-specialist-subagent` (see §Branch Workflow Setup Signal) |
+
+Optional signal fields are additive — they never replace or modify the required Return Contract fields.
+
 ## Extract-then-Delegate Pattern
 
 When a subagent needs domain knowledge, prefer having the primary agent load the skill, extract relevant parameters, and pass ONLY those parameters to the subagent. This keeps heavy knowledge in the primary agent's context (which compacts) rather than the subagent's isolated context.
 
 Example: Instead of startup-ceo loading startup-pitch-deck-skill internally, the primary agent loads the skill, extracts the deck specification, and passes only the spec to startup-ceo.
+
+## Branch Workflow Setup Signal
+
+When any subagent returns `NEEDS_GIT_BRANCH_SETUP: true` in its Return Contract, the primary agent (`build`) must handle it as follows:
+
+1. **Load** `git-branch-workflow-setup-skill` (extract-then-delegate pattern)
+2. **Perform detection** per the skill's §Detection Logic — check for existing release tooling and skip markers
+3. **If detection triggers:** use the `question` tool per the skill's §Question Tool Spec to prompt the user (or apply the §Non-Interactive Fallback → Skip)
+4. **If the user accepts:** delegate execution to `repo-ops-specialist-subagent` via the Task tool, passing the typed payload from the skill's §Delegation Spec
+5. **If the user skips:** write the skip marker (`.opencode/branch-workflow-skipped`) to prevent re-prompting
+
+This keeps the primary agent as the orchestration hub (hub-and-spoke). Setup subagents only *signal*; they do NOT load the skill or spawn `repo-ops-specialist` themselves.
 
 ## Subagent Chaining
 
