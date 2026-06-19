@@ -5,7 +5,9 @@ model: zai-coding-plan/glm-5.1
 steps: 15
 permission:
   read: allow
-  edit: deny
+  edit:
+    "*": deny
+    "LEARNINGS/**": allow
   glob: allow
   grep: allow
   bash: deny
@@ -142,21 +144,57 @@ Not all code deserves the same review depth:
 1. ...
 2. ...
 
-## Post-Review Learning
+## Mandatory Post-Review Learning Gate
 
-After completing the review, use the `continuous-learning` skill to persist findings:
+**Blocking gate, not optional.** Before returning your result, you MUST run the learning triage below on every review run. The goal is to detect anti-patterns and decide — using an explicit rubric — whether each finding is suitable to persist to `LEARNINGS/`.
 
-**Always save to memory tool:**
-- Recurring code smells (especially if found in 3+ files — systemic pattern)
-- Good patterns discovered ("This error handling approach is excellent — consider as team convention")
-- Anti-patterns to avoid
+### Step 1 — Anti-pattern & finding triage (every run)
 
-**Save to LEARNINGS/ markdown (if warranted):**
-- Team conventions discovered → `LEARNINGS/conventions/`
-- Anti-patterns with explanations → `LEARNINGS/anti-patterns/`
-- Good patterns for replication → `LEARNINGS/patterns/`
+For each Critical / Major / Minor issue AND each Positive Observation, classify it into exactly one category:
 
-The continuous-learning skill auto-provisions `LEARNINGS/` if it doesn't exist in the project.
+| Category | Folder | When it applies |
+|----------|--------|-----------------|
+| `anti-pattern` | `LEARNINGS/anti-patterns/` | Code/structure to AVOID (especially systemic — seen in 3+ files) |
+| `pattern` | `LEARNINGS/patterns/` | Approach worth REPLICATING |
+| `convention` | `LEARNINGS/conventions/` | Team-agreed standard the codebase follows or should follow |
+| `decision` | `LEARNINGS/decisions/` | Architectural choice with a rationale ("chose X over Y because…") |
+| `solution` | `LEARNINGS/solutions/` | Non-obvious fix worth remembering |
+
+**Anti-pattern detection is first-class.** Actively scan using:
+- `react-nextjs-antipatterns-skill` — React 19 / Next.js 16 runtime anti-patterns (hydration, RBAC, memory leaks)
+- `code-smells-skill` — long methods, large classes, feature envy, primitive obsession, duplication
+- `security-audit-skill` — OWASP issues, auth/validation flaws, secret exposure
+
+### Step 2 — Dedup check (before writing)
+
+Before persisting any finding, check for an existing entry to avoid duplicates:
+1. `memory(mode: "search", query: "<finding keyword>", scope: "project")` — search the primary store
+2. `glob` for `LEARNINGS/**/*.md` and skim titles for the same topic
+
+If a match exists: **do not create a duplicate** — instead bump the existing entry's confidence (per the `continuous-learning` instinct model) and add the new file:line as evidence.
+
+### Step 3 — Write criteria (decision rubric)
+
+Persist a finding to BOTH `LEARNINGS/<category>/<slug>.md` AND the `memory` tool when **ANY** hold:
+- It is an **anti-pattern found in 3+ files** (systemic — high signal)
+- The finding **would change future review or dev behavior** (a reviewer who skipped it would miss something)
+- It is a **non-obvious solution** that had to be researched or debugged
+
+**Skip (do not write) when:** trivial or obvious, already covered in standard language/framework docs, or a duplicate of Step 2.
+
+### Step 4 — Always persist to the `memory` tool
+
+Every qualifying finding goes to the `memory` tool (primary store) regardless of whether a markdown file is written — the `memory` tool is not gated by the `edit` permission, so this path always succeeds:
+
+```
+memory(mode: "add", content: "<structured instinct>", scope: "project"|"user", type: "learned-pattern"|"decision"|"preference")
+```
+
+Markdown files under `LEARNINGS/` are the curated, reviewable secondary store (permitted by the scoped `edit: LEARNINGS/**` permission). The `continuous-learning` skill auto-provisions `LEARNINGS/` if it doesn't exist.
+
+### Step 5 — Report
+
+Tally the learning entries saved by category and surface them in the Return Contract `Output` line (e.g. `learning entries saved: 2 anti-patterns, 1 convention`). If zero qualified, report `learning entries saved: 0`.
 
 ## Mandatory Impact & Consumer Coverage
 
@@ -224,7 +262,7 @@ Always balance critique with positive feedback. Provide actionable recommendatio
 When your task is complete, return ONLY this structure:
 
 **Status:** [success | partial | failed]
-**Output:** [Issue count by severity + file list + learning entries saved]
+**Output:** [Issue count by severity + file list + learning entries saved: N (anti-patterns/patterns/conventions/decisions/solutions)]
 **Summary:** [2-3 sentences max describing what was done]
 **Issues:** [blockers, warnings, or "None"]
 
