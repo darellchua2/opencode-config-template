@@ -73,51 +73,66 @@ echo "Found PLAN: $PLAN_FILE"
 
 ### Step 2: Parse Plan Structure
 
-Extract phases and tasks from PLAN.md:
+Extract phases, atomic steps, and the dependency map from PLAN.md:
 
 ```bash
 # Extract phase headers
 PHASES=$(grep -n "^### Phase" "$PLAN_FILE")
 
-# Extract all tasks with checkboxes
+# Extract all atomic steps with checkboxes (steps use the **N.M** marker)
 TASKS=$(grep -n "^- \[ \]" "$PLAN_FILE")
 
-# Extract completed tasks
+# Extract completed steps
 COMPLETED=$(grep -n "^- \[x\]" "$PLAN_FILE")
 
 echo "Found phases: $(echo "$PHASES" | wc -l)"
-echo "Total tasks: $(echo "$TASKS" | wc -l)"
+echo "Total steps: $(echo "$TASKS" | wc -l)"
 echo "Completed: $(echo "$COMPLETED" | wc -l)"
 ```
+
+**Parse the atomic-step block.** Each step carries a rationale triple that MUST be read before execution:
+
+```text
+- [ ] **N.M** <atomic action>
+    — **Why:** <rationale>
+    — **Done when:** <checkable completion signal>
+    — **Consumers affected:** <who depends on this; none if N/A>
+```
+
+Parse out, per step: `action`, `why`, `done_when`, `consumers`.
+
+**Read the Dependency & Consumer Map first.** Before executing any step, load the PLAN's `## Dependency & Consumer Map` section so execution order and blast radius are known up front. A step whose `consumers` are non-trivial requires its consumers to be surfaced to the executor (and, where applicable, verified post-change) before the step's target is mutated.
 
 ### Step 3: Analyze Current State
 
 Determine which phase to work on:
 
 ```bash
-# Find first incomplete phase
-CURRENT_PHASE=$(grep -A 10 "^### Phase" "$PLAN_FILE" | grep -B 5 "^- \[ \]" | head -1)
+# Find first incomplete phase — awk tracks the most recent ### Phase header
+# (robust to 4-line atomic steps; the old -A 10 window missed the 4th+ step)
+CURRENT_PHASE=$(awk '/^### Phase/{phase=$0} /^- \[ \]/{print phase; exit}' "$PLAN_FILE")
 
-# Find first incomplete task
-NEXT_TASK=$(grep "^- \[ \]" "$PLAN_FILE" | head -1)
+# Find first incomplete atomic step
+NEXT_STEP=$(grep "^- \[ \]" "$PLAN_FILE" | head -1)
 
 echo "Current phase: $CURRENT_PHASE"
-echo "Next task: $NEXT_TASK"
+echo "Next step: $NEXT_STEP"
 ```
 
 ### Step 4: Execute Tasks
 
-Work through tasks systematically:
+Work through steps systematically:
 
 **Strategy**:
-1. Group related tasks (e.g., all tests together)
-2. Delegate to specialized subagents when appropriate:
-   - Testing tasks → `testing-subagent`
-   - Refactoring tasks → `refactoring-subagent`
-   - Code review tasks → `code-review-subagent`
-   - Build/deploy tasks → Parent agent
-3. Execute simple tasks directly
-4. Verify completion before marking done
+1. **Surface consumers first** — before touching a step's target, read its `Consumers affected` line and the Dependency & Consumer Map. Do not mutate a target whose consumers have not been surfaced.
+2. Group related steps (e.g., all tests together)
+3. Delegate to specialized subagents when appropriate:
+   - Testing steps → `testing-subagent`
+   - Refactoring steps → `refactoring-subagent`
+   - Code review steps → `code-review-subagent`
+   - Build/deploy steps → Parent agent
+4. Execute simple steps directly
+5. **Verify the `Done when` signal passes** before marking a step `[x]` — a step is complete only when its objective completion check is satisfied, not when the code "looks done".
 
 **Example delegation logic**:
 ```markdown
@@ -178,11 +193,11 @@ Provide status updates during execution:
 **PLAN**: PLANS/PLAN-GIT-123.md
 
 ### Phase Progress
-- [x] Phase 1: Setup & Analysis
-- [x] Phase 2: Core Implementation
-- [ ] Phase 3: Testing ← Currently here
-- [ ] Phase 4: Documentation & Cleanup
-- [ ] Phase 5: Final Validation
+- [x] Phase 1: <name> (atomic steps complete)
+- [x] Phase 2: <name> (atomic steps complete)
+- [ ] Phase 3: <name> ← Currently here
+- [ ] Phase 4: <name>
+- [ ] Phase 5: <name>
 
 ### Recent Progress
 - Completed Phase 2 implementation
@@ -213,32 +228,25 @@ I expect PLAN files to follow this structure:
 
 ---
 
+## Dependency & Consumer Map
+
+| Node | Depends on | Consumers | Change risk |
+|------|-----------|-----------|-------------|
+| file/module | — | caller-A | low/med/high |
+
 ## Implementation Phases
 
-### Phase 1: Setup & Analysis
-- [ ] Task 1
-- [ ] Task 2
-- [ ] Task 3
+### Phase 1: <name>
+- [ ] **1.1** <atomic action>
+    — **Why:** <rationale>
+    — **Done when:** <checkable signal>
+    — **Consumers affected:** <consumers or "none">
 
-### Phase 2: Core Implementation
-- [ ] Task 1
-- [ ] Task 2
-- [ ] Task 3
-
-### Phase 3: Testing
-- [ ] Task 1
-- [ ] Task 2
-- [ ] Task 3
-
-### Phase 4: Documentation & Cleanup
-- [ ] Task 1
-- [ ] Task 2
-- [ ] Task 3
-
-### Phase 5: Final Validation
-- [ ] Task 1
-- [ ] Task 2
-- [ ] Task 3
+### Phase 2: <name>
+- [ ] **2.1** <atomic action>
+    — **Why:** <rationale>
+    — **Done when:** <checkable signal>
+    — **Consumers affected:** <consumers or "none">
 ```
 
 ## Delegation Strategy
@@ -328,11 +336,13 @@ fi
 
 ### Task Completion Criteria
 
-A task is complete when:
+A step is complete only when its **`Done when`** signal passes. Concretely:
+- The step's stated `Done when` check is objectively satisfied
 - Code changes committed
 - Tests pass (if applicable)
 - Documentation updated (if needed)
 - Review done (if required)
+- Any `Consumers affected` that could break were checked post-change
 
 ### When to Stop
 
@@ -364,7 +374,7 @@ Starting Phase 3 execution...
 [Commits: docs(plan): update PLAN-GIT-123.md with Phase 3 progress]
 
 Phase 3 complete! Updated PLAN with progress.
-Next: Phase 4 - Documentation & Cleanup
+Next: Phase 4 - <next phase name>
 ```
 
 ### User says "Continue with the plan"
@@ -395,11 +405,11 @@ Agent: **PLAN Execution Status**
 **PLAN**: PLANS/PLAN-GIT-123.md
 
 ### Phase Progress
-- [x] Phase 1: Setup & Analysis (100%)
-- [x] Phase 2: Core Implementation (100%)
-- [ ] Phase 3: Testing (40%)
-- [ ] Phase 4: Documentation & Cleanup (0%)
-- [ ] Phase 5: Final Validation (0%)
+- [x] Phase 1: <name> (100%)
+- [x] Phase 2: <name> (100%)
+- [ ] Phase 3: <name> (40%)
+- [ ] Phase 4: <name> (0%)
+- [ ] Phase 5: <name> (0%)
 
 ### Acceptance Criteria
 - [x] Users can register with email/password
@@ -412,9 +422,9 @@ Agent: **PLAN Execution Status**
 - Time: 2024-01-25 14:30
 
 ### Next Steps
-1. Complete Phase 3: Testing tasks
+1. Complete Phase 3 remaining atomic steps
 2. Meet remaining acceptance criteria
-3. Execute Phase 4: Documentation & Cleanup
+3. Execute Phase 4 atomic steps
 ```
 
 ## Integration with Planning Workflows

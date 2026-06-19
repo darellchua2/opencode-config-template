@@ -1,7 +1,7 @@
 ---
 description: Rust code review subagent focusing on ownership, borrow checker, unsafe safety, error handling with Result/Option, and idiomatic Rust patterns for thorough quality analysis
 mode: subagent
-model: zai-coding-plan/glm-5.2
+model: zai-coding-plan/glm-5.1
 steps: 15
 permission:
   read: allow

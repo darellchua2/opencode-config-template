@@ -1,6 +1,7 @@
 ---
 description: Specialized subagent for creating and maintaining OpenCode rules (AGENTS.md), agents, subagents, and skills. Can scaffold new configurator repos. Detects configurator repos and prompts for scope (project vs user level). Proactively suggests project-specific tooling, behavior enforcement rules, and AGENTS.md conventions. Verifies compliance with latest opencode.ai/docs documentation.
 mode: subagent
+model: zai-coding-plan/glm-5.1
 
 permission:
   read: allow

@@ -1,4 +1,16 @@
 #!/usr/bin/env bash
+#
+# restart-opencode-pm2.sh
+# Purpose: Pull the latest 'main' branch of opencode-config-template and restart
+#          the pm2-hosted OpenCode web service (`opencode serve`).
+#
+# Branch:  Deploys the 'main' branch — changes MUST be merged to main first.
+#
+# Health checks performed after restart:
+#   1. Local service:   GET http://localhost:4096  -> expects HTTP 200
+#   2. Public endpoint: GET https://opencode-ha.civiltekk.com -> expects 200/101
+# On local failure, recent pm2 logs are printed; on public failure, a warning is shown.
+#
 set -euo pipefail
 
 cd /home/silentx/VSCODE/opencode-config-template

@@ -297,6 +297,54 @@ resource "aws_instance" "servers" {
 }
 ```
 
+### Dependency & Consumer Analysis
+
+**Before any `tofu apply`, traverse dependency consumers so no cross-stack change is a surprise.** This is the IaC equivalent of the codebase consumer-traversal gate (CodeGraph does NOT index HCL — use the tools below).
+
+**1. Render the resource DAG:**
+
+```bash
+# Full dependency graph (DOT output)
+tofu graph
+
+# Render to an image if graphviz is available
+tofu graph | dot -Tpng > graph.png
+```
+
+**2. Detect replace-triggering changes** — read the plan for destructive operations:
+
+```bash
+tofu plan -out=tfplan
+# Inspect for any line containing "will be replaced" / "must be replaced" / "forces replacement"
+tofu show tfplan | grep -iE 'replace|destroy|force'
+```
+
+Each `force-replacement` cascades to every resource that depends on it — enumerate those downstream resources before applying.
+
+**3. Grep cross-stack / cross-module consumers** of any changed resource:
+
+```bash
+# Module references (single path — `.` already recurses into modules/)
+grep -rnE 'module "' .
+
+# Cross-stack state consumption
+grep -rn 'terraform_remote_state' .
+
+# Explicit dependencies
+grep -rn 'depends_on' .
+
+# Data sources referencing managed/existing resources
+grep -rnE 'data "' .
+
+# Outputs that other stacks consume
+grep -rnE 'output "' .
+
+# Refactoring-time stale references (moved/removed/import can dangle consumers)
+grep -rnE 'moved \{|removed \{|import \{' .
+```
+
+**Gate rule**: do not `apply` until, for every changed resource, you have listed (a) its DAG dependents from `tofu graph`, (b) any `force-replacement` cascade, and (c) its module/remote-state/depends_on/data/output consumers from the greps above.
+
 ### Validation and Planning
 
 ```bash

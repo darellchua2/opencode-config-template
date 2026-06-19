@@ -123,8 +123,25 @@ Update PLAN.md checkboxes based on completed work:
 1. Mark checkbox `[ ]` as `[x]` if related file was modified
 2. Don't uncheck already completed items
 3. Preserve all other content exactly
+4. **Preserve the atomic-step rationale triple verbatim** — when a step uses the `**N.M**` / `**Why:**` / `**Done when:**` / `**Consumers affected:**` block, never strip or rewrite those lines when flipping the checkbox. Change only `[ ]` → `[x]`.
 
-**Example update logic**:
+**Atomic-step preservation example**:
+
+```markdown
+Before:
+- [ ] **1.1** Implement user authentication
+    — **Why:** gates all protected routes
+    — **Done when:** login returns a valid JWT
+    — **Consumers affected:** middleware/auth, routes/dashboard
+
+After (auth files changed):
+- [x] **1.1** Implement user authentication
+    — **Why:** gates all protected routes
+    — **Done when:** login returns a valid JWT
+    — **Consumers affected:** middleware/auth, routes/dashboard
+```
+
+**Example update logic (legacy single-line steps)**:
 
 ```markdown
 Before:
@@ -221,6 +238,26 @@ if ! grep -q "\- \[" "$PLAN_FILE"; then
   echo "Proceeding with caution..."
 fi
 ```
+
+### Atomic Step Missing Rationale (Malformed Step)
+
+A step that uses the `**N.M**` marker but is missing a **Why** line is **malformed** and must be flagged. This is the reusable flag primitive that `ticket-creation-subagent`'s commit-blocking self-check depends on.
+
+```bash
+# Find atomic steps (N.M marker) and verify each carries the full rationale triple:
+# Why (step_no+1), Done when (step_no+2), Consumers affected (step_no+3)
+grep -nE '^\- \[.\] \*\*[0-9]+\.[0-9]+\*\*' "$PLAN_FILE" | while read -r step_line; do
+  step_no=$(echo "$step_line" | cut -d: -f1)
+  for marker in "Why" "Done when" "Consumers affected"; do
+    if ! sed -n "$((step_no+1)),$((step_no+3))p" "$PLAN_FILE" | grep -q "— \*\*$marker:\*\*"; then
+      echo "WARNING: malformed step at line $step_no — missing a \"$marker\" line:"
+      sed -n "${step_no}p" "$PLAN_FILE"
+    fi
+  done
+done
+```
+
+**Flag behavior**: emit a warning per malformed step listing its line number and the step text. Do **not** auto-rewrite or delete the step — the authoring source (`ticket-creation-subagent`) is responsible for adding the rationale; the updater only reports the gap.
 
 ### Branch Name Unparseable
 

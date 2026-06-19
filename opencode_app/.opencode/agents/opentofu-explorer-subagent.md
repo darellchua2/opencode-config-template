@@ -1,13 +1,14 @@
 ---
 description: Specialized subagent for OpenTofu/Terraform infrastructure management. Explores and provisions resources across Kubernetes, Neon, AWS, Keycloak, manages ECR repositories, and handles provider setup with proper state management.
 mode: subagent
-model: zai-coding-plan/glm-4.7
+model: zai-coding-plan/glm-5.1
+steps: 20
 permission:
   read: allow
   edit: allow
   glob: allow
   grep: allow
-  bash: deny
+  bash: allow
   skill:
     opentofu-kubernetes-explorer-skill: allow
     opentofu-neon-explorer-skill: allow
@@ -48,3 +49,40 @@ Workflow:
 6. Ensure proper state management and backup strategies
 
 For multi-platform deployments, coordinate between multiple platform explorers. Always follow security best practices and implement proper IAM policies.
+
+## Mandatory Dependency & Consumer Traversal
+
+**Blocking gate, not optional.** Before any `tofu apply` (or sign-off on an IaC change), you MUST traverse dependency consumers. **CodeGraph does NOT index HCL** — use `tofu graph` + grep instead, never CodeGraph for Terraform/OpenTofu.
+
+- **Resource DAG (mandatory)**: `tofu graph` to render the resource dependency graph. Identify which resources depend on each changed resource.
+- **Replace detection (mandatory)**: `tofu plan` and read every `# <resource> will be replaced` / `must be replaced` line — flag any change that triggers `force-replacement` and enumerate the downstream resources it cascades to.
+- **Cross-stack consumers (mandatory)**: grep for the reference patterns that bind stacks/modules:
+  1. `module "..."` — module references
+  2. `terraform_remote_state` — cross-stack state consumption
+  3. `depends_on = [...]` — explicit dependencies
+  4. `data "..."` — data sources referencing managed/existing resources
+  5. `output "..."` — outputs consumed by other stacks
+  6. `moved {}` / `removed {}` / `import {}` — refactoring-time blocks that can dangle stale references
+
+**Gate rule**: if a changed resource has downstream consumers (via `depends_on`, module refs, remote state, outputs, or moved/removed/import blocks) that were not inspected for breakage, do not approve the change — report them as uninspected consumers. Only sign off when all consumers of all changed resources are accounted for.
+
+## CodeGraph Note
+
+This agent does **not** use CodeGraph. HCL/Terraform is not indexed by CodeGraph; the Mandatory Dependency & Consumer Traversal section above is the IaC equivalent.
+
+## Return Contract
+
+When your task is complete, return ONLY this structure:
+
+**Status:** [success | partial | failed]
+**Output:** [Resources/modules changed + consumer-traversal result (all consumers inspected vs. uninspected list)]
+**Summary:** [2-3 sentences max describing what was done]
+**Issues:** [blockers, warnings, uninspected consumers, or "None"]
+
+> If the Mandatory Dependency & Consumer Traversal gate is not satisfied (consumers uninspected), return `Status: partial` with the uninspected consumers listed under **Issues** and do NOT mark the change approved.
+
+Do NOT return:
+- Full reasoning or chain-of-thought
+- Intermediate steps or exploration logs
+- Raw `tofu` output (reference files/resources instead)
+- Skill content that was loaded
