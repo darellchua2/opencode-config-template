@@ -1,3 +1,10 @@
+## [1.66.1](https://github.com/darellchua2/opencode-config-template/compare/v1.66.0...v1.66.1) (2026-06-19)
+
+
+### Bug Fixes
+
+* code review fixes — step numbering, DRY detection, failure handling ([#220](https://github.com/darellchua2/opencode-config-template/issues/220)) ([d8ff686](https://github.com/darellchua2/opencode-config-template/commit/d8ff68692ed3bb9bf0c3850124b4307488a319d7))
+
 # [1.66.0](https://github.com/darellchua2/opencode-config-template/compare/v1.65.1...v1.66.0) (2026-06-19)
 
 
