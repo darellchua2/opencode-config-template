@@ -1,3 +1,10 @@
+# [1.66.0](https://github.com/darellchua2/opencode-config-template/compare/v1.65.1...v1.66.0) (2026-06-19)
+
+
+### Features
+
+* add git-branch-workflow-setup-skill for dev→uat→main orchestration ([#219](https://github.com/darellchua2/opencode-config-template/issues/219)) ([25c1260](https://github.com/darellchua2/opencode-config-template/commit/25c12608e4fe5721e70b75597d6d798f753f4c44)), closes [#218](https://github.com/darellchua2/opencode-config-template/issues/218) [#218](https://github.com/darellchua2/opencode-config-template/issues/218)
+
 ## [1.65.1](https://github.com/darellchua2/opencode-config-template/compare/v1.65.0...v1.65.1) (2026-06-19)
 
 
