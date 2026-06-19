@@ -1,3 +1,10 @@
+# [1.65.0](https://github.com/darellchua2/opencode-config-template/compare/v1.64.0...v1.65.0) (2026-06-19)
+
+
+### Features
+
+* add version-bump-standard-skill and repo-ops-specialist-subagent ([#216](https://github.com/darellchua2/opencode-config-template/issues/216)) ([#217](https://github.com/darellchua2/opencode-config-template/issues/217)) ([baf628b](https://github.com/darellchua2/opencode-config-template/commit/baf628b6b01c83b46e2b4bda2f55815efc0af8af)), closes [fbca04/#d73a4a](https://github.com/darellchua2/opencode-config-template/issues/d73a4a)
+
 # [1.64.0](https://github.com/darellchua2/opencode-config-template/compare/v1.63.0...v1.64.0) (2026-06-19)
 
 
