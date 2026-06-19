@@ -1,3 +1,13 @@
+---
+name: version-bump-standard-skill
+description: Ensure consistent version bumping and release workflows across all CanvasTekk repositories. Enforces the dev to uat to main branch flow with PR-label-driven semantic versioning. Use when setting up or auditing release workflows, standardizing version bumping, configuring branch protection, or onboarding a new repo.
+license: Apache-2.0
+compatibility: opencode
+metadata:
+  audience: developers, devops
+  workflow: release-management
+---
+
 # Version Bump Standard
 
 ## What I do
@@ -123,12 +133,6 @@ jobs:
         with:
           script: |
             // Find the merge commit's PR and check for version labels
-            const commits = await github.rest.repos.listCommits({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              sha: context.sha,
-              per_page: 1
-            });
             const prs = await github.rest.repos.listPullRequestsAssociatedWithCommit({
               owner: context.repo.owner,
               repo: context.repo.repo,

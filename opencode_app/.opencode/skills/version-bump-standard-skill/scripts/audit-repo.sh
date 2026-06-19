@@ -53,13 +53,13 @@ check() {
     local result="$2"
     if [[ "$result" == "pass" ]]; then
         echo "  [PASS] $description"
-        ((PASS++))
+        PASS=$((PASS + 1))
     elif [[ "$result" == "warn" ]]; then
         echo "  [WARN] $description"
-        ((WARN++))
+        WARN=$((WARN + 1))
     else
         echo "  [FAIL] $description"
-        ((FAIL++))
+        FAIL=$((FAIL + 1))
     fi
 }
 
