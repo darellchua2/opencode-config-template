@@ -1,3 +1,10 @@
+# [1.63.0](https://github.com/darellchua2/opencode-config-template/compare/v1.62.1...v1.63.0) (2026-06-19)
+
+
+### Features
+
+* atomic plan steps, mandatory consumer traversal, subagent model tiering [[#212](https://github.com/darellchua2/opencode-config-template/issues/212)] ([#213](https://github.com/darellchua2/opencode-config-template/issues/213)) ([67e70a3](https://github.com/darellchua2/opencode-config-template/commit/67e70a33569c35794bd9efb4d80ba7028798362a))
+
 ## [1.62.1](https://github.com/darellchua2/opencode-config-template/compare/v1.62.0...v1.62.1) (2026-06-13)
 
 
