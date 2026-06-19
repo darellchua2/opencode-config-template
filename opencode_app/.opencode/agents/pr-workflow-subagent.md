@@ -21,6 +21,7 @@ permission:
     plan-updater-skill: allow
     changelog-python-cliff-skill: allow
     search-first-skill: allow
+    version-bump-standard-skill: allow
 ---
 
 ## Prompt Defense Baseline

@@ -37,7 +37,7 @@ Use this skill when:
 | Subagent | When to Invoke |
 |----------|----------------|
 | pr-workflow-subagent | Before creating PR (step 3.5) |
-| refactoring-subagent | After completing refactoring |
+| code-review-subagent | After completing refactoring |
 | testing-subagent | After creating tests |
 | ticket-creation-subagent | After initial PLAN creation |
 
@@ -314,7 +314,7 @@ fi
 6. Update JIRA ticket
 ```
 
-### In refactoring-subagent
+### In repo-ops-specialist-subagent
 
 ```markdown
 ## Refactoring Workflow

@@ -21,7 +21,7 @@ opencode-config-template/
 │   ├── .dockerignore
 │   ├── .opencode/
 │   │       ├── agents/              # 34 subagent .md files
-│   │       └── skills/              # 78 skill directories
+│   │       └── skills/              # 79 skill directories
 │   └── README.md                # Docker usage guide
 ├── docker-compose.yml           # Docker Compose service definition
 ├── .env.example                 # Environment variable template
@@ -272,13 +272,12 @@ TypeScript, JavaScript, Python, Go, Rust, Java, C#, PHP, Ruby, C, C++, Swift, Ko
 |----------|-------------------|
 | `explore` (built-in) | `codegraph_explore` replaces grep/glob chains |
 | `code-review-subagent` | `codegraph_impact` assesses change radius before review |
-| `refactoring-subagent` | `codegraph_callers`/`callees` for safe refactoring |
 | `architecture-review-subagent` | Call graph analysis for design evaluation |
 | `testing-subagent` | `codegraph_affected` finds impacted tests by changed files |
 
 ## Skill Modularization
 
-This repository implements **skill modularization** with 78 skills organized across 14 categories. Skills are designed with clear separation of concerns and explicit dependencies.
+This repository implements **skill modularization** with 79 skills organized across 14 categories. Skills are designed with clear separation of concerns and explicit dependencies.
 
 ### Skill Categories
 
@@ -289,7 +288,7 @@ This repository implements **skill modularization** with 78 skills organized acr
 | **Framework-Specific** (7) | nextjs-pr-workflow, nextjs-unit-test-creator, nextjs-standard-setup, nextjs-image-usage, typescript-dry-principle, accessibility-a11y-skill, react-nextjs-antipatterns-skill | Next.js 16, React 19, TypeScript, and accessibility workflows |
 | **OpenCode Meta** (4) | opencode-agent-creation, opencode-skill-creation, opencode-skills-maintainer, documentation-consistency-skill | Agent and skill creation/maintenance, documentation consistency auditing |
 | **OpenTofu** (7) | opentofu-aws-explorer, opentofu-keycloak-explorer, opentofu-kubernetes-explorer, opentofu-neon-explorer, opentofu-provider-setup, opentofu-provisioning-workflow, opentofu-ecr-provision | Infrastructure as Code |
-| **Git/Workflow** (10) | ascii-diagram-creator, mermaid-diagram-creator, ticket-plan-workflow-skill, plan-execution-skill, git-issue-labeler, git-issue-updater, git-semantic-commits, semantic-release-convention, git-compact-commits, plan-updater | Diagrams, git operations, release conventions, compact commits, and workflows |
+| **Git/Workflow** (11) | ascii-diagram-creator, mermaid-diagram-creator, ticket-plan-workflow-skill, plan-execution-skill, git-issue-labeler, git-issue-updater, git-semantic-commits, semantic-release-convention, git-compact-commits, plan-updater, version-bump-standard | Diagrams, git operations, release conventions, version bumping, compact commits, and workflows |
 | **Documentation** (3) | coverage-readme-workflow, docstring-generator, documentation-sync-workflow | Documentation generation |
 | **JIRA** (3) | jira-status-updater, jira-git-integration, jira-ticket-labeler | JIRA integration via MCP server |
 | **Code Quality** (7) | solid-principles, clean-code, clean-architecture, design-patterns, object-design, code-smells, complexity-management | Code quality analysis and patterns |
@@ -329,7 +328,7 @@ This repository implements **skill modularization** with 78 skills organized acr
 | **opentofu-explorer-subagent** | Infrastructure as code | 7 OpenTofu skills (AWS, K8s, Keycloak, Neon, ECR) | — |
 | **architecture-review-subagent** | Architecture and design patterns | clean-architecture, design-patterns, complexity-management, continuous-learning, verification-loop | `explore` |
 | **code-review-subagent** | Comprehensive code review | All 7 Code Quality skills + continuous-learning, complexity-management | `explore`, `general` |
-| **refactoring-subagent** | Code refactoring | solid-principles, code-smells, clean-code | `explore`, `general` |
+| **repo-ops-specialist-subagent** | Git repository operations | version-bump-standard, semantic-release-convention, pr-creation-workflow, pr-merge-workflow, git-issue-labeler | `explore`, `general` |
 | **error-resolver-subagent** | Error diagnosis and resolution | error-resolver-workflow | — |
 | **nextjs-setup-subagent** | Next.js project setup | nextjs-standard-setup (also see docstring-generator for TSDoc) | — |
 | **opencode-tooling-subagent** | Skills, agents, and rules creation + doc sync | opencode-skill-creation, opencode-agent-creation, opencode-skills-maintainer, documentation-sync-workflow | — |
@@ -437,11 +436,11 @@ This repository includes 7 new code quality skills for writing senior-engineer q
 | `code-review-subagent` | Comprehensive code review (all quality skills) | All 7 quality skills + continuous-learning, complexity-management | `explore`, `general` |
 
 ### Enhanced Subagent
-The `refactoring-subagent` has been enhanced with new skills and built-in subagent delegation:
+The `repo-ops-specialist-subagent` is a git repository operations specialist with comprehensive git/gh skills and built-in subagent delegation:
 
-| Subagent | New Skills Added | Built-in Delegation |
-|----------|------------------|---------------------|
-| `refactoring-subagent` | solid-principles, code-smells, clean-code | `explore`, `general` |
+| Subagent | Key Skills | Built-in Delegation |
+|----------|------------|---------------------|
+| `repo-ops-specialist-subagent` | version-bump-standard, semantic-release-convention, pr-creation-workflow, pr-merge-workflow, git-issue-labeler | `explore`, `general` |
 
 ### Related Existing Skills
 | New Skill | Related Existing Skills |
@@ -449,7 +448,7 @@ The `refactoring-subagent` has been enhanced with new skills and built-in subage
 | `solid-principles` | typescript-dry-principle |
 | `clean-code` | typescript-dry-principle, docstring-generator |
 | `code-smells` | linting-workflow, python-ruff-linter, javascript-eslint-linter |
-| `design-patterns` | refactoring-subagent |
+| `design-patterns` | code-review-subagent |
 | `object-design` | test-generator-framework (value objects) |
 | `complexity-management` | tdd-workflow |
 

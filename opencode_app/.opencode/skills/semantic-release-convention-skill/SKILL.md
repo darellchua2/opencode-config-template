@@ -39,6 +39,7 @@ This is a **governance skill** - it defines conventions that other skills and ag
 | `nextjs-pr-workflow` | Inherits via `pr-creation-workflow` |
 | `git-issue-labeler` | Semver label definitions and detection |
 | `changelog-python-cliff` | Changelog category structure from commit types |
+| `version-bump-standard` | Release tag formats, branch-aware pre-release suffixes, workflow templates for dev/uat/main flow |
 
 ## Consumed By
 
