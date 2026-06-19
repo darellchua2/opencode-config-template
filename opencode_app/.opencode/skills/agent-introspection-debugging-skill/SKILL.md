@@ -253,11 +253,11 @@ Generate a diagnosis report:
 ### Debug a subagent that won't edit files
 
 ```
-"The refactoring-subagent reads files but never edits them"
+"The repo-ops-specialist-subagent reads files but never edits them"
 ```
 
 The skill will:
-1. Read `refactoring-subagent.md` configuration
+1. Read `repo-ops-specialist-subagent.md` configuration
 2. Check `permission.edit` field
 3. Diagnose: likely `edit: deny` in permission block
 4. Recommend: change to `edit: allow`

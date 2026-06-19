@@ -515,7 +515,7 @@ USAGE:
     testing              Test generation with framework detection
     pr-workflow          PR creation with quality gates and JIRA integration
     linting              Code linting with auto-fix for Python/JS/TS
-    refactoring          Code refactoring with DRY/SOLID patterns
+    repo-ops-specialist  Git repository operations (release, branch protection, labels)
     architecture-review  Architecture review with clean architecture principles
     tdd                  Test Driven Development workflow guidance
     coverage             Test coverage reporting and badges
@@ -583,7 +583,7 @@ USAGE:
       google-gce         Google Compute Engine management
       google-gke         Google Kubernetes Engine management
 
-   SKILLS (78):
+   SKILLS (79):
                Framework (13):       test-generator-framework, linting-workflow,
                                       pr-creation-workflow, pr-merge-workflow,
                                       error-resolver-workflow, tdd-workflow,
@@ -609,11 +609,11 @@ USAGE:
                                  opentofu-provider-setup, opentofu-provisioning-workflow,
                                  opentofu-ecr-provision
 
-            Git/Workflow (10):    ascii-diagram-creator, mermaid-diagram-creator,
-                                   ticket-plan-workflow-skill, plan-execution-skill,
-                                   git-issue-labeler, git-issue-updater,
-                                   git-semantic-commits, semantic-release-convention,
-                                   git-compact-commits, plan-updater
+           Git/Workflow (11):   ascii-diagram-creator, mermaid-diagram-creator,
+                                  ticket-plan-workflow-skill, plan-execution-skill,
+                                  git-issue-labeler, git-issue-updater,
+                                  git-semantic-commits, semantic-release-convention,
+                                  git-compact-commits, plan-updater, version-bump-standard
 
           Documentation (3):    coverage-readme-workflow, docstring-generator,
                                  documentation-sync-workflow
@@ -2271,6 +2271,7 @@ print_summary() {
         echo "      - semantic-release-convention"
         echo "      - git-compact-commits"
         echo "      - plan-updater"
+        echo "      - version-bump-standard"
         echo "    - Documentation (3):"
         echo "      - coverage-readme-workflow"
         echo "      - docstring-generator"
@@ -2351,7 +2352,7 @@ print_next_steps() {
     echo "         opencode \"prompt\" (uses build)"
      echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "                     📦 78 Skills Available"
+    echo "                     📦 79 Skills Available"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
     echo "  Framework (13) • Language-Specific (6) • Framework-Specific (7)"

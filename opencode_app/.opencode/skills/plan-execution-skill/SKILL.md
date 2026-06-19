@@ -128,7 +128,7 @@ Work through steps systematically:
 2. Group related steps (e.g., all tests together)
 3. Delegate to specialized subagents when appropriate:
    - Testing steps → `testing-subagent`
-   - Refactoring steps → `refactoring-subagent`
+   - Refactoring steps → `code-review-subagent`
    - Code review steps → `code-review-subagent`
    - Build/deploy steps → Parent agent
 4. Execute simple steps directly
@@ -138,7 +138,7 @@ Work through steps systematically:
 ```markdown
 If task involves:
 - "test" or "spec" → testing-subagent
-- "refactor" or "DRY" → refactoring-subagent
+- "refactor" or "DRY" → code-review-subagent
 - "review" or "clean" → code-review-subagent
 - "document" → documentation-subagent
 - "build" or "deploy" → Handle directly
@@ -256,7 +256,7 @@ When executing plan, delegate appropriately:
 | Task Type | Delegate To | Reason |
 |-----------|-------------|---------|
 | Test generation | `testing-subagent` | Specialized test frameworks |
-| Refactoring | `refactoring-subagent` | SOLID/clean code expertise |
+| Refactoring | `code-review-subagent` | SOLID/clean code expertise |
 | Code review | `code-review-subagent` | Comprehensive quality analysis |
 | Documentation | `documentation-subagent` | Industry-standard docs |
 | Build/deploy | Parent agent | Requires full bash access |
@@ -443,4 +443,4 @@ This skill integrates with:
 - `plan-updater` - Updates PLAN.md files with progress
 - `git-semantic-commits` - Commit message formatting
 - `testing-subagent` - Test generation and execution
-- `refactoring-subagent` - Code refactoring with quality checks
+- `repo-ops-specialist-subagent` - Git repository operations (release workflows, branch protection, labels)

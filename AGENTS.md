@@ -48,7 +48,7 @@ opencode-config-template/
 │   ├── .dockerignore    # Build exclusions
 │   └── .opencode/
 │       ├── agents/      # 34 subagent .md files (single source of truth)
-│       └── skills/      # 78 skill directories (single source of truth)
+│       └── skills/      # 79 skill directories (single source of truth)
 ├── PLANS/               # Execution plans (git-committed)
 ├── LEARNINGS/           # Knowledge persistence template (auto-provisioned in target projects)
 │   ├── _index.md        # Auto-generated index
@@ -65,7 +65,7 @@ opencode-config-template/
 
 Agents and skills have a **single source of truth** in `opencode_app/.opencode/`:
 - `opencode_app/.opencode/agents/` — All 34 subagent definitions
-- `opencode_app/.opencode/skills/` — All 78 skill directories
+- `opencode_app/.opencode/skills/` — All 79 skill directories
 
 For **user-space**: `deploy/setup.sh` and `deploy/setup.ps1` copy from `opencode_app/.opencode/` to `~/.config/opencode/`
 For **Docker**: The Dockerfile `COPY . /app/` includes `.opencode/` in the container
@@ -103,7 +103,7 @@ Subagents are right-sized by purpose; only the primary session uses the 1M-conte
 | Model | Context | Use for |
 |-------|---------|---------|
 | `glm-5.2` | 1,000,000 | **Primary session only** (`config.json`/`opencode.json` top-level `model`) — holds the long orchestrator context. No subagent uses this. |
-| `glm-5.1` | 200,000 | Sound-reasoning subagents: reviewers (code/architecture/language), refactoring, tdd, opentofu-explorer, loop-operator, opencode-tooling |
+| `glm-5.1` | 200,000 | Sound-reasoning subagents: reviewers (code/architecture/language), repo-ops-specialist, tdd, opentofu-explorer, loop-operator, opencode-tooling |
 | `glm-5-turbo` | 200,000 | Exploratory / low-impact / coordination: explorer, testing, setup, specialists, document creators, pr-workflow, ticket-creation |
 | `glm-5v-turbo` | 200,000 | **Vision required**: image-analyzer, error-resolver (screenshot diagnosis). No structured output. |
 | `glm-4.7` | 204,800 | Docs/lint/reporting: documentation, linting, coverage |
@@ -148,7 +148,6 @@ Since subagents inherit MCP tools from the session, CodeGraph is available to al
 |-------|-------------------|
 | `explore` (built-in) | `codegraph_explore` replaces grep/glob chains for codebase exploration |
 | `code-review-subagent` | `codegraph_impact` assesses change radius before review |
-| `refactoring-subagent` | `codegraph_callers`/`callees` traces dependencies for safe refactoring |
 | `architecture-review-subagent` | Call graph analysis for design pattern evaluation |
 | `testing-subagent` | `codegraph_affected` finds impacted tests by changed files |
 
@@ -252,5 +251,5 @@ permission:
 | Pattern | Count | Notes |
 |---------|-------|-------|
 | `task: allow` | 1 | startup-founder-primary-agent |
-| `task: { "*": deny, ... }` | 15 | code-review, linting, pr-workflow, refactoring, testing, architecture-review, office-document, opencode-tooling, ticket-creation, startup-ceo, loop-operator, python-reviewer, typescript-reviewer, go-reviewer, rust-reviewer (all use deny-by-default) |
+| `task: { "*": deny, ... }` | 15 | code-review, linting, pr-workflow, repo-ops-specialist, testing, architecture-review, office-document, opencode-tooling, ticket-creation, startup-ceo, loop-operator, python-reviewer, typescript-reviewer, go-reviewer, rust-reviewer (all use deny-by-default) |
 | No `task` field | 18 | Defaults to full access |
