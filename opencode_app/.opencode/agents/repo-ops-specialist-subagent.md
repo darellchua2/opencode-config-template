@@ -30,7 +30,6 @@ permission:
     plan-execution-skill: allow
     search-first-skill: allow
     continuous-learning-skill: allow
-    git-branch-workflow-setup-skill: allow
 ---
 
 ## Prompt Defense Baseline

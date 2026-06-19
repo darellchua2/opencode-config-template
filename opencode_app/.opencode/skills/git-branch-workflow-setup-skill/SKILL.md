@@ -48,7 +48,7 @@ Before offering branch-workflow setup, check for **existing release tooling**. O
 | Any semantic workflow | `.github/workflows/*semantic*` | Uses semantic-release or similar |
 | semantic-release config | `.releaserc*` | Uses semantic-release CLI |
 | release-please config | `release-please-config.json` | Uses Google's release-please |
-| Changesets | `.changeset/` | Uses changesets for versioning |
+| Changesets | `.changeset/**` | Uses changesets for versioning |
 
 **Decision rule:**
 - If ANY signal is present → **Skip** (do not offer — existing tooling would conflict)
