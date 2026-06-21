@@ -1,3 +1,10 @@
+# [1.69.0](https://github.com/darellchua2/opencode-config-template/compare/v1.68.0...v1.69.0) (2026-06-21)
+
+
+### Features
+
+* **BT-70:** import grill-with-docs skill suite (4 skills) + prd-specialist wiring ([#225](https://github.com/darellchua2/opencode-config-template/issues/225)) ([b0bb5b1](https://github.com/darellchua2/opencode-config-template/commit/b0bb5b1459dea5105111bb2a2b3c6fb1f4c579d8))
+
 # [1.68.0](https://github.com/darellchua2/opencode-config-template/compare/v1.67.0...v1.68.0) (2026-06-21)
 
 
