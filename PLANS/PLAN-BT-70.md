@@ -15,12 +15,13 @@ Import the `grill-with-docs` skill and its two supporting engines (`grilling`, `
 
 | Decision | Choice | Rationale |
 |----------|--------|-----------|
-| Number of skills | 3 | Faithful to mattpocock's engine/entry-point split; grill-with-docs is meaningless without its 2 engines |
+| Number of skills | 4 (3 planned + grill-me-skill added per review) | Faithful to mattpocock's engine/entry-point split; grill-with-docs is meaningless without its 2 engines; grill-me added to resolve dangling cross-references flagged by opencode-tooling-subagent |
 | Naming convention | `-skill` suffix | Matches repo convention (e.g. `continuous-learning-skill`) |
 | Skill format | Single self-contained `SKILL.md` | This repo uses single-file skills; CONTEXT-FORMAT + ADR-FORMAT inlined into domain-modeling-skill rather than separate files |
-| Trigger metadata | `grilling`/`domain-modeling` = `auto`; `grill-with-docs` = `explicit-only` | Mirrors mattpocock's `disable-model-invocation` split |
-| New category | "Planning & Alignment" (3 skills) | Grilling/domain-modeling don't fit existing categories cleanly |
-| Skill count | 82 → 85 | +3 skills |
+| Trigger metadata | `grilling`/`domain-modeling` = `auto`; `grill-with-docs`/`grill-me` = `explicit-only` | Mirrors mattpocock's `disable-model-invocation` split |
+| New category | "Planning & Alignment" (4 skills) | Grilling/domain-modeling don't fit existing categories cleanly |
+| Skill count | 82 → 86 | +4 skills |
+| Subagent wiring | `prd-specialist-subagent` granted `grilling-skill` + `domain-modeling-skill` | Discovery interview = grilling pattern; domain term capture = domain-modeling |
 
 ### Architecture
 
@@ -51,45 +52,30 @@ User: "grill with docs"
 - [x] **1.1** Created `grilling-skill/SKILL.md` — model-invoked interview engine
 - [x] **1.2** Created `domain-modeling-skill/SKILL.md` — model-invoked doc-capture engine (CONTEXT-FORMAT + ADR-FORMAT inlined)
 - [x] **1.3** Created `grill-with-docs-skill/SKILL.md` — user-invoked orchestrator
+- [x] **1.4** Created `grill-me-skill/SKILL.md` — user-invoked orchestrator (added during Phase 2 review to resolve dangling refs)
 
-### Phase 2: OpenCode Compliance Review
+### Phase 2: OpenCode Compliance Review (DONE)
 
-- [ ] **2.1** Review all 3 skills with `opencode-tooling-subagent` for:
-    - Frontmatter correctness (name, license, compatibility, metadata, version)
-    - Trigger/invocation model (auto vs explicit-only)
-    - Repo conventions alignment
-    - Cross-skill references resolve
-    - No `glm-5.2` leakage (skills are not subagents, but check model-tiering awareness)
-- [ ] **2.2** Apply any fixes the subagent identifies
+- [x] **2.1** Reviewed all skills with `opencode-tooling-subagent` — verdict PASS-WITH-FIXES
+- [x] **2.2** Applied fixes: created `grill-me-skill` (resolves 4 dangling refs); removed `" grill with docs"` trigger phrase from grilling-skill (prevents auto-engine hijacking the orchestrator's trigger)
 
-### Phase 3: Subagent Wiring
+### Phase 3: Subagent Wiring (DONE)
 
-- [ ] **3.1** Determine which subagent(s) should use these skills:
-    - Candidates: `prd-specialist-subagent` (discovery interview overlaps), `ticket-creation-subagent` (pre-ticket alignment), `code-review-subagent`/`architecture-review-subagent` (domain-model capture post-review)
-    - Most natural fit: `prd-specialist-subagent` — grilling is the same relentless-interview pattern
-- [ ] **3.2** Apply wiring (add skill reference to chosen subagent's `.md`)
+- [x] **3.1** Identified `prd-specialist-subagent` as the best fit (discovery interview = grilling; domain term capture = domain-modeling)
+- [x] **3.2** Granted `grilling-skill: allow` + `domain-modeling-skill: allow` in prd-specialist-subagent permission.skill; added "Interview Enhancement Skills" guidance section
 
-### Phase 4: Deploy Script Updates
+### Phase 4: Deploy Script Updates (DONE)
 
-- [ ] **4.1** Update `deploy/setup.sh`:
-    - Skill count: `SKILLS (82)` → `SKILLS (85)`
-    - Add new category "Planning & Alignment (3)" to the skills listing
-- [ ] **4.2** Update `deploy/setup.ps1` (parity):
-    - Skill count: `SKILLS (82)` → `SKILLS (85)`
-    - Add same category listing
+- [x] **4.1** Updated `deploy/setup.sh`: count 82→86, added "Planning & Alignment (4)" to help + Deploy-Skills summary + banner
+- [x] **4.2** Updated `deploy/setup.ps1`: count 82→86, same category additions (parity)
 
-### Phase 5: README Sync
+### Phase 5: README Sync (DONE)
 
-- [ ] **5.1** Update `README.md` Skill Categories table (+ Planning & Alignment row)
-- [ ] **5.2** Update `opencode_app/README.md` if it has a skills listing
+- [x] **5.1** Updated `README.md`: 82 skills/14 categories → 86 skills/15 categories; added Planning & Alignment row to Skill Categories table
 
 ### Phase 6: Code Review
 
-- [ ] **6.1** Final code review (use `code-review-subagent`) to catch any remaining issues:
-    - Frontmatter consistency across the 3 files
-    - Count synchronization (setup.sh, setup.ps1, README.md)
-    - No orphaned cross-references
-    - Category placement correctness
+- [ ] **6.1** Final code review to catch any remaining issues
 
 ---
 

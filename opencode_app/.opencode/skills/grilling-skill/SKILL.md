@@ -36,7 +36,6 @@ Use this skill when:
 - "stress-test this plan"
 - "walk through the decision tree"
 - "what haven't we covered"
-- " grill with docs"
 
 ## Core Workflow
 
