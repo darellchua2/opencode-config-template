@@ -299,7 +299,12 @@ User trigger ("openapi diff", "breaking change", "consumer update plan")
 
 ### Phase 2: Documentation Sync (MANDATORY per AGENTS.md)
 
-> **Why this phase is non-negotiable:** AGENTS.md "Adding New Subagents or Skills" mandates that `deploy/setup.sh`, `deploy/setup.ps1`, and `README.md` be updated in lockstep when any skill is added.
+> **Why this phase is non-negotiable:** AGENTS.md "Adding New Subagents or Skills" mandates lockstep updates across **5 files** when any skill is added:
+> 1. `deploy/setup.sh` — banner + status sections, category listing
+> 2. `deploy/setup.ps1` — mirror of setup.sh for Windows parity
+> 3. `README.md` — Skill Categories table (repo-level discoverability)
+> 4. `opencode_app/README.md` — directory structure count (Docker-mode)
+> 5. `deploy/.AGENTS.md` — primary routing document for user-space mode (ensures the primary agent discovers the skill)
 
 - [ ] **2.1** Update `deploy/setup.sh`:
     - Line 586: `SKILLS (82)` stays at **82** (Phase 0.3 confirms pre-existing drift means current real count is 81, adding the new skill brings real count to 82 — so this number is now correct, not changed).
@@ -328,16 +333,27 @@ User trigger ("openapi diff", "breaking change", "consumer update plan")
     — **Done when:** Row updated; category count reads 14; skill listed adjacent to `api-design-skill`.
     — **Consumers affected:** Anyone reading README.
 
-- [ ] **2.4** Check `opencode_app/README.md` for any skill category listings; update only if it lists individual skills (Phase 3.5 in PLAN-GIT-218 confirmed Docker README doesn't enumerate skills — verify before deciding to skip).
-    — **Why:** AGENTS.md lists it as a conditional sync target.
-    — **Done when:** Either updated or explicitly confirmed N/A with a one-line justification.
-    — **Consumers affected:** Docker-mode consumers (if applicable).
+- [ ] **2.4** Update `opencode_app/README.md` — **line 26** says `82 skill directories (single source of truth)` in the directory structure tree. After adding the new skill, real skill directories (excluding `_archived/` and `scripts/`) go from 81 → **82**, so this number is now correct (it was previously inflated by +1 due to pre-existing drift). No count change needed at line 26. **However**, update the parenthetical to `(82 skill directories + scripts/ support + _archived/ legacy)` to clarify what the directory count includes and prevent future drift confusion. Verify no other skill counts or category listings exist elsewhere in this file (confirmed: the Docker README does not enumerate skills by category).
+    — **Why:** AGENTS.md lists `opencode_app/README.md` as a sync target. The directory count at line 26 is the only skill-related reference and must be verified correct. Adding the parenthetical clarifies the count methodology for future contributors.
+    — **Done when:** Line 26 reads `82 skill directories + scripts/ support + _archived/ legacy` (or similar clarification); no other skill counts remain stale.
+    — **Consumers affected:** Docker-mode consumers reading the directory structure.
 
-- [ ] **2.5** Cross-verify all counts: `deploy/setup.sh` (Framework 14 banner AND Framework 14 status, total 82), `deploy/setup.ps1` (Framework 14 banner AND Framework 14 status, total 82), `README.md` (Framework 14, total 82), and actual directories excluding `_archived/` AND `scripts/` (**81 → 82** after Phase 1). All must agree.
+- [ ] **2.5** Update `deploy/.AGENTS.md` — this file is deployed to `~/.config/opencode/AGENTS.md` and serves as the primary routing document for user-space mode. It currently has NO mention of OpenAPI/contract capabilities. Add a brief routing note so the primary agent discovers the new skill when API contract tasks arise:
+    - In the **"Subagent Routing Preferences"** section, append a new row to the routing table OR add a short subsection immediately after the table:
+      ```
+      | OpenAPI contract review / breaking change detection | Load `openapi-contract-adherence-skill` directly | — | No subagent for this; the primary agent loads the skill when trigger phrases appear ("openapi diff", "api contract", "breaking change", "consumer update plan") |
+      ```
+    - Keep it minimal — one row or a 2-line note. Do NOT duplicate the skill's content; just provide a routing pointer.
+    — **Why:** Without a routing entry, the primary agent may not discover the skill exists when users ask about API contract changes. The `deploy/.AGENTS.md` is the primary agent's behavioral instruction file; adding a routing pointer ensures the skill is loaded at the right time. This mirrors how the Branch Workflow Setup Signal section was added for `git-branch-workflow-setup-skill` (PLAN-GIT-218 Phase 2.1).
+    — **Done when:** `deploy/.AGENTS.md` Subagent Routing Preferences section has a routing entry for OpenAPI contract review pointing to the skill, OR a brief subsection documenting when to load the skill.
+    — **Consumers affected:** Primary agent in user-space mode (all users running `./deploy/setup.sh`).
+
+- [ ] **2.6** Cross-verify all counts and routing entries across **all 5 sync files**: `deploy/setup.sh` (Framework 14 banner AND Framework 14 status, total 82), `deploy/setup.ps1` (Framework 14 banner AND Framework 14 status, total 82), `README.md` (Framework 14, total 82), `opencode_app/README.md` (line 26 count = 82 with clarification parenthetical), `deploy/.AGENTS.md` (routing entry for OpenAPI contract review present), and actual directories excluding `_archived/` AND `scripts/` (**81 → 82** after Phase 1). All must agree.
     - Verification command: `ls -d opencode_app/.opencode/skills/*/ | grep -vE "_archived|scripts" | wc -l` returns **82**.
     - SKILL.md count check: `find opencode_app/.opencode/skills -name SKILL.md -not -path "*_archived*" | wc -l` also returns **82** (sanity check that scripts/ isn't being counted as a skill).
-    — **Why:** `documentation-consistency-skill` audits this; drift breaks the audit. The `scripts/` subdirectory is a support dir without SKILL.md and inflates the count by 1; excluding it gives the true skill count.
-    — **Done when:** Both verification commands return 82, and all four documentation sources show `Framework (14)` and total `82` in BOTH banner and status sections.
+    - Routing check: `grep -c "openapi-contract-adherence-skill" deploy/.AGENTS.md` returns ≥ 1.
+    — **Why:** `documentation-consistency-skill` audits this; drift breaks the audit. The `scripts/` subdirectory is a support dir without SKILL.md and inflates the count by 1; excluding it gives the true skill count. The routing entry in deploy/.AGENTS.md ensures the primary agent discovers the skill.
+    — **Done when:** Both count verification commands return 82, all five documentation sources have correct Framework/total counts, AND deploy/.AGENTS.md has at least one reference to `openapi-contract-adherence-skill`.
     — **Consumers affected:** All deploy and documentation consumers.
 
 ---
@@ -373,10 +389,12 @@ User trigger ("openapi diff", "breaking change", "consumer update plan")
 6. `deploy/setup.sh` updated: `Framework (14)` in BOTH banner (line 587) AND status (line 2226) sections, total 82, skill listed adjacent to `api-design-skill`; `Language-Specific (6)` in status section (C-1)
 7. `deploy/setup.ps1` mirrors setup.sh exactly: `Framework (14)` in BOTH banner (line 383) AND status (line 1228) sections, `82 Skills Available` at line 1727 (C-2), `Language-Specific (6)` in status section
 8. `README.md` Skill Categories table updated: Framework (14), total 82, skill listed
-9. All counts synchronized — no drift between deploy scripts (banner + status), README, and actual directories (excluding `_archived/` AND `scripts/`); both verification commands from Phase 2.5 return 82
-10. (If Phase 3 executed) `pr-creation-workflow-skill/SKILL.md` has the "Consuming Contract Diff Reports" subsection
-11. (Monorepo, m-4) Step 1 documents multi-spec glob discovery and per-service output naming
-12. (Resilience, m-3 + M-2) `.oasdiff-*` is added to `.gitignore`; intermediate artifacts are not committed
+9. `opencode_app/README.md` line 26 directory count clarified (82 + scripts/ + _archived/ parenthetical)
+10. `deploy/.AGENTS.md` has a routing entry for OpenAPI contract review pointing to `openapi-contract-adherence-skill`
+11. All counts and routing entries synchronized across **all 5 sync files** — no drift between deploy scripts (banner + status), README, opencode_app/README, and deploy/.AGENTS.md; both verification commands from Phase 2.6 return 82; `grep -c "openapi-contract-adherence-skill" deploy/.AGENTS.md` ≥ 1
+12. (If Phase 3 executed) `pr-creation-workflow-skill/SKILL.md` has the "Consuming Contract Diff Reports" subsection
+13. (Monorepo, m-4) Step 1 documents multi-spec glob discovery and per-service output naming
+14. (Resilience, m-3 + M-2) `.oasdiff-*` is added to `.gitignore`; intermediate artifacts are not committed
 
 ---
 
@@ -385,10 +403,11 @@ User trigger ("openapi diff", "breaking change", "consumer update plan")
 | File | Action | Phase |
 |------|--------|-------|
 | `opencode_app/.opencode/skills/openapi-contract-adherence-skill/SKILL.md` | Create | 1 |
-| `deploy/setup.sh` | Update (Framework 13→14, skill listing) | 2 |
-| `deploy/setup.ps1` | Update (Framework 13→14, skill listing) | 2 |
-| `README.md` | Update (Skill Categories table) | 2 |
-| `opencode_app/README.md` | Verify; update only if it lists individual skills | 2 |
+| `deploy/setup.sh` | Update (Framework 13→14 banner + status, skill listing, Language-Specific fix) | 2 |
+| `deploy/setup.ps1` | Update (Framework 13→14 banner + status, skill listing, Language-Specific fix) | 2 |
+| `README.md` | Update (Skill Categories table: Framework 14, purpose text) | 2 |
+| `opencode_app/README.md` | Update (line 26 directory count clarification) | 2 |
+| `deploy/.AGENTS.md` | Update (routing entry for OpenAPI contract review) | 2 |
 | `pr-creation-workflow-skill/SKILL.md` | Optional update (PR gate consumer section) | 3 |
 
 ---
