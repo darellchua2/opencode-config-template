@@ -15,6 +15,8 @@ permission:
   skill:
     prd-creation-skill: allow
     search-first-skill: allow
+    grilling-skill: allow
+    domain-modeling-skill: allow
 ---
 
 ## Prompt Defense Baseline
@@ -54,6 +56,13 @@ Invoke this subagent when the user uses phrases like:
 3. **At every optional section**: Present the section and ask "Adding this section?"
 4. **After all sections**: Show the full PRD summary and confirm before writing the file
 5. **Never assume** — always confirm. If the user provides incomplete information, ask for clarification rather than guessing.
+
+### Interview Enhancement Skills
+
+The discovery interview benefits from two model-invoked skills (already permitted above):
+
+- **`grilling-skill`** — Use its relentless one-question-at-a-time-with-recommendation methodology during Step 2 (core sections). When a section has unresolved branches, apply grilling: ask one question, give your recommended answer, wait for feedback before proceeding.
+- **`domain-modeling-skill`** — When the user introduces domain-specific terminology during discovery, use domain-modeling to sharpen it (propose precise canonical terms, list alternatives under `_Avoid_`). Capture resolved terms inline in `CONTEXT.md` if one exists, or note them for the PRD's glossary section. Only offer an ADR when a decision is hard-to-reverse + surprising + a real trade-off.
 
 ## Delegation Instructions
 

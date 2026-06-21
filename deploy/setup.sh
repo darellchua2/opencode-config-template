@@ -584,7 +584,7 @@ USAGE:
       google-gce         Google Compute Engine management
       google-gke         Google Kubernetes Engine management
 
-   SKILLS (82):
+   SKILLS (86):
                Framework (15):       test-generator-framework, linting-workflow,
                                       pr-creation-workflow, pr-merge-workflow,
                                       error-resolver-workflow, tdd-workflow,
@@ -641,6 +641,9 @@ USAGE:
 
                  DevOps (4):     docker-containerization-skill, monorepo-management-skill,
                                  database-migration-skill, logging-observability-skill
+
+      Planning & Alignment (4): grilling-skill, domain-modeling-skill,
+                                grill-with-docs-skill, grill-me-skill
 
     Run 'opencode --list-skills' for detailed descriptions
     Run 'opencode --skill <name> "prompt"' to invoke a skill
@@ -2299,6 +2302,11 @@ print_summary() {
         echo "      - object-design"
         echo "      - code-smells"
         echo "      - complexity-management"
+        echo "    - Planning & Alignment (4):"
+        echo "      - grilling-skill"
+        echo "      - domain-modeling-skill"
+        echo "      - grill-with-docs-skill"
+        echo "      - grill-me-skill"
 
     else
         echo "✗ skills: Not deployed"
@@ -2364,7 +2372,7 @@ print_next_steps() {
     echo "         opencode \"prompt\" (uses build)"
      echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "                     📦 82 Skills Available"
+    echo "                     📦 86 Skills Available"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
     echo "  Framework (15) • Language-Specific (6) • Framework-Specific (7)"

@@ -380,7 +380,7 @@ USAGE:
     Usage: opencode --agent build 'implement auth feature'
             opencode --agent explore 'find all API routes'
  
-          SKILLS (82):
+          SKILLS (86):
               Framework (15):       test-generator-framework, linting-workflow,
                                       pr-creation-workflow, pr-merge-workflow,
                                       error-resolver-workflow, tdd-workflow,
@@ -432,6 +432,9 @@ USAGE:
 
                  DevOps (4):     docker-containerization-skill, monorepo-management-skill,
                                  database-migration-skill, logging-observability-skill
+
+      Planning & Alignment (4): grilling-skill, domain-modeling-skill,
+                                grill-with-docs-skill, grill-me-skill
 
     Run 'opencode --list-skills' for detailed descriptions
     Run 'opencode --skill <name> \"prompt\"' to invoke a skill
@@ -1283,6 +1286,9 @@ function Deploy-Skills {
         Write-Host "      - construction-bd-skill"
         Write-Host "    Configuration (2):"
         Write-Host "      - microsoft-m365-config-skill, codegraph-setup-skill"
+        Write-Host "    Planning & Alignment (4):"
+        Write-Host "      - grilling-skill, domain-modeling-skill"
+        Write-Host "      - grill-with-docs-skill, grill-me-skill"
         Write-Host ""
         Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
         Write-Host ""
@@ -1732,7 +1738,7 @@ function Show-NextSteps {
     Write-Host "         opencode `"prompt`" (uses build)"
      Write-Host ""
     Write-Host "=====================================================================" -ForegroundColor White
-     Write-Host "                     82 Skills Available" -ForegroundColor White
+     Write-Host "                     86 Skills Available" -ForegroundColor White
     Write-Host "=====================================================================" -ForegroundColor White
     Write-Host ""
     Write-Host "  Framework (15) • Language-Specific (6) • Framework-Specific (7)"
