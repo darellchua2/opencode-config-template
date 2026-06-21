@@ -129,14 +129,15 @@ User trigger ("openapi diff", "breaking change", "consumer update plan")
 
 - [ ] **1.4** Author **"Prerequisites"** section documenting install commands:
     - **oasdiff binary**: `go install github.com/oasdiff/oasdiff@latest` OR `brew install oasdiff` (repo moved from `tufin/oasdiff` → `oasdiff/oasdiff` in 2024)
-    - **oasdiff Docker** (fallback, no local install): `docker pull tufin/oasdiff` (Docker image name unchanged)
-    - **Version pinning**: recommend pinning a specific version (e.g., `@v1.1.16` or `tufin/oasdiff:v1.1.16`) to keep binary/Docker output schemas consistent
-    - **redocly** (primary linter): `npm i -g @redocly/cli`
-    - **spectral** (alternative linter): `npm i -g @stoplight/spectral-cli`
-    - **SDK generators** (TS): `npm i -D @hey-api/openapi-ts` / `orval` / `@openapitools/openapi-generator-cli`
-    - **SDK generators** (Python): `@openapitools/openapi-generator-cli generate -g python`
-    — **Why:** Skill assumes these tools are installed; documenting them up front prevents runtime failures. Pinning versions avoids output schema drift between the local binary and the Docker fallback.
-    — **Done when:** Section contains install commands for oasdiff (binary + docker + version pinning note) and at least 2 SDK generators.
+    - **oasdiff Docker** (fallback, no local install): `docker pull tufin/oasdiff:stable` — **use `:stable` or a pinned version tag** (e.g., `:v1.19.1`); avoid bare `:latest` which tracks main and may contain unreleased commits
+    - **Version pinning**: pin to a specific release (e.g., `go install github.com/oasdiff/oasdiff@v1.19.1` or `docker pull tufin/oasdiff:v1.19.1`) to keep binary/Docker output schemas consistent. As of 2026-06-14, latest stable is **v1.19.1**.
+    - **Node.js requirement**: oasdiff itself is Go-based (no Node), but the SDK generators below require Node ≥22.x
+    - **redocly** (primary linter): `npm i -g @redocly/cli` (latest `2.34.0`; requires Node ≥22.12.0)
+    - **spectral** (alternative linter): `npm i -g @stoplight/spectral-cli` (latest `6.16.0`)
+    - **SDK generators** (TS): `npm i -D @hey-api/openapi-ts` (latest `0.98.2`; Node ≥22.18.0) / `orval` (latest `8.18.0`; Node ≥22.18.0) / `@openapitools/openapi-generator-cli` (latest `2.39.0`; Node ≥22.0.0)
+    - **SDK generators** (Python): `@openapitools/openapi-generator-cli generate -g python` (CLI is Node-based but generates Python output); `fastapi-code-generator` (PyPI, latest `0.7.0` — NOT `fastapi-codegen` which does not exist)
+    — **Why:** Skill assumes these tools are installed; documenting them up front prevents runtime failures. Pinning versions avoids output schema drift between the local binary and the Docker fallback. Node version requirements prevent silent install failures on older runtimes.
+    — **Done when:** Section contains install commands for oasdiff (binary + docker + version pinning note) and at least 2 SDK generators, with latest version numbers and Node requirements noted.
     — **Consumers affected:** All downstream steps.
 
 - [ ] **1.5** Author **Step 1: Discover Specs** — baseline spec resolution via `git show $(git merge-base HEAD main):openapi.yaml` (or user-supplied path); current spec from working tree. Include fallback for non-git contexts (user-supplied baseline path).
@@ -264,11 +265,11 @@ User trigger ("openapi diff", "breaking change", "consumer update plan")
 
     | Generator | Command | Output Location | Notes |
     |-----------|---------|-----------------|-------|
-    | `@hey-api/openapi-ts` (config-file, recommended) | Create `hey-api.config.ts` with `input: 'openapi.yaml'`, `output: 'src/api/generated'`, `plugins: ['@hey-api/client-fetch', '@tanstack/react-query']`; run `npx @hey-api/openapi-ts` | `src/api/generated/**` | Current plugin-based config (verified vs `@hey-api/openapi-ts` docs); legacy `-c` shorthand may not work on latest versions |
+    | `@hey-api/openapi-ts` (config-file, recommended) | Create `openapi-ts.config.ts` (NOT `hey-api.config.ts`) with `input: 'openapi.yaml'`, `output: 'src/api/generated'`, `plugins: ['@hey-api/sdk', '@hey-api/client-fetch']` (plugins are an array of strings or `{ name, ...options }` objects per the official docs at heyapi.dev); run `npx @hey-api/openapi-ts` | `src/api/generated/**` | Current plugin-based config (verified vs `@hey-api/openapi-ts` 0.98.2 docs at heyapi.dev/docs/openapi/typescript/configuration); TanStack Query integration is via a separate plugin — verify the exact plugin name against the plugin catalog when authoring |
     | `orval` | `npx orval --config ./orval.config.ts` | `src/api/**` | TS + react-query/swr |
     | `openapi-generator-cli` (TS) | `openapi-generator-cli generate -i openapi.yaml -g typescript-fetch -o src/api` | `src/api/**` | TS fetch client |
     | `openapi-generator-cli` (Python) | `openapi-generator-cli generate -i openapi.yaml -g python -o ./client` | `./client/**` | Python httpx-based client |
-    | `fastapi-codegen` (Python, server) | `fastapi-codegen --input openapi.yaml --output app/` | `app/**` | Server-side stubs |
+    | `fastapi-code-generator` (Python, server) | `fastapi-codegen --input openapi.yaml --output app/` (installed via `pip install fastapi-code-generator`; the CLI binary is named `fastapi-codegen`) | `app/**` | Server-side stubs. **Note**: PyPI package is `fastapi-code-generator` (with `-rator`); there is no `fastapi-codegen` package on PyPI |
     - **File-protection note**: regeneration overwrites generated dirs. Document `.openapi-generator-ignore` / `.swagger-codegen-ignore` for hand-edited wrapper files outside generated dirs.
     — **Why:** After migration, regenerating clients is the most common follow-up action; a command table saves users from docs lookups. The current `@hey-api/openapi-ts` uses a config-file + plugins model, not the `-c <client>` shorthand from older versions.
     — **Done when:** Table covers at least 4 generators with TS and Python representation, and uses the current `@hey-api/openapi-ts` config-file form as the canonical example.
@@ -432,6 +433,23 @@ User trigger ("openapi diff", "breaking change", "consumer update plan")
 
 ---
 
+## Dependency Version Audit (Pre-Implementation)
+
+Verified against package registries on 2026-06-21. All findings below are addressed in the relevant phases.
+
+| Dependency | Latest Version | PLAN Fix |
+|-----------|----------------|----------|
+| `oasdiff` (binary/brew) | `v1.19.1` (2026-06-14) | Phase 1.4 — corrected pinning example from `@v1.1.16` → `@v1.19.1` (transposed digits) |
+| `oasdiff` (Docker) | `:stable` / `:v1.19.1` (2026-06-14); `:latest` tracks unreleased main | Phase 1.4 — recommend `tufin/oasdiff:stable` over bare `:latest` |
+| `@redocly/cli` | `2.34.0` (Node ≥22.12.0) | Phase 1.4 — version noted, Node requirement added |
+| `@stoplight/spectral-cli` | `6.16.0` | Phase 1.4 — version noted |
+| `@hey-api/openapi-ts` | `0.98.2` (Node ≥22.18.0) | Phase 1.12 — config filename corrected `hey-api.config.ts` → `openapi-ts.config.ts`; plugins format documented as string-or-object array per official docs |
+| `orval` | `8.18.0` (Node ≥22.18.0) | Phase 1.4 — version noted, Node requirement added |
+| `@openapitools/openapi-generator-cli` | `2.39.0` (Node ≥22.0.0) | Phase 1.4 — version noted, Node requirement added |
+| `fastapi-code-generator` | `0.7.0` (PyPI) | Phase 1.12 — corrected package name `fastapi-codegen` → `fastapi-code-generator` (PyPI 404 on the short name); CLI binary is still `fastapi-codegen` |
+
+---
+
 ## Architecture Review Issues Addressed
 
 | Issue | Severity | Phase | Resolution |
@@ -449,6 +467,11 @@ User trigger ("openapi diff", "breaking change", "consumer update plan")
 | n-1: Reference URL/title mismatch | Nit | References | Fixed Nordic APIs title to match URL slug |
 | n-2: semverBump rollup rule unstated | Nit | 1.8, 1.10 | Added explicit rollup rule: `major` if any breaking; else `minor` if any additive; else `patch` if any cosmetic; else `none` |
 | n-3: Phase 1.9 regex too abstract | Nit | 1.9 | Replaced with concrete TS and Python regex examples including brace-escape for path params |
+| D-1: oasdiff pinning example had transposed digits (`v1.1.16` → `v1.19.1`) | Critical | 1.4 | Corrected to `v1.19.1`; added explicit latest-stable reference |
+| D-2: `@hey-api/openapi-ts` config filename and plugins format wrong | Critical | 1.12 | Filename → `openapi-ts.config.ts`; plugins format → string or object array per heyapi.dev/docs |
+| D-3: `fastapi-codegen` does not exist on PyPI | Critical | 1.12 | Corrected package name to `fastapi-code-generator` (CLI binary stays `fastapi-codegen`); added install clarification |
+| D-4: Docker `:latest` tag tracks unreleased commits | Major | 1.4 | Recommend `tufin/oasdiff:stable` or pinned version tags; documented the `:latest` risk |
+| D-5: Node ≥22.x requirements undocumented | Minor | 1.4 | Added Node version requirements per tool in Prerequisites |
 
 ---
 
