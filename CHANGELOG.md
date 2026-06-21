@@ -1,3 +1,10 @@
+# [1.68.0](https://github.com/darellchua2/opencode-config-template/compare/v1.67.0...v1.68.0) (2026-06-21)
+
+
+### Features
+
+* add prd-creation-skill, prd-specialist-subagent, and image-analyzer shared utility ([#224](https://github.com/darellchua2/opencode-config-template/issues/224)) ([813958d](https://github.com/darellchua2/opencode-config-template/commit/813958d00865edfafb65e68195869d9462281e3b)), closes [#223](https://github.com/darellchua2/opencode-config-template/issues/223) [#223](https://github.com/darellchua2/opencode-config-template/issues/223)
+
 # [1.67.0](https://github.com/darellchua2/opencode-config-template/compare/v1.66.1...v1.67.0) (2026-06-21)
 
 
