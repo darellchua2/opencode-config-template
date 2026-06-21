@@ -500,7 +500,7 @@ USAGE:
                          CONFIGURED FEATURES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-   AGENTS (39):
+   AGENTS (40):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
@@ -540,6 +540,7 @@ USAGE:
     autodesk-specialist  Autodesk integration and APS APIs
     civil-3d-specialist  Autodesk Civil 3D model modifications
     open3d-specialist    Open3D 3D data processing guidance
+    prd-specialist       PRD specialist — discovery interview and drafting
 
     Usage: opencode --agent build "implement auth feature"
            opencode --agent explore "find all API routes"
@@ -584,13 +585,13 @@ USAGE:
       google-gke         Google Kubernetes Engine management
 
    SKILLS (82):
-               Framework (14):       test-generator-framework, linting-workflow,
+               Framework (15):       test-generator-framework, linting-workflow,
                                       pr-creation-workflow, pr-merge-workflow,
                                       error-resolver-workflow, tdd-workflow,
                                       docx-creation, pptx-specialist,
                                       xlsx-specialist, pdf-specialist, frontend-design,
                                       api-design-skill, openapi-contract-adherence-skill,
-                                      performance-optimization-skill
+                                      performance-optimization-skill, prd-creation-skill
 
             Language-Specific (6): python-pytest-creator, python-ruff-linter,
                                   javascript-eslint-linter, changelog-python-cliff,
@@ -1647,11 +1648,12 @@ setup_config() {
             log_success "config.json copied successfully"
 
             echo ""
-             echo "✓ Configured 38 agents:"
+             echo "✓ Configured 39 agents:"
              echo "    - build (default) - Full-featured coding agent"
              echo "    - plan - Planning agent (read-only)"
              echo "    - explore - Codebase exploration and analysis"
              echo "    - image-analyzer-subagent - Image/screenshot analysis"
+             echo "    - prd-specialist-subagent - PRD creation and drafting"
              echo "    - ... and 34 more agents"
             echo ""
              echo "✓ Configured MCP servers:"
@@ -2200,12 +2202,12 @@ print_summary() {
 
     # Agents configured
     if [ -f "$CONFIG_FILE" ]; then
-        echo "✓ Configured 38 agents:"
+        echo "✓ Configured 39 agents:"
         echo "    - build (default) - Full-featured coding agent"
         echo "    - plan - Planning agent (read-only)"
         echo "    - explore - Codebase exploration and analysis"
         echo "    - image-analyzer-subagent - Image/screenshot analysis"
-        echo "    - ... and 30 more agents"
+        echo "    - ... and 35 more agents"
     fi
 
     # MCP servers configured
@@ -2224,7 +2226,7 @@ print_summary() {
     if [ -d "$SKILLS_DIR" ] && [ "$(ls -A ${SKILLS_DIR} 2>/dev/null)" ]; then
         local skill_count=$(find ${SKILLS_DIR} -name "SKILL.md" 2>/dev/null | wc -l)
         echo "✓ skills: ${skill_count} skills deployed to ${SKILLS_DIR}/"
-        echo "    - Framework (14):"
+        echo "    - Framework (15):"
         echo "      - test-generator-framework"
         echo "      - linting-workflow"
         echo "      - pr-creation-workflow"
@@ -2239,7 +2241,8 @@ print_summary() {
         echo "      - api-design-skill"
         echo "      - openapi-contract-adherence-skill"
         echo "      - performance-optimization-skill"
-    echo "    - Language-Specific (6):"
+        echo "      - prd-creation-skill"
+        echo "    - Language-Specific (6):"
         echo "      - python-pytest-creator"
         echo "      - python-ruff-linter"
         echo "      - javascript-eslint-linter"
@@ -2349,12 +2352,13 @@ print_next_steps() {
     echo "                        🚀 Quick Start"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "🤖 Agents (33):"
+    echo "🤖 Agents (40):"
     echo "  - build (default) - Full-featured coding agent"
     echo "  - plan - Planning agent (read-only)"
     echo "  - explore - Fast codebase exploration and analysis"
     echo "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
-    echo "  - ... and 30 more agents"
+    echo "  - prd-specialist-subagent - PRD creation and drafting"
+    echo "  - ... and 35 more agents"
     echo ""
     echo "  Usage: opencode --agent <name> \"prompt\""
     echo "         opencode \"prompt\" (uses build)"
@@ -2363,7 +2367,7 @@ print_next_steps() {
     echo "                     📦 82 Skills Available"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "  Framework (14) • Language-Specific (6) • Framework-Specific (7)"
+    echo "  Framework (15) • Language-Specific (6) • Framework-Specific (7)"
     echo "  OpenCode Meta (4) • OpenTofu (7) • Git/Workflow (12)"
     echo "  Documentation (3) • JIRA (3) • Code Quality (7)"
     echo "  Agent Optimization (7)"

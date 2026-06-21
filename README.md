@@ -20,7 +20,7 @@ opencode-config-template/
 │   ├── AGENTS.md                # Container-specific instructions
 │   ├── .dockerignore
 │   ├── .opencode/
-│   │       ├── agents/              # 34 subagent .md files
+│   │       ├── agents/              # 35 subagent .md files
 │   │       └── skills/              # 82 skill directories
 │   └── README.md                # Docker usage guide
 ├── docker-compose.yml           # Docker Compose service definition
@@ -283,7 +283,7 @@ This repository implements **skill modularization** with 82 skills organized acr
 
 | Category | Skills | Purpose |
 |-----------|---------|---------|
-| **Framework** (14) | test-generator-framework, linting-workflow, pr-creation-workflow, pr-merge-workflow, error-resolver-workflow, tdd-workflow, docx-creation, pptx-specialist, xlsx-specialist, pdf-specialist, frontend-design, api-design-skill, openapi-contract-adherence-skill, performance-optimization-skill | Generic workflows, testing patterns, document creation, UI design, API design, contract adherence, and performance |
+| **Framework** (15) | test-generator-framework, linting-workflow, pr-creation-workflow, pr-merge-workflow, error-resolver-workflow, tdd-workflow, docx-creation, pptx-specialist, xlsx-specialist, pdf-specialist, frontend-design, api-design-skill, openapi-contract-adherence-skill, performance-optimization-skill, prd-creation-skill | Generic workflows, testing patterns, document creation, UI design, API design, contract adherence, performance, and product requirement documents |
 | **Language-Specific** (6) | python-pytest-creator, python-ruff-linter, javascript-eslint-linter, changelog-python-cliff, python-backend-skill, python-packaging-skill | Language-specific test, linting, project scaffolding, and packaging |
 | **Framework-Specific** (7) | nextjs-pr-workflow, nextjs-unit-test-creator, nextjs-standard-setup, nextjs-image-usage, typescript-dry-principle, accessibility-a11y-skill, react-nextjs-antipatterns-skill | Next.js 16, React 19, TypeScript, and accessibility workflows |
 | **OpenCode Meta** (4) | opencode-agent-creation, opencode-skill-creation, opencode-skills-maintainer, documentation-consistency-skill | Agent and skill creation/maintenance, documentation consistency auditing |
@@ -302,7 +302,7 @@ This repository implements **skill modularization** with 82 skills organized acr
 
 ### Agents
 
-34 agent `.md` files (plus 4 config-builtin agents defined directly in `config.json`: `build`, `plan`, `explore`, `general`) provide specialized task handling. Note: the 3 `*-primary-agent` files (`startup-founder`, `business-ops`, `office-document`) are routing hubs but are declared with `mode: subagent`.
+35 agent `.md` files (plus 4 config-builtin agents defined directly in `config.json`: `build`, `plan`, `explore`, `general`) provide specialized task handling. Note: the 3 `*-primary-agent` files (`startup-founder`, `business-ops`, `office-document`) are routing hubs but are declared with `mode: subagent`.
 
 #### Primary Agents
 
@@ -322,7 +322,8 @@ This repository implements **skill modularization** with 82 skills organized acr
 | **testing-subagent** | Test generation and execution | test-generator-framework, python-pytest-creator, nextjs-unit-test-creator | `explore` |
 | **tdd-subagent** | Test-driven development workflow | tdd-workflow, test-generator-framework | — |
 | **pr-workflow-subagent** | Pull request creation | pr-creation-workflow, nextjs-pr-workflow | `explore`, `general` |
-| **ticket-creation-subagent** | Issue/ticket creation | ticket-plan-workflow-skill | — |
+| **ticket-creation-subagent** | Issue/ticket creation | ticket-plan-workflow-skill | `explore` |
+| **prd-specialist-subagent** | PRD creation and drafting | prd-creation-skill | `explore` |
 | **documentation-subagent** | Documentation generation | docstring-generator, coverage-readme-workflow | — |
 | **coverage-subagent** | Coverage reporting | coverage-readme-workflow | — |
 | **opentofu-explorer-subagent** | Infrastructure as code | 7 OpenTofu skills (AWS, K8s, Keycloak, Neon, ECR) | — |

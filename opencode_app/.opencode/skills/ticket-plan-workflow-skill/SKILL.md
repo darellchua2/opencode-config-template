@@ -252,6 +252,8 @@ done
 ## Overview
 $OVERVIEW
 
+**PRD**: $PRD_PATH  _(optional — present only when a PRD was linked via docs/prd/)_
+
 ## Acceptance Criteria
 $ACCEPTANCE_CRITERIA
 

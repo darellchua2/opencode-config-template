@@ -12,6 +12,7 @@ permission:
     "*": deny
     explore: allow
     loop-operator-subagent: allow
+    image-analyzer-subagent: allow
   skill:
     test-generator-framework-skill: allow
     tdd-workflow-skill: allow

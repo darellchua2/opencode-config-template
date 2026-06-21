@@ -14,6 +14,7 @@ permission:
     "*": deny
     explore: allow
     general: allow
+    image-analyzer-subagent: allow
   skill:
     opencode-agent-creation-skill: allow
     opencode-skill-creation-skill: allow

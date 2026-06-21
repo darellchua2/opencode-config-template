@@ -12,6 +12,7 @@ permission:
     "*": deny
     explore: allow
     general: allow
+    image-analyzer-subagent: allow
   skill:
     semantic-release-convention-skill: allow
     pr-creation-workflow-skill: allow
