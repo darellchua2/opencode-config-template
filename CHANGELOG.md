@@ -1,3 +1,10 @@
+# [1.67.0](https://github.com/darellchua2/opencode-config-template/compare/v1.66.1...v1.67.0) (2026-06-21)
+
+
+### Features
+
+* add openapi-contract-adherence-skill for API contract evolution ([#221](https://github.com/darellchua2/opencode-config-template/issues/221)) ([#222](https://github.com/darellchua2/opencode-config-template/issues/222)) ([5dee29a](https://github.com/darellchua2/opencode-config-template/commit/5dee29a31bb825b891982245897aa281e5612e7d))
+
 ## [1.66.1](https://github.com/darellchua2/opencode-config-template/compare/v1.66.0...v1.66.1) (2026-06-19)
 
 
