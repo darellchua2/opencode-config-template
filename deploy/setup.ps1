@@ -379,13 +379,14 @@ USAGE:
     Usage: opencode --agent build 'implement auth feature'
             opencode --agent explore 'find all API routes'
  
-         SKILLS (82):
-             Framework (13):       test-generator-framework, linting-workflow,
+          SKILLS (82):
+             Framework (14):       test-generator-framework, linting-workflow,
                                       pr-creation-workflow, pr-merge-workflow,
                                       error-resolver-workflow, tdd-workflow,
                                       docx-creation, pptx-specialist,
                                       xlsx-specialist, pdf-specialist, frontend-design,
-                                      api-design-skill, performance-optimization-skill
+                                      api-design-skill, openapi-contract-adherence-skill,
+                                      performance-optimization-skill
 
             Language-Specific (6): python-pytest-creator, python-ruff-linter,
                                   javascript-eslint-linter, changelog-python-cliff,
@@ -1225,15 +1226,18 @@ function Deploy-Skills {
         Write-Host "Deployed $skillCount skills to $SkillsDir" -ForegroundColor Green
         Write-Host ""
         Write-Host "  Skill Categories:" -ForegroundColor Cyan
-          Write-Host "    Framework (11):"
+          Write-Host "    Framework (14):"
           Write-Host "      - test-generator-framework, linting-workflow"
           Write-Host "      - pr-creation-workflow, pr-merge-workflow"
           Write-Host "      - error-resolver-workflow, tdd-workflow"
           Write-Host "      - docx-creation, pptx-specialist, xlsx-specialist, pdf-specialist"
           Write-Host "      - frontend-design"
-        Write-Host "    Language-Specific (4):"
+          Write-Host "      - api-design-skill, openapi-contract-adherence-skill"
+          Write-Host "      - performance-optimization-skill"
+        Write-Host "    Language-Specific (6):"
         Write-Host "      - python-pytest-creator, python-ruff-linter"
         Write-Host "      - javascript-eslint-linter, changelog-python-cliff"
+        Write-Host "      - python-backend-skill, python-packaging-skill"
         Write-Host "    Framework-Specific (7):"
         Write-Host "      - nextjs-pr-workflow, nextjs-unit-test-creator"
         Write-Host "      - nextjs-standard-setup, nextjs-image-usage"
@@ -1727,7 +1731,7 @@ function Show-NextSteps {
      Write-Host "                     82 Skills Available" -ForegroundColor White
     Write-Host "=====================================================================" -ForegroundColor White
     Write-Host ""
-    Write-Host "  Framework (13) • Language-Specific (6) • Framework-Specific (7)"
+    Write-Host "  Framework (14) • Language-Specific (6) • Framework-Specific (7)"
      Write-Host "  OpenCode Meta (4) • OpenTofu (7) • Git/Workflow (12)"
     Write-Host "  Documentation (3) • JIRA (3) • Code Quality (7)"
      Write-Host "  Agent Optimization (7)"

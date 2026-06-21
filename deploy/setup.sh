@@ -584,12 +584,13 @@ USAGE:
       google-gke         Google Kubernetes Engine management
 
    SKILLS (82):
-               Framework (13):       test-generator-framework, linting-workflow,
+               Framework (14):       test-generator-framework, linting-workflow,
                                       pr-creation-workflow, pr-merge-workflow,
                                       error-resolver-workflow, tdd-workflow,
                                       docx-creation, pptx-specialist,
                                       xlsx-specialist, pdf-specialist, frontend-design,
-                                      api-design-skill, performance-optimization-skill
+                                      api-design-skill, openapi-contract-adherence-skill,
+                                      performance-optimization-skill
 
             Language-Specific (6): python-pytest-creator, python-ruff-linter,
                                   javascript-eslint-linter, changelog-python-cliff,
@@ -2223,7 +2224,7 @@ print_summary() {
     if [ -d "$SKILLS_DIR" ] && [ "$(ls -A ${SKILLS_DIR} 2>/dev/null)" ]; then
         local skill_count=$(find ${SKILLS_DIR} -name "SKILL.md" 2>/dev/null | wc -l)
         echo "✓ skills: ${skill_count} skills deployed to ${SKILLS_DIR}/"
-        echo "    - Framework (11):"
+        echo "    - Framework (14):"
         echo "      - test-generator-framework"
         echo "      - linting-workflow"
         echo "      - pr-creation-workflow"
@@ -2235,11 +2236,16 @@ print_summary() {
         echo "      - xlsx-specialist"
         echo "      - pdf-specialist"
         echo "      - frontend-design"
-        echo "    - Language-Specific (4):"
+        echo "      - api-design-skill"
+        echo "      - openapi-contract-adherence-skill"
+        echo "      - performance-optimization-skill"
+    echo "    - Language-Specific (6):"
         echo "      - python-pytest-creator"
         echo "      - python-ruff-linter"
         echo "      - javascript-eslint-linter"
         echo "      - changelog-python-cliff"
+        echo "      - python-backend-skill"
+        echo "      - python-packaging-skill"
         echo "    - Framework-Specific (7):"
         echo "      - nextjs-pr-workflow"
         echo "      - nextjs-unit-test-creator"
@@ -2357,7 +2363,7 @@ print_next_steps() {
     echo "                     📦 82 Skills Available"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "  Framework (13) • Language-Specific (6) • Framework-Specific (7)"
+    echo "  Framework (14) • Language-Specific (6) • Framework-Specific (7)"
     echo "  OpenCode Meta (4) • OpenTofu (7) • Git/Workflow (12)"
     echo "  Documentation (3) • JIRA (3) • Code Quality (7)"
     echo "  Agent Optimization (7)"
