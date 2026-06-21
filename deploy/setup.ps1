@@ -335,7 +335,7 @@ USAGE:
                          CONFIGURED FEATURES
 =======================================================================
 
-   AGENTS (39):
+   AGENTS (40):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
@@ -375,18 +375,19 @@ USAGE:
     autodesk-specialist  Autodesk integration and APS APIs
     civil-3d-specialist  Autodesk Civil 3D model modifications
     open3d-specialist    Open3D 3D data processing guidance
+    prd-specialist       PRD specialist — discovery interview and drafting
 
     Usage: opencode --agent build 'implement auth feature'
             opencode --agent explore 'find all API routes'
  
           SKILLS (82):
-             Framework (14):       test-generator-framework, linting-workflow,
+              Framework (15):       test-generator-framework, linting-workflow,
                                       pr-creation-workflow, pr-merge-workflow,
                                       error-resolver-workflow, tdd-workflow,
                                       docx-creation, pptx-specialist,
                                       xlsx-specialist, pdf-specialist, frontend-design,
                                       api-design-skill, openapi-contract-adherence-skill,
-                                      performance-optimization-skill
+                                      performance-optimization-skill, prd-creation-skill
 
             Language-Specific (6): python-pytest-creator, python-ruff-linter,
                                   javascript-eslint-linter, changelog-python-cliff,
@@ -1158,11 +1159,12 @@ function Set-Configuration {
             Write-LogSuccess "config.json copied successfully"
 
             Write-Host ""
-             Write-Host "Configured 38 agents:" -ForegroundColor Green
+             Write-Host "Configured 39 agents:" -ForegroundColor Green
             Write-Host "    - build (default) - Full-featured coding agent"
             Write-Host "    - plan - Planning agent (read-only)"
             Write-Host "    - explore - Codebase exploration and analysis"
             Write-Host "    - image-analyzer-subagent - Image/screenshot analysis"
+            Write-Host "    - prd-specialist-subagent - PRD creation and drafting"
             Write-Host ""
             Write-Host "Configured MCP servers:" -ForegroundColor Green
             Write-Host "    - Local (auto-start): atlassian, zai-vision-mcp-server, codegraph, mermaid"
@@ -1226,7 +1228,7 @@ function Deploy-Skills {
         Write-Host "Deployed $skillCount skills to $SkillsDir" -ForegroundColor Green
         Write-Host ""
         Write-Host "  Skill Categories:" -ForegroundColor Cyan
-          Write-Host "    Framework (14):"
+          Write-Host "    Framework (15):"
           Write-Host "      - test-generator-framework, linting-workflow"
           Write-Host "      - pr-creation-workflow, pr-merge-workflow"
           Write-Host "      - error-resolver-workflow, tdd-workflow"
@@ -1234,6 +1236,7 @@ function Deploy-Skills {
           Write-Host "      - frontend-design"
           Write-Host "      - api-design-skill, openapi-contract-adherence-skill"
           Write-Host "      - performance-optimization-skill"
+          Write-Host "      - prd-creation-skill"
         Write-Host "    Language-Specific (6):"
         Write-Host "      - python-pytest-creator, python-ruff-linter"
         Write-Host "      - javascript-eslint-linter, changelog-python-cliff"
@@ -1717,12 +1720,13 @@ function Show-NextSteps {
     Write-Host "  2. Start LM Studio: http://127.0.0.1:1234/v1"
     Write-Host "  3. Verify installation: opencode --version"
     Write-Host ""
-    Write-Host "Agents (33):"
+    Write-Host "Agents (40):"
     Write-Host "  - build (default) - Full-featured coding agent"
     Write-Host "  - plan - Planning agent (read-only)"
     Write-Host "  - explore - Codebase exploration and analysis"
     Write-Host "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
-    Write-Host "  - ... and 30 more agents"
+    Write-Host "  - prd-specialist-subagent - PRD creation and drafting"
+    Write-Host "  - ... and 35 more agents"
     Write-Host ""
     Write-Host "  Usage: opencode --agent <name> `"prompt`""
     Write-Host "         opencode `"prompt`" (uses build)"
@@ -1731,7 +1735,7 @@ function Show-NextSteps {
      Write-Host "                     82 Skills Available" -ForegroundColor White
     Write-Host "=====================================================================" -ForegroundColor White
     Write-Host ""
-    Write-Host "  Framework (14) • Language-Specific (6) • Framework-Specific (7)"
+    Write-Host "  Framework (15) • Language-Specific (6) • Framework-Specific (7)"
      Write-Host "  OpenCode Meta (4) • OpenTofu (7) • Git/Workflow (12)"
     Write-Host "  Documentation (3) • JIRA (3) • Code Quality (7)"
      Write-Host "  Agent Optimization (7)"

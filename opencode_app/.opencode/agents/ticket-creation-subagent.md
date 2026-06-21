@@ -13,6 +13,7 @@ permission:
     "*": deny
     architecture-review-subagent: allow
     explore: allow
+    image-analyzer-subagent: allow
   skill:
     semantic-release-convention-skill: allow
     ticket-plan-workflow-skill: allow
@@ -21,6 +22,7 @@ permission:
     jira-ticket-labeler-skill: allow
     git-semantic-commits-skill: allow
     plan-updater-skill: allow
+    prd-creation-skill: allow
 ---
 
 ## Prompt Defense Baseline
@@ -142,6 +144,7 @@ After execution, this subagent provides:
 | git-issue-updater | Progress updates |
 | git-semantic-commits | Commit message formatting |
 | plan-updater | PLAN.md progress sync on re-entry |
+| prd-creation-skill | PRD naming convention and linkage (docs/prd/ draft detection) |
 
 ## Interactive Workflow Selection
 
@@ -209,13 +212,26 @@ After execution, this subagent provides:
 8. Create branch named after ticket identifier:
    - JIRA: `{TICKET_KEY}` (e.g., `IBIS-123`)
    - GitHub: `issue-{NUMBER}` (e.g., `issue-456`)
-9. Generate PLAN file using `ticket-plan-workflow-skill` template in `PLANS/` directory
-   - **MANDATORY format**: every step MUST be atomic and carry **Why** + **Done when** + **Consumers affected**. The PLAN MUST include a top-level **Dependency & Consumer Map** section.
-   - **Atomicity self-check (blocks commit)**: before committing, verify every `- [ ] **N.M**` step carries the full rationale triple — `— **Why:**`, `— **Done when:**`, and `— **Consumers affected:**`. If ANY step is missing any of the three, **block the commit** — do not commit/push. Surface the malformed steps to the user, ask them to supply the missing fields, regenerate, and re-check. Only proceed to step 10 once the self-check passes (zero malformed steps).
-10. Commit PLAN file with semantic message: `docs(plan): add PLAN-{id}.md for {ticket-key}`
-11. Push branch to remote
-12. Post progress comment to ticket (GitHub: `gh issue comment`, JIRA: `atlassian_addCommentToJiraIssue`)
-13. **Optional branch-workflow signal:** After full-workflow branch creation, check detection signals per `git-branch-workflow-setup-skill` §Detection Logic and the skip marker (`.opencode/branch-workflow-skipped`). If all signals absent, include `NEEDS_GIT_BRANCH_SETUP: true` in the Return Contract so the primary agent can offer branch-workflow setup. Do NOT invoke the skill or spawn `repo-ops-specialist` directly (permission denied).
+9. **PRD Auto-Detect (optional)**: After branch creation, before PLAN generation, scan for draft PRDs:
+   ```
+   ls docs/prd/PRD-draft-*.md 2>/dev/null
+   ```
+   - If drafts found: prompt user "Found draft PRD(s): [list]. Link to this ticket?"
+   - If user confirms and selects a draft:
+     - Rename: `git mv docs/prd/PRD-draft-{slug}.md docs/prd/PRD-{ticket-key}.md`
+     - If draft was never committed (untracked on new branch): plain `mv` + `git add`
+     - Update the PRD header `**PLAN**:` placeholder to `PLANS/PLAN-{ticket-key}.md`
+     - Set `PRD_PATH=docs/prd/PRD-{ticket-key}.md` for PLAN header injection (step 10)
+   - If no drafts found or user declines: `PRD_PATH=""` (skip PRD steps — backward-compatible)
+10. Generate PLAN file using `ticket-plan-workflow-skill` template in `PLANS/` directory
+    - **MANDATORY format**: every step MUST be atomic and carry **Why** + **Done when** + **Consumers affected**. The PLAN MUST include a top-level **Dependency & Consumer Map** section.
+    - **PRD header injection**: If `PRD_PATH` is set, add `**PRD**: {PRD_PATH}` to the PLAN header (after the `**Branch**:` line).
+    - **Atomicity self-check (blocks commit)**: before committing, verify every `- [ ] **N.M**` step carries the full rationale triple — `— **Why:**`, `— **Done when:**`, and `— **Consumers affected:**`. If ANY step is missing any of the three, **block the commit** — do not commit/push. Surface the malformed steps to the user, ask them to supply the missing fields, regenerate, and re-check. Only proceed to step 11 once the self-check passes (zero malformed steps).
+11. Commit PLAN file (and PRD if linked) with semantic message: `docs(plan): add PLAN-{id}.md for {ticket-key}`
+    - If `PRD_PATH` is set: `git add docs/prd/ PLANS/PLAN-{id}.md` (commit both PRD + PLAN together)
+12. Push branch to remote
+13. Post progress comment to ticket (GitHub: `gh issue comment`, JIRA: `atlassian_addCommentToJiraIssue`)
+14. **Optional branch-workflow signal:** After full-workflow branch creation, check detection signals per `git-branch-workflow-setup-skill` §Detection Logic and the skip marker (`.opencode/branch-workflow-skipped`). If all signals absent, include `NEEDS_GIT_BRANCH_SETUP: true` in the Return Contract so the primary agent can offer branch-workflow setup. Do NOT invoke the skill or spawn `repo-ops-specialist` directly (permission denied).
 
 ### Step 4: Return Results
 
@@ -399,7 +415,7 @@ Output after full workflow:
 When your task is complete, return ONLY this structure:
 
 **Status:** [success | partial | failed]
-**Output:** [Ticket ID, Branch, PLAN file path, Architecture review status, Atomicity self-check: pass/fail]
+**Output:** [Ticket ID, Branch, PLAN file path, PRD file path (if linked), Architecture review status, Atomicity self-check: pass/fail]
 **Summary:** [2-3 sentences max describing what was done]
 **Issues:** [blockers, warnings, or "None"]
 **NEEDS_GIT_BRANCH_SETUP:** [true if release tooling absent and no skip marker; omit otherwise]

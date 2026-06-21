@@ -11,6 +11,8 @@
 
 Introduce an industry-standard Product Requirement Document (PRD) workflow that precedes ticket creation and feeds into the PLAN file. This creates two new artifacts: (1) `prd-creation-skill` holding the PRD template/workflow knowledge, and (2) `prd-specialist-subagent` that conducts a discovery interview and drafts the PRD. The existing `ticket-creation-subagent` is extended to auto-detect draft PRDs in `docs/prd/`, rename them to the ticket key, inject a `**PRD**:` reference into the PLAN header, and commit both files together. This strengthens the planning stage by separating product requirements (PRD) from implementation phases (PLAN).
 
+Additionally, `image-analyzer-subagent` is reframed as a **shared utility** — its `permission.task` access is granted to deny-by-default subagents that need image interpretation (`testing-subagent`, `code-review-subagent`, `architecture-review-subagent`, `pr-workflow-subagent`, `ticket-creation-subagent`, `opencode-tooling-subagent`) so they can delegate image analysis directly without routing through the primary agent.
+
 ### Confirmed Design Decisions (from issue #223 scoping)
 
 | Decision | Choice | Rationale |
@@ -23,6 +25,7 @@ Introduce an industry-standard Product Requirement Document (PRD) workflow that 
 | ticket-creation integration | Auto-detect + rename + PLAN header inject | Seamless PRD→PLAN linkage |
 | PRD sections | 14 Core (always) + 3 Optional (prompted) | Comprehensive yet flexible |
 | Model tier | `zai-coding-plan/glm-5-turbo` | Document-creation/coordination tier per AGENTS.md |
+| image-analyzer sharing | Reframe as shared utility + grant task access to 6 subagents | Currently only reachable by primary agent + ~11 default-allow agents; deny-by-default subagents (testing, code-review, architecture-review, pr-workflow, ticket-creation, opencode-tooling) are blocked despite clear image interpretation needs |
 
 ### Architecture
 
@@ -52,6 +55,8 @@ User trigger ("create prd", "product requirement", "feature spec")
 | `deploy/setup.sh` + `setup.ps1` | Phase 1 (skill exists) before incrementing | All deploy users | low |
 | `README.md` + `opencode_app/README.md` | Phase 1+2 | Repo readers | low |
 | `deploy/.AGENTS.md` + repo `AGENTS.md` | Phase 2 (subagent exists) | Primary agent routing | low |
+| `image-analyzer-subagent.md` (reframe) | — | All subagents granted task access in Phase 3; primary agent; `deploy/.AGENTS.md` routing | low |
+| 6 subagent `.md` files (permission update) | `image-analyzer-subagent` exists (already does) | Each updated subagent gains image interpretation capability | low |
 
 ---
 
@@ -288,6 +293,56 @@ User trigger ("create prd", "product requirement", "feature spec")
 
 ---
 
+### Phase 3b: Image-Analyzer Shared Utility
+
+> **Why this phase exists:** `image-analyzer-subagent` (vision model `glm-5v-turbo`) interprets images and returns structured results. Currently it's a leaf node reachable only by the primary agent and ~11 default-allow subagents. Six deny-by-default subagents have clear, recurring image interpretation needs but are blocked by `task: { "*": deny }`. This phase reframes the subagent as a shared utility and grants access to those subagents.
+
+- [ ] **3.5** Update `opencode_app/.opencode/agents/image-analyzer-subagent.md` description and intro to reframe as a **shared utility**:
+    - Update `description:` frontmatter to clarify it serves both the primary agent AND other subagents (e.g., "Shared image analysis utility for all agents. Accepts image/video paths or URLs, interprets content, and returns structured results. Used by primary agent directly and delegable by subagents with task permission.")
+    - Add a **"Shared Utility"** note after the Prompt Defense Baseline: "This subagent is a shared leaf-node utility. Other subagents delegate image paths/URLs and receive structured analysis (Analysis Type, Description, Key Findings, Confidence, Recommended Actions). It does NOT chain further — it interprets and returns."
+    — **Why:** Clarifies the subagent's role as a callable service (interpret → return) rather than a standalone specialist. Sets expectations for calling subagents: pass image, get analysis back.
+    — **Done when:** Description updated; "Shared Utility" note present; core functionality (tool selection, structured output, confidence scoring) unchanged.
+    — **Consumers affected:** All subagents granted access in steps 3.6-3.11; primary agent.
+
+- [ ] **3.6** Add `image-analyzer-subagent: allow` to `testing-subagent.md` `permission.task` block (after existing `loop-operator-subagent: allow` line).
+    — **Why:** `testing-subagent` needs to verify UI screenshots against expected output, compare before/after renders in visual regression tests, and interpret test failure screenshots.
+    — **Done when:** `image-analyzer-subagent: allow` present in `testing-subagent.md` task permissions; YAML still valid.
+    — **Consumers affected:** `testing-subagent` (gains image interpretation capability).
+
+- [ ] **3.7** Add `image-analyzer-subagent: allow` to `code-review-subagent.md` `permission.task` block (after existing `rust-reviewer-subagent: allow` line).
+    — **Why:** `code-review-subagent` benefits from interpreting UI screenshots alongside code changes (e.g., "does this PR's rendered output match the design?") and reading error screenshots referenced in code comments.
+    — **Done when:** `image-analyzer-subagent: allow` present in `code-review-subagent.md` task permissions; YAML still valid.
+    — **Consumers affected:** `code-review-subagent` (gains image interpretation capability).
+
+- [ ] **3.8** Add `image-analyzer-subagent: allow` to `architecture-review-subagent.md` `permission.task` block (after existing `explore: allow` line).
+    — **Why:** `architecture-review-subagent` needs to interpret architecture diagrams, flowcharts, UML, ER diagrams, and system design visuals that are often provided as images rather than code.
+    — **Done when:** `image-analyzer-subagent: allow` present in `architecture-review-subagent.md` task permissions; YAML still valid.
+    — **Consumers affected:** `architecture-review-subagent` (gains diagram interpretation capability).
+
+- [ ] **3.9** Add `image-analyzer-subagent: allow` to `pr-workflow-subagent.md` `permission.task` block (after the last existing allow entry).
+    — **Why:** `pr-workflow-subagent` can analyze visual diffs when PRs include UI changes — comparing expected vs actual screenshots to inform review quality.
+    — **Done when:** `image-analyzer-subagent: allow` present in `pr-workflow-subagent.md` task permissions; YAML still valid.
+    — **Consumers affected:** `pr-workflow-subagent` (gains visual diff capability).
+
+- [ ] **3.10** Add `image-analyzer-subagent: allow` to `ticket-creation-subagent.md` `permission.task` block (file already modified in steps 3.1-3.3 for PRD work — add after existing allow entries).
+    — **Why:** `ticket-creation-subagent` benefits from interpreting bug report screenshots — when a user provides a screenshot of a bug, the subagent can use image-analyzer to extract the error text and UI context for the ticket description.
+    — **Done when:** `image-analyzer-subagent: allow` present in `ticket-creation-subagent.md` task permissions; YAML still valid; no conflict with PRD-related edits from 3.1-3.3.
+    — **Consumers affected:** `ticket-creation-subagent` (gains screenshot interpretation capability).
+
+- [ ] **3.11** Add `image-analyzer-subagent: allow` to `opencode-tooling-subagent.md` `permission.task` block (after existing allow entries).
+    — **Why:** `opencode-tooling-subagent` reviews agent/skill configurations and may need to interpret architecture diagrams, workflow diagrams, or mermaid renderings referenced in PLAN files or documentation.
+    — **Done when:** `image-analyzer-subagent: allow` present in `opencode-tooling-subagent.md` task permissions; YAML still valid.
+    — **Consumers affected:** `opencode-tooling-subagent` (gains diagram interpretation capability).
+
+- [ ] **3.12** Update `deploy/.AGENTS.md` MCP Tool Routing table row for Image/video analysis:
+    - Current: `| Image/video analysis | image-analyzer-subagent | — | Scoped to subagent with zai-vision-mcp-server tools |`
+    - Updated: Add note that it's a **shared leaf-node utility** accessible by designated subagents (testing, code-review, architecture-review, pr-workflow, ticket-creation, opencode-tooling) via `permission.task`
+    — **Why:** Without documenting the sharing model, future agents won't know image-analyzer is delegable by subagents — they'll assume it's primary-agent-only.
+    — **Done when:** Routing table row updated to note shared utility status and list delegating subagents.
+    — **Consumers affected:** Primary agent routing; all agents reading deploy/.AGENTS.md.
+
+---
+
 ### Phase 4: Documentation Sync (MANDATORY per AGENTS.md)
 
 > **Why non-negotiable:** AGENTS.md mandates lockstep updates across 5+ files when adding a skill AND a subagent.
@@ -362,6 +417,13 @@ User trigger ("create prd", "product requirement", "feature spec")
     grep -c "prd-specialist-subagent" README.md
     grep -c "prd-creation-skill" AGENTS.md
     grep -c "prd-specialist-subagent" AGENTS.md
+    # Verify image-analyzer sharing (Phase 3b)
+    grep -c "image-analyzer-subagent: allow" opencode_app/.opencode/agents/testing-subagent.md
+    grep -c "image-analyzer-subagent: allow" opencode_app/.opencode/agents/code-review-subagent.md
+    grep -c "image-analyzer-subagent: allow" opencode_app/.opencode/agents/architecture-review-subagent.md
+    grep -c "image-analyzer-subagent: allow" opencode_app/.opencode/agents/pr-workflow-subagent.md
+    grep -c "image-analyzer-subagent: allow" opencode_app/.opencode/agents/ticket-creation-subagent.md
+    grep -c "image-analyzer-subagent: allow" opencode_app/.opencode/agents/opencode-tooling-subagent.md
     ```
     All declared counts must equal actual counts. All files must reference both the skill and the subagent. Framework counts must be consistent across banner and status sections in both deploy scripts.
     — **Why:** `documentation-consistency-skill` audits this; any drift fails the audit. The comprehensive grep verifies every sync file references both artifacts.
@@ -386,6 +448,9 @@ User trigger ("create prd", "product requirement", "feature spec")
 12. `opencode_app/README.md` directory count updated (actual + 1)
 13. `AGENTS.md` (repo) subagent count references updated to actual + 1
 14. All counts synchronized across all sync files — no drift
+15. `image-analyzer-subagent.md` description updated to clarify it is a shared utility callable by both primary agent and other subagents; "Shared Utility" note present
+16. `image-analyzer-subagent: allow` added to `permission.task` in all 6 target subagents: `testing-subagent`, `code-review-subagent`, `architecture-review-subagent`, `pr-workflow-subagent`, `ticket-creation-subagent`, `opencode-tooling-subagent`
+17. `deploy/.AGENTS.md` routing table updated to note image-analyzer is a shared leaf-node utility with designated delegating subagents
 
 ---
 
@@ -397,6 +462,13 @@ User trigger ("create prd", "product requirement", "feature spec")
 | `opencode_app/.opencode/agents/prd-specialist-subagent.md` | Create | 2 |
 | `opencode_app/.opencode/agents/ticket-creation-subagent.md` | Update (Step 3 PRD detection/rename/commit) | 3 |
 | `opencode_app/.opencode/skills/ticket-plan-workflow-skill/SKILL.md` | Update (PLAN header PRD field) | 3 |
+| `opencode_app/.opencode/agents/image-analyzer-subagent.md` | Update (reframe as shared utility) | 3b |
+| `opencode_app/.opencode/agents/testing-subagent.md` | Update (add image-analyzer task permission) | 3b |
+| `opencode_app/.opencode/agents/code-review-subagent.md` | Update (add image-analyzer task permission) | 3b |
+| `opencode_app/.opencode/agents/architecture-review-subagent.md` | Update (add image-analyzer task permission) | 3b |
+| `opencode_app/.opencode/agents/pr-workflow-subagent.md` | Update (add image-analyzer task permission) | 3b |
+| `opencode_app/.opencode/agents/ticket-creation-subagent.md` | Update (add image-analyzer task permission) | 3b |
+| `opencode_app/.opencode/agents/opencode-tooling-subagent.md` | Update (add image-analyzer task permission) | 3b |
 | `deploy/.AGENTS.md` | Update (routing entry + PRD→PLAN linkage) | 4 |
 | `AGENTS.md` (repo) | Update (subagent count, routing) | 4 |
 | `deploy/setup.sh` | Update (skill + agent counts/listings) | 4 |
@@ -416,6 +488,8 @@ User trigger ("create prd", "product requirement", "feature spec")
 | `prd-specialist-subagent` hallucinates product requirements | Phase 2.4 enforces prompt-first pattern matching `ticket-creation-subagent`; every section requires user confirmation |
 | Model tier wrong for subagent | Phase 2.1 explicitly sets `glm-5-turbo` (document-creation tier); NOT glm-5.2 (primary-session only) or glm-5.1 (correctness-critical) |
 | Documentation sync drift across 5+ files | Phase 4.8 cross-verifies all counts and references with grep commands; matches `documentation-consistency-skill` audit expectations |
+| Image-analyzer permission grants cause unintended side effects (subagents over-delegating to vision) | Each grant is scoped to `permission.task` (delegation only); image-analyzer-subagent is read-only (`edit: deny, bash: deny`) — it cannot modify files or execute commands, only interpret and return results. Calling subagents receive structured text, not actions. |
+| image-analyzer model cost from increased delegation | `image-analyzer-subagent` uses `glm-5v-turbo` (200K context, same tier as other subagents); not the expensive 1M-context `glm-5.2`. Cost increase is bounded by caller's step budget. |
 
 ---
 
@@ -426,6 +500,8 @@ User trigger ("create prd", "product requirement", "feature spec")
 - Changing the PLAN template beyond the optional `**PRD**:` header field
 - PRD-to-Word/PDF export (handled by existing `docx-creation-skill` / `pdf-specialist-skill`)
 - Auto-generating PRDs from code (PRD is a pre-code artifact — by design)
+- Granting image-analyzer access to subagents without clear image interpretation needs (linting, loop-operator, language reviewers — code-only agents that never encounter images)
+- Modifying `error-resolver-subagent` (already has vision model `glm-5v-turbo` and no `task:` restriction — it can already delegate to image-analyzer if needed)
 
 ---
 

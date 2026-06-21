@@ -12,6 +12,7 @@ permission:
   task:
     "*": deny
     explore: allow
+    image-analyzer-subagent: allow
   skill:
     clean-architecture-skill: allow
     design-patterns-skill: allow

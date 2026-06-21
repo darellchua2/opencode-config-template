@@ -19,6 +19,7 @@ permission:
     typescript-reviewer-subagent: allow
     go-reviewer-subagent: allow
     rust-reviewer-subagent: allow
+    image-analyzer-subagent: allow
   skill:
     solid-principles-skill: allow
     clean-code-skill: allow
