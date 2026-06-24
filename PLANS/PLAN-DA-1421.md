@@ -105,7 +105,7 @@ The repo has a mature Playwright E2E setup but it is **desktop-only** (`playwrig
 
 ### Phase 1: Build Generic Capability in Configurator Repo
 
-- [ ] **1.1** Port `wireframer-skill` to opencode format (from Claude/Cursor `agilek/wireframer-skill` source)
+- [x] **1.1** Port `wireframer-skill` to opencode format (from Claude/Cursor `agilek/wireframer-skill` source)
     — **Why:** Provides the lo-fi layout baseline per breakpoint that the audit skill references; avoids screenshot-diff's "lock in broken pixels" problem. Must exist before the audit skill can reference it. Also usable standalone by the primary session for baseline generation in Phase 2.
     — **Done when:** `opencode_app/.opencode/skills/wireframer-skill/SKILL.md` exists with:
       - Valid opencode frontmatter: `name`, `description` (1-1024 chars), `license`, `compatibility`, `metadata.audience`, `metadata.workflow`
@@ -115,7 +115,7 @@ The repo has a mature Playwright E2E setup but it is **desktop-only** (`playwrig
     — **Consumers affected:** playwright-responsive-audit-skill (references as baseline source), primary session (standalone use in Phase 2)
     — **Pre-check:** Verify source URL `https://github.com/agilek/wireframer-skill` exists and check its license before porting. If URL is invalid or license incompatible, document an alternative approach.
 
-- [ ] **1.2** Create `playwright-responsive-audit-skill` methodology SKILL.md
+- [x] **1.2** Create `playwright-responsive-audit-skill` methodology SKILL.md
     — **Why:** Defines the audit/fix/regression methodology (6 detection assertions, 3 fix-confidence tiers, closed detect->fix->re-verify loop). The subagent consumes this skill for its operational method.
     — **Done when:** `opencode_app/.opencode/skills/playwright-responsive-audit-skill/SKILL.md` exists with:
       - Valid opencode frontmatter: `name`, `description` (1-1024 chars), `license`, `compatibility`, `metadata.audience`, `metadata.workflow`
@@ -126,7 +126,7 @@ The repo has a mature Playwright E2E setup but it is **desktop-only** (`playwrig
       - Use `opencode-skill-creation-skill` as the authoritative creation guide during authoring
     — **Consumers affected:** responsive-audit-subagent (loads this skill)
 
-- [ ] **1.3** Create `responsive-audit-subagent` agent definition
+- [x] **1.3** Create `responsive-audit-subagent` agent definition
     — **Why:** The executable agent that runs the audit in a target Next.js repo. Needs `bash:allow` (for `npm run test:e2e`) and `edit:allow` (to apply fixes). Model = `glm-5.1` for sound reasoning on component fixes.
     — **Done when:** `opencode_app/.opencode/agents/responsive-audit-subagent.md` exists with:
       - Model: `zai-coding-plan/glm-5.1` (correctness-critical tier per AGENTS.md)
@@ -139,22 +139,22 @@ The repo has a mature Playwright E2E setup but it is **desktop-only** (`playwrig
       - Use `opencode-agent-creation-skill` as the authoritative creation guide during authoring
     — **Consumers affected:** primary session in consumer repos (canvastekk-frontend-nextjs)
 
-- [ ] **1.4** Update `deploy/setup.sh` (skill count, agent count, banner, category listing)
+- [x] **1.4** Update `deploy/setup.sh` (skill count, agent count, banner, category listing)
     — **Why:** Keeps the deploy script in sync with new artifacts. Required by repo Sync Rules.
     — **Done when:** Skill count 86 -> 88, agent count 35 -> 36, new "Responsive & Visual Testing" category added to help text + Deploy-Skills summary + banner
     — **Consumers affected:** deploy pipeline
 
-- [ ] **1.5** Update `deploy/setup.ps1` (Windows parity mirror of 1.4)
+- [x] **1.5** Update `deploy/setup.ps1` (Windows parity mirror of 1.4)
     — **Why:** Windows parity — must match setup.sh exactly per repo convention.
     — **Done when:** Same changes as 1.4 applied to PowerShell script
     — **Consumers affected:** deploy pipeline (Windows)
 
-- [ ] **1.6** Update `README.md` (Skill Categories table, Subagents table)
+- [x] **1.6** Update `README.md` (Skill Categories table, Subagents table)
     — **Why:** Keeps the root README in sync with new skill/agent additions.
     — **Done when:** Skill Categories table has new "Responsive & Visual Testing" row (count + description), Subagents table includes `responsive-audit-subagent` row
     — **Consumers affected:** documentation readers
 
-- [ ] **1.7** Update `opencode_app/README.md` + `deploy/.AGENTS.md` routing table
+- [x] **1.7** Update `opencode_app/README.md` + `deploy/.AGENTS.md` routing table
     — **Why:** Corrects pre-existing count drift in `opencode_app/README.md` (currently says 82, actual is 86) and adds the new subagent to the primary-session routing table for discoverability.
     — **Done when:**
       - `opencode_app/README.md`: skill count corrected from stale **82** -> **88** (86 actual + 2 new)
@@ -162,7 +162,7 @@ The repo has a mature Playwright E2E setup but it is **desktop-only** (`playwrig
       - `deploy/.AGENTS.md` MCP Tool Routing table: verify the existing `image-analyzer-subagent` row explicitly states that the **primary session** must delegate ANY image, screenshot, PDF, or non-text document to `image-analyzer-subagent` — never attempt to process visual content inline. Add explicit guidance: "When the primary session encounters an image, screenshot, PDF, or any non-text document, delegate analysis to `image-analyzer-subagent`. Do NOT attempt to interpret visual content inline — the primary model is text-only and will hallucinate or skip visual details."
     — **Consumers affected:** documentation readers, primary session (subagent routing + image delegation clarity)
 
-- [ ] **1.8** Validate all new artifacts (frontmatter, schema, test-load)
+- [x] **1.8** Validate all new artifacts (frontmatter, schema, test-load)
     — **Why:** Prevents silent deploy-time failures. A skill with invalid frontmatter (wrong name regex, missing `description`, directory name mismatch) or a subagent with a syntax error would fail at deploy time. Must validate before Phase 2 consumes the capability.
     — **Done when:**
       - Skill frontmatter validated: `name` matches directory name, `description` is 1-1024 chars, `license`/`compatibility`/`metadata` fields present
