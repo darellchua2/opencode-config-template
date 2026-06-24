@@ -500,7 +500,7 @@ USAGE:
                          CONFIGURED FEATURES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-   AGENTS (40):
+   AGENTS (38):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
@@ -537,9 +537,7 @@ USAGE:
     nextjs-mcp-advisor   Next.js runtime guidance with MCP integration
     nextjs-setup         Next.js project setup and configuration
     opentofu-explorer    OpenTofu/Terraform infrastructure management
-    autodesk-specialist  Autodesk integration and APS APIs
-    civil-3d-specialist  Autodesk Civil 3D model modifications
-    open3d-specialist    Open3D 3D data processing guidance
+    cad-specialist       CAD, robotics, hardware design orchestration
     prd-specialist       PRD specialist — discovery interview and drafting
 
     Usage: opencode --agent build "implement auth feature"
@@ -584,7 +582,7 @@ USAGE:
       google-gce         Google Compute Engine management
       google-gke         Google Kubernetes Engine management
 
-   SKILLS (88):
+   SKILLS (102):
                Framework (15):       test-generator-framework, linting-workflow,
                                       pr-creation-workflow, pr-merge-workflow,
                                       error-resolver-workflow, tdd-workflow,
@@ -647,6 +645,12 @@ USAGE:
 
  Responsive & Visual Testing (2): wireframer-skill,
                                    playwright-responsive-audit-skill
+
+    CAD & Hardware Design (14): cad-generation, cad-viewer, cad-step-parts,
+                                 cad-dxf, cad-urdf, cad-srdf, cad-sdf,
+                                 cad-sendcutsend, cad-gcode, cad-bambu-labs,
+                                 cad-implicit, autodesk-aps-skill,
+                                 civil-3d-skill, open3d-skill
 
     Run 'opencode --list-skills' for detailed descriptions
     Run 'opencode --skill <name> "prompt"' to invoke a skill
@@ -1654,7 +1658,7 @@ setup_config() {
             log_success "config.json copied successfully"
 
             echo ""
-        echo "✓ Configured 40 agents:"
+        echo "✓ Configured 38 agents:"
              echo "    - build (default) - Full-featured coding agent"
              echo "    - plan - Planning agent (read-only)"
              echo "    - explore - Codebase exploration and analysis"
@@ -2208,12 +2212,12 @@ print_summary() {
 
     # Agents configured
     if [ -f "$CONFIG_FILE" ]; then
-        echo "✓ Configured 40 agents:"
+        echo "✓ Configured 38 agents:"
         echo "    - build (default) - Full-featured coding agent"
         echo "    - plan - Planning agent (read-only)"
         echo "    - explore - Codebase exploration and analysis"
         echo "    - image-analyzer-subagent - Image/screenshot analysis"
-        echo "    - ... and 36 more agents"
+        echo "    - ... and 34 more agents"
     fi
 
     # MCP servers configured
@@ -2313,6 +2317,21 @@ print_summary() {
         echo "    - Responsive & Visual Testing (2):"
         echo "      - wireframer-skill"
         echo "      - playwright-responsive-audit-skill"
+        echo "    - CAD & Hardware Design (14):"
+        echo "      - cad-generation-skill"
+        echo "      - cad-viewer-skill"
+        echo "      - cad-step-parts-skill"
+        echo "      - cad-dxf-skill"
+        echo "      - cad-urdf-skill"
+        echo "      - cad-srdf-skill"
+        echo "      - cad-sdf-skill"
+        echo "      - cad-sendcutsend-skill"
+        echo "      - cad-gcode-skill"
+        echo "      - cad-bambu-labs-skill"
+        echo "      - cad-implicit-skill"
+        echo "      - autodesk-aps-skill"
+        echo "      - civil-3d-skill"
+        echo "      - open3d-skill"
 
     else
         echo "✗ skills: Not deployed"
@@ -2366,19 +2385,19 @@ print_next_steps() {
     echo "                        🚀 Quick Start"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "🤖 Agents (41):"
+    echo "🤖 Agents (39):"
     echo "  - build (default) - Full-featured coding agent"
     echo "  - plan - Planning agent (read-only)"
     echo "  - explore - Fast codebase exploration and analysis"
     echo "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
     echo "  - prd-specialist-subagent - PRD creation and drafting"
-    echo "  - ... and 36 more agents"
+    echo "  - ... and 34 more agents"
     echo ""
     echo "  Usage: opencode --agent <name> \"prompt\""
     echo "         opencode \"prompt\" (uses build)"
      echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "                     📦 88 Skills Available"
+    echo "                     📦 102 Skills Available"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
     echo "  Framework (15) • Language-Specific (6) • Framework-Specific (7)"
@@ -2386,6 +2405,7 @@ print_next_steps() {
     echo "  Documentation (3) • JIRA (3) • Code Quality (7)"
     echo "  Agent Optimization (7) • Planning & Alignment (4)"
     echo "  Responsive & Visual Testing (2)"
+    echo "  CAD & Hardware Design (14)"
     echo ""
     echo "  Run 'opencode --list-skills' for detailed descriptions"
     echo "  Run 'opencode --skill <name> \"prompt\"' to use a skill"
