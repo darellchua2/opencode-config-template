@@ -25,42 +25,51 @@ The repo has a mature Playwright E2E setup but it is **desktop-only** (`playwrig
 | 4 | Baseline = wireframer-skill (ported to opencode format) | Lo-fi wireframe output as structural layout baseline per breakpoint — avoids "lock in broken pixels" problem of screenshot-diff. Port from Claude/Cursor format to opencode-native |
 | 5 | Fix tiering by confidence | Tier 1 (auto-fix): mechanical Tailwind breakpoints, `flex-col`, tap-target >=44px. Tier 2 (propose+verify): table->card, dialog resize. Tier 3 (report only): complex restructures. Closed detect->fix->re-verify loop re-checks ALL viewports each iteration, caps iterations |
 | 6 | Closed-loop orchestration = **primary session** (not subagent) | The primary session orchestrates the detect->fix->re-verify loop using `loop-operator-subagent` + `verification-loop-skill`. The `responsive-audit-subagent` performs individual audit/fix cycles; the primary session chains them and manages iteration. This keeps the subagent lightweight — it does NOT need `permission.task: loop-operator-subagent` or `permission.skill: verification-loop-skill`. |
+| 7 | Image/screenshot delegation = **both paths** (primary + subagent) | The primary session AND the `responsive-audit-subagent` can delegate visual analysis to `image-analyzer-subagent`. Primary session routing is already in `deploy/.AGENTS.md` (Image/video analysis row). The subagent gains access via `permission.task: image-analyzer-subagent: allow`. This ensures screenshots captured during responsive audits always reach the vision model regardless of which session captures them. The `deploy/.AGENTS.md` routing table must include explicit guidance that ANY image, screenshot, PDF, or non-text document encountered during a session should be delegated to `image-analyzer-subagent` — not processed inline by the text-only primary model. |
 
 ### Architecture
 
 ```
-                        +-------------------------------------+
-                        |  PRIMARY SESSION (orchestrator)     |
-                        |  loops via loop-operator-subagent   |
-                        |  + verification-loop-skill          |
-                        +-----+-------------------------+-----+
-                              | spawns per-iteration    ^
-              +---------------v--------------+         |
-              |  responsive-audit-subagent    |---------+
-              |  (glm-5.1)                    |  returns results
-              |  bash:allow  edit:allow       |
-              |  permission.skill:            |
-              |    playwright-responsive-     |
-              |      audit-skill: allow       |
-              |  permission.task:             |
-              |    "*": deny                  |
-              |    explore: allow             |
-              |    general: allow             |
-              |    image-analyzer-subagent:   |
-              |      allow                    |
-              +-----+-------------+-----------+
-       loads skill|               | delegates screenshot review
-  +---------------v---+    +------v---------------------+
-  | playwright-        |    | image-analyzer-           |
-  | responsive-audit-  |    | subagent (vision)         |
-  | skill (method)     |    +---------------------------+
-  +---------+----------+
-     references| (baseline source)
-  +-----------v-----------+
-  | wireframer-skill      |  <- ported to opencode format
-  | (lo-fi layout baseline)|
-  +-----------------------+
+                        +-----------------------------------------+
+                        |  PRIMARY SESSION (orchestrator)         |
+                        |  loops via loop-operator-subagent       |
+                        |  + verification-loop-skill              |
+                        |  ALSO delegates images/screenshots      |
+                        |  to image-analyzer-subagent directly    |
+                        +-----+-----------+---------------+-------+
+                              |           |               |
+              +---------------v---+       |               v
+              |  responsive-audit-|       |        +------+----------+
+              |  subagent (glm-5.1)|       |        | image-analyzer |
+              |  bash:allow        |       |        | -subagent      |
+              |  edit:allow        |       |        | (glm-5v-turbo) |
+              |  permission.skill: |       |        | (vision)       |
+              |    playwright-     |       |        +------+----------+
+              |    responsive-     |       |               ^
+              |      audit-skill:  |       |               |
+              |      allow         |       |               |
+              |  permission.task:  |       |               |
+              |    "*": deny       |       |               |
+              |    explore: allow  |       |               |
+              |    general: allow  |-------+---------------+
+              |    image-analyzer: |  delegates screenshots for review
+              |      allow         |       | (subagent path)
+              +-----+-------+------+-------+
+        loads skill|       |
+  +---------------v---+   |
+  | playwright-        |   |
+  | responsive-audit-  |   |
+  | skill (method)     |   |
+  +---------+----------+   |
+     references|           |
+  +-----------v-----------+ |
+  | wireframer-skill      | |
+  | (lo-fi layout baseline)| |
+  +-----------------------+ |
 ```
+**Two delegation paths to image-analyzer-subagent:**
+1. **Primary session** -> `image-analyzer-subagent` (direct, when primary captures/receives screenshots)
+2. **responsive-audit-subagent** -> `image-analyzer-subagent` (via `permission.task`, during audit cycles)
 
 ---
 
@@ -150,7 +159,8 @@ The repo has a mature Playwright E2E setup but it is **desktop-only** (`playwrig
     — **Done when:**
       - `opencode_app/README.md`: skill count corrected from stale **82** -> **88** (86 actual + 2 new)
       - `deploy/.AGENTS.md` Subagent Routing Preferences table: add row `| Responsive/visual audit | responsive-audit-subagent | — | Playwright responsive UI audit + fix closed loop |`
-    — **Consumers affected:** documentation readers, primary session (subagent routing)
+      - `deploy/.AGENTS.md` MCP Tool Routing table: verify the existing `image-analyzer-subagent` row explicitly states that the **primary session** must delegate ANY image, screenshot, PDF, or non-text document to `image-analyzer-subagent` — never attempt to process visual content inline. Add explicit guidance: "When the primary session encounters an image, screenshot, PDF, or any non-text document, delegate analysis to `image-analyzer-subagent`. Do NOT attempt to interpret visual content inline — the primary model is text-only and will hallucinate or skip visual details."
+    — **Consumers affected:** documentation readers, primary session (subagent routing + image delegation clarity)
 
 - [ ] **1.8** Validate all new artifacts (frontmatter, schema, test-load)
     — **Why:** Prevents silent deploy-time failures. A skill with invalid frontmatter (wrong name regex, missing `description`, directory name mismatch) or a subagent with a syntax error would fail at deploy time. Must validate before Phase 2 consumes the capability.
@@ -221,6 +231,7 @@ The repo has a mature Playwright E2E setup but it is **desktop-only** (`playwrig
 - Confirmed defect example: `TekkSlopeCardElements.tsx:51` renders `<table>` with `overflow-x-auto` -> should become card-list on mobile
 - Skill creation guides: use `opencode-skill-creation-skill` (for skills) and `opencode-agent-creation-skill` (for agents) as authoritative references during authoring
 - Skill counting convention: exclude `_archived/` and `scripts/` directories
+- **Image delegation**: The primary session is text-only (`glm-5.2`). When it encounters images, screenshots, PDFs, or any non-text document, it MUST delegate analysis to `image-analyzer-subagent` (vision model `glm-5v-turbo`). This applies to all sessions — not just responsive audit workflows. The `deploy/.AGENTS.md` routing table enforces this convention. Two delegation paths exist: primary -> image-analyzer (direct) and responsive-audit-subagent -> image-analyzer (via `permission.task`).
 
 ---
 
