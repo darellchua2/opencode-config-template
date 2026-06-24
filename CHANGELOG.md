@@ -1,3 +1,10 @@
+# [1.71.0](https://github.com/darellchua2/opencode-config-template/compare/v1.70.0...v1.71.0) (2026-06-24)
+
+
+### Features
+
+* **cad:** Port 11 CAD skills from text-to-cad, consolidate 3 specialists into 1 [BT-71] ([#228](https://github.com/darellchua2/opencode-config-template/issues/228)) ([f8a24f7](https://github.com/darellchua2/opencode-config-template/commit/f8a24f7bc3b507aa921ce75a82f0e9bffc98a427))
+
 # [1.70.0](https://github.com/darellchua2/opencode-config-template/compare/v1.69.0...v1.70.0) (2026-06-24)
 
 
