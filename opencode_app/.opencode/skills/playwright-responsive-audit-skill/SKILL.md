@@ -391,6 +391,8 @@ await page.waitForTimeout(2000);
 
 ---
 
+## Audit Process Overview
+
 ```
 1. Configure viewport matrix (mobile, tablet, desktop)
 2. For each target page:
