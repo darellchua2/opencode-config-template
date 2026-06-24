@@ -16,7 +16,380 @@ I define the methodology for auditing and fixing responsive UI defects in Next.j
 
 Loaded exclusively by `responsive-audit-subagent` via `permission.skill`. Not auto-triggered. The primary session orchestrates the closed loop and spawns the subagent per-iteration.
 
-## Audit Process Overview
+## Prerequisite: Playwright Setup
+
+Before running any responsive audit, Playwright must be installed and configured in the target project. This section covers detection, installation, auth setup, fixtures, and E2E best practices.
+
+### Step 0a: Detect if Playwright is Installed
+
+```bash
+# Check for Playwright config and dependencies
+if [ ! -f "playwright.config.ts" ] || ! grep -q "@playwright/test" package.json 2>/dev/null; then
+  echo "PLAYWRIGHT_NOT_INSTALLED"
+else
+  echo "PLAYWRIGHT_INSTALLED"
+fi
+```
+
+### Step 0b: Install Playwright (If Not Detected)
+
+If `PLAYWRIGHT_NOT_INSTALLED`, run the full installation sequence:
+
+```bash
+# 1. Install Playwright and its test runner
+npm init playwright@latest -- --quiet --browser=chromium
+
+# 2. Install browser binaries (chromium is enough for CI; add firefox/webkit for cross-browser)
+npx playwright install chromium
+npx playwright install-deps chromium
+
+# 3. Verify installation
+npx playwright --version
+```
+
+**For existing Next.js projects** that already have a test runner (Vitest/Jest), Playwright coexists fine — install as a separate dependency:
+
+```bash
+npm install -D @playwright/test
+npx playwright install chromium
+```
+
+### Step 0c: Configure `playwright.config.ts`
+
+Full configuration with responsive viewport matrix, auth, and best-practice settings:
+
+```typescript
+import { defineConfig, devices } from '@playwright/test';
+
+export default defineConfig({
+  // Test directory
+  testDir: './e2e',
+
+  // Fail fast on CI, allow retries locally
+  fullyParallel: true,
+  forbidOnly: !!process.env.CI,
+  retries: process.env.CI ? 2 : 0,
+  workers: process.env.CI ? 1 : undefined,
+
+  // Reporter
+  reporter: process.env.CI
+    ? [['html', { open: 'never' }], ['github']]
+    : 'html',
+
+  // Shared settings for all projects
+  use: {
+    baseURL: process.env.E2E_BASE_URL || 'http://localhost:3000',
+
+    // Trace on failure (debugging gold)
+    trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
+
+    // Auth state (shared across all projects)
+    storageState: 'e2e/.auth/user.json',
+  },
+
+  // Projects: responsive viewport matrix
+  projects: [
+    // Auth setup runs first (no storageState yet)
+    {
+      name: 'setup',
+      testMatch: /.*\.setup\.ts/,
+      use: {
+        storageState: undefined, // Don't load state during setup
+      },
+    },
+
+    // Desktop
+    {
+      name: 'desktop-chromium',
+      dependencies: ['setup'],
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1280, height: 720 },
+      },
+    },
+
+    // Mobile (touch)
+    {
+      name: 'mobile-chrome',
+      dependencies: ['setup'],
+      use: {
+        ...devices['Pixel 5'],
+        viewport: { width: 375, height: 667 },
+        hasTouch: true,
+      },
+    },
+
+    // Tablet (touch)
+    {
+      name: 'tablet',
+      dependencies: ['setup'],
+      use: {
+        ...devices['iPad (gen 7)'],
+        viewport: { width: 768, height: 1024 },
+        hasTouch: true,
+      },
+    },
+  ],
+
+  // Auto-start dev server
+  webServer: {
+    command: 'npm run dev',
+    url: 'http://localhost:3000',
+    reuseExistingServer: !process.env.CI,
+    timeout: 120_000,
+  },
+});
+```
+
+### Step 0d: Auth Setup
+
+Authentication is handled via Playwright's `storageState` pattern — log in once, save cookies/localStorage, reuse across all tests.
+
+**File:** `e2e/auth.setup.ts`
+
+```typescript
+import { test as setup, expect } from '@playwright/test';
+
+const AUTH_FILE = 'e2e/.auth/user.json';
+
+setup('authenticate', async ({ page }) => {
+  // Navigate to login page
+  await page.goto('/login');
+
+  // Fill credentials from environment
+  await page.fill('[data-testid="email"]', process.env.E2E_USER_EMAIL || '');
+  await page.fill('[data-testid="password"]', process.env.E2E_USER_PASSWORD || '');
+  await page.click('[data-testid="login-button"]');
+
+  // Wait for authenticated state (adjust selector to your app)
+  await expect(page).toHaveURL(/\/dashboard|\/home/);
+  await expect(page.locator('[data-testid="user-menu"]')).toBeVisible();
+
+  // Save auth state
+  await page.context().storageState({ path: AUTH_FILE });
+});
+```
+
+**`.gitignore` addition:**
+```
+e2e/.auth/
+```
+
+**Environment variables** (`.env.local` or CI secrets):
+```
+E2E_USER_EMAIL=test@example.com
+E2E_USER_PASSWORD=secure-password
+E2E_BASE_URL=http://localhost:3000
+```
+
+### Step 0e: Test Directory Structure
+
+Recommended structure for a mature E2E setup:
+
+```
+e2e/
+├── auth.setup.ts              # Authentication setup (runs first)
+├── .auth/
+│   └── user.json              # Saved storageState (gitignored)
+├── fixtures/
+│   ├── navigation.ts          # Route constants + page object helpers
+│   ├── test-data.ts           # Test data factories
+│   └── skip-helpers.ts        # Conditional skip utilities
+├── baselines/                 # Wireframer baselines (for responsive audit)
+│   └── slope/
+│       ├── mobile.wireframe.html
+│       ├── tablet.wireframe.html
+│       └── desktop.wireframe.html
+├── responsive/                # Responsive regression specs
+│   └── slope.responsive.spec.ts
+├── pages/                     # Page Object Models (optional)
+│   ├── login.page.ts
+│   └── dashboard.page.ts
+├── specs/                     # Functional E2E specs
+│   ├── auth.spec.ts
+│   └── navigation.spec.ts
+└── playwright.config.ts       # Config (project root or here)
+```
+
+### Step 0f: Fixtures & Helpers
+
+#### Navigation Fixtures (`e2e/fixtures/navigation.ts`)
+
+Centralize route constants and navigation helpers:
+
+```typescript
+export const ROUTES = {
+  login: '/login',
+  dashboard: '/dashboard',
+  projects: '/projects',
+  reportSlope: (projectId: string) => `/projects/${projectId}/reports/slope`,
+  reportDefects: (projectId: string) => `/projects/${projectId}/reports/defects`,
+} as const;
+
+export async function navigateTo(page, route: string) {
+  await page.goto(route);
+  await page.waitForLoadState('networkidle');
+}
+
+export async function waitForApiResponse(
+  page,
+  urlPattern: string | RegExp,
+  timeout = 10_000
+) {
+  return page.waitForResponse(
+    (resp) => resp.url().match(urlPattern) && resp.status() === 200,
+    { timeout }
+  );
+}
+```
+
+#### Test Data Fixtures (`e2e/fixtures/test-data.ts`)
+
+Factory functions for test data — never hardcode IDs in specs:
+
+```typescript
+export const TEST_PROJECT = {
+  id: process.env.E2E_TEST_PROJECT_ID || 'test-project-001',
+  name: 'E2E Test Project',
+} as const;
+
+export const TEST_USER = {
+  email: process.env.E2E_USER_EMAIL || 'test@example.com',
+  name: 'E2E Test User',
+} as const;
+
+export function generateTestId(prefix = 'test'): string {
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+```
+
+#### Skip Helpers (`e2e/fixtures/skip-helpers.ts`)
+
+Conditional test skipping based on environment or feature availability:
+
+```typescript
+import { test } from '@playwright/test';
+
+export function skipIfMissingEnv(key: string) {
+  if (!process.env[key]) {
+    test.skip(true, `Missing ${key} environment variable`);
+  }
+}
+
+export function skipOnMobile(projectName: string) {
+  test.skip(projectName === 'mobile-chrome', 'Desktop-only test');
+}
+
+export function skipIfNoBackend(url: string) {
+  test.beforeAll(async ({ request }) => {
+    try {
+      const resp = await request.get(url, { timeout: 3_000 });
+      test.skip(resp.status() >= 500, `Backend unavailable at ${url}`);
+    } catch {
+      test.skip(true, `Backend unreachable at ${url}`);
+    }
+  });
+}
+```
+
+### E2E Best Practices
+
+#### Test Isolation
+
+| Practice | Why |
+|---|---|
+| Each test creates its own data | Tests don't depend on execution order or shared state |
+| Use `test.beforeEach` for common setup | Reduces duplication, ensures consistent starting state |
+| Never share `page` across tests | Playwright creates fresh contexts per test by default — don't override this |
+| Use `storageState` for auth, not per-test login | One login at setup time, all tests reuse the saved state |
+
+#### Selectors
+
+| Practice | Why |
+|---|---|
+| Prefer `data-testid` over CSS/text selectors | Survives refactoring, doesn't break on copy changes |
+| Use `getByRole()`, `getByText()` for user-facing assertions | Tests user-visible behavior, not implementation |
+| Avoid `nth-child`, `xpath` unless no alternative | Brittle, breaks on DOM reordering |
+
+```typescript
+// GOOD — stable, semantic
+await page.getByTestId('submit-button').click();
+await expect(page.getByRole('alert')).toContainText('Success');
+
+// BAD — brittle, implementation-dependent
+await page.click('.css-1abc123 > div:nth-child(2) button');
+```
+
+#### Waiting
+
+| Practice | Why |
+|---|---|
+| Use `expect(locator).toBeVisible()` | Auto-retries until timeout, no flakiness |
+| Use `waitForResponse()` for API-driven actions | Asserts the backend actually responded before proceeding |
+| Use `waitForLoadState('networkidle')` sparingly | Can hang on long-polling/websocket connections |
+| **Never** use `page.waitForTimeout()` in production tests | Fixed delays are the #1 cause of flaky tests |
+
+```typescript
+// GOOD — waits for actual state
+await expect(page.getByTestId('results-table')).toBeVisible();
+await page.waitForResponse((r) => r.url().includes('/api/results') && r.ok());
+
+// BAD — arbitrary delay
+await page.waitForTimeout(2000);
+```
+
+#### CI/CD Integration
+
+```yaml
+# GitHub Actions example
+- name: Install Playwright
+  run: npx playwright install --with-deps chromium
+
+- name: Run E2E tests
+  run: npx playwright test
+  env:
+    CI: true
+    E2E_BASE_URL: ${{ vars.E2E_BASE_URL }}
+    E2E_USER_EMAIL: ${{ secrets.E2E_USER_EMAIL }}
+    E2E_USER_PASSWORD: ${{ secrets.E2E_USER_PASSWORD }}
+
+- name: Upload test report
+  if: always()
+  uses: actions/upload-artifact@v4
+  with:
+    name: playwright-report
+    path: playwright-report/
+    retention-days: 30
+```
+
+#### Debugging
+
+| Command | Use For |
+|---|---|
+| `npx playwright test --debug` | Step-through debugging with Playwright Inspector |
+| `npx playwright test --ui` | Interactive UI mode (watch mode + timeline) |
+| `npx playwright show-trace trace.zip` | View trace after failure (screenshots, DOM, network) |
+| `npx playwright test --project=mobile-chrome` | Run only mobile project |
+| `npx playwright test --grep "auth"` | Run tests matching pattern |
+
+#### `package.json` Scripts
+
+```json
+{
+  "scripts": {
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:mobile": "playwright test --project=mobile-chrome",
+    "test:e2e:responsive": "playwright test e2e/responsive/",
+    "test:e2e:report": "playwright show-report"
+  }
+}
+```
+
+---
 
 ```
 1. Configure viewport matrix (mobile, tablet, desktop)
