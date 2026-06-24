@@ -1,3 +1,10 @@
+# [1.70.0](https://github.com/darellchua2/opencode-config-template/compare/v1.69.0...v1.70.0) (2026-06-24)
+
+
+### Features
+
+* **DA-1421:** add Playwright responsive audit skill + wireframer skill + responsive-audit subagent ([#226](https://github.com/darellchua2/opencode-config-template/issues/226)) ([8dcbc03](https://github.com/darellchua2/opencode-config-template/commit/8dcbc03b587fd9dcafce913baf90fd576418d665)), closes [#1](https://github.com/darellchua2/opencode-config-template/issues/1)
+
 # [1.69.0](https://github.com/darellchua2/opencode-config-template/compare/v1.68.0...v1.69.0) (2026-06-21)
 
 
