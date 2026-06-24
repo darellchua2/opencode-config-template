@@ -42,7 +42,7 @@ Use these defaults unless the user specifies otherwise:
 
 ## Tool
 
-The launcher lives in the DXF skill directory:
+The launcher lives in this skill directory:
 
 ```bash
 python scripts/dxf targets... [flags]

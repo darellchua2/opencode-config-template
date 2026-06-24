@@ -47,7 +47,7 @@ Ask one focused clarification question only when missing information makes the m
 
 ## Tools and paths
 
-From the CAD skill directory, the launcher shape is:
+From this skill directory, the launcher shape is:
 
 ```bash
 python scripts/step ...      # STEP generation, GLB/topology artifacts, mesh sidecars

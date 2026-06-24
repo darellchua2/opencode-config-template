@@ -104,7 +104,7 @@ Load the appropriate skill based on the task:
 | Civil 3D corridor/surface/pipe workflows       | civil-3d-skill        |
 | Open3D point cloud/mesh/reconstruction         | open3d-skill          |
 
-**IMPORTANT:** The `autodesk-aps-skill`, `civil-3d-skill`, and `open3d-skill` contain MANDATORY version detection sections. When loading these skills, follow the STOP-and-ask-for-version instructions before providing API guidance.
+**IMPORTANT:** The `civil-3d-skill` and `open3d-skill` contain MANDATORY version detection sections (installed-software APIs differ by version). When loading these skills, follow the STOP-and-ask-for-version instructions before providing API guidance. `autodesk-aps-skill` is a cloud API skill and does not require version detection.
 
 ## Pipeline Patterns
 
