@@ -11,9 +11,7 @@
 
 ## Summary
 
-Establish a Playwright-driven **checker-and-fixer** capability for responsive UI, then apply it to make `canvastekk-frontend-nextjs` fully mobile-responsive — starting with the **slope inspection** pages, which are currently not mobile-responsive.
-
-The repo has a mature Playwright E2E setup but it is **desktop-only** (`playwright.config.ts:126-133` — the mobile project is commented out). 32 components live under the slope report path; only ~9 use responsive breakpoints. There is currently no systematic way to detect or prevent responsive regressions.
+Establish a Playwright-driven **checker-and-fixer** capability for responsive UI as a generic skill + subagent in this configurator repo. The capability is deployed globally to `~/.config/opencode/` and consumed by any Next.js project at runtime — repo-specific implementation (e.g. fixing slope pages in `canvastekk-frontend-nextjs`) is tracked in a separate ticket in that repo.
 
 ### Design Decisions
 
@@ -173,65 +171,35 @@ The repo has a mature Playwright E2E setup but it is **desktop-only** (`playwrig
 
 ### Phase 2: Consume on canvastekk-frontend-nextjs (Slope Inspection = First Target)
 
-- [ ] **2.1** Fix `playwright.config.ts` viewport matrix (mobile + tablet + desktop with auth)
-    — **Why:** Unblocks all responsive testing. Currently lines 126-133 have the mobile project commented out; all tests run at 1280x720 only. Must enable multi-viewport projects before any audit can run.
-    — **Done when:** `playwright.config.ts` has working `desktop-chromium` (1280x720), `mobile-chrome` (375x667, hasTouch), and `tablet` (768x1024, iPad) projects, all wired with `storageState: "e2e/.auth/user.json"` and auth setup
-    — **Consumers affected:** all existing E2E specs (may need viewport-aware adjustments), responsive audit specs
-
-- [ ] **2.2** Generate wireframer baselines for slope report page at 4 breakpoints
-    — **Why:** Establishes the structural layout baseline that the audit compares against. Without baselines, the audit has no "correct" reference to detect deviation from.
-    — **Done when:** Baseline files exist under `e2e/baselines/slope/` for mobile (375px), tablet (768px), desktop (1280px), and large-desktop (1920px) breakpoints, committed to the repo
-    — **Consumers affected:** slope.responsive.spec.ts (consumes baselines for assertions), responsive-audit-subagent
-
-- [ ] **2.3** Audit slope pages — identify all responsive defects (~23 components lacking breakpoints)
-    — **Why:** Produces the defect inventory that drives fix prioritization. Must run the full audit (6 assertions across all breakpoints) before fixing to establish complete scope.
-    — **Done when:** Defect report generated listing every component with responsive issues, classified by fix-confidence tier (Tier 1: mechanical breakpoint additions; Tier 2: table->card, dialog resize; Tier 3: complex restructures)
-    — **Consumers affected:** fix implementation steps (2.4)
-
-- [ ] **2.4** Apply responsive fixes (Tailwind breakpoints, table->card transforms) + re-audit verify
-    — **Why:** Closes the detect->fix->re-verify loop. Applies Tier 1 auto-fixes, proposes+verifies Tier 2 transforms, and reports Tier 3 items. Re-audits ALL viewports after each fix iteration.
-    — **Done when:** All Tier 1 + Tier 2 defects fixed; confirmed defects (e.g. `TekkSlopeCardElements.tsx:51` table->card) resolved; re-audit passes with 0 horizontal-overflow, 0 clipping, tap-targets >=44px at all breakpoints; Tier 3 items documented as follow-up
-    — **Consumers affected:** end users (mobile UX improvement), slope.responsive.spec.ts (regression lock targets fixed state)
-
-- [ ] **2.5** Emit `slope.responsive.spec.ts` regression lock spec
-    — **Why:** Prevents future regressions. The spec locks in the fixed responsive state by running the 6 detection assertions across all breakpoints on every CI run. This is the permanent artifact that makes the audit capability self-sustaining.
-    — **Done when:** `e2e/responsive/slope.responsive.spec.ts` exists, committed, and passing in CI; covers all 6 assertions at mobile/tablet/desktop breakpoints for the slope report pages
-    — **Consumers affected:** CI pipeline (regression gate)
+> **Removed from this PLAN** — Phase 2 targets a different repo (`canvastekk-frontend-nextjs`) and will be tracked in a separate ticket created in that repo. This configurator repo only builds and ships the generic capability. The frontend repo ticket will cover: viewport matrix fix, wireframer baselines, slope component audit, responsive fixes, and regression spec emission.
 
 ---
 
 ## Acceptance Criteria
 
-- [ ] Generic `wireframer-skill` + `playwright-responsive-audit-skill` + `responsive-audit-subagent` created in configurator repo, opencode-format, with README/setup.sh/setup.ps1 sync'd
-- [ ] `playwright.config.ts` has a working viewport matrix (mobile + tablet + desktop projects with auth state)
-- [ ] Slope inspection pages pass the responsive audit at all breakpoints (no horizontal overflow, no clipping, tap-targets >=44px, breakpoint-visibility toggles correct)
-- [ ] Confirmed defects (e.g. `TekkSlopeCardElements.tsx` table->card) fixed and verified
-- [ ] `e2e/responsive/slope.responsive.spec.ts` regression spec committed and passing
-- [ ] Wireframer baselines committed under `e2e/baselines/slope/`
-- [ ] All new skills/agents pass frontmatter validation (Step 1.8) before Phase 2 begins
+- [x] Generic `wireframer-skill` + `playwright-responsive-audit-skill` + `responsive-audit-subagent` created in configurator repo, opencode-format, with README/setup.sh/setup.ps1 sync'd
+- [x] All new skills/agents pass frontmatter validation (Step 1.8)
 
 ---
 
 ## Scope
 
 **Configurator repo** (`opencode-config-template/opencode_app/.opencode/`): skills, agents, deploy scripts, README files, AGENTS.md routing
-**Frontend repo** (`canvastekk-frontend-nextjs`): `playwright.config.ts`, `src/app/(secured)/projects/[projectId]/reports/slope/**`, `e2e/` fixtures and specs
+
+> **Out of scope**: Frontend repo implementation (viewport matrix fix, slope component audit, responsive fixes, regression spec) — tracked in a separate ticket in the consuming repo.
 
 ---
 
 ## Technical Notes
 
-- `playwright.config.ts:126-133`: uncomment `mobile-chrome`, add `tablet` (iPad), wire `storageState: "e2e/.auth/user.json"` + `hasTouch: true`
 - 6 detection assertions: horizontal overflow, element clipping, breakpoint visibility toggle, tap-target >=44px @touch, text truncation, layout-shift
 - Fix confidence tiers: Tier 1 (auto-fix), Tier 2 (propose+verify), Tier 3 (report only)
 - Closed detect->diagnose->fix->re-verify loop: **primary session orchestrates** using `loop-operator-subagent` + `verification-loop-skill`; the `responsive-audit-subagent` performs individual audit/fix cycles only
 - `bash:allow` on subagent is deliberate (required for `npm run test:e2e`), precedent from `repo-ops`/`pr-workflow` agents
-- wireframer-skill source: `https://github.com/agilek/wireframer-skill` (Claude/Cursor format -> port to opencode) — verify URL + license before porting (Step 1.1 pre-check)
-- Reference pattern for correct responsive: `TekkSlopeStatisticsCards.tsx:20` uses `grid-cols-1 sm:grid-cols-2 lg:grid-cols-4`
-- Confirmed defect example: `TekkSlopeCardElements.tsx:51` renders `<table>` with `overflow-x-auto` -> should become card-list on mobile
+- wireframer-skill source: `https://github.com/agilek/wireframer-skill` (Claude/Cursor format -> port to opencode) — verified MIT license
 - Skill creation guides: use `opencode-skill-creation-skill` (for skills) and `opencode-agent-creation-skill` (for agents) as authoritative references during authoring
 - Skill counting convention: exclude `_archived/` and `scripts/` directories
-- **Image delegation**: The primary session is text-only (`glm-5.2`). When it encounters images, screenshots, PDFs, or any non-text document, it MUST delegate analysis to `image-analyzer-subagent` (vision model `glm-5v-turbo`). This applies to all sessions — not just responsive audit workflows. The `deploy/.AGENTS.md` routing table enforces this convention. Two delegation paths exist: primary -> image-analyzer (direct) and responsive-audit-subagent -> image-analyzer (via `permission.task`).
+- **Image delegation**: The primary session is text-only (`glm-5.2`). When it encounters images, screenshots, PDFs, or any non-text document, it MUST delegate analysis to `image-analyzer-subagent` (vision model `glm-5v-turbo`). The `deploy/.AGENTS.md` routing table enforces this convention. Two delegation paths exist: primary -> image-analyzer (direct) and responsive-audit-subagent -> image-analyzer (via `permission.task`).
 
 ---
 
@@ -239,24 +207,19 @@ The repo has a mature Playwright E2E setup but it is **desktop-only** (`playwrig
 
 | Risk | Likelihood | Mitigation |
 |------|-----------|------------|
-| Existing E2E specs break with new viewport projects | Medium | Run full suite after viewport matrix change; add `viewport` guard to specs that are desktop-only by design |
-| Wireframer port introduces format incompatibilities | Low | Validate against opencode skill schema (Step 1.8); test-load before deploy |
-| Wireframer source URL invalid or license incompatible | Low | Step 1.1 pre-check verifies URL + license before porting; fallback = document alternative baseline approach |
-| Tier 2 fixes (table->card) are non-trivial | Medium | Propose+verify pattern with screenshot review via image-analyzer-subagent; cap iterations |
-| Frontend repo access/permissions | Low | Verify git remote + branch access before Phase 2 |
-| Subagent permission misconfiguration (silent denial) | Medium | Step 1.3 Done-when explicitly lists all required `permission.skill` + `permission.task` entries; Step 1.8 validates |
-| Pre-existing count drift in `opencode_app/README.md` | Low | Step 1.7 corrects 82 -> 88 during this work |
+| Wireframer port introduces format incompatibilities | Low | Validated against opencode skill schema (Step 1.8) |
+| Subagent permission misconfiguration (silent denial) | Medium | Step 1.3 Done-when explicitly lists all required `permission.skill` + `permission.task` entries; Step 1.8 validated |
+| Pre-existing count drift in `opencode_app/README.md` | Low | Step 1.7 corrected 82 -> 88 |
 
 ---
 
 ## Dependencies
 
-- Source repo for wireframer-skill: `https://github.com/agilek/wireframer-skill` (verify before porting)
+- Source repo for wireframer-skill: `https://github.com/agilek/wireframer-skill` (verified, MIT)
 - Configurator repo conventions: `opencode-config-template/AGENTS.md` (Sync Rules, Subagent Model Tiering)
 - Creation guides: `opencode-skill-creation-skill`, `opencode-agent-creation-skill`
 - Validation tools: `opencode-skills-maintainer-skill`, `documentation-sync-workflow-skill`
-- Frontend repo: `canvastekk-frontend-nextjs` (must be accessible for Phase 2)
 
 ---
 
-*Created by ticket-plan-workflow-skill — reviewed and revised per opencode-tooling-subagent review (PASS-WITH-FIXES -> all fixes applied)*
+*Created by ticket-plan-workflow-skill — reviewed by opencode-tooling-subagent (PASS-WITH-FIXES). Phase 2 (frontend repo consumption) removed — tracked in separate ticket in consuming repo.*
