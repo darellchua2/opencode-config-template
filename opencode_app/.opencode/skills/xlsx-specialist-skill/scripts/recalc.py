@@ -10,7 +10,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'scripts', 'office'))
+sys.path.insert(0, os.path.dirname(__file__))
 from soffice import get_soffice_env
 
 try:

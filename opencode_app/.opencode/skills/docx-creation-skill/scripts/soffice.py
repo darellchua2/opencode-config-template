@@ -4,7 +4,7 @@ sockets may be blocked (e.g., sandboxed VMs).  Detects the restriction
 at runtime and applies an LD_PRELOAD shim if needed.
 
 Usage:
-    from office.soffice import run_soffice, get_soffice_env
+    from soffice import run_soffice, get_soffice_env
 
     # Option 1 – run soffice directly
     result = run_soffice(["--headless", "--convert-to", "pdf", "input.docx"])
