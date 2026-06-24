@@ -436,6 +436,9 @@ USAGE:
       Planning & Alignment (4): grilling-skill, domain-modeling-skill,
                                 grill-with-docs-skill, grill-me-skill
 
+ Responsive & Visual Testing (2): wireframer-skill,
+                                   playwright-responsive-audit-skill
+
     Run 'opencode --list-skills' for detailed descriptions
     Run 'opencode --skill <name> \"prompt\"' to invoke a skill
 
@@ -1289,6 +1292,8 @@ function Deploy-Skills {
         Write-Host "    Planning & Alignment (4):"
         Write-Host "      - grilling-skill, domain-modeling-skill"
         Write-Host "      - grill-with-docs-skill, grill-me-skill"
+        Write-Host "    Responsive & Visual Testing (2):"
+        Write-Host "      - wireframer-skill, playwright-responsive-audit-skill"
         Write-Host ""
         Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
         Write-Host ""
@@ -1732,19 +1737,20 @@ function Show-NextSteps {
     Write-Host "  - explore - Codebase exploration and analysis"
     Write-Host "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
     Write-Host "  - prd-specialist-subagent - PRD creation and drafting"
-    Write-Host "  - ... and 35 more agents"
+    Write-Host "  - ... and 36 more agents"
     Write-Host ""
     Write-Host "  Usage: opencode --agent <name> `"prompt`""
     Write-Host "         opencode `"prompt`" (uses build)"
      Write-Host ""
     Write-Host "=====================================================================" -ForegroundColor White
-     Write-Host "                     86 Skills Available" -ForegroundColor White
-    Write-Host "=====================================================================" -ForegroundColor White
-    Write-Host ""
-    Write-Host "  Framework (15) • Language-Specific (6) • Framework-Specific (7)"
-     Write-Host "  OpenCode Meta (4) • OpenTofu (7) • Git/Workflow (12)"
-    Write-Host "  Documentation (3) • JIRA (3) • Code Quality (7)"
-     Write-Host "  Agent Optimization (7)"
+      Write-Host "                     88 Skills Available" -ForegroundColor White
+     Write-Host "=====================================================================" -ForegroundColor White
+     Write-Host ""
+     Write-Host "  Framework (15) • Language-Specific (6) • Framework-Specific (7)"
+      Write-Host "  OpenCode Meta (4) • OpenTofu (7) • Git/Workflow (12)"
+     Write-Host "  Documentation (3) • JIRA (3) • Code Quality (7)"
+      Write-Host "  Agent Optimization (7) • Planning & Alignment (4)"
+     Write-Host "  Responsive & Visual Testing (2)"
     Write-Host ""
     Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
     Write-Host "  Run 'opencode --skill <name> `"prompt`"' to invoke a skill"
