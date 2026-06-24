@@ -24,8 +24,8 @@ from pathlib import Path
 import defusedxml.minidom
 from PIL import Image, ImageDraw, ImageFont
 
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / 'scripts'))
-from office.soffice import get_soffice_env
+sys.path.insert(0, str(Path(__file__).parent))
+from soffice import get_soffice_env
 
 THUMBNAIL_WIDTH = 300
 CONVERSION_DPI = 100

@@ -40,7 +40,7 @@ Do NOT use me when:
 ### Required Tools
 
 - **LibreOffice** (for PDF conversion tasks)
-  - Automatically configured by `scripts/office/soffice.py` on first run
+  - Automatically configured by `scripts/soffice.py` on first run
   - Handles sandboxed environments with Unix socket restrictions
 
 ### Python Libraries
@@ -387,7 +387,7 @@ If you need to fill out a PDF form, **do not skip ahead**. Follow this workflow 
 ### Step 1: Check for Fillable Fields
 
 ```bash
-python scripts/pdf-specialist-skill/scripts/check_fillable_fields.py <file.pdf>
+python scripts/check_fillable_fields.py <file.pdf>
 ```
 
 This script prints:
@@ -401,7 +401,7 @@ If PDF has fillable form fields:
 #### 2A.1: Extract Field Information
 
 ```bash
-python scripts/pdf-specialist-skill/scripts/extract_form_field_info.py <input.pdf> <field_info.json>
+python scripts/extract_form_field_info.py <input.pdf> <field_info.json>
 ```
 
 This creates `field_info.json` with:
@@ -423,7 +423,7 @@ For choice fields, includes:
 #### 2A.2: Convert PDF to Images
 
 ```bash
-python scripts/pdf-specialist-skill/scripts/convert_pdf_to_images.py <file.pdf> <output_directory/>
+python scripts/convert_pdf_to_images.py <file.pdf> <output_directory/>
 ```
 
 Then analyze the images to determine the purpose of each form field. Convert bounding box PDF coordinates to image coordinates as needed.
@@ -458,7 +458,7 @@ Important:
 #### 2A.4: Fill the PDF
 
 ```bash
-python scripts/pdf-specialist-skill/scripts/fill_fillable_fields.py <input.pdf> <field_values.json> <output.pdf>
+python scripts/fill_fillable_fields.py <input.pdf> <field_values.json> <output.pdf>
 ```
 
 The script:
@@ -473,7 +473,7 @@ If PDF does not have fillable form fields, you'll add text annotations.
 #### 2B.1: Extract Form Structure
 
 ```bash
-python scripts/pdf-specialist-skill/scripts/extract_form_structure.py <input.pdf> form_structure.json
+python scripts/extract_form_structure.py <input.pdf> form_structure.json
 ```
 
 This creates `form_structure.json` containing:
@@ -534,7 +534,7 @@ Use this when PDF is scanned/image-based and structure extraction found no usabl
 **B.3.1: Convert PDF to Images**
 
 ```bash
-python scripts/pdf-specialist-skill/scripts/convert_pdf_to_images.py <input.pdf> <images_dir/>
+python scripts/convert_pdf_to_images.py <input.pdf> <images_dir/>
 ```
 
 **B.3.2: Initial Field Identification**
@@ -598,7 +598,7 @@ Example: If crop started at (50, 120) and entry box starts at (52, 18) within cr
 Before filling, check your bounding boxes for errors:
 
 ```bash
-python scripts/pdf-specialist-skill/scripts/check_bounding_boxes.py fields.json
+python scripts/check_bounding_boxes.py fields.json
 ```
 
 This checks for:
@@ -610,7 +610,7 @@ Fix any reported errors in `fields.json` before proceeding.
 #### 2B.5: Fill the Non-fillable Form
 
 ```bash
-python scripts/pdf-specialist-skill/scripts/fill_pdf_form_with_annotations.py <input.pdf> fields.json <output.pdf>
+python scripts/fill_pdf_form_with_annotations.py <input.pdf> fields.json <output.pdf>
 ```
 
 The script:
@@ -623,7 +623,7 @@ The script:
 Convert the filled PDF to images and verify text placement:
 
 ```bash
-python scripts/pdf-specialist-skill/scripts/convert_pdf_to_images.py <output.pdf> <verify_images/>
+python scripts/convert_pdf_to_images.py <output.pdf> <verify_images/>
 ```
 
 If text is mispositioned:
@@ -718,14 +718,14 @@ After completing your PDF work:
 
 ```bash
 # Check for fillable fields
-python scripts/pdf-specialist-skill/scripts/check_fillable_fields.py document.pdf
+python scripts/check_fillable_fields.py document.pdf
 
 # Extract text for verification
 pdftotext document.pdf output.txt
 
 # Verify filled form by converting to images
-python scripts/pdf-specialist-skill/scripts/convert_pdf_to_images.py filled.pdf verify/
+python scripts/convert_pdf_to_images.py filled.pdf verify/
 
 # Validate bounding boxes before filling
-python scripts/pdf-specialist-skill/scripts/check_bounding_boxes.py fields.json
+python scripts/check_bounding_boxes.py fields.json
 ```

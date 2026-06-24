@@ -72,7 +72,7 @@ soffice --headless --convert-to pptx presentation.ppt
 python -m markitdown presentation.pptx
 
 # Raw XML access
-python scripts/pptx/unpack.py presentation.pptx unpacked/
+python scripts/unpack.py presentation.pptx unpacked/
 ```
 
 ### Converting to Images
@@ -247,19 +247,19 @@ When editing slides in an existing PowerPoint presentation, work with the raw Of
 
 2. **Unpack the presentation**:
    ```bash
-   python scripts/pptx/unpack.py presentation.pptx output_dir
+   python scripts/unpack.py presentation.pptx output_dir
    ```
 
 3. **Edit the XML files** (primarily `ppt/slides/slide{N}.xml` and related files)
 
 4. **CRITICAL - Validate immediately** after each edit:
    ```bash
-   python scripts/pptx/validate.py output_dir --original presentation.pptx
+   python scripts/validate.py output_dir --original presentation.pptx
    ```
 
 5. **Pack the final presentation**:
    ```bash
-   python scripts/pptx/pack.py output_dir new_presentation.pptx
+   python scripts/pack.py output_dir new_presentation.pptx
    ```
 
 ### Key File Structures
@@ -578,8 +578,7 @@ Before designing, ask:
 | `validate.py` | Validate XML structure |
 
 **Script Locations**:
-- Scripts are located at `scripts/pptx/` or `skills/pptx/scripts/` relative to project root
-- If scripts don't exist at expected paths, use `find . -name "scriptname.py"` to locate
+- Scripts are located at `scripts/` within the skill directory
 
 ---
 
@@ -642,11 +641,11 @@ python -m markitdown presentation.pptx
 python scripts/thumbnail.py presentation.pptx
 
 # Unpack to inspect XML structure
-python scripts/pptx/unpack.py presentation.pptx unpacked/
+python scripts/unpack.py presentation.pptx unpacked/
 ls unpacked/ppt/slides/
 
 # Validate after XML edits
-python scripts/pptx/validate.py unpacked/ --original presentation.pptx
+python scripts/validate.py unpacked/ --original presentation.pptx
 ```
 
 **Verification Checklist**:

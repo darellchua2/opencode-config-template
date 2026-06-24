@@ -43,10 +43,10 @@ Workflow for New Documents:
 5. Validate created document
 
 Workflow for Editing:
-1. Unpack document: python scripts/office/unpack.py doc.docx unpacked/
+1. Unpack document: python scripts/unpack.py doc.docx unpacked/
 2. Edit XML in unpacked/word/
 3. Use smart quote entities (&#x2018;, &#x2019;, &#x201C;, &#x201D;)
-4. Pack: python scripts/office/pack.py unpacked/ output.docx
+4. Pack: python scripts/pack.py unpacked/ output.docx
 5. Validate
 
 Critical Rules:

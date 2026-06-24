@@ -208,7 +208,7 @@ wb.save('output.xlsx')
 Excel files created or modified by openpyxl contain formulas as strings but not calculated values. Use the `scripts/recalc.py` script to recalculate formulas:
 
 ```bash
-python scripts/xlsx-specialist-skill/scripts/recalc.py output.xlsx 30
+python scripts/recalc.py output.xlsx 30
 ```
 
 The script:
@@ -368,7 +368,7 @@ brew install --cask libreoffice
 
 **Symptom**: LibreOffice fails to start or macro doesn't work
 
-**Solution**: The script automatically handles sandboxed environments with Unix socket restrictions. Ensure you're using the latest version of the script that includes sandbox detection from `scripts/office/soffice.py`.
+**Solution**: The script automatically handles sandboxed environments with Unix socket restrictions. Ensure you're using the latest version of the script that includes sandbox detection from `scripts/soffice.py`.
 
 ### Formula Errors After Recalculation
 
@@ -401,7 +401,7 @@ After completing your spreadsheet work:
 
 ```bash
 # Recalculate formulas and check for errors
-python scripts/xlsx-specialist-skill/scripts/recalc.py output.xlsx
+python scripts/recalc.py output.xlsx
 
 # Verify file exists
 ls -lh output.xlsx

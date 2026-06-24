@@ -40,7 +40,7 @@ Do NOT use for:
 
 - **pandoc**: Text extraction from .docx files
 - **docx**: `npm install -g docx` (for creating new documents)
-- **LibreOffice**: PDF conversion (auto-configured via `skills/docx-creation-skill/scripts/soffice.py`)
+- **LibreOffice**: PDF conversion (auto-configured via `scripts/soffice.py`)
 - **Poppler**: `pdftoppm` for converting PDFs to images
 
 ## Quick Reference
@@ -56,7 +56,7 @@ Do NOT use for:
 Legacy `.doc` files must be converted before editing:
 
 ```bash
-python scripts/office/soffice.py --headless --convert-to docx document.doc
+python scripts/soffice.py --headless --convert-to docx document.doc
 ```
 
 ### Reading Content
@@ -66,13 +66,13 @@ python scripts/office/soffice.py --headless --convert-to docx document.doc
 pandoc --track-changes=all document.docx -o output.md
 
 # Raw XML access
-python scripts/office/unpack.py document.docx unpacked/
+python scripts/unpack.py document.docx unpacked/
 ```
 
 ### Converting to Images
 
 ```bash
-python scripts/office/soffice.py --headless --convert-to pdf document.docx
+python scripts/soffice.py --headless --convert-to pdf document.docx
 pdftoppm -jpeg -r 150 document.pdf page
 ```
 
@@ -81,7 +81,7 @@ pdftoppm -jpeg -r 150 document.pdf page
 To produce a clean document with all tracked changes accepted:
 
 ```bash
-python scripts/docx-creation-skill/scripts/accept_changes.py input.docx output.docx
+python scripts/accept_changes.py input.docx output.docx
 ```
 
 ---
@@ -107,7 +107,7 @@ Packer.toBuffer(doc).then(buffer => fs.writeFileSync("doc.docx", buffer));
 ### Validation
 After creating the file, validate it. If validation fails, unpack, fix the XML, and repack.
 ```bash
-python scripts/docx-creation-skill/scripts/validate.py doc.docx
+python scripts/validate.py doc.docx
 ```
 
 ### Page Size
@@ -338,7 +338,7 @@ sections: [{
 
 ### Step 1: Unpack
 ```bash
-python scripts/docx-creation-skill/scripts/unpack.py document.docx unpacked/
+python scripts/unpack.py document.docx unpacked/
 ```
 Extracts XML, pretty-prints, merges adjacent runs.
 
@@ -361,7 +361,7 @@ Edit files in `unpacked/word/`. See XML Reference below for patterns.
 
 ### Step 3: Pack
 ```bash
-python scripts/docx-creation-skill/scripts/pack.py unpacked/ output.docx --original document.docx
+python scripts/pack.py unpacked/ output.docx --original document.docx
 ```
 Validates with auto-repair, condenses XML, and creates DOCX. Use `--validate false` to skip.
 
@@ -518,7 +518,7 @@ While Arial is the default for compatibility, use weight and size to create dist
 **Solution**:
 - Check element order in `<w:pPr>`
 - Add `xml:space="preserve"` to text with whitespace
-- Validate with `python scripts/office/validate.py doc.docx`
+- Validate with `python scripts/validate.py doc.docx`
 
 ### Tables Render Incorrectly
 **Issue**: Tables look wrong in Google Docs or other viewers
@@ -541,13 +541,13 @@ While Arial is the default for compatibility, use weight and size to create dist
 
 ```bash
 # Validate document structure
-python scripts/office/validate.py document.docx
+python scripts/validate.py document.docx
 
 # Extract text to verify content
 pandoc document.docx -o output.md && cat output.md
 
 # Unpack to inspect XML
-python scripts/office/unpack.py document.docx unpacked/
+python scripts/unpack.py document.docx unpacked/
 ls unpacked/word/
 ```
 

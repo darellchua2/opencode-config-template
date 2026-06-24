@@ -7,12 +7,13 @@ import argparse
 import logging
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / 'scripts'))
-from office.soffice import get_soffice_env
+sys.path.insert(0, str(Path(__file__).parent))
+from soffice import get_soffice_env
 
 LIBREOFFICE_PROFILE = "/tmp/libreoffice_docx_profile"
 MACRO_DIR = f"{LIBREOFFICE_PROFILE}/user/basic/Standard"
