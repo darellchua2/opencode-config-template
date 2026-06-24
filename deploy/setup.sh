@@ -584,7 +584,7 @@ USAGE:
       google-gce         Google Compute Engine management
       google-gke         Google Kubernetes Engine management
 
-   SKILLS (86):
+   SKILLS (88):
                Framework (15):       test-generator-framework, linting-workflow,
                                       pr-creation-workflow, pr-merge-workflow,
                                       error-resolver-workflow, tdd-workflow,
@@ -642,8 +642,11 @@ USAGE:
                  DevOps (4):     docker-containerization-skill, monorepo-management-skill,
                                  database-migration-skill, logging-observability-skill
 
-      Planning & Alignment (4): grilling-skill, domain-modeling-skill,
-                                grill-with-docs-skill, grill-me-skill
+       Planning & Alignment (4): grilling-skill, domain-modeling-skill,
+                                 grill-with-docs-skill, grill-me-skill
+
+ Responsive & Visual Testing (2): wireframer-skill,
+                                   playwright-responsive-audit-skill
 
     Run 'opencode --list-skills' for detailed descriptions
     Run 'opencode --skill <name> "prompt"' to invoke a skill
@@ -1651,7 +1654,7 @@ setup_config() {
             log_success "config.json copied successfully"
 
             echo ""
-             echo "✓ Configured 39 agents:"
+        echo "✓ Configured 40 agents:"
              echo "    - build (default) - Full-featured coding agent"
              echo "    - plan - Planning agent (read-only)"
              echo "    - explore - Codebase exploration and analysis"
@@ -2205,12 +2208,12 @@ print_summary() {
 
     # Agents configured
     if [ -f "$CONFIG_FILE" ]; then
-        echo "✓ Configured 39 agents:"
+        echo "✓ Configured 40 agents:"
         echo "    - build (default) - Full-featured coding agent"
         echo "    - plan - Planning agent (read-only)"
         echo "    - explore - Codebase exploration and analysis"
         echo "    - image-analyzer-subagent - Image/screenshot analysis"
-        echo "    - ... and 35 more agents"
+        echo "    - ... and 36 more agents"
     fi
 
     # MCP servers configured
@@ -2302,11 +2305,14 @@ print_summary() {
         echo "      - object-design"
         echo "      - code-smells"
         echo "      - complexity-management"
-        echo "    - Planning & Alignment (4):"
-        echo "      - grilling-skill"
-        echo "      - domain-modeling-skill"
-        echo "      - grill-with-docs-skill"
-        echo "      - grill-me-skill"
+         echo "    - Planning & Alignment (4):"
+         echo "      - grilling-skill"
+         echo "      - domain-modeling-skill"
+         echo "      - grill-with-docs-skill"
+         echo "      - grill-me-skill"
+        echo "    - Responsive & Visual Testing (2):"
+        echo "      - wireframer-skill"
+        echo "      - playwright-responsive-audit-skill"
 
     else
         echo "✗ skills: Not deployed"
@@ -2360,25 +2366,26 @@ print_next_steps() {
     echo "                        🚀 Quick Start"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "🤖 Agents (40):"
+    echo "🤖 Agents (41):"
     echo "  - build (default) - Full-featured coding agent"
     echo "  - plan - Planning agent (read-only)"
     echo "  - explore - Fast codebase exploration and analysis"
     echo "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
     echo "  - prd-specialist-subagent - PRD creation and drafting"
-    echo "  - ... and 35 more agents"
+    echo "  - ... and 36 more agents"
     echo ""
     echo "  Usage: opencode --agent <name> \"prompt\""
     echo "         opencode \"prompt\" (uses build)"
      echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "                     📦 86 Skills Available"
+    echo "                     📦 88 Skills Available"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
     echo "  Framework (15) • Language-Specific (6) • Framework-Specific (7)"
     echo "  OpenCode Meta (4) • OpenTofu (7) • Git/Workflow (12)"
     echo "  Documentation (3) • JIRA (3) • Code Quality (7)"
-    echo "  Agent Optimization (7)"
+    echo "  Agent Optimization (7) • Planning & Alignment (4)"
+    echo "  Responsive & Visual Testing (2)"
     echo ""
     echo "  Run 'opencode --list-skills' for detailed descriptions"
     echo "  Run 'opencode --skill <name> \"prompt\"' to use a skill"

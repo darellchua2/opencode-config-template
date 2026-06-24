@@ -20,8 +20,8 @@ opencode-config-template/
 │   ├── AGENTS.md                # Container-specific instructions
 │   ├── .dockerignore
 │   ├── .opencode/
-│   │       ├── agents/              # 35 subagent .md files
-│   │       └── skills/              # 86 skill directories
+│   │       ├── agents/              # 36 subagent .md files
+│   │       └── skills/              # 88 skill directories
 │   └── README.md                # Docker usage guide
 ├── docker-compose.yml           # Docker Compose service definition
 ├── .env.example                 # Environment variable template
@@ -277,7 +277,7 @@ TypeScript, JavaScript, Python, Go, Rust, Java, C#, PHP, Ruby, C, C++, Swift, Ko
 
 ## Skill Modularization
 
-This repository implements **skill modularization** with 86 skills organized across 15 categories. Skills are designed with clear separation of concerns and explicit dependencies.
+This repository implements **skill modularization** with 88 skills organized across 16 categories. Skills are designed with clear separation of concerns and explicit dependencies.
 
 ### Skill Categories
 
@@ -298,12 +298,13 @@ This repository implements **skill modularization** with 86 skills organized acr
 | **Security** (2) | security-audit-skill, authentication-authorization-skill | Security auditing, vulnerability scanning, and auth implementation |
 | **DevOps** (4) | docker-containerization-skill, monorepo-management-skill, database-migration-skill, logging-observability-skill | Containerization, monorepos, database migrations, and observability |
 | **Planning & Alignment** (4) | grilling-skill, domain-modeling-skill, grill-with-docs-skill, grill-me-skill | Relentless interview/grilling sessions and domain model (CONTEXT.md glossary + ADR) capture |
+| **Responsive & Visual Testing** (2) | wireframer-skill, playwright-responsive-audit-skill | Low-fidelity wireframe/prototype generation and Playwright-driven responsive UI audit + fix methodology |
 
 > **Note**: 6 redundant skills archived to `skills/_archived/`: `nextjs-complete-setup`, `python-docstring-generator`, `nextjs-tsdoc-documentor`, `git-pr-creator`, `git-issue-plan-workflow`, `jira-ticket-plan-workflow`. Use `docstring-generator` for all language docstrings (Python PEP 257, TypeScript TSDoc, Java Javadoc, C# XML docs). Use `ticket-plan-workflow-skill` for unified GitHub/JIRA ticket planning. 
 
 ### Agents
 
-35 agent `.md` files (plus 4 config-builtin agents defined directly in `config.json`: `build`, `plan`, `explore`, `general`) provide specialized task handling. Note: the 3 `*-primary-agent` files (`startup-founder`, `business-ops`, `office-document`) are routing hubs but are declared with `mode: subagent`.
+36 agent `.md` files (plus 4 config-builtin agents defined directly in `config.json`: `build`, `plan`, `explore`, `general`) provide specialized task handling. Note: the 3 `*-primary-agent` files (`startup-founder`, `business-ops`, `office-document`) are routing hubs but are declared with `mode: subagent`.
 
 #### Primary Agents
 
@@ -336,6 +337,7 @@ This repository implements **skill modularization** with 86 skills organized acr
 | **opencode-tooling-subagent** | Skills, agents, and rules creation + doc sync | opencode-skill-creation, opencode-agent-creation, opencode-skills-maintainer, documentation-sync-workflow | — |
 | **docx-creation-subagent** | Word document creation | docx-creation | — |
 | **image-analyzer-subagent** | Image analysis and conversion | (built-in capabilities) | — |
+| **responsive-audit-subagent** | Responsive UI audit and fix | playwright-responsive-audit-skill | `explore`, `general`, `image-analyzer-subagent` |
 | **google-mcp-specialist-subagent** | Google Cloud MCP setup and usage | google-bigquery, google-maps, google-gce, google-gke | — |
 | **autodesk-specialist-subagent** | Autodesk API integration | autodesk-revit, autodesk-model-data, autodesk-fusion | — |
 | **civil-3d-specialist-subagent** | Autodesk Civil 3D model modifications and features | (documentation search + version-specific guidance) | — |
