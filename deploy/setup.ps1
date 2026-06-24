@@ -335,7 +335,7 @@ USAGE:
                          CONFIGURED FEATURES
 =======================================================================
 
-   AGENTS (40):
+   AGENTS (38):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
@@ -372,15 +372,13 @@ USAGE:
     nextjs-mcp-advisor   Next.js runtime guidance with MCP integration
     nextjs-setup         Next.js project setup and configuration
     opentofu-explorer    OpenTofu/Terraform infrastructure management
-    autodesk-specialist  Autodesk integration and APS APIs
-    civil-3d-specialist  Autodesk Civil 3D model modifications
-    open3d-specialist    Open3D 3D data processing guidance
+    cad-specialist       CAD, robotics, hardware design orchestration
     prd-specialist       PRD specialist — discovery interview and drafting
 
     Usage: opencode --agent build 'implement auth feature'
             opencode --agent explore 'find all API routes'
  
-          SKILLS (88):
+          SKILLS (102):
               Framework (15):       test-generator-framework, linting-workflow,
                                       pr-creation-workflow, pr-merge-workflow,
                                       error-resolver-workflow, tdd-workflow,
@@ -438,6 +436,12 @@ USAGE:
 
  Responsive & Visual Testing (2): wireframer-skill,
                                    playwright-responsive-audit-skill
+
+    CAD & Hardware Design (14): cad-generation, cad-viewer, cad-step-parts,
+                                 cad-dxf, cad-urdf, cad-srdf, cad-sdf,
+                                 cad-sendcutsend, cad-gcode, cad-bambu-labs,
+                                 cad-implicit, autodesk-aps-skill,
+                                 civil-3d-skill, open3d-skill
 
     Run 'opencode --list-skills' for detailed descriptions
     Run 'opencode --skill <name> \"prompt\"' to invoke a skill
@@ -1165,7 +1169,7 @@ function Set-Configuration {
             Write-LogSuccess "config.json copied successfully"
 
             Write-Host ""
-             Write-Host "Configured 40 agents:" -ForegroundColor Green
+             Write-Host "Configured 38 agents:" -ForegroundColor Green
             Write-Host "    - build (default) - Full-featured coding agent"
             Write-Host "    - plan - Planning agent (read-only)"
             Write-Host "    - explore - Codebase exploration and analysis"
@@ -1294,6 +1298,11 @@ function Deploy-Skills {
         Write-Host "      - grill-with-docs-skill, grill-me-skill"
         Write-Host "    Responsive & Visual Testing (2):"
         Write-Host "      - wireframer-skill, playwright-responsive-audit-skill"
+        Write-Host "    CAD & Hardware Design (14):"
+        Write-Host "      - cad-generation-skill, cad-viewer-skill, cad-step-parts-skill"
+        Write-Host "      - cad-dxf-skill, cad-urdf-skill, cad-srdf-skill, cad-sdf-skill"
+        Write-Host "      - cad-sendcutsend-skill, cad-gcode-skill, cad-bambu-labs-skill"
+        Write-Host "      - cad-implicit-skill, autodesk-aps-skill, civil-3d-skill, open3d-skill"
         Write-Host ""
         Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
         Write-Host ""
@@ -1731,19 +1740,19 @@ function Show-NextSteps {
     Write-Host "  2. Start LM Studio: http://127.0.0.1:1234/v1"
     Write-Host "  3. Verify installation: opencode --version"
     Write-Host ""
-    Write-Host "Agents (41):"
+    Write-Host "Agents (39):"
     Write-Host "  - build (default) - Full-featured coding agent"
     Write-Host "  - plan - Planning agent (read-only)"
     Write-Host "  - explore - Codebase exploration and analysis"
     Write-Host "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
     Write-Host "  - prd-specialist-subagent - PRD creation and drafting"
-    Write-Host "  - ... and 36 more agents"
+    Write-Host "  - ... and 34 more agents"
     Write-Host ""
     Write-Host "  Usage: opencode --agent <name> `"prompt`""
     Write-Host "         opencode `"prompt`" (uses build)"
      Write-Host ""
     Write-Host "=====================================================================" -ForegroundColor White
-      Write-Host "                     88 Skills Available" -ForegroundColor White
+      Write-Host "                     102 Skills Available" -ForegroundColor White
      Write-Host "=====================================================================" -ForegroundColor White
      Write-Host ""
      Write-Host "  Framework (15) • Language-Specific (6) • Framework-Specific (7)"
@@ -1751,6 +1760,7 @@ function Show-NextSteps {
      Write-Host "  Documentation (3) • JIRA (3) • Code Quality (7)"
       Write-Host "  Agent Optimization (7) • Planning & Alignment (4)"
      Write-Host "  Responsive & Visual Testing (2)"
+     Write-Host "  CAD & Hardware Design (14)"
     Write-Host ""
     Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
     Write-Host "  Run 'opencode --skill <name> `"prompt`"' to invoke a skill"
