@@ -500,7 +500,7 @@ USAGE:
                          CONFIGURED FEATURES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-   AGENTS (38):
+   AGENTS (39):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
@@ -538,7 +538,8 @@ USAGE:
     opentofu-explorer    OpenTofu/Terraform infrastructure management
     cad-specialist       CAD, robotics, hardware design orchestration
     discovery-specialist Customer-facing discovery: Vision docs + wireframes
-    requirements-specialist  Internal SRS (IEEE 830) drafting
+    requirements-specialist  BRD + SRS drafting (BABOK/IIBA + IEEE 830)
+    technical-design-specialist  Technical design + ADRs (engineering 'how' stage)
 
     Usage: opencode --agent build "implement auth feature"
            opencode --agent explore "find all API routes"
@@ -582,14 +583,15 @@ USAGE:
       google-gce         Google Compute Engine management
       google-gke         Google Kubernetes Engine management
 
-   SKILLS (104):
-               Framework (17):       test-generator-framework, linting-workflow,
+   SKILLS (106):
+             Framework (19):       test-generator-framework, linting-workflow,
                                       pr-creation-workflow, pr-merge-workflow,
                                       error-resolver-workflow, tdd-workflow,
                                       docx-creation, pptx-specialist,
                                       xlsx-specialist, pdf-specialist, frontend-design,
                                       api-design-skill, openapi-contract-adherence-skill,
                                       performance-optimization-skill, srs-creation-skill,
+                                      brd-creation-skill, technical-design-creation-skill,
                                       vision-creation-skill, interactive-document-rendering-skill
 
             Language-Specific (6): python-pytest-creator, python-ruff-linter,
@@ -1659,13 +1661,13 @@ setup_config() {
             log_success "config.json copied successfully"
 
             echo ""
-        echo "✓ Configured 38 agents:"
+        echo "✓ Configured 39 agents:"
              echo "    - build (default) - Full-featured coding agent"
              echo "    - plan - Planning agent (read-only)"
              echo "    - explore - Codebase exploration and analysis"
              echo "    - image-analyzer-subagent - Image/screenshot analysis"
              echo "    - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
-             echo "    - ... and 33 more agents"
+             echo "    - ... and 34 more agents"
             echo ""
              echo "✓ Configured MCP servers:"
              echo "    Local (auto-start): atlassian, zai-vision-mcp-server, codegraph, mermaid"
@@ -2213,12 +2215,12 @@ print_summary() {
 
     # Agents configured
     if [ -f "$CONFIG_FILE" ]; then
-        echo "✓ Configured 38 agents:"
+        echo "✓ Configured 39 agents:"
         echo "    - build (default) - Full-featured coding agent"
         echo "    - plan - Planning agent (read-only)"
         echo "    - explore - Codebase exploration and analysis"
         echo "    - image-analyzer-subagent - Image/screenshot analysis"
-        echo "    - ... and 34 more agents"
+        echo "    - ... and 35 more agents"
     fi
 
     # MCP servers configured
@@ -2237,7 +2239,7 @@ print_summary() {
     if [ -d "$SKILLS_DIR" ] && [ "$(ls -A ${SKILLS_DIR} 2>/dev/null)" ]; then
         local skill_count=$(find ${SKILLS_DIR} -name "SKILL.md" 2>/dev/null | wc -l)
         echo "✓ skills: ${skill_count} skills deployed to ${SKILLS_DIR}/"
-        echo "    - Framework (17):"
+        echo "    - Framework (19):"
         echo "      - test-generator-framework"
         echo "      - linting-workflow"
         echo "      - pr-creation-workflow"
@@ -2253,6 +2255,8 @@ print_summary() {
         echo "      - openapi-contract-adherence-skill"
         echo "      - performance-optimization-skill"
         echo "      - srs-creation-skill"
+        echo "      - brd-creation-skill"
+        echo "      - technical-design-creation-skill"
         echo "      - vision-creation-skill"
         echo "      - interactive-document-rendering-skill"
         echo "    - Language-Specific (6):"
@@ -2388,22 +2392,22 @@ print_next_steps() {
     echo "                        🚀 Quick Start"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "🤖 Agents (38):"
+    echo "🤖 Agents (39):"
     echo "  - build (default) - Full-featured coding agent"
     echo "  - plan - Planning agent (read-only)"
     echo "  - explore - Fast codebase exploration and analysis"
     echo "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
     echo "  - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
-    echo "  - ... and 33 more agents"
+    echo "  - ... and 34 more agents"
     echo ""
     echo "  Usage: opencode --agent <name> \"prompt\""
     echo "         opencode \"prompt\" (uses build)"
      echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "                     📦 104 Skills Available"
+    echo "                     📦 106 Skills Available"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "  Framework (17) • Language-Specific (6) • Framework-Specific (7)"
+    echo "  Framework (19) • Language-Specific (6) • Framework-Specific (7)"
     echo "  OpenCode Meta (4) • OpenTofu (7) • Git/Workflow (12)"
     echo "  Documentation (3) • JIRA (3) • Code Quality (7)"
     echo "  Agent Optimization (7) • Planning & Alignment (4)"
