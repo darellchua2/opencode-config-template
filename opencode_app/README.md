@@ -99,4 +99,4 @@ OpenCode supports subagent-to-subagent delegation via the Task tool, controlled 
 - Agent name = filename minus `.md` (e.g., `code-review-subagent.md` -> `code-review-subagent`)
 - Each spawned subagent gets its own session, context window, and step budget
 - Hub-and-spoke (primary agent -> subagent) remains the recommended pattern
-- 18 of 36 agents have explicit `task` permissions; the remaining 18 default to full access
+- 20 of 34 agents have explicit `task` permissions; the remaining 14 default to full access

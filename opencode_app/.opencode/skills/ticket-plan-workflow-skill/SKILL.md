@@ -252,7 +252,7 @@ done
 ## Overview
 $OVERVIEW
 
-**PRD**: $PRD_PATH  _(optional — present only when a PRD was linked via docs/prd/)_
+**SRS**: $SRS_PATH  _(optional — present only when an SRS was linked via docs/srs/)_
 
 ## Acceptance Criteria
 $ACCEPTANCE_CRITERIA
