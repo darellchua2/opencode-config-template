@@ -1,3 +1,10 @@
+# [1.73.0](https://github.com/darellchua2/opencode-config-template/compare/v1.72.0...v1.73.0) (2026-06-26)
+
+
+### Features
+
+* **agents:** add BRD + technical-design document-ladder stage [BT-73] ([#230](https://github.com/darellchua2/opencode-config-template/issues/230)) ([d881883](https://github.com/darellchua2/opencode-config-template/commit/d881883c29bc93609d1b74778a322bde7295bb2a))
+
 # [1.72.0](https://github.com/darellchua2/opencode-config-template/compare/v1.71.0...v1.72.0) (2026-06-26)
 
 
