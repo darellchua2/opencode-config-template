@@ -26,7 +26,7 @@ This is **Phase 1 only**. It establishes the discovery (customer) + requirements
 
 ### Net impact
 
-- **Agents**: +1 (discovery-specialist), 1 renamed (prd→requirements). Source count 34 → 35.
+- **Agents**: +1 (discovery-specialist), −1 (business-ops-primary-agent — see Phase 6), 1 renamed (prd→requirements). **Net source count 34 → 34** (composition change: +discovery, −business-ops, rename prd→requirements).
 - **Skills**: +2 (vision-creation-skill, interactive-document-rendering-skill), 1 renamed (prd-creation-skill → srs-creation-skill). **Deployable** count 102 → 104 (total incl `_archived/`: 108 → 110).
 
 > **Count note (verified):** `find ... -name SKILL.md` = 108 total (incl `_archived/`); deployable (excl `_archived/`) = 102. setup.sh/setup.ps1/README banners use the **deployable** number (102→104); the `find` gate in step 5.3 uses the **total** (108→110).
@@ -99,7 +99,7 @@ This is **Phase 1 only**. It establishes the discovery (customer) + requirements
 
 - [ ] **4.1** Update `README.md`
     - **Why:** README is primary docs; must reflect new agent + skills + renamed items
-    - **Done when:** Skill table (~L286) entry `prd-creation-skill` → `srs-creation-skill`, add `vision-creation-skill` + `interactive-document-rendering-skill`, recount Framework/Document skills (deployable 102→104); Subagent table (~L329) row `prd-specialist-subagent` → `requirements-specialist-subagent`, add `discovery-specialist-subagent` row; **L280 stale total `88 skills` → `104 skills` (deployable — already stale pre-BT-72)** and verify the category count
+    - **Done when:** Skill table (~L286) entry `prd-creation-skill` → `srs-creation-skill`, add `vision-creation-skill` + `interactive-document-rendering-skill`, recount Framework/Document skills (deployable 102→104); Subagent table (~L329) row `prd-specialist-subagent` → `requirements-specialist-subagent`, add `discovery-specialist-subagent` row, **remove `business-ops-primary-agent` row (L317)**; **L308 note "the 3 `*-primary-agent` files (`startup-founder`, `business-ops`, `office-document`)" → "the 2 `*-primary-agent` files (`startup-founder`, `office-document`)"**; **L280 stale total `88 skills` → `104 skills` (deployable — already stale pre-BT-72)** and verify the category count
     - **Consumers affected:** Documentation readers
 
 - [ ] **4.2** Update `AGENTS.md` (repo root)
@@ -114,17 +114,17 @@ This is **Phase 1 only**. It establishes the discovery (customer) + requirements
 
 - [ ] **4.4** Update `deploy/setup.sh`
     - **Why:** Banner + listing must match deployed files; setup is the deploy entrypoint
-    - **Done when:** Agent listing (+discovery-specialist, rename prd-specialist→requirements-specialist) at ~L541, ~L1666, ~L2393; skill listing (+vision-creation-skill, +interactive-document-rendering-skill, rename prd-creation-skill→srs-creation-skill) at ~L592, ~L2254; skill COUNT headers **L585 `SKILLS (102):` → `SKILLS (104):`** and **L2400 `102 Skills Available` → `104 Skills Available`** (banners use the DEPLOYABLE count); agent banner "38 agents"→"39 agents" in ALL 3 locations (L1661, L2215, L2388) with **"34 more agents"→"35 more agents"**
+    - **Done when:** Agent listing (+discovery-specialist, rename prd-specialist→requirements-specialist, **−business-ops-primary-agent at L533**) at ~L541, ~L1666, ~L2393; skill listing (+vision-creation-skill, +interactive-document-rendering-skill, rename prd-creation-skill→srs-creation-skill) at ~L592, ~L2254; skill COUNT headers **L585 `SKILLS (102):` → `SKILLS (104):`** and **L2400 `102 Skills Available` → `104 Skills Available`** (banners use the DEPLOYABLE count); **agent banner reconciled to authoritative `ls | wc -l` = 34 in ALL count locations (L1661, L2215, L2388) — the +1 discovery and −1 business-ops net to 0, which ALSO corrects the pre-existing 38-vs-source-34 banner drift; recompute any "N more" secondary count so inline-listed + more = 34**
     - **Consumers affected:** Anyone running setup.sh / --help
 
 - [ ] **4.5** Mirror all setup.sh changes in `deploy/setup.ps1`
     - **Why:** Windows parity — setup.ps1 must match setup.sh exactly
-    - **Done when:** All changes from 4.4 mirrored in PowerShell syntax at ~L376, ~L388, ~L1177, ~L1249, ~L1748; skill COUNT headers **L381 `SKILLS (102):` → `SKILLS (104):`** and **L1755 `102 Skills Available` → `104 Skills Available`**
+    - **Done when:** All changes from 4.4 mirrored in PowerShell syntax at ~L376, ~L388, ~L1177, ~L1249, ~L1748 (incl. **−business-ops at L368**); skill COUNT headers **L381 `SKILLS (102):` → `SKILLS (104):`** and **L1755 `102 Skills Available` → `104 Skills Available`**; agent count reconciled to 34 (mirroring 4.4)
     - **Consumers affected:** Windows users
 
 - [ ] **4.6** Verify/update `opencode_app/README.md`
     - **Why:** Docker docs may reference prd; must not break
-    - **Done when:** Grep `opencode_app/README.md` for `prd`; if found, update; if absent, no-op. ALSO recount the agent total at **~L102 (`36 agents` → `37 agents`)** — the `prd` grep alone would no-op and miss this stale count
+    - **Done when:** Grep `opencode_app/README.md` for `prd`; if found, update; if absent, no-op. ALSO correct the agent total at **~L102 `36 agents` → `34 agents`** (authoritative `ls | wc -l` = 34; the net-0 agent change from BT-72 also fixes this pre-existing drift) — the `prd` grep alone would no-op and miss this stale count
     - **Consumers affected:** Docker users
 
 ### Phase 5: Verification
@@ -141,13 +141,25 @@ This is **Phase 1 only**. It establishes the discovery (customer) + requirements
 
 - [ ] **5.3** Verify agent/skill counts are internally consistent
     - **Why:** Inconsistent counts between setup.sh banner, README tables, and actual files confuse users and break deploy verification
-    - **Done when:** `ls opencode_app/.opencode/agents/ | wc -l` == 35; TOTAL `find opencode_app/.opencode/skills -name SKILL.md | wc -l` == 110 (incl `_archived/`); DEPLOYABLE `find opencode_app/.opencode/skills -name SKILL.md -not -path '*/_archived/*' | wc -l` == 104; setup.sh + setup.ps1 + README banners show 104 (deployable)
+    - **Done when:** `ls opencode_app/.opencode/agents/ | wc -l` == 34 (35 after Phase 2, then −1 in Phase 6); TOTAL `find opencode_app/.opencode/skills -name SKILL.md | wc -l` == 110 (incl `_archived/`); DEPLOYABLE `find opencode_app/.opencode/skills -name SKILL.md -not -path '*/_archived/*' | wc -l` == 104; setup.sh + setup.ps1 + README banners show 104 (deployable)
     - **Consumers affected:** All deployment consumers
 
 - [ ] **5.4** Validate `interactive-document-rendering-skill` structure
     - **Why:** A malformed rendering skill silently breaks both vision and srs HTML/DOCX output; count/stale-ref checks won't catch a structurally invalid template
     - **Done when:** `opencode_app/.opencode/skills/interactive-document-rendering-skill/SKILL.md` contains a complete HTML standard (sidebar nav generation from H1–H3, dark-mode toggle, color-aware `::selection`) and a DOCX standard with an explicit TOC field reference; no placeholder TODOs remain
     - **Consumers affected:** discovery-specialist, requirements-specialist (all rendering output)
+
+### Phase 6: Remove business-ops-primary-agent (consolidate)
+
+- [ ] **6.1** Delete `business-ops-primary-agent.md`
+    - **Why:** Its capabilities (proposals/quotations/ops, docx generation, construction context, Atlassian integration) are fully covered by `startup-founder-primary-agent` + `office-document-primary-agent` + `construction-bd-skill` + `ticket-creation-subagent`, and it overlaps the deployed-only `business-development-primary-agent`. Nothing routes to it (trigger-phrase-invoked only — confirmed: zero AGENTS.md routing rows). Consolidation reduces the three-way business-agent overlap. Scope is business-ops ONLY; the business-development-primary-agent source/deployed drift is NOT reconciled here (left for a separate task per user decision).
+    - **Done when:** `git rm opencode_app/.opencode/agents/business-ops-primary-agent.md` executed; file removed from source. Its sync edits (README L308 note 3→2 primary-agent hubs, L317 row removal; setup.sh L533, setup.ps1 L368 listing removal) are folded into steps 4.1/4.4/4.5, which target the FINAL agent count = 34.
+    - **Consumers affected:** README, setup.sh, setup.ps1 (counts/listings); no routing consumers
+
+- [ ] **6.2** Verify business-ops references are gone
+    - **Why:** Confirm no dangling reference to the removed agent remains after deletion + sync
+    - **Done when:** `grep -rn "business-ops" opencode_app/ deploy/ README.md AGENTS.md` returns zero matches (CHANGELOG excluded if any historical mention)
+    - **Consumers affected:** Documentation & routing integrity
 
 ---
 
@@ -160,8 +172,9 @@ This is **Phase 1 only**. It establishes the discovery (customer) + requirements
 - [ ] `requirements-specialist-subagent.md` exists (renamed from prd-specialist, glm-5-turbo, **steps: 40**, internal, permits srs+rendering+domain-modeling+grilling+docx+xlsx+**search-first** skills, task image-analyzer+xlsx allow)
 - [ ] `ticket-creation-subagent.md` references `docs/srs/` + `srs-creation-skill` + `SRS_PATH` (zero `docs/prd`/`PRD_PATH`/`**PRD**:`)
 - [ ] `ticket-plan-workflow-skill/SKILL.md` uses `**SRS**:` + `docs/srs/` + "an SRS was linked" in PLAN header
-- [ ] README.md, AGENTS.md, deploy/.AGENTS.md, setup.sh, setup.ps1 reflect new agent + 2 skills + rename (counts consistent: 35 agents / 104 deployable skills / 110 total skills)
+- [ ] README.md, AGENTS.md, deploy/.AGENTS.md, setup.sh, setup.ps1 reflect new agent + 2 skills + rename + business-ops removal (counts consistent: **34 agents** net 0 / 104 deployable skills / 110 total skills)
 - [ ] Zero stale `prd-specialist` / `prd-creation-skill` / `docs/prd` / `PRD_PATH` / `**PRD**:` in source (CHANGELOG history excluded)
+- [ ] `business-ops-primary-agent.md` deleted; zero `business-ops` references in source (step 6.2)
 - [ ] `documentation-sync-workflow` validation passes
 - [ ] `interactive-document-rendering-skill` structurally valid (step 5.4)
 
@@ -178,6 +191,7 @@ This is **Phase 1 only**. It establishes the discovery (customer) + requirements
 | Skill count: total (108 incl `_archived`) vs deployable (102) conflated in banner | high | high | Steps 4.4/4.5 set banner to 104 (deployable); step 5.3 checks BOTH find==110 (total) AND deployable==104 |
 | ticket-creation-subagent edits missed (L225/L228 + PRD_PATH/**PRD**: not in grep) | med | high | Step 3.1 enumerates L225/L228; step 5.1 grep pattern now includes `PRD_PATH` + `**PRD**:` |
 | CHANGELOG accidentally edited | low | low | Step 5.1 explicitly excludes CHANGELOG.md |
+| Removing business-ops loses a unique capability | low | high | Verified: capabilities fully covered by startup-founder + office-document + construction-bd-skill + ticket-creation; no routing callers (trigger-only); only README/setup listings reference it |
 
 ---
 
@@ -202,4 +216,4 @@ This is **Phase 1 only**. It establishes the discovery (customer) + requirements
 
 ---
 
-*Created by ticket-creation-subagent full workflow — BT-72. Revised per architecture-review-subagent + opencode-tooling-subagent joint review (4 major / 7 minor / 5 nit findings applied).*
+*Created by ticket-creation-subagent full workflow — BT-72. Revised per architecture-review-subagent + opencode-tooling-subagent joint review (4 major / 7 minor / 5 nit findings), step-budget revision (discovery 30→60, requirements 30→40), and Phase 6 addition (remove business-ops-primary-agent).*
