@@ -1,3 +1,10 @@
+# [1.72.0](https://github.com/darellchua2/opencode-config-template/compare/v1.71.0...v1.72.0) (2026-06-26)
+
+
+### Features
+
+* **agents:** restructure document workflow into software-house ladder [BT-72] ([#229](https://github.com/darellchua2/opencode-config-template/issues/229)) ([9fe2702](https://github.com/darellchua2/opencode-config-template/commit/9fe27020c48b7680b0813731809f3d989e1b01af))
+
 # [1.71.0](https://github.com/darellchua2/opencode-config-template/compare/v1.70.0...v1.71.0) (2026-06-24)
 
 
