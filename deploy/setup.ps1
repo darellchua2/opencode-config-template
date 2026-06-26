@@ -365,7 +365,6 @@ USAGE:
     ticket-creation      GitHub issues and JIRA ticket management
     startup-founder      Startup founder business operations agent
     startup-ceo          Investor-ready pitch decks and board updates
-    business-ops         Business operations: proposals, quotations, project management
     office-document      Office document specialist: Word, PowerPoint, Excel
     google-mcp           Google Cloud MCP (BigQuery, Maps, GCE, GKE)
     microsoft-m365       Microsoft 365 MCP (Teams, Mail, Calendar, SharePoint, etc.)
@@ -373,19 +372,21 @@ USAGE:
     nextjs-setup         Next.js project setup and configuration
     opentofu-explorer    OpenTofu/Terraform infrastructure management
     cad-specialist       CAD, robotics, hardware design orchestration
-    prd-specialist       PRD specialist — discovery interview and drafting
+    discovery-specialist Customer-facing discovery: Vision docs + wireframes
+    requirements-specialist  Internal SRS (IEEE 830) drafting
 
     Usage: opencode --agent build 'implement auth feature'
             opencode --agent explore 'find all API routes'
  
-          SKILLS (102):
-              Framework (15):       test-generator-framework, linting-workflow,
+          SKILLS (104):
+              Framework (17):       test-generator-framework, linting-workflow,
                                       pr-creation-workflow, pr-merge-workflow,
                                       error-resolver-workflow, tdd-workflow,
                                       docx-creation, pptx-specialist,
                                       xlsx-specialist, pdf-specialist, frontend-design,
                                       api-design-skill, openapi-contract-adherence-skill,
-                                      performance-optimization-skill, prd-creation-skill
+                                      performance-optimization-skill, srs-creation-skill,
+                                      vision-creation-skill, interactive-document-rendering-skill
 
             Language-Specific (6): python-pytest-creator, python-ruff-linter,
                                   javascript-eslint-linter, changelog-python-cliff,
@@ -1174,7 +1175,7 @@ function Set-Configuration {
             Write-Host "    - plan - Planning agent (read-only)"
             Write-Host "    - explore - Codebase exploration and analysis"
             Write-Host "    - image-analyzer-subagent - Image/screenshot analysis"
-            Write-Host "    - prd-specialist-subagent - PRD creation and drafting"
+            Write-Host "    - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
             Write-Host ""
             Write-Host "Configured MCP servers:" -ForegroundColor Green
             Write-Host "    - Local (auto-start): atlassian, zai-vision-mcp-server, codegraph, mermaid"
@@ -1238,7 +1239,7 @@ function Deploy-Skills {
         Write-Host "Deployed $skillCount skills to $SkillsDir" -ForegroundColor Green
         Write-Host ""
         Write-Host "  Skill Categories:" -ForegroundColor Cyan
-          Write-Host "    Framework (15):"
+          Write-Host "    Framework (17):"
           Write-Host "      - test-generator-framework, linting-workflow"
           Write-Host "      - pr-creation-workflow, pr-merge-workflow"
           Write-Host "      - error-resolver-workflow, tdd-workflow"
@@ -1246,7 +1247,9 @@ function Deploy-Skills {
           Write-Host "      - frontend-design"
           Write-Host "      - api-design-skill, openapi-contract-adherence-skill"
           Write-Host "      - performance-optimization-skill"
-          Write-Host "      - prd-creation-skill"
+          Write-Host "      - srs-creation-skill"
+          Write-Host "      - vision-creation-skill"
+          Write-Host "      - interactive-document-rendering-skill"
         Write-Host "    Language-Specific (6):"
         Write-Host "      - python-pytest-creator, python-ruff-linter"
         Write-Host "      - javascript-eslint-linter, changelog-python-cliff"
@@ -1740,22 +1743,22 @@ function Show-NextSteps {
     Write-Host "  2. Start LM Studio: http://127.0.0.1:1234/v1"
     Write-Host "  3. Verify installation: opencode --version"
     Write-Host ""
-    Write-Host "Agents (39):"
+    Write-Host "Agents (38):"
     Write-Host "  - build (default) - Full-featured coding agent"
     Write-Host "  - plan - Planning agent (read-only)"
     Write-Host "  - explore - Codebase exploration and analysis"
     Write-Host "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
-    Write-Host "  - prd-specialist-subagent - PRD creation and drafting"
-    Write-Host "  - ... and 34 more agents"
+    Write-Host "  - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
+    Write-Host "  - ... and 33 more agents"
     Write-Host ""
     Write-Host "  Usage: opencode --agent <name> `"prompt`""
     Write-Host "         opencode `"prompt`" (uses build)"
      Write-Host ""
     Write-Host "=====================================================================" -ForegroundColor White
-      Write-Host "                     102 Skills Available" -ForegroundColor White
+      Write-Host "                     104 Skills Available" -ForegroundColor White
      Write-Host "=====================================================================" -ForegroundColor White
      Write-Host ""
-     Write-Host "  Framework (15) • Language-Specific (6) • Framework-Specific (7)"
+     Write-Host "  Framework (17) • Language-Specific (6) • Framework-Specific (7)"
       Write-Host "  OpenCode Meta (4) • OpenTofu (7) • Git/Workflow (12)"
      Write-Host "  Documentation (3) • JIRA (3) • Code Quality (7)"
       Write-Host "  Agent Optimization (7) • Planning & Alignment (4)"

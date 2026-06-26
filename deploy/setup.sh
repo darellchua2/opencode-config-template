@@ -530,7 +530,6 @@ USAGE:
     ticket-creation      GitHub issues and JIRA ticket management
     startup-founder      Startup founder business operations agent
     startup-ceo          Investor-ready pitch decks and board updates
-    business-ops         Business operations: proposals, quotations, project management
     office-document      Office document specialist: Word, PowerPoint, Excel
     google-mcp           Google Cloud MCP (BigQuery, Maps, GCE, GKE)
     microsoft-m365       Microsoft 365 MCP (Teams, Mail, Calendar, SharePoint, etc.)
@@ -538,7 +537,8 @@ USAGE:
     nextjs-setup         Next.js project setup and configuration
     opentofu-explorer    OpenTofu/Terraform infrastructure management
     cad-specialist       CAD, robotics, hardware design orchestration
-    prd-specialist       PRD specialist — discovery interview and drafting
+    discovery-specialist Customer-facing discovery: Vision docs + wireframes
+    requirements-specialist  Internal SRS (IEEE 830) drafting
 
     Usage: opencode --agent build "implement auth feature"
            opencode --agent explore "find all API routes"
@@ -582,14 +582,15 @@ USAGE:
       google-gce         Google Compute Engine management
       google-gke         Google Kubernetes Engine management
 
-   SKILLS (102):
-               Framework (15):       test-generator-framework, linting-workflow,
+   SKILLS (104):
+               Framework (17):       test-generator-framework, linting-workflow,
                                       pr-creation-workflow, pr-merge-workflow,
                                       error-resolver-workflow, tdd-workflow,
                                       docx-creation, pptx-specialist,
                                       xlsx-specialist, pdf-specialist, frontend-design,
                                       api-design-skill, openapi-contract-adherence-skill,
-                                      performance-optimization-skill, prd-creation-skill
+                                      performance-optimization-skill, srs-creation-skill,
+                                      vision-creation-skill, interactive-document-rendering-skill
 
             Language-Specific (6): python-pytest-creator, python-ruff-linter,
                                   javascript-eslint-linter, changelog-python-cliff,
@@ -1663,8 +1664,8 @@ setup_config() {
              echo "    - plan - Planning agent (read-only)"
              echo "    - explore - Codebase exploration and analysis"
              echo "    - image-analyzer-subagent - Image/screenshot analysis"
-             echo "    - prd-specialist-subagent - PRD creation and drafting"
-             echo "    - ... and 34 more agents"
+             echo "    - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
+             echo "    - ... and 33 more agents"
             echo ""
              echo "✓ Configured MCP servers:"
              echo "    Local (auto-start): atlassian, zai-vision-mcp-server, codegraph, mermaid"
@@ -2236,7 +2237,7 @@ print_summary() {
     if [ -d "$SKILLS_DIR" ] && [ "$(ls -A ${SKILLS_DIR} 2>/dev/null)" ]; then
         local skill_count=$(find ${SKILLS_DIR} -name "SKILL.md" 2>/dev/null | wc -l)
         echo "✓ skills: ${skill_count} skills deployed to ${SKILLS_DIR}/"
-        echo "    - Framework (15):"
+        echo "    - Framework (17):"
         echo "      - test-generator-framework"
         echo "      - linting-workflow"
         echo "      - pr-creation-workflow"
@@ -2251,7 +2252,9 @@ print_summary() {
         echo "      - api-design-skill"
         echo "      - openapi-contract-adherence-skill"
         echo "      - performance-optimization-skill"
-        echo "      - prd-creation-skill"
+        echo "      - srs-creation-skill"
+        echo "      - vision-creation-skill"
+        echo "      - interactive-document-rendering-skill"
         echo "    - Language-Specific (6):"
         echo "      - python-pytest-creator"
         echo "      - python-ruff-linter"
@@ -2385,22 +2388,22 @@ print_next_steps() {
     echo "                        🚀 Quick Start"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "🤖 Agents (39):"
+    echo "🤖 Agents (38):"
     echo "  - build (default) - Full-featured coding agent"
     echo "  - plan - Planning agent (read-only)"
     echo "  - explore - Fast codebase exploration and analysis"
     echo "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
-    echo "  - prd-specialist-subagent - PRD creation and drafting"
-    echo "  - ... and 34 more agents"
+    echo "  - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
+    echo "  - ... and 33 more agents"
     echo ""
     echo "  Usage: opencode --agent <name> \"prompt\""
     echo "         opencode \"prompt\" (uses build)"
      echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "                     📦 102 Skills Available"
+    echo "                     📦 104 Skills Available"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "  Framework (15) • Language-Specific (6) • Framework-Specific (7)"
+    echo "  Framework (17) • Language-Specific (6) • Framework-Specific (7)"
     echo "  OpenCode Meta (4) • OpenTofu (7) • Git/Workflow (12)"
     echo "  Documentation (3) • JIRA (3) • Code Quality (7)"
     echo "  Agent Optimization (7) • Planning & Alignment (4)"
