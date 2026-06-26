@@ -3,7 +3,7 @@
 **JIRA**: [BT-73](https://betekk.atlassian.net/browse/BT-73)
 **Branch**: `BT-73`
 **Created**: 2026-06-26
-**Status**: Implemented 2026-06-26
+**Status**: Complete (merged to main 2026-06-26, v1.73.0, PR #230)
 
 ## Overview
 
