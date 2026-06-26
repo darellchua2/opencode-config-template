@@ -75,6 +75,7 @@ The following subagents have CodeGraph instructions in their `.md` files and wil
 | `explorer-subagent` | `codegraph_explore`, `codegraph_context`, `codegraph_search`, `codegraph_files` |
 | `code-review-subagent` | `codegraph_impact`, `codegraph_callers`/`callees`, `codegraph_search` |
 | `architecture-review-subagent` | `codegraph_callers`/`callees`, `codegraph_explore`, `codegraph_impact` |
+| `technical-design-specialist-subagent` | `codegraph_explore` (architecture exploration), `codegraph_impact` (design blast-radius validation) |
 | `testing-subagent` | `codegraph_files`, `codegraph_search` |
 | `linting-subagent` | `codegraph_files`, `codegraph_search` |
 | `error-resolver-subagent` | `codegraph_node`, `codegraph_callers`, `codegraph_search` |

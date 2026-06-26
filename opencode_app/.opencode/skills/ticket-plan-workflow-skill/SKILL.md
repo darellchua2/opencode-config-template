@@ -252,6 +252,7 @@ done
 ## Overview
 $OVERVIEW
 
+**BRD**: $BRD_PATH  _(optional — present only when a BRD was linked via docs/brd/)_
 **SRS**: $SRS_PATH  _(optional — present only when an SRS was linked via docs/srs/)_
 
 ## Acceptance Criteria
