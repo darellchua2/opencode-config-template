@@ -1,7 +1,6 @@
 ---
 description: Autonomous loop execution operator that iterates tasks until completion criteria are met, with self-correction and progress tracking
 mode: subagent
-model: zai-coding-plan/glm-5.1
 steps: 25
 permission:
   read: allow

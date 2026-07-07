@@ -35,7 +35,13 @@ param(
     [switch]$DisableAutoUpdate,
     [switch]$CheckUpdate,
 
-    [int]$KeepBackups = 5
+    [int]$KeepBackups = 5,
+
+    # v2.0 model resolution
+    [string]$Provider = "",
+    [switch]$ModelsOnly,
+    [switch]$Force,
+    [switch]$Migrate
 )
 
 $ErrorActionPreference = "Continue"
@@ -67,6 +73,25 @@ $BackupDir = Join-Path $HOME ".opencode-backup-$(Get-Date -Format 'yyyyMMdd_HHmm
 $LogFile = Join-Path $HOME ".opencode-setup.log"
 $LastUpdateCheck = Join-Path $ConfigDir ".last-update-check"
 $UpdateLog = Join-Path $ConfigDir "update.log"
+
+# v2.0 model resolution (tier-based, provider-agnostic)
+$DeployDir = Join-Path $RepoDir "deploy"
+$ResolverScript = Join-Path $DeployDir "resolve-models.mjs"
+$TuiScript = Join-Path $DeployDir "tui.mjs"
+$AgentTiers = Join-Path $DeployDir "agent-tiers.json"
+$ModelsDefaultMap = Join-Path $DeployDir "models.default.json"
+$ProviderPresets = Join-Path $DeployDir "provider-presets.json"
+# Global user overrides (~/.config/opencode/)
+$UserModelsMap = Join-Path $ConfigDir "models.json"
+$UserOverrides = Join-Path $ConfigDir "agent-overrides.json"
+# Project-local overrides (repo root .opencode/)
+$ProjectModelsMap = Join-Path $RepoDir ".opencode\models.json"
+$ProjectOverrides = Join-Path $RepoDir ".opencode\agent-overrides.json"
+# Resolver state + migration marker
+$ResolvedSidecar = Join-Path $ConfigDir ".resolved-models.json"
+$ConfigVersionFile = Join-Path $ConfigDir ".config-version"
+$SchemaVersion = "2.0"
+$SourceConfig = Join-Path $RepoDir "opencode_app\opencode.json"
 
 $ZaiApiKey = $env:ZAI_API_KEY
 
@@ -330,6 +355,13 @@ USAGE:
     -Yes                 Auto-accept all prompts (non-interactive)
     -KeepBackups <N>     Keep only N most recent backups (default: 5)
                            0 = delete all old backups, negative = keep all
+
+  MODEL RESOLUTION (v2.0):
+    -Provider <name>     Non-interactive provider preset: zai|anthropic|openai|
+                         openrouter|lmstudio (writes ~/.config/opencode/models.json)
+    -ModelsOnly          Provider selection + model resolution only (no other setup)
+    -Migrate             Run v1.x -> v2.0 migration + model resolution only
+    -Force               Re-resolve all agents (ignore preserved hand-edits)
 
 =======================================================================
                          CONFIGURED FEATURES
@@ -1320,29 +1352,142 @@ function Deploy-Skills {
     Deploy-Agents
 }
 
-function Deploy-Agents {
-    Write-Host ""
-    Write-LogInfo "Setting up agents directory..."
+# ─────────────────────────────────────────────────────────────────────────────
+# v2.0 MODEL RESOLUTION HELPERS
+# ─────────────────────────────────────────────────────────────────────────────
 
-    if (Test-Path $AgentsDestDir) {
-        $existingAgents = @(Get-ChildItem $AgentsDestDir -Filter "*.md" -ErrorAction SilentlyContinue)
-        if ($existingAgents.Count -gt 0) {
-            Write-LogWarn "Agents directory already contains files"
-            
-            if (-not (Read-YesNo "Do you want to overwrite existing agents?" $false)) {
-                Write-LogInfo "Skipping agents deployment. Existing agents preserved."
-                return
-            }
-            
+# Run the model resolver: injects concrete models into deployed agent .md files
+# and patches config.json (primary + explore + general). Sets $LASTEXITCODE.
+function Invoke-Resolver {
+    if (-not (Test-Path $ResolverScript)) {
+        Write-LogError "Resolver not found: $ResolverScript"
+        return
+    }
+    $resolverArgs = @(
+        "--agents-src", $AgentsSrcDir,
+        "--agents-dest", $AgentsDestDir,
+        "--tiers", $AgentTiers,
+        "--default-map", $ModelsDefaultMap,
+        "--user-map", $UserModelsMap,
+        "--overrides", $UserOverrides,
+        "--config-src", $SourceConfig,
+        "--config-dest", $ConfigFile,
+        "--state", $ResolvedSidecar
+    )
+    if (Test-Path $ProjectModelsMap) { $resolverArgs += @("--project-map", $ProjectModelsMap) }
+    if (Test-Path $ProjectOverrides) { $resolverArgs += @("--project-overrides", $ProjectOverrides) }
+    if ($Force) { $resolverArgs += "--force" }
+    if ($Provider) { $resolverArgs += @("--provider", $Provider, "--presets", $ProviderPresets) }
+    if ($DryRun) { $resolverArgs += "--dry-run" }
+    & node $ResolverScript @resolverArgs
+}
+
+# Choose a model provider (interactive TUI or -Provider flag) and write the
+# global ~/.config/opencode/models.json tier map.
+function Set-ModelProvider {
+    Write-Host ""
+    Write-Host "====================================================================="
+    Write-Host "                      Model Provider (v2.0)"
+    Write-Host "====================================================================="
+    Write-Host ""
+
+    if ($Provider) {
+        Write-LogInfo "Provider preset: $Provider (writing $UserModelsMap)"
+        & node $TuiScript provider-picker --presets $ProviderPresets --provider $Provider --out $UserModelsMap
+        return
+    }
+
+    if (-not $Yes) {
+        if (Read-YesNo "Choose a model provider? (default: Z.AI)" $false) {
+            & node $TuiScript provider-picker --presets $ProviderPresets --out $UserModelsMap
+            if ($LASTEXITCODE -ne 0) { Write-LogWarn "Provider selection skipped (using default models)" }
+        } else {
+            Write-LogInfo "Using default Z.AI models"
+        }
+    } else {
+        Write-LogInfo "Non-interactive: using default models (use -Provider <name> to choose)"
+    }
+}
+
+# Detect a pre-v2 install and run the one-time migration: backup, lift
+# customizations, mark the config version. Idempotent.
+function Invoke-Migration {
+    $currentVersion = "0"
+    if (Test-Path $ConfigVersionFile) { $currentVersion = (Get-Content $ConfigVersionFile -Raw).Trim() }
+
+    $skip = $false
+    try {
+        $cv = [version]$currentVersion
+        $sv = [version]$SchemaVersion
+        if ($cv -ge $sv) { $skip = $true }
+    } catch {
+        # unparseable current version -> migrate
+    }
+    if ($skip) {
+        Write-LogDebug "Config already at v$SchemaVersion, no migration needed"
+        return
+    }
+
+    Write-Host ""
+    Write-LogWarn "v2.0 major upgrade detected (current config: v$currentVersion)"
+    Write-LogWarn "Agent models are now resolved from tiers (see MIGRATION.md). Existing"
+    Write-LogWarn "agents will be backed up and re-resolved. Custom models are preserved."
+
+    if (-not $Yes) {
+        if (-not (Read-YesNo "Run migration now?" $true)) {
+            Write-LogWarn "Migration skipped. Agents re-resolved from tiers (custom models NOT lifted)."
+            return
+        }
+    }
+
+    # Backup existing agents + config (skip actual copy in dry-run)
+    if ($DryRun) {
+        if ((Test-Path $AgentsDestDir) -and @(Get-ChildItem $AgentsDestDir -Filter "*.md" -ErrorAction SilentlyContinue).Count -gt 0) {
+            Write-LogInfo "[DRY-RUN] Would back up agents -> $BackupDir/agents-backup"
+        }
+        if (Test-Path $ConfigFile) { Write-LogInfo "[DRY-RUN] Would back up config.json" }
+    } else {
+        if ((Test-Path $AgentsDestDir) -and @(Get-ChildItem $AgentsDestDir -Filter "*.md" -ErrorAction SilentlyContinue).Count -gt 0) {
+            if (-not (Test-Path $BackupDir)) { New-Item -ItemType Directory -Path $BackupDir -Force | Out-Null }
             $agentsBackup = Join-Path $BackupDir "agents-backup"
-            if (-not $DryRun) {
-                if (-not (Test-Path $BackupDir)) {
-                    New-Item -ItemType Directory -Path $BackupDir -Force | Out-Null
-                }
+            if (-not (Test-Path $agentsBackup)) {
                 Copy-Item $AgentsDestDir $agentsBackup -Recurse -Force
-                Write-LogInfo "Backed up existing agents to $agentsBackup"
+                Write-LogInfo "Backed up agents to $agentsBackup"
             }
         }
+        if (Test-Path $ConfigFile) { New-FileBackup $ConfigFile }
+    }
+
+    # Lift customizations into agent-overrides.json BEFORE re-resolve
+    if (-not $DryRun) {
+        & node $ResolverScript --lift-only --agents-dest $AgentsDestDir --default-map $ModelsDefaultMap --overrides $UserOverrides
+    }
+
+    if ($DryRun) {
+        Write-LogSuccess "[DRY-RUN] Would mark config as v$SchemaVersion"
+    } else {
+        Set-Content -Path $ConfigVersionFile -Value $SchemaVersion -NoNewline
+        Write-LogSuccess "Migration to v$SchemaVersion complete"
+    }
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# AGENT DEPLOYMENT (v2.0 — resolver-driven)
+# ─────────────────────────────────────────────────────────────────────────────
+function Deploy-Agents {
+    Write-Host ""
+    Write-LogInfo "Setting up agents (v2.0 model resolution)..."
+
+    if (-not (Test-CommandExists "node")) {
+        Write-LogError "Node.js is required to resolve agent models."
+        Write-LogError "Install Node.js first, then re-run this setup."
+        Write-LogWarn "Skipping agent deployment."
+        return
+    }
+
+    if (-not (Test-Path $AgentsSrcDir)) {
+        Write-LogWarn "agents/ source folder not found: $AgentsSrcDir"
+        return
     }
 
     if (-not $DryRun) {
@@ -1350,73 +1495,31 @@ function Deploy-Agents {
             New-Item -ItemType Directory -Path $AgentsDestDir -Force | Out-Null
         }
     }
-    Write-LogInfo "Agents directory: $AgentsDestDir"
 
-    if (Test-Path $AgentsSrcDir) {
-        $primaryCount = 0
-        $subagentCount = 0
-        
-        # Detect layout: flat files or subdirectories?
-        $flatLayout = $true
-        if (Test-Path (Join-Path $AgentsSrcDir "primary")) -or (Test-Path (Join-Path $AgentsSrcDir "subagents"))) {
-            $flatLayout = $false
-        }
-        
-        # Copy primary agents (flat into agents/)
-        $primaryDir = Join-Path $AgentsSrcDir "primary"
-        if (Test-Path $primaryDir) {
-            $primaryFiles = @(Get-ChildItem $primaryDir -Filter "*.md" -ErrorAction SilentlyContinue)
-            foreach ($file in $primaryFiles) {
-                if (-not $DryRun) {
-                    Copy-Item $file.FullName (Join-Path $AgentsDestDir $file.Name) -Force
-                }
-                $primaryCount++
-            }
-        }
-        
-        # Copy subagents (flat into agents/)
-        $subagentsDir = Join-Path $AgentsSrcDir "subagents"
-        if (Test-Path $subagentsDir) {
-            $subagentFiles = @(Get-ChildItem $subagentsDir -Filter "*.md" -ErrorAction SilentlyContinue)
-            foreach ($file in $subagentFiles) {
-                if (-not $DryRun) {
-                    Copy-Item $file.FullName (Join-Path $AgentsDestDir $file.Name) -Force
-                }
-                $subagentCount++
-            }
-        }
-        
-        # Also copy flat agent files from root of agents dir (count correctly)
-        $flatAgentFiles = @(Get-ChildItem $AgentsSrcDir -Filter "*.md" -ErrorAction SilentlyContinue)
-        foreach ($file in $flatAgentFiles) {
-            if (-not $DryRun) {
-                Copy-Item $file.FullName (Join-Path $AgentsDestDir $file.Name) -Force
-            }
-            # Check mode in frontmatter to determine type
-            $content = Get-Content $file.FullName -Raw -ErrorAction SilentlyContinue
-            if ($content -match "^mode:\s*primary") {
-                $primaryCount++
-            } elseif ($content -match "^mode:\s*subagent") {
-                $subagentCount++
-            } else {
-                # Default to subagent if mode not specified
-                $subagentCount++
-            }
-        }
+    # Migration (detect pre-v2, backup, lift customizations) before resolve
+    Invoke-Migration
 
-        $totalCount = $primaryCount + $subagentCount
-        Write-LogSuccess "Agents copied successfully to $AgentsDestDir"
-
-        Write-Host ""
-        Write-Host "Deployed $totalCount agents:" -ForegroundColor Green
-        Write-Host "    - $primaryCount primary agents"
-        Write-Host "    - $subagentCount subagents"
-        Write-Host ""
-        Write-Host "  Run 'opencode --list-agents' for details"
-        Write-Host ""
-    } else {
-        Write-LogWarn "agents/ folder not found in $AgentsSrcDir"
+    # Resolve + inject concrete models from tiers/overrides/presets
+    Write-LogInfo "Resolving agent models..."
+    Invoke-Resolver
+    if ($LASTEXITCODE -ne 0) {
+        Write-LogError "Model resolution failed"
+        return
     }
+
+    # Count deployed agents by mode
+    $agentCount = 0; $primaryCount = 0; $subagentCount = 0
+    foreach ($file in @(Get-ChildItem $AgentsDestDir -Filter "*.md" -ErrorAction SilentlyContinue)) {
+        $agentCount++
+        $content = Get-Content $file.FullName -Raw -ErrorAction SilentlyContinue
+        if ($content -match "^mode:\s*primary") { $primaryCount++ }
+        elseif ($content -match "^mode:\s*subagent") { $subagentCount++ }
+    }
+
+    Write-LogSuccess "Deployed $agentCount agents ($subagentCount subagents) to $AgentsDestDir"
+    Write-Host "  Models resolved via tier registry."
+    Write-Host "  Change provider: ./setup.ps1 -Provider <zai|anthropic|openai|openrouter|lmstudio>"
+    Write-Host "  Pin per-agent:   ~/.config/opencode/agent-overrides.json"
 }
 
 function Set-LearningsDir {
@@ -1814,6 +1917,41 @@ function Main {
         return
     }
 
+    # v2.0 models-only mode: provider selection + model resolution only
+    if ($ModelsOnly) {
+        Write-Host "=== OpenCode Model Resolution v$ScriptVersion ===" -ForegroundColor White
+        Write-Host ""
+        Initialize-Logging
+        if (-not (Test-CommandExists "node")) {
+            Write-LogError "Node.js is required for model resolution."
+            return
+        }
+        Set-ModelProvider
+        Invoke-Resolver
+        Write-Host ""
+        Write-Host "Model resolution complete!"
+        return
+    }
+
+    # v2.0 migrate-only mode: v1.x -> v2.0 migration + resolution only
+    if ($Migrate) {
+        Write-Host "=== OpenCode Migration v$ScriptVersion ===" -ForegroundColor White
+        Write-Host ""
+        Initialize-Logging
+        if (-not (Test-CommandExists "node")) {
+            Write-LogError "Node.js is required for model resolution."
+            return
+        }
+        if (-not (Test-Path $AgentsDestDir)) {
+            New-Item -ItemType Directory -Path $AgentsDestDir -Force | Out-Null
+        }
+        Invoke-Migration
+        Invoke-Resolver
+        Write-Host ""
+        Write-Host "Migration + model resolution complete!"
+        return
+    }
+
     if ($SkillsOnly) {
         Write-Host "=== OpenCode Skills Deployment v$ScriptVersion ===" -ForegroundColor White
         Write-Host ""
@@ -1932,6 +2070,7 @@ function Main {
         Write-LogInfo "Running quick setup: config.json and skills deployment only"
     }
 
+    Set-ModelProvider
     Set-Configuration
     Set-LearningsDir
     Set-ShellVariables

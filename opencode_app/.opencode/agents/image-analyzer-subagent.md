@@ -1,7 +1,6 @@
 ---
 description: "Shared image analysis utility for all agents. Accepts image/video paths or URLs, interprets content, and returns structured results. Used by primary agent directly and delegable by subagents with task permission."
 mode: subagent
-model: zai-coding-plan/glm-5v-turbo
 
 permission:
   read: allow

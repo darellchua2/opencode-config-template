@@ -1,7 +1,6 @@
 ---
 description: Specialized subagent for Word document creation and manipulation. Creates, reads, edits, and converts .docx files with professional formatting, tracked changes, comments, and images.
 mode: subagent
-model: zai-coding-plan/glm-5-turbo
 permission:
   read: allow
   edit: allow

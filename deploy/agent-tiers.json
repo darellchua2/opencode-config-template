@@ -1,0 +1,43 @@
+{
+  "$comment": "Central registry mapping each agent (filename stem, no .md) to its model tier. Source agent .md files are model-free; the deploy-time resolver (resolve-models.mjs) reads this to inject a concrete model. Tiers: reasoning (correctness-critical), fast (exploratory/low-impact), docs (text/lint/reporting), vision (multimodal-required).",
+  "tiers": {
+    "architecture-review-subagent": "reasoning",
+    "code-review-subagent": "reasoning",
+    "discovery-specialist-subagent": "reasoning",
+    "go-reviewer-subagent": "reasoning",
+    "loop-operator-subagent": "reasoning",
+    "opencode-tooling-subagent": "reasoning",
+    "opentofu-explorer-subagent": "reasoning",
+    "python-reviewer-subagent": "reasoning",
+    "repo-ops-specialist-subagent": "reasoning",
+    "requirements-specialist-subagent": "reasoning",
+    "responsive-audit-subagent": "reasoning",
+    "rust-reviewer-subagent": "reasoning",
+    "tdd-subagent": "reasoning",
+    "technical-design-specialist-subagent": "reasoning",
+    "typescript-reviewer-subagent": "reasoning",
+
+    "cad-specialist-subagent": "fast",
+    "docx-creation-subagent": "fast",
+    "explorer-subagent": "fast",
+    "google-mcp-specialist-subagent": "fast",
+    "microsoft-m365-specialist-subagent": "fast",
+    "nextjs-mcp-advisor-subagent": "fast",
+    "nextjs-setup-subagent": "fast",
+    "office-document-primary-agent": "fast",
+    "pptx-specialist-subagent": "fast",
+    "pr-workflow-subagent": "fast",
+    "startup-ceo-subagent": "fast",
+    "startup-founder-primary-agent": "fast",
+    "testing-subagent": "fast",
+    "ticket-creation-subagent": "fast",
+    "xlsx-specialist-subagent": "fast",
+
+    "coverage-subagent": "docs",
+    "documentation-subagent": "docs",
+    "linting-subagent": "docs",
+
+    "error-resolver-subagent": "vision",
+    "image-analyzer-subagent": "vision"
+  }
+}

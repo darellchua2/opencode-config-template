@@ -1,7 +1,6 @@
 ---
 description: Go code review subagent focusing on Go idioms, concurrency safety, error handling, and effective Go patterns for thorough Go quality analysis
 mode: subagent
-model: zai-coding-plan/glm-5.1
 steps: 15
 permission:
   read: allow

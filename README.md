@@ -65,7 +65,34 @@ Two setup scripts are provided for different platforms:
 
 # Update OpenCode CLI only
 ./deploy/setup.sh --update
+
+# v2.0 model resolution
+./deploy/setup.sh --provider anthropic      # swap provider (zai|anthropic|openai|openrouter|lmstudio)
+./deploy/setup.sh --models-only             # re-resolve models only
+./deploy/setup.sh --migrate                 # run v1.x -> v2.0 migration
 ```
+
+### Model Resolution (v2.0)
+
+Agent models are **tier-based and provider-agnostic**. Source agent files contain
+no hardcoded model — instead each agent is categorized into a tier
+(`reasoning` / `fast` / `docs` / `vision`) in `deploy/agent-tiers.json`, and the
+concrete model is resolved at deploy time. Swap providers without editing agent
+files:
+
+```bash
+./deploy/setup.sh --provider anthropic      # or: openai, openrouter, lmstudio, zai (default)
+```
+
+Override files (precedence highest-first; see `MIGRATION.md`):
+
+| File | Scope |
+|------|-------|
+| `<project>/.opencode/agent-overrides.json` | per-agent pin, project-local |
+| `~/.config/opencode/agent-overrides.json` | per-agent pin, global |
+| `<project>/.opencode/models.json` | tier map, project-local |
+| `~/.config/opencode/models.json` | tier map, global (written by `--provider`) |
+| `deploy/models.default.json` | Z.AI defaults |
 
 ### Windows (PowerShell)
 
@@ -78,6 +105,10 @@ powershell -ExecutionPolicy Bypass -File .\deploy\setup.ps1 -Quick
 
 # Non-interactive
 powershell -ExecutionPolicy Bypass -File .\deploy\setup.ps1 -Quick -Yes
+
+# v2.0 model resolution
+powershell -ExecutionPolicy Bypass -File .\deploy\setup.ps1 -Provider anthropic
+powershell -ExecutionPolicy Bypass -File .\deploy\setup.ps1 -ModelsOnly
 
 # Show help with all options
 powershell -ExecutionPolicy Bypass -File .\deploy\setup.ps1 -Help

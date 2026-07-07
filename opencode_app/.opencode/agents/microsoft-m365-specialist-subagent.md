@@ -1,7 +1,6 @@
 ---
 description: Configure and use Microsoft's official Work IQ MCP servers (Teams, Mail, Calendar, SharePoint, OneDrive, User, Word, Copilot, Dataverse). Triggers on "microsoft mcp", "m365 mcp", "teams mcp", "outlook mcp", "sharepoint mcp", "onedrive mcp", "word mcp", "configure microsoft mcp". Helps with MCP server setup, configuration, authentication, and actively uses Microsoft MCP tools to execute operations on Microsoft 365 resources.
 mode: subagent
-model: zai-coding-plan/glm-5-turbo
 steps: 20
 permission:
   read: allow

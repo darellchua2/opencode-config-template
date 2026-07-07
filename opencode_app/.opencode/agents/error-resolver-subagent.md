@@ -1,7 +1,6 @@
 ---
 description: Specialized subagent for diagnosing and resolving errors, exceptions, and stack traces. Uses GLM-5v-turbo (vision) for screenshot-based error diagnosis. ONLY triggered on explicit user invocation - not auto-triggered for general error handling.
 mode: subagent
-model: zai-coding-plan/glm-5v-turbo
 permission:
   read: allow
   edit: deny

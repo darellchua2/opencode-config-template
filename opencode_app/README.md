@@ -28,7 +28,7 @@ opencode_app/
 
 ## How It Works
 
-1. **Build**: `docker compose build` uses `opencode_app/` as build context. The Dockerfile copies everything (including `.opencode/agents/` and `.opencode/skills/`) into `/app/`.
+1. **Build**: `docker compose build` uses the **repo root** as build context (the Dockerfile lives in `opencode_app/`). It copies `opencode_app/` → `/app/` and `deploy/` → `/app/deploy/` (model-resolver assets). Agent models are **resolved at build time** from the tier registry (`deploy/agent-tiers.json` + `deploy/models.default.json`) — Z.AI by default. Swap provider at build: `docker compose build --build-arg OPENCODE_PROVIDER=anthropic`. See root `MIGRATION.md`.
 2. **Runtime**: `docker-entrypoint.sh` reads API keys from environment variables, writes them to `auth.json`, then runs `opencode serve --port 4096 --hostname 0.0.0.0`.
 3. **Access**: Port 4096 inside the container maps to 4097 on the host (configurable via `OPENCODE_PORT` in `.env`).
 

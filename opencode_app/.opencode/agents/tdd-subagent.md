@@ -1,7 +1,6 @@
 ---
 description: Specialized subagent for Test Driven Development workflow guidance. Guides through red-green-refactor cycle for multiple languages and frameworks.
 mode: subagent
-model: zai-coding-plan/glm-5.1
 permission:
   read: allow
   edit: deny

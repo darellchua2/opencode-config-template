@@ -85,6 +85,27 @@ BACKUP_DIR="${HOME}/.opencode-backup-$(date +%Y%m%d_%H%M%S)"
 LAST_UPDATE_CHECK="${CONFIG_DIR}/.last-update-check"
 UPDATE_LOG="${CONFIG_DIR}/update.log"
 
+# v2.0 model resolution (tier-based, provider-agnostic)
+DEPLOY_DIR="${REPO_DIR}/deploy"
+RESOLVER_SCRIPT="${DEPLOY_DIR}/resolve-models.mjs"
+TUI_SCRIPT="${DEPLOY_DIR}/tui.mjs"
+AGENT_TIERS="${DEPLOY_DIR}/agent-tiers.json"
+MODELS_DEFAULT_MAP="${DEPLOY_DIR}/models.default.json"
+PROVIDER_PRESETS="${DEPLOY_DIR}/provider-presets.json"
+# Global user overrides (~/.config/opencode/)
+USER_MODELS_MAP="${CONFIG_DIR}/models.json"
+USER_OVERRIDES="${CONFIG_DIR}/agent-overrides.json"
+# Project-local overrides (repo root .opencode/)
+PROJECT_MODELS_MAP="${REPO_DIR}/.opencode/models.json"
+PROJECT_OVERRIDES="${REPO_DIR}/.opencode/agent-overrides.json"
+# Resolver state + migration marker
+RESOLVED_SIDECAR="${CONFIG_DIR}/.resolved-models.json"
+CONFIG_VERSION_FILE="${CONFIG_DIR}/.config-version"
+SCHEMA_VERSION="2.0"
+SOURCE_CONFIG="${REPO_DIR}/opencode_app/opencode.json"
+# Where dry-run stages complete resolved files (mirrors what would land in ~/.config)
+DRY_RUN_PREVIEW_DIR="${CONFIG_DIR}/.dry-run-preview"
+
 ################################################################################
 # PLATFORM AND SHELL DETECTION
 ################################################################################
@@ -303,6 +324,12 @@ UPDATE_SCHEDULE="manual"
 CHECK_UPDATE_ONLY=false
 KEEP_BACKUPS=5
 
+# v2.0 model-resolution flags
+PROVIDER=""              # --provider <preset>
+MODELS_ONLY=false        # --models-only (provider + resolve only)
+FORCE_RESOLVE=false      # --force (ignore preserve-edits)
+MIGRATE_ONLY=false       # --migrate (migration + resolve only)
+
 # API Keys (initialize to empty to avoid unbound variable errors)
 # Capture from environment if they exist
 GITHUB_PAT=""
@@ -471,6 +498,13 @@ USAGE:
     -v, --verbose         Enable detailed debug logging
     -k, --keep-backups <N>  Keep only N most recent backups (default: 5)
                             0 = delete all old backups, negative = keep all
+
+  MODEL RESOLUTION (v2.0):
+    --provider <name>     Non-interactive provider preset: zai|anthropic|openai|
+                          openrouter|lmstudio (writes ~/.config/opencode/models.json)
+    --models-only         Provider selection + model resolution only (no other setup)
+    --migrate             Run v1.x -> v2.0 migration + model resolution only
+    --force               Re-resolve all agents (ignore preserved hand-edits)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
                             EXAMPLES
@@ -767,6 +801,27 @@ parse_arguments() {
                     exit 1
                 fi
                 shift 2
+                ;;
+            --provider)
+                if [ -n "$2" ]; then
+                    PROVIDER="$2"
+                else
+                    log_error "--provider requires an argument (zai|anthropic|openai|openrouter|lmstudio)"
+                    exit 1
+                fi
+                shift 2
+                ;;
+            --models-only)
+                MODELS_ONLY=true
+                shift
+                ;;
+            --force)
+                FORCE_RESOLVE=true
+                shift
+                ;;
+            --migrate)
+                MIGRATE_ONLY=true
+                shift
                 ;;
             *)
                 log_error "Unknown option: $1"
@@ -1726,96 +1781,204 @@ setup_config() {
     return 0
 }
 
+# ─────────────────────────────────────────────────────────────────────────────
+# v2.0 MODEL RESOLUTION HELPERS
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Run the model resolver: injects concrete models into deployed agent .md files
+# and patches config.json (primary + explore + general). Honors global/project
+# overrides + provider preset. Preserve-edits via sidecar unless --force.
+run_resolver() {
+    if [ ! -f "$RESOLVER_SCRIPT" ]; then
+        log_error "Resolver not found: $RESOLVER_SCRIPT"
+        return 1
+    fi
+
+    local extra_args=""
+    if [ "$FORCE_RESOLVE" = true ]; then
+        extra_args="$extra_args --force"
+    fi
+    if [ -n "$PROVIDER" ]; then
+        extra_args="$extra_args --provider ${PROVIDER} --presets ${PROVIDER_PRESETS}"
+    fi
+
+    local project_map_arg=""
+    [ -f "$PROJECT_MODELS_MAP" ] && project_map_arg="--project-map ${PROJECT_MODELS_MAP}"
+    local project_overrides_arg=""
+    [ -f "$PROJECT_OVERRIDES" ] && project_overrides_arg="--project-overrides ${PROJECT_OVERRIDES}"
+
+    local dry_arg=""
+    if [ "$DRY_RUN" = true ]; then
+        rm -rf "$DRY_RUN_PREVIEW_DIR"
+        dry_arg="--dry-run --preview-dir ${DRY_RUN_PREVIEW_DIR}"
+    fi
+
+    node "$RESOLVER_SCRIPT" \
+        --agents-src "$AGENTS_SRC_DIR" \
+        --agents-dest "$AGENTS_DEST_DIR" \
+        --tiers "$AGENT_TIERS" \
+        --default-map "$MODELS_DEFAULT_MAP" \
+        --user-map "$USER_MODELS_MAP" \
+        $project_map_arg \
+        --overrides "$USER_OVERRIDES" \
+        $project_overrides_arg \
+        --config-src "$SOURCE_CONFIG" \
+        --config-dest "$CONFIG_FILE" \
+        --state "$RESOLVED_SIDECAR" \
+        $dry_arg \
+        $extra_args
+}
+
+# Choose a model provider (interactive TUI or --provider flag) and write the
+# global ~/.config/opencode/models.json tier map. Skipped silently in
+# non-interactive mode unless --provider is set (defaults apply).
+setup_model_provider() {
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "                  🧠 Model Provider (v2.0)"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+
+    if [ -n "$PROVIDER" ]; then
+        log_info "Provider preset: ${PROVIDER} (writing ${USER_MODELS_MAP})"
+        node "$TUI_SCRIPT" provider-picker \
+            --presets "$PROVIDER_PRESETS" --provider "$PROVIDER" \
+            --out "$USER_MODELS_MAP"
+        return $?
+    fi
+
+    if [ -t 0 ] && [ "$AUTO_ACCEPT" = false ]; then
+        if prompt_yes_no "Choose a model provider? (default: Z.AI)" "n"; then
+            node "$TUI_SCRIPT" provider-picker \
+                --presets "$PROVIDER_PRESETS" \
+                --out "$USER_MODELS_MAP" \
+                || log_warn "Provider selection skipped (using default models)"
+        else
+            log_info "Using default Z.AI models"
+        fi
+    else
+        log_info "Non-interactive: using default models (use --provider <name> to choose)"
+    fi
+}
+
+# Lift unknown (non-z.ai-default) model customizations from an existing deployed
+# agent set into ~/.config/opencode/agent-overrides.json so they survive the
+# re-resolve as first-class managed overrides rather than being clobbered.
+lift_customizations() {
+    [ -d "$AGENTS_DEST_DIR" ] || return 0
+    local dry_arg=""
+    [ "$DRY_RUN" = true ] && dry_arg="--dry-run"
+    node "$RESOLVER_SCRIPT" --lift-only \
+        --agents-dest "$AGENTS_DEST_DIR" \
+        --default-map "$MODELS_DEFAULT_MAP" \
+        --overrides "$USER_OVERRIDES" \
+        $dry_arg
+}
+
+# Detect a pre-v2 install and run the one-time migration: backup, lift
+# customizations, mark the config version. Idempotent (no-op once at v2.0).
+run_migration() {
+    local current_version="0"
+    [ -f "$CONFIG_VERSION_FILE" ] && current_version=$(tr -d '[:space:]' < "$CONFIG_VERSION_FILE")
+
+    # current_version >= SCHEMA_VERSION  ->  skip (input is ascending iff SCHEMA <= current)
+    if printf '%s\n%s\n' "$SCHEMA_VERSION" "$current_version" | sort -V -C 2>/dev/null; then
+        log_debug "Config already at v${SCHEMA_VERSION}, no migration needed"
+        return 0
+    fi
+
+    echo ""
+    log_warn "v2.0 major upgrade detected (current config: v${current_version:-unknown})"
+    log_warn "Agent models are now resolved from tiers (see MIGRATION.md). Existing"
+    log_warn "agents will be backed up and re-resolved. Custom models are preserved."
+
+    if [ "$AUTO_ACCEPT" = false ]; then
+        if ! prompt_yes_no "Run migration now?" "y"; then
+            log_warn "Migration skipped. Agents re-resolved from tiers (custom models NOT lifted)."
+            return 0
+        fi
+    fi
+
+    # Backup existing agents + config (skip actual copy in dry-run)
+    if [ "$DRY_RUN" = true ]; then
+        if [ -d "$AGENTS_DEST_DIR" ] && [ "$(ls -A "$AGENTS_DEST_DIR" 2>/dev/null)" ]; then
+            log_info "[DRY-RUN] Would back up agents -> ${BACKUP_DIR}/agents-backup"
+        fi
+        [ -f "$CONFIG_FILE" ] && log_info "[DRY-RUN] Would back up config.json"
+    else
+        if [ -d "$AGENTS_DEST_DIR" ] && [ "$(ls -A "$AGENTS_DEST_DIR" 2>/dev/null)" ]; then
+            mkdir -p "$BACKUP_DIR"
+            if [ ! -d "$BACKUP_DIR/agents-backup" ]; then
+                cp -r "$AGENTS_DEST_DIR" "$BACKUP_DIR/agents-backup"
+                log_info "Backed up agents to ${BACKUP_DIR}/agents-backup"
+            fi
+        fi
+        [ -f "$CONFIG_FILE" ] && create_backup "$CONFIG_FILE"
+    fi
+
+    # Lift customizations into agent-overrides.json BEFORE re-resolve
+    lift_customizations
+
+    # Mark migrated (skip write in dry-run)
+    if [ "$DRY_RUN" = true ]; then
+        log_success "[DRY-RUN] Would mark config as v${SCHEMA_VERSION}"
+    else
+        echo "$SCHEMA_VERSION" > "$CONFIG_VERSION_FILE"
+        log_success "Migration to v${SCHEMA_VERSION} complete"
+    fi
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# AGENT DEPLOYMENT (v2.0 — resolver-driven)
+# ─────────────────────────────────────────────────────────────────────────────
 deploy_agents() {
     echo ""
-    log_info "Setting up agents directory..."
+    log_info "Setting up agents (v2.0 model resolution)..."
 
-    if [ -d "${AGENTS_DEST_DIR}" ]; then
-        if [ "$(ls -A ${AGENTS_DEST_DIR} 2>/dev/null)" ]; then
-            log_warn "Agents directory already contains files"
+    # Node is required for the resolver (opencode-ai needs it anyway)
+    if ! command_exists node; then
+        log_error "Node.js is required to resolve agent models."
+        log_error "Install Node.js first, then re-run this setup."
+        log_warn "Skipping agent deployment."
+        return 1
+    fi
 
-            if ! prompt_yes_no "Do you want to overwrite existing agents?" "n"; then
-                log_info "Skipping agents deployment. Existing agents preserved."
-                return 0
-            fi
-
-            if [ ! -d "${BACKUP_DIR}" ]; then
-                mkdir -p "${BACKUP_DIR}"
-            fi
-            run_cmd "cp -r ${AGENTS_DEST_DIR} ${BACKUP_DIR}/agents-backup"
-            log_info "Backed up existing agents to ${BACKUP_DIR}/agents-backup"
-        fi
+    if [ ! -d "$AGENTS_SRC_DIR" ]; then
+        log_warn "agents/ source folder not found: ${AGENTS_SRC_DIR}"
+        return 1
     fi
 
     run_cmd "mkdir -p ${AGENTS_DEST_DIR}"
-    log_info "Created ${AGENTS_DEST_DIR} directory"
 
-    if [ -d "${AGENTS_SRC_DIR}" ]; then
-        local primary_count=0
-        local subagent_count=0
-        local agent_count=0
-        
-        # Detect layout: flat files or subdirectories?
-        local flat_layout=true
-        if [ -d "${AGENTS_SRC_DIR}/primary" ] || [ -d "${AGENTS_SRC_DIR}/subagents" ]; then
-            flat_layout=false
-        fi
-        
-        # Copy all agent markdown files from flat agents/ directory (or count them)
-        for agent_file in "${AGENTS_SRC_DIR}"/*.md; do
-            if [ -f "$agent_file" ]; then
-                local filename=$(basename "$agent_file")
-                run_cmd "cp ${agent_file} ${AGENTS_DEST_DIR}/${filename}"
-                agent_count=$((agent_count + 1))
-                
-                # Count by mode (check frontmatter for mode: primary vs subagent)
-                if grep -q "^mode: primary" "$agent_file" 2>/dev/null; then
-                    primary_count=$((primary_count + 1))
-                elif grep -q "^mode: subagent" "$agent_file" 2>/dev/null; then
-                    subagent_count=$((subagent_count + 1))
-                fi
-            fi
-        done
-        
-        # Also support subdirectory layout (agents/primary/ and agents/subagents/)
-        if [ -d "${AGENTS_SRC_DIR}/primary" ]; then
-            for agent_file in "${AGENTS_SRC_DIR}"/primary/*.md; do
-                if [ -f "$agent_file" ]; then
-                    local filename=$(basename "$agent_file")
-                    run_cmd "cp ${agent_file} ${AGENTS_DEST_DIR}/${filename}"
-                    primary_count=$((primary_count + 1))
-                    agent_count=$((agent_count + 1))
-                fi
-            done
-        fi
-        
-        if [ -d "${AGENTS_SRC_DIR}/subagents" ]; then
-            for agent_file in "${AGENTS_SRC_DIR}"/subagents/*.md; do
-                if [ -f "$agent_file" ]; then
-                    local filename=$(basename "$agent_file")
-                    run_cmd "cp ${agent_file} ${AGENTS_DEST_DIR}/${filename}"
-                    subagent_count=$((subagent_count + 1))
-                    agent_count=$((agent_count + 1))
-                fi
-            done
-        fi
+    # Migration (detect pre-v2, backup, lift customizations) before resolve
+    run_migration
 
-        if [ "$agent_count" -eq 0 ]; then
-            log_warn "No agent markdown files found in ${AGENTS_SRC_DIR}"
-        else
-            log_success "Agents copied successfully to ${AGENTS_DEST_DIR}"
-
-            echo ""
-            echo "✓ Deployed ${agent_count} agent files:"
-            echo "    - ${primary_count} primary agents"
-            echo "    - ${subagent_count} subagents"
-            echo ""
-            echo "  Run 'opencode --list-agents' for details"
-            echo ""
-        fi
-    else
-        log_warn "agents/ folder not found in ${AGENTS_SRC_DIR}"
+    # Resolve + inject concrete models from tiers/overrides/presets
+    log_info "Resolving agent models..."
+    run_resolver
+    local rc=$?
+    if [ "$rc" -ne 0 ]; then
+        log_error "Model resolution failed (exit ${rc})"
+        return 1
     fi
+
+    # Count deployed agents by mode
+    local agent_count=0 primary_count=0 subagent_count=0
+    for agent_file in "${AGENTS_DEST_DIR}"/*.md; do
+        [ -f "$agent_file" ] || continue
+        agent_count=$((agent_count + 1))
+        if grep -q "^mode: primary" "$agent_file" 2>/dev/null; then
+            primary_count=$((primary_count + 1))
+        elif grep -q "^mode: subagent" "$agent_file" 2>/dev/null; then
+            subagent_count=$((subagent_count + 1))
+        fi
+    done
+
+    log_success "Deployed ${agent_count} agents (${subagent_count} subagents) to ${AGENTS_DEST_DIR}"
+    echo "  Models resolved via tier registry."
+    echo "  Change provider: ./setup.sh --provider <zai|anthropic|openai|openrouter|lmstudio>"
+    echo "  Pin per-agent:   ~/.config/opencode/agent-overrides.json"
+    return 0
 }
 
 setup_learnings_dir() {
@@ -2471,6 +2634,35 @@ main() {
         exit 0
     fi
 
+    # Handle models-only mode (v2.0): provider selection + model resolution only
+    if [ "$MODELS_ONLY" = true ]; then
+        log_info "Models-only mode (v2.0)"
+        if ! command_exists node; then
+            log_error "Node.js is required for model resolution."
+            exit 1
+        fi
+        setup_model_provider || true
+        run_resolver
+        echo ""
+        echo "Model resolution complete!"
+        exit 0
+    fi
+
+    # Handle migrate-only mode (v2.0): v1.x -> v2.0 migration + resolution only
+    if [ "$MIGRATE_ONLY" = true ]; then
+        log_info "Migrate mode (v2.0)"
+        if ! command_exists node; then
+            log_error "Node.js is required for model resolution."
+            exit 1
+        fi
+        run_cmd "mkdir -p ${AGENTS_DEST_DIR}"
+        run_migration
+        run_resolver
+        echo ""
+        echo "Migration + model resolution complete!"
+        exit 0
+    fi
+
     # Handle skills-only mode
     if [ "$SKILLS_ONLY" = true ]; then
         log_info "Validating OpenCode installation..."
@@ -2606,6 +2798,7 @@ main() {
     fi
 
     setup_config || true
+    setup_model_provider || true
     deploy_agents || true
     setup_learnings_dir || true
     setup_shell_vars || true

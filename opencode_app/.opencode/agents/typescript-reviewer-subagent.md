@@ -1,7 +1,6 @@
 ---
 description: TypeScript/JavaScript code review subagent focusing on type safety, modern ES patterns, React/Node best practices, and framework-specific quality analysis
 mode: subagent
-model: zai-coding-plan/glm-5.1
 steps: 15
 permission:
   read: allow
