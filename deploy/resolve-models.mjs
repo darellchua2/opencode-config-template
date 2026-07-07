@@ -375,12 +375,27 @@ async function main() {
   // ── write resolved agent files ──
   if (doWrite) {
     await mkdir(outDir, { recursive: true });
-    for (const r of writeRows) {
+    const total = writeRows.length;
+    const verb = O.dryRun ? "Staging" : "Writing";
+    const label = O.dryRun ? `(dry-run -> ${outDir})` : `(provider: ${O.provider || "default"})`;
+    const showBar = !O.json && !O.verbose && process.stderr.isTTY && total > 1;
+    if (!O.json && !O.verbose) {
+      process.stderr.write(`\x1b[36m${verb} ${total} resolved agent file(s) ${label}...\x1b[0m\n`);
+    }
+    for (let i = 0; i < total; i++) {
+      const r = writeRows[i];
       const rendered = await renderAgent(r);
       await writeFile(join(outDir, r.stem + ".md"), rendered, "utf8");
+      if (showBar) {
+        const pct = Math.round(((i + 1) / total) * 100);
+        const filled = Math.round(((i + 1) / total) * 24);
+        const bar = "█".repeat(filled).padEnd(24, "░");
+        process.stderr.write(`\r  [${bar}] ${i + 1}/${total} (${pct}%) `);
+      }
     }
+    if (showBar) process.stderr.write("\r\x1b[K"); // clear the bar line; header + summary remain
     if (O.dryRun) {
-      console.error(`[DRY-RUN] Staged ${writeRows.length} complete resolved agent file(s) -> ${outDir}`);
+      console.error(`${verb}d ${total} complete resolved agent file(s) -> ${outDir}`);
     }
   }
 

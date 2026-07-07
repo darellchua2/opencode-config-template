@@ -58,6 +58,15 @@ const show = () => process.stdout.write("\x1b[?25h");
 function clearN(n) {
   for (let i = 0; i < n; i++) process.stdout.write("\x1b[1A\x1b[2K");
 }
+
+// Safety net: ALWAYS restore the terminal (cooked mode + visible cursor) on exit,
+// even if a flow throws or skips cleanup. Without this, raw mode can leak past
+// process exit and freeze the caller's next `read` prompt (looks "stuck").
+process.on("exit", () => {
+  try { if (process.stdin.setRawMode) process.stdin.setRawMode(false); } catch {}
+  process.stdout.write("\x1b[?25h");
+});
+process.on("SIGINT", () => { try { process.stdin.setRawMode(false); } catch {}; process.stdout.write("\x1b[?25h\n"); process.exit(130); });
 const B = (s) => `\x1b[1m${s}\x1b[0m`;
 const DIM = (s) => `\x1b[2m${s}\x1b[0m`;
 const CY = (s) => `\x1b[36m${s}\x1b[0m`;
@@ -356,4 +365,8 @@ const parsed = parseArgs(process.argv.slice(3));
       console.error("usage: tui.mjs <provider-picker|migration-review|override-editor|tier-editor> [opts]");
       process.exit(2);
   }
+  // Explicit exit — singleSelect/multiSelect resume stdin for keypress capture,
+  // and a resumed stdin handle would keep node alive (hanging the caller's `&&`
+  // chain). The process.on("exit") handler restores the terminal before exit.
+  process.exit(0);
 })().catch((e) => { console.error(`tui error: ${e.message}`); process.exit(1); });
