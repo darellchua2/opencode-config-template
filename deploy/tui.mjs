@@ -71,10 +71,10 @@ const B = (s) => `\x1b[1m${s}\x1b[0m`;
 const DIM = (s) => `\x1b[2m${s}\x1b[0m`;
 const CY = (s) => `\x1b[36m${s}\x1b[0m`;
 
-async function singleSelect(title, options) {
+async function singleSelect(title, options, defaultIdx = 0) {
   // options: [{label, value, hint?}]
   if (!isTTY()) return { aborted: true, nonTty: true };
-  let idx = 0;
+  let idx = Math.min(Math.max(defaultIdx, 0), Math.max(options.length - 1, 0));
   let lineCount = 0;
   process.stdin.setRawMode(true);
   process.stdin.resume();
@@ -198,28 +198,83 @@ function readFrontmatterModel(content) {
 
 // ─────────────────────────── flows ──────────────────────────────────────
 
-// provider-picker: --presets <p> [--provider <name>] [--out <models.json>]
-// With --provider, skips the menu and writes that preset directly (non-interactive).
+// The 5 independently-configurable categories.
+const CATEGORIES = ["primary", "reasoning", "fast", "docs", "vision"];
+
+// Pick a model for one category from every provider's model for that category,
+// plus a "Custom" option. `currentModel` is pre-highlighted. Returns a model
+// string (or currentModel on cancel). Template placeholders (e.g. openrouter
+// "<model>") are excluded — those need Custom.
+async function pickCategoryModel(category, currentModel, presets) {
+  const options = [];
+  let defaultIdx = 0;
+  for (const key of Object.keys(presets)) {
+    if (key.startsWith("$")) continue;
+    const model = category === "primary" ? presets[key].primary : (presets[key].tiers && presets[key].tiers[category]);
+    if (!model || model.includes("<")) continue; // skip templates
+    if (model === currentModel) defaultIdx = options.length;
+    options.push({ label: `${presets[key].label || key}: ${model}`, value: model });
+  }
+  const customIdx = options.length;
+  options.push({ label: "Custom (type a model id)", value: "__custom__" });
+  const sel = await singleSelect(
+    `Model for ${category}` + (currentModel ? `  ${DIM("(current: " + currentModel + ")")}` : ""),
+    options, defaultIdx
+  );
+  if (sel.aborted) return currentModel; // keep current on Esc
+  if (sel.value === "__custom__") {
+    const t = await textInput(`Custom model id for ${category} (provider/model-id)`, currentModel);
+    return (t.aborted || !t.value) ? currentModel : t.value;
+  }
+  return sel.value;
+}
+
+// Iterate all 5 categories, letting the user pick a provider/model for each
+// (defaulting to the base map's value). Returns a complete {primary, tiers} map.
+async function customizeCategories(baseMap, presets) {
+  const out = { primary: baseMap.primary, tiers: { ...baseMap.tiers } };
+  for (const cat of CATEGORIES) {
+    const cur = cat === "primary" ? out.primary : out.tiers[cat];
+    const chosen = await pickCategoryModel(cat, cur, presets);
+    if (cat === "primary") out.primary = chosen; else out.tiers[cat] = chosen;
+  }
+  return out;
+}
+
+// provider-picker: --presets <p> [--provider <name>] [--out <models.json>] [--customize]
+// With --provider, skips the base menu and writes that preset directly (non-interactive)
+// unless --customize is also set (interactive per-category override on top of the base).
 async function flowProviderPicker({ opts }) {
   const presets = await readJsonMaybe(opts.presets);
   if (!presets) { console.error("error: --presets file missing/invalid"); process.exit(2); }
   let chosen;
-  if (opts.provider && presets[opts.provider]) {
+  let interactive = false;
+  if (opts.provider && presets[opts.provider] && !opts.customize) {
     chosen = opts.provider;
   } else {
+    interactive = true;
     const keys = Object.keys(presets).filter((k) => !k.startsWith("$"));
     const options = keys.map((k) => ({ label: presets[k].label || k, value: k, hint: presets[k].primary }));
-    const sel = await singleSelect("Select a model provider", options);
+    const startIdx = (opts.provider && presets[opts.provider]) ? keys.indexOf(opts.provider) : 0;
+    const sel = await singleSelect("Select a base model provider", options, startIdx);
     if (sel.aborted) { console.error("cancelled"); process.exit(1); }
     chosen = sel.value;
   }
   const preset = presets[chosen];
-  const out = { primary: preset.primary, tiers: preset.tiers };
+  let out = { primary: preset.primary, tiers: preset.tiers };
+
+  // Interactive per-category override: mix providers/models across categories.
+  if (interactive && isTTY()) {
+    const c = await confirm("Customize individual categories to other providers/models?", false);
+    if (!c.aborted && c.value) {
+      out = await customizeCategories(out, presets);
+    }
+  }
 
   if (opts.out) {
     await mkdir(dirname(opts.out), { recursive: true });
     await writeFile(opts.out, JSON.stringify(out, null, 2) + "\n", "utf8");
-    console.log(`Wrote ${opts.out} (${chosen})`);
+    console.log(`Wrote ${opts.out} (${chosen}${out.primary !== preset.primary || JSON.stringify(out.tiers) !== JSON.stringify(preset.tiers) ? " +customized" : ""})`);
   } else {
     console.log(JSON.stringify({ provider: chosen, map: out }));
   }
@@ -327,7 +382,10 @@ async function flowOverrideEditor({ opts }) {
   }
 }
 
-// tier-editor: --presets <p> --provider <name> --out <models.json>
+// tier-editor (a.k.a. mix mode): --presets <p> --provider <base-name> --out <models.json>
+// Per-category provider/model menu — lets the user mix providers across the 5
+// categories starting from the given base provider. Falls back to text input if
+// not a TTY.
 async function flowTierEditor({ opts }) {
   const presets = await readJsonMaybe(opts.presets);
   if (!presets || !opts.provider || !presets[opts.provider]) {
@@ -335,13 +393,11 @@ async function flowTierEditor({ opts }) {
     process.exit(2);
   }
   const base = presets[opts.provider];
-  const tierOrder = ["primary", "reasoning", "fast", "docs", "vision"];
   const out = { primary: base.primary, tiers: { ...base.tiers } };
-  for (const tier of tierOrder) {
-    const cur = tier === "primary" ? out.primary : out.tiers[tier];
-    const t = await textInput(tier === "primary" ? "primary model" : `${tier} tier model`, cur);
-    if (t.aborted) continue;
-    if (t.value) { if (tier === "primary") out.primary = t.value; else out.tiers[tier] = t.value; }
+  for (const cat of CATEGORIES) {
+    const cur = cat === "primary" ? out.primary : out.tiers[cat];
+    const chosen = await pickCategoryModel(cat, cur, presets);
+    if (cat === "primary") out.primary = chosen; else out.tiers[cat] = chosen;
   }
   if (opts.out) {
     await mkdir(dirname(opts.out), { recursive: true });

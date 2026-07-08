@@ -41,7 +41,8 @@ param(
     [string]$Provider = "",
     [switch]$ModelsOnly,
     [switch]$Force,
-    [switch]$Migrate
+    [switch]$Migrate,
+    [switch]$Mix
 )
 
 $ErrorActionPreference = "Continue"
@@ -362,6 +363,8 @@ USAGE:
     -ModelsOnly          Provider selection + model resolution only (no other setup)
     -Migrate             Run v1.x -> v2.0 migration + model resolution only
     -Force               Re-resolve all agents (ignore preserved hand-edits)
+    -Mix                 Per-category provider/model editor (mix providers across
+                         primary/reasoning/fast/docs/vision, e.g. vision on OpenAI)
 
 =======================================================================
                          CONFIGURED FEATURES
@@ -1391,21 +1394,42 @@ function Set-ModelProvider {
     Write-Host "====================================================================="
     Write-Host ""
 
-    if ($Provider) {
+    if ($Provider -and -not $Mix) {
         Write-LogInfo "Provider preset: $Provider (writing $UserModelsMap)"
         & node $TuiScript provider-picker --presets $ProviderPresets --provider $Provider --out $UserModelsMap
         return
     }
 
+    # -Mix: per-category provider/model editor (interactive). Base = $Provider or zai.
+    if ($Mix) {
+        $base = if ($Provider) { $Provider } else { "zai" }
+        Write-LogInfo "Mix mode: choose a provider/model per category (base: $base)"
+        & node $TuiScript tier-editor --presets $ProviderPresets --provider $base --out $UserModelsMap
+        if ($LASTEXITCODE -ne 0) { Write-LogWarn "Mix editor cancelled (using default models)" }
+        return
+    }
+
     if (-not $Yes) {
-        if (Read-YesNo "Choose a model provider? (default: Z.AI)" $false) {
-            & node $TuiScript provider-picker --presets $ProviderPresets --out $UserModelsMap
-            if ($LASTEXITCODE -ne 0) { Write-LogWarn "Provider selection skipped (using default models)" }
-        } else {
-            Write-LogInfo "Using default Z.AI models"
+        Write-Host "  1) Single provider (recommended)"
+        Write-Host "  2) Mix providers per category (e.g. vision on OpenAI, rest on Z.AI)"
+        $providerChoice = Read-Prompt "Select option" "1"
+        switch ($providerChoice) {
+            "2" {
+                $base = if ($Provider) { $Provider } else { "zai" }
+                & node $TuiScript tier-editor --presets $ProviderPresets --provider $base --out $UserModelsMap
+                if ($LASTEXITCODE -ne 0) { Write-LogWarn "Mix editor cancelled (using default models)" }
+            }
+            default {
+                if (Read-YesNo "Choose a model provider? (default: Z.AI)" $false) {
+                    & node $TuiScript provider-picker --presets $ProviderPresets --out $UserModelsMap
+                    if ($LASTEXITCODE -ne 0) { Write-LogWarn "Provider selection skipped (using default models)" }
+                } else {
+                    Write-LogInfo "Using default Z.AI models"
+                }
+            }
         }
     } else {
-        Write-LogInfo "Non-interactive: using default models (use -Provider <name> to choose)"
+        Write-LogInfo "Non-interactive: using default models (use -Provider <name> or -Mix to choose)"
     }
 }
 

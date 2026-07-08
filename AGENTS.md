@@ -51,7 +51,11 @@ exploratory/low-impact → `fast`; docs/lint → `docs`; vision → `vision`.
 5. `deploy/models.default.json` (Z.AI defaults)
 
 Swap provider: `./deploy/setup.sh --provider anthropic` (or interactive).
-Re-resolve: `./deploy/setup.sh --models-only`. Per-agent pin: edit
+**Mix providers per category**: `./deploy/setup.sh --mix` — each of
+`primary`/`reasoning`/`fast`/`docs`/`vision` can use a different provider's model
+(e.g. Z.AI everywhere except `vision` on OpenAI); stored in `models.json`, so
+resolve without `--provider`. Each referenced provider must be authenticated in
+OpenCode. Re-resolve: `./deploy/setup.sh --models-only`. Per-agent pin: edit
 `~/.config/opencode/agent-overrides.json`. Built-in agents `explore`→`fast` and
 `general`→`reasoning` are patched in `opencode.json`, not via the tier registry.
 

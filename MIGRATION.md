@@ -109,6 +109,47 @@ Edit `~/.config/opencode/agent-overrides.json`:
 
 Then `./deploy/setup.sh --models-only`.
 
+### Mixing providers per category
+
+Each of the 5 categories — `primary`, `reasoning`, `fast`, `docs`, `vision` — can
+use a **different provider/model**. Pick interactively (recommended):
+
+```bash
+./deploy/setup.sh --mix          # per-category editor (base: Z.AI)
+# or during interactive setup, choose option 2: "Mix providers per category"
+```
+
+This opens a per-category menu where, for each category, you pick any provider's
+model (or type a custom `provider/model-id`). Example: keep Z.AI for everything
+except `vision`, which you set to OpenAI.
+
+The result is just a mixed `~/.config/opencode/models.json` you can also edit by
+hand:
+
+```json
+{
+  "primary": "zai-coding-plan/glm-5.2",
+  "tiers": {
+    "reasoning": "zai-coding-plan/glm-5.1",
+    "fast": "zai-coding-plan/glm-5-turbo",
+    "docs": "zai-coding-plan/glm-4.7",
+    "vision": "openai/gpt-5"
+  }
+}
+```
+
+Then `./deploy/setup.sh --models-only`.
+
+> **Auth requirement:** every provider you reference must be authenticated in
+> OpenCode (`opencode auth login`, or entries in `auth.json`). Z.AI is the
+> default; using Anthropic/OpenAI/etc. requires authenticating that provider or
+> the corresponding agents will fail at runtime (deploy still succeeds — the
+> resolver only substitutes model strings; it does not validate reachability).
+>
+> **`--provider` vs `--mix`:** `--provider <X>` forces a *single* provider across
+> all categories and overrides any hand-mixed `models.json`. To use a mixed map,
+> resolve **without** `--provider` (mixing is stored in `models.json`).
+
 ---
 
 ## Docker

@@ -3,7 +3,7 @@
 **JIRA**: [BT-74](https://betekk.atlassian.net/browse/BT-74)
 **Branch**: `BT-74`
 **Created**: 2026-06-26
-**Status**: Complete (all phases implemented + verified on branch; ready for PR)
+**Status**: v2.0 complete + verified (Phases 1–11, on PR #231)
 
 ## Overview
 
@@ -154,6 +154,30 @@ Replace hardcoded z.ai models in all 35 source agent `.md` files with a **tier-b
     - **Done when:** `bash -n deploy/setup.sh` (shellcheck not installed in env — noted); `node --check deploy/resolve-models.mjs deploy/tui.mjs`; no stray `^model:` in source agent frontmatter (verified 0); setup.ps1 parse deferred (pwsh not in env — reviewed manually).
     - **Consumers affected:** all deployment consumers
 
+### Phase 11: Per-category provider/model mixing
+
+Allows each of the 5 categories — `primary`, `reasoning`, `fast`, `docs`, `vision` — to use a **different provider and/or model** independently. The data layer already supports this (`models.json` maps each category to a model string; the resolver substitutes them independently — verified: `vision: openai/gpt-5` + others z.ai resolves correctly). Phase 11 adds the **UX and CLI** to build a mixed map easily, plus docs + the auth caveat.
+
+- [x] **11.1** Add per-category provider/model picker to `deploy/tui.mjs`
+    - **Why:** The current `provider-picker` forces one provider across all categories. Users want e.g. "z.ai default, but vision → OpenAI" (and arbitrary mixes across all 5 categories). `models.json` already supports mixed maps; only the editor UX is missing.
+    - **Done when:** A reusable helper `pickCategoryModel(category, currentModel, presets)` exists: a singleSelect listing, for the given category, every provider's model for that category (e.g. `zai: glm-5.1`, `anthropic: claude-sonnet-4-6`, `openai: gpt-5`, …) plus a `Custom (type a model id)` option (textInput). `flowProviderPicker` interactive path gains a follow-up: after the base provider is chosen, "Customize individual categories to other providers/models?" → if yes, run `pickCategoryModel` for each of `primary`/`reasoning`/`fast`/`docs`/`vision`, defaulting each to the base provider's value; write the resulting mixed map to `models.json`. `--provider` (non-interactive) path unchanged (still single-provider). Existing `tier-editor` flow upgraded to reuse the same helper (provider-menu per category instead of raw text input).
+    - **Consumers affected:** interactive provider selection, tier-editor
+
+- [x] **11.2** Wire `setup.sh` + `setup.ps1` for mixing
+    - **Why:** Expose mixing in the interactive flow + a direct CLI entry.
+    - **Done when:** `setup_model_provider` interactive branch offers two paths: "Single provider" (existing) vs "Customize per category (mix providers)". New `--mix` flag (setup.sh) / `-Mix` (setup.ps1) jumps straight to the per-category editor (writes `models.json`, then resolves). `show_help` documents `--mix`. Non-interactive mixing remains available by hand-editing `models.json` (documented).
+    - **Consumers affected:** all interactive deploys, scripted mixed setups
+
+- [x] **11.3** Docs: per-category mixing + auth caveat
+    - **Why:** Mixing providers requires the user to have authenticated each non-z.ai provider in OpenCode (else those models fail at runtime); users must know this and how.
+    - **Done when:** `MIGRATION.md` "Choosing a provider" gains a "Mixing providers per category" subsection (example: z.ai base + vision=openai) + the auth requirement (`opencode auth login` / `auth.json` per provider). Repo `AGENTS.md` model-tiering section notes categories can mix providers. README "Model Resolution (v2.0)" mentions per-category customization.
+    - **Consumers affected:** all users mixing providers
+
+- [x] **11.4** Verify mixed resolution across all 5 categories
+    - **Why:** Confirm the resolver + new UX produce a correct mixed map end-to-end.
+    - **Done when:** A mixed `models.json` (e.g. primary=zai, reasoning=anthropic, fast=openai, docs=zai, vision=openai) resolves each category's agents to the expected provider; interactive `--mix` writes that map; `--dry-run` preview shows the mixed models; per-category override still respects the 5-level precedence (a per-agent override still beats a category map).
+    - **Consumers affected:** all (correctness gate)
+
 ---
 
 ## Acceptance Criteria
@@ -170,6 +194,8 @@ Replace hardcoded z.ai models in all 35 source agent `.md` files with a **tier-b
 - [ ] README/AGENTS.md/opencode_app README synced; `documentation-sync-workflow` passes
 - [x] All dry-run commands pass; shellcheck clean; `node --check` clean
 - [x] Existing v1.x installs migrate without losing customizations (lifted into `agent-overrides.json`)
+- [x] Per-category provider/model mixing: each of `primary`/`reasoning`/`fast`/`docs`/`vision` can use a different provider/model (interactive `--mix` + `models.json`); verified across all 5 categories (Phase 11)
+- [x] Mixing docs + auth caveat present in MIGRATION.md / AGENTS.md / README (Phase 11)
 
 ---
 
@@ -185,6 +211,8 @@ Replace hardcoded z.ai models in all 35 source agent `.md` files with a **tier-b
 | setup.ps1 parity drift from setup.sh | med | med | Phase 6 mirrors function-by-function; cross-check flags |
 | Migration clobbers a genuinely customized install | low | high | Full backup before migration; unknown models lifted (not dropped) into `agent-overrides.json`; revert documented |
 | Team-managed Jira has no delete — closed child tasks BT-75…84 remain visible | low | low | Accepted; consolidated tracking lives in BT-74 description + this PLAN |
+| Mixed-provider maps reference models the user hasn't authenticated | med | med | Phase 11.3 documents the auth requirement per provider (`opencode auth login`); resolver doesn't validate reachability, so a wrong/unauthed model fails at runtime, not at deploy |
+| `--provider <X>` silently overrides a hand-mixed `models.json` | med | med | By design: `--provider` is a forced single-provider shortcut and ranks above `models.json` in precedence. Mixing is done by writing `models.json` (via `--mix`/editor) and resolving WITHOUT `--provider`. Documented in Phase 11.3. |
 
 ---
 
@@ -197,6 +225,7 @@ Replace hardcoded z.ai models in all 35 source agent `.md` files with a **tier-b
 - `technical-design-specialist-subagent` (added in BT-73) is the 35th agent and is `reasoning` tier.
 - Built-in agents `explore` (fast) and `general` (reasoning) are patched in `opencode.json`, not via `.md` tiers (they aren't in agent-tiers.json).
 - The 5-level precedence means a project can pin a whole provider (`<project>/.opencode/models.json`) while a global per-agent pin still wins — explicit per-agent always beats tier-map, project always beats global.
+- **Per-category provider mixing (Phase 11):** `models.json` maps each of the 5 categories (`primary` + 4 tiers) to a model **independently**, so a map like `{primary: zai/glm-5.2, reasoning: anthropic/claude-sonnet-4-6, fast: zai/glm-5-turbo, docs: zai/glm-4.7, vision: openai/gpt-5}` is valid and resolves per-category. Verified: the resolver substitutes each category's model independently. Mixing is done by writing `models.json` (via the `--mix` TUI editor) and resolving WITHOUT `--provider` (which forces a single provider and ranks above `models.json`). Non-z.ai providers require per-provider auth in OpenCode.
 - LM Studio preset maps all tiers to the single loaded local model; vision gets a warning since local models are rarely multimodal.
 - **Dry-run preview (added per owner request):** `--dry-run` (passed through by `setup.sh`/`setup.ps1`) stages **complete resolved agent `.md` files** (with `model:` injected) + a resolved `opencode.json` into `~/.config/opencode/.dry-run-preview/`, and dumps one full sample file to stdout — so users see exactly what would land in `~/.config/opencode/` without touching the real config. The real `agents/` and `config.json` are never written in dry-run; the migration backup `cp` and `.config-version` write are also dry-run-gated.
 

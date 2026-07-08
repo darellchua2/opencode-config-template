@@ -329,6 +329,7 @@ PROVIDER=""              # --provider <preset>
 MODELS_ONLY=false        # --models-only (provider + resolve only)
 FORCE_RESOLVE=false      # --force (ignore preserve-edits)
 MIGRATE_ONLY=false       # --migrate (migration + resolve only)
+MIX_MODE=false           # --mix (per-category provider/model editor)
 
 # API Keys (initialize to empty to avoid unbound variable errors)
 # Capture from environment if they exist
@@ -505,6 +506,8 @@ USAGE:
     --models-only         Provider selection + model resolution only (no other setup)
     --migrate             Run v1.x -> v2.0 migration + model resolution only
     --force               Re-resolve all agents (ignore preserved hand-edits)
+    --mix                 Per-category provider/model editor (mix providers across
+                          primary/reasoning/fast/docs/vision, e.g. vision on OpenAI)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
                             EXAMPLES
@@ -821,6 +824,10 @@ parse_arguments() {
                 ;;
             --migrate)
                 MIGRATE_ONLY=true
+                shift
+                ;;
+            --mix)
+                MIX_MODE=true
                 shift
                 ;;
             *)
@@ -1839,7 +1846,7 @@ setup_model_provider() {
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
 
-    if [ -n "$PROVIDER" ]; then
+    if [ -n "$PROVIDER" ] && [ "$MIX_MODE" = false ]; then
         log_info "Provider preset: ${PROVIDER} (writing ${USER_MODELS_MAP})"
         node "$TUI_SCRIPT" provider-picker \
             --presets "$PROVIDER_PRESETS" --provider "$PROVIDER" \
@@ -1847,17 +1854,42 @@ setup_model_provider() {
         return $?
     fi
 
+    # --mix: per-category provider/model editor (interactive). Base = $PROVIDER or zai.
+    if [ "$MIX_MODE" = true ]; then
+        local base="${PROVIDER:-zai}"
+        log_info "Mix mode: choose a provider/model per category (base: ${base})"
+        node "$TUI_SCRIPT" tier-editor \
+            --presets "$PROVIDER_PRESETS" --provider "$base" \
+            --out "$USER_MODELS_MAP" \
+            || log_warn "Mix editor cancelled (using default models)"
+        return $?
+    fi
+
     if [ -t 0 ] && [ "$AUTO_ACCEPT" = false ]; then
-        if prompt_yes_no "Choose a model provider? (default: Z.AI)" "n"; then
-            node "$TUI_SCRIPT" provider-picker \
-                --presets "$PROVIDER_PRESETS" \
-                --out "$USER_MODELS_MAP" \
-                || log_warn "Provider selection skipped (using default models)"
-        else
-            log_info "Using default Z.AI models"
-        fi
+        echo "  1) Single provider (recommended)"
+        echo "  2) Mix providers per category (e.g. vision on OpenAI, rest on Z.AI)"
+        local provider_choice
+        provider_choice=$(prompt_user "Select option [1]" "1")
+        case "$provider_choice" in
+            2)
+                node "$TUI_SCRIPT" tier-editor \
+                    --presets "$PROVIDER_PRESETS" --provider "${PROVIDER:-zai}" \
+                    --out "$USER_MODELS_MAP" \
+                    || log_warn "Mix editor cancelled (using default models)"
+                ;;
+            *)
+                if prompt_yes_no "Choose a model provider? (default: Z.AI)" "n"; then
+                    node "$TUI_SCRIPT" provider-picker \
+                        --presets "$PROVIDER_PRESETS" \
+                        --out "$USER_MODELS_MAP" \
+                        || log_warn "Provider selection skipped (using default models)"
+                else
+                    log_info "Using default Z.AI models"
+                fi
+                ;;
+        esac
     else
-        log_info "Non-interactive: using default models (use --provider <name> to choose)"
+        log_info "Non-interactive: using default models (use --provider <name> or --mix to choose)"
     fi
 }
 

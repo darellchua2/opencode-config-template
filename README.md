@@ -68,6 +68,7 @@ Two setup scripts are provided for different platforms:
 
 # v2.0 model resolution
 ./deploy/setup.sh --provider anthropic      # swap provider (zai|anthropic|openai|openrouter|lmstudio)
+./deploy/setup.sh --mix                     # mix providers per category (e.g. vision on OpenAI, rest on Z.AI)
 ./deploy/setup.sh --models-only             # re-resolve models only
 ./deploy/setup.sh --migrate                 # run v1.x -> v2.0 migration
 ```
