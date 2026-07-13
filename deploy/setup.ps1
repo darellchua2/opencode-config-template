@@ -1358,7 +1358,7 @@ function Deploy-Agents {
         
         # Detect layout: flat files or subdirectories?
         $flatLayout = $true
-        if (Test-Path (Join-Path $AgentsSrcDir "primary")) -or (Test-Path (Join-Path $AgentsSrcDir "subagents"))) {
+        if ((Test-Path (Join-Path $AgentsSrcDir "primary")) -or (Test-Path (Join-Path $AgentsSrcDir "subagents"))) {
             $flatLayout = $false
         }
         
