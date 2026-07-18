@@ -97,6 +97,18 @@ When `.codegraph/` exists in the target project:
 - Use `codegraph_callers`/`callees` to verify fix doesn't break downstream consumers
 - Use `codegraph_search` to find similar patterns (e.g., other tables that need the same table→card transform)
 
+## Workflow Context
+
+This subagent is the **mechanical fixer** in the design pipeline. It pairs naturally with `uiux-reviewer-subagent`:
+
+```
+uiux-reviewer-subagent  →  identifies responsive findings (axis 5)
+       ↓
+responsive-audit-subagent  →  applies tier-based fixes + re-verifies via Playwright
+```
+
+When invoked after a `uiux-reviewer-subagent` run, accept the reviewer's axis-5 findings as input defects and process them through the standard Tier 1/2/3 fix flow.
+
 ## File Scope
 
 Only modify files under the target page directory:

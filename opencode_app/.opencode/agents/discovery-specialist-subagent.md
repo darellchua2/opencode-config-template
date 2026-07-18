@@ -70,7 +70,7 @@ Invoke this subagent when the user uses phrases like:
 
 - **`grilling-skill`** — Use its relentless one-question-at-a-time-with-recommendation methodology during the discovery interview when a branch is unresolved.
 - **`domain-modeling-skill`** — When the client introduces domain-specific terminology, use domain-modeling to sharpen it (propose canonical terms, list alternatives under `_Avoid_`). Capture resolved terms in the Vision's glossary.
-- **`wireframer-skill`** — Generate wireframes **mid-session** to validate UI/UX. Co-locate them at `docs/vision/{slug}/wireframe-*.html`.
+- **`wireframer-skill`** — Generate wireframes **mid-session** to validate UI/UX. Co-locate them at `docs/vision/{slug}/wireframe-*.html`. These wireframes serve double duty: they validate structure with the client during discovery, and later feed `uiux-reviewer-subagent` as the structural drift baseline once visual implementation begins.
 
 ## Delegation Instructions
 
