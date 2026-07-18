@@ -1,3 +1,10 @@
+## [1.75.1](https://github.com/darellchua2/opencode-config-template/compare/v1.75.0...v1.75.1) (2026-07-18)
+
+
+### Bug Fixes
+
+* **deploy:** correct unbalanced parens in setup.ps1 Deploy-Agents function ([#242](https://github.com/darellchua2/opencode-config-template/issues/242)) ([a8e5cd9](https://github.com/darellchua2/opencode-config-template/commit/a8e5cd925ddcfd69f841c5720f9f63eb97d5811c)), closes [#241](https://github.com/darellchua2/opencode-config-template/issues/241)
+
 # [1.75.0](https://github.com/darellchua2/opencode-config-template/compare/v1.74.0...v1.75.0) (2026-07-18)
 
 
