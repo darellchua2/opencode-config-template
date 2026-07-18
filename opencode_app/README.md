@@ -81,6 +81,16 @@ docker compose build --no-cache
 docker compose up -d
 ```
 
+## Iteration Protocol (opt-in)
+
+The container ships the **autoresearch iteration protocol** — a 5-stage loop (Understand → Hypothesize → Experiment → Evaluate → Log & Iterate) that 30 retrofitted skills can opt into. The protocol is **off by default**.
+
+To enable inside the container:
+- Set `AUTORESEARCH_PROTOCOL=1` as an environment variable (e.g., add to `.env` and rebuild, or pass via `docker run -e AUTORESEARCH_PROTOCOL=1`)
+- 3 new autonomous-research subagents (`autoresearch-ml-subagent`, `autoresearch-code-subagent`, `autoresearch-research-subagent`) are always-on; the env var only affects the 30 retrofitted skills.
+
+See the main `README.md` § Iteration Protocol (opt-in) for the full skill list and the user-space equivalent (`ar-enable` / `ar-disable` shell helpers).
+
 ## CodeGraph
 
 CodeGraph is a pre-indexed code knowledge graph MCP server enabled by default. It provides instant symbol search, call graph tracing, and impact analysis — reducing exploration tool calls by ~94%.
