@@ -335,7 +335,7 @@ USAGE:
                          CONFIGURED FEATURES
 =======================================================================
 
-   AGENTS (37):
+    AGENTS (36):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
@@ -369,8 +369,7 @@ USAGE:
     office-document      Office document specialist: Word, PowerPoint, Excel
     google-mcp           Google Cloud MCP (BigQuery, Maps, GCE, GKE)
     microsoft-m365       Microsoft 365 MCP (Teams, Mail, Calendar, SharePoint, etc.)
-    nextjs-mcp-advisor   Next.js runtime guidance with MCP integration
-    nextjs-setup         Next.js project setup and configuration
+     nextjs-specialist  Next.js scaffolding + runtime MCP diagnosis
     opentofu-explorer    OpenTofu/Terraform infrastructure management
     cad-specialist       CAD, robotics, hardware design orchestration
     discovery-specialist Customer-facing discovery: Vision docs + wireframes
@@ -380,7 +379,7 @@ USAGE:
     Usage: opencode --agent build 'implement auth feature'
             opencode --agent explore 'find all API routes'
  
-          SKILLS (107):
+           SKILLS (108):
               Framework (20):       test-generator-framework, linting-workflow,
                                       pr-creation-workflow, pr-merge-workflow,
                                       error-resolver-workflow, tdd-workflow,
@@ -396,10 +395,11 @@ USAGE:
                                   javascript-eslint-linter, changelog-python-cliff,
                                   python-backend-skill, python-packaging-skill
 
-           Framework-Specific (7): nextjs-pr-workflow, nextjs-unit-test-creator,
-                                 nextjs-standard-setup, nextjs-image-usage,
-                                 typescript-dry-principle, accessibility-a11y-skill,
-                                 react-nextjs-antipatterns-skill
+           Framework-Specific (8): nextjs-pr-workflow, nextjs-unit-test-creator,
+                                  nextjs-standard-setup, nextjs-image-usage,
+                                  nextjs-devtools-mcp,
+                                  typescript-dry-principle, accessibility-a11y-skill,
+                                  react-nextjs-antipatterns-skill
            OpenCode Meta (4):    opencode-agent-creation, opencode-skill-creation,
                                  opencode-skills-maintainer,
                                  documentation-consistency-skill
@@ -1174,7 +1174,7 @@ function Set-Configuration {
             Write-LogSuccess "config.json copied successfully"
 
             Write-Host ""
-             Write-Host "Configured 37 agents:" -ForegroundColor Green
+             Write-Host "Configured 36 agents:" -ForegroundColor Green
             Write-Host "    - build (default) - Full-featured coding agent"
             Write-Host "    - plan - Planning agent (read-only)"
             Write-Host "    - explore - Codebase exploration and analysis"
@@ -1261,9 +1261,10 @@ function Deploy-Skills {
         Write-Host "      - python-pytest-creator, python-ruff-linter"
         Write-Host "      - javascript-eslint-linter, changelog-python-cliff"
         Write-Host "      - python-backend-skill, python-packaging-skill"
-        Write-Host "    Framework-Specific (7):"
+        Write-Host "    Framework-Specific (8):"
         Write-Host "      - nextjs-pr-workflow, nextjs-unit-test-creator"
         Write-Host "      - nextjs-standard-setup, nextjs-image-usage"
+        Write-Host "      - nextjs-devtools-mcp"
         Write-Host "      - typescript-dry-principle, accessibility-a11y-skill"
         Write-Host "      - react-nextjs-antipatterns-skill"
         Write-Host "    OpenCode Meta (4):"
@@ -1750,22 +1751,22 @@ function Show-NextSteps {
     Write-Host "  2. Start LM Studio: http://127.0.0.1:1234/v1"
     Write-Host "  3. Verify installation: opencode --version"
     Write-Host ""
-    Write-Host "Agents (37):"
+    Write-Host "Agents (36):"
     Write-Host "  - build (default) - Full-featured coding agent"
     Write-Host "  - plan - Planning agent (read-only)"
     Write-Host "  - explore - Codebase exploration and analysis"
     Write-Host "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
     Write-Host "  - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
-    Write-Host "  - ... and 32 more agents"
+    Write-Host "  - ... and 31 more agents"
     Write-Host ""
     Write-Host "  Usage: opencode --agent <name> `"prompt`""
     Write-Host "         opencode `"prompt`" (uses build)"
      Write-Host ""
     Write-Host "=====================================================================" -ForegroundColor White
-      Write-Host "                     107 Skills Available" -ForegroundColor White
+      Write-Host "                     108 Skills Available" -ForegroundColor White
      Write-Host "=====================================================================" -ForegroundColor White
      Write-Host ""
-     Write-Host "  Framework (20) • Language-Specific (6) • Framework-Specific (7)"
+     Write-Host "  Framework (20) • Language-Specific (6) • Framework-Specific (8)"
       Write-Host "  OpenCode Meta (4) • OpenTofu (7) • Git/Workflow (12)"
      Write-Host "  Documentation (3) • JIRA (3) • Code Quality (7)"
       Write-Host "  Agent Optimization (7) • Planning & Alignment (4)"
