@@ -500,7 +500,7 @@ USAGE:
                          CONFIGURED FEATURES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-   AGENTS (36):
+   AGENTS (39):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
@@ -583,7 +583,7 @@ USAGE:
       google-gce         Google Compute Engine management
       google-gke         Google Kubernetes Engine management
 
-   SKILLS (108):
+   SKILLS (113):
              Framework (20):       test-generator-framework, linting-workflow,
                                       pr-creation-workflow, pr-merge-workflow,
                                       error-resolver-workflow, tdd-workflow,
@@ -1663,7 +1663,7 @@ setup_config() {
             log_success "config.json copied successfully"
 
             echo ""
-        echo "✓ Configured 36 agents:"
+        echo "✓ Configured 39 agents:"
         echo "    - build (default) - Full-featured coding agent"
         echo "    - plan - Planning agent (read-only)"
         echo "    - explore - Codebase exploration and analysis"
@@ -2217,7 +2217,7 @@ print_summary() {
 
     # Agents configured
     if [ -f "$CONFIG_FILE" ]; then
-        echo "✓ Configured 36 agents:"
+        echo "✓ Configured 39 agents:"
         echo "    - build (default) - Full-featured coding agent"
         echo "    - plan - Planning agent (read-only)"
         echo "    - explore - Codebase exploration and analysis"
@@ -2374,6 +2374,20 @@ print_summary() {
         echo "○ GitHub CLI: Not installed (https://cli.github.com/)"
     fi
 
+    # Install autoresearch protocol helpers (only into rc files that already exist)
+    if [ -f "$HOME/.bashrc" ]; then
+        grep -q 'ar-enable()' "$HOME/.bashrc" || cat <<'EOF' >> "$HOME/.bashrc"
+ar-enable()  { export AUTORESEARCH_PROTOCOL=1; echo "autoresearch protocol: ON"; }
+ar-disable() { unset AUTORESEARCH_PROTOCOL;   echo "autoresearch protocol: OFF"; }
+EOF
+    fi
+    if [ -f "$HOME/.zshrc" ]; then
+        grep -q 'ar-enable()' "$HOME/.zshrc" || cat <<'EOF' >> "$HOME/.zshrc"
+ar-enable()  { export AUTORESEARCH_PROTOCOL=1; echo "autoresearch protocol: ON"; }
+ar-disable() { unset AUTORESEARCH_PROTOCOL;   echo "autoresearch protocol: OFF"; }
+EOF
+    fi
+
     echo ""
 }
 
@@ -2408,7 +2422,7 @@ print_next_steps() {
     echo "         opencode \"prompt\" (uses build)"
      echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-     echo "                     📦 108 Skills Available"
+     echo "                     📦 113 Skills Available"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
     echo "  Framework (20) • Language-Specific (6) • Framework-Specific (8)"

@@ -80,6 +80,8 @@ The following subagents have CodeGraph instructions in their `.md` files and wil
 | `linting-subagent` | `codegraph_files`, `codegraph_search` |
 | `error-resolver-subagent` | `codegraph_node`, `codegraph_callers`, `codegraph_search` |
 | `uiux-reviewer-subagent` | `codegraph_impact` (change radius before suggesting structural changes), `codegraph_search` (component lookup for design-system consistency) |
+| `autoresearch-code-subagent` | `codegraph_files`, `codegraph_search` |
+| `autoresearch-research-subagent` | `codegraph_search` |
 
 ### Built-In Subagent CodeGraph Injection
 
