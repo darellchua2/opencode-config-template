@@ -1,6 +1,6 @@
 ---
 name: uiux-review-skill
-description: UI/UX design review — 13-axis rubric combining AslanMazhidov's 6 axes, RNT56's 7 review dimensions, Nielsen's 10 heuristics mapped to DOM/CSS checks, and anti-default AI design cluster detection. Evidence-first methodology with Playwright capture protocol and structured finding schema.
+description: UI/UX design review — 13-axis rubric combining AslanMazhidov's 6 axes, RNT56's review dimensions (axes 7-11), Nielsen's 10 heuristics mapped to DOM/CSS checks, and anti-default AI design cluster detection. Evidence-first methodology with Playwright capture protocol and structured finding schema.
 license: MIT
 compatibility: opencode
 metadata:
