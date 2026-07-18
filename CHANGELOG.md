@@ -1,3 +1,10 @@
+# [1.75.0](https://github.com/darellchua2/opencode-config-template/compare/v1.74.0...v1.75.0) (2026-07-18)
+
+
+### Features
+
+* **agents:** add uiux-reviewer-subagent + uiux-review-skill (13-axis design review) ([#237](https://github.com/darellchua2/opencode-config-template/issues/237)) ([83ef55c](https://github.com/darellchua2/opencode-config-template/commit/83ef55c6455649fdfbe2fb4c0fa698eb890d2cc6))
+
 # [1.74.0](https://github.com/darellchua2/opencode-config-template/compare/v1.73.0...v1.74.0) (2026-07-18)
 
 
