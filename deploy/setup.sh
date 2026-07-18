@@ -500,7 +500,7 @@ USAGE:
                          CONFIGURED FEATURES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-   AGENTS (37):
+   AGENTS (36):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
@@ -534,8 +534,7 @@ USAGE:
     office-document      Office document specialist: Word, PowerPoint, Excel
     google-mcp           Google Cloud MCP (BigQuery, Maps, GCE, GKE)
     microsoft-m365       Microsoft 365 MCP (Teams, Mail, Calendar, SharePoint, etc.)
-    nextjs-mcp-advisor   Next.js runtime guidance with MCP integration
-    nextjs-setup         Next.js project setup and configuration
+     nextjs-specialist  Next.js scaffolding + runtime MCP diagnosis
     opentofu-explorer    OpenTofu/Terraform infrastructure management
     cad-specialist       CAD, robotics, hardware design orchestration
     discovery-specialist Customer-facing discovery: Vision docs + wireframes
@@ -584,7 +583,7 @@ USAGE:
       google-gce         Google Compute Engine management
       google-gke         Google Kubernetes Engine management
 
-   SKILLS (107):
+   SKILLS (108):
              Framework (20):       test-generator-framework, linting-workflow,
                                       pr-creation-workflow, pr-merge-workflow,
                                       error-resolver-workflow, tdd-workflow,
@@ -600,10 +599,11 @@ USAGE:
                                   javascript-eslint-linter, changelog-python-cliff,
                                   python-backend-skill, python-packaging-skill
 
-           Framework-Specific (7): nextjs-pr-workflow, nextjs-unit-test-creator,
-                                 nextjs-standard-setup, nextjs-image-usage,
-                                 typescript-dry-principle, accessibility-a11y-skill,
-                                 react-nextjs-antipatterns-skill
+           Framework-Specific (8): nextjs-pr-workflow, nextjs-unit-test-creator,
+                                  nextjs-standard-setup, nextjs-image-usage,
+                                  nextjs-devtools-mcp,
+                                  typescript-dry-principle, accessibility-a11y-skill,
+                                  react-nextjs-antipatterns-skill
 
            OpenCode Meta (4):    opencode-agent-creation, opencode-skill-creation,
                                  opencode-skills-maintainer,
@@ -1663,13 +1663,13 @@ setup_config() {
             log_success "config.json copied successfully"
 
             echo ""
-        echo "✓ Configured 37 agents:"
+        echo "✓ Configured 36 agents:"
         echo "    - build (default) - Full-featured coding agent"
         echo "    - plan - Planning agent (read-only)"
         echo "    - explore - Codebase exploration and analysis"
         echo "    - image-analyzer-subagent - Image/screenshot analysis"
         echo "    - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
-        echo "    - ... and 32 more agents"
+        echo "    - ... and 31 more agents"
             echo ""
              echo "✓ Configured MCP servers:"
              echo "    Local (auto-start): atlassian, zai-vision-mcp-server, codegraph, mermaid"
@@ -2217,12 +2217,12 @@ print_summary() {
 
     # Agents configured
     if [ -f "$CONFIG_FILE" ]; then
-        echo "✓ Configured 37 agents:"
+        echo "✓ Configured 36 agents:"
         echo "    - build (default) - Full-featured coding agent"
         echo "    - plan - Planning agent (read-only)"
         echo "    - explore - Codebase exploration and analysis"
         echo "    - image-analyzer-subagent - Image/screenshot analysis"
-        echo "    - ... and 33 more agents"
+        echo "    - ... and 32 more agents"
     fi
 
     # MCP servers configured
@@ -2269,11 +2269,12 @@ print_summary() {
         echo "      - changelog-python-cliff"
         echo "      - python-backend-skill"
         echo "      - python-packaging-skill"
-        echo "    - Framework-Specific (7):"
+        echo "    - Framework-Specific (8):"
         echo "      - nextjs-pr-workflow"
         echo "      - nextjs-unit-test-creator"
         echo "      - nextjs-standard-setup"
         echo "      - nextjs-image-usage"
+        echo "      - nextjs-devtools-mcp"
         echo "      - typescript-dry-principle"
         echo "      - accessibility-a11y-skill"
         echo "      - react-nextjs-antipatterns-skill"
@@ -2395,22 +2396,22 @@ print_next_steps() {
     echo "                        🚀 Quick Start"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "🤖 Agents (37):"
+    echo "🤖 Agents (36):"
     echo "  - build (default) - Full-featured coding agent"
     echo "  - plan - Planning agent (read-only)"
     echo "  - explore - Fast codebase exploration and analysis"
     echo "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
     echo "  - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
-    echo "  - ... and 32 more agents"
+    echo "  - ... and 31 more agents"
     echo ""
     echo "  Usage: opencode --agent <name> \"prompt\""
     echo "         opencode \"prompt\" (uses build)"
      echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "                     📦 107 Skills Available"
+     echo "                     📦 108 Skills Available"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "  Framework (20) • Language-Specific (6) • Framework-Specific (7)"
+    echo "  Framework (20) • Language-Specific (6) • Framework-Specific (8)"
     echo "  OpenCode Meta (4) • OpenTofu (7) • Git/Workflow (12)"
     echo "  Documentation (3) • JIRA (3) • Code Quality (7)"
     echo "  Agent Optimization (7) • Planning & Alignment (4)"
