@@ -1,3 +1,10 @@
+# [1.74.0](https://github.com/darellchua2/opencode-config-template/compare/v1.73.0...v1.74.0) (2026-07-18)
+
+
+### Features
+
+* **agents:** add java-reviewer-subagent for Java code review ([#236](https://github.com/darellchua2/opencode-config-template/issues/236)) ([78b74d4](https://github.com/darellchua2/opencode-config-template/commit/78b74d48ff2b53cc56b31641b45778d05a9757ff)), closes [#234](https://github.com/darellchua2/opencode-config-template/issues/234)
+
 # [1.73.0](https://github.com/darellchua2/opencode-config-template/compare/v1.72.0...v1.73.0) (2026-06-26)
 
 
