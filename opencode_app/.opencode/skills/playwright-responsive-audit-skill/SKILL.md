@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: testing
+  protocol: autoresearch-opt-in
 ---
 
 ## What I do
@@ -706,3 +707,23 @@ All projects should use `storageState: 'e2e/.auth/user.json'` for authenticated 
 |---|---|
 | `image-analyzer-subagent` | Receives screenshots for visual verification of Tier 2 fixes |
 | `loop-operator-subagent` | Primary session uses this to manage the closed-loop iteration |
+
+## Iteration Protocol (opt-in)
+
+**DO NOT execute any of the following unless `AUTORESEARCH_PROTOCOL=1` is set in your environment.** When unset, this skill behaves exactly as documented in all sections above; the Iteration Protocol block is descriptive only.
+
+When `AUTORESEARCH_PROTOCOL=1`:
+
+### Auto-detection
+If invoked on an iterative task, prompt ONCE per session: "This looks iterative. Enable autoresearch protocol? (y/n)". Cache answer for session.
+
+### Skill-specific patterns
+
+**TSV trail.** Each closed-loop iteration appended to `playwright-responsive-results.tsv` (8-column format per `audit-trail.md`). **Evaluator.** Playwright assertion failures produce `{"pass":false,"score":N}` (score = passing assertions / total); all-pass = `{"pass":true,"score":<total>}`. See `evaluator-contract.md`.
+
+### Citations
+- `autoresearch-core-skill/references/audit-trail.md`
+- `autoresearch-core-skill/references/evaluator-contract.md`
+
+### Imperative gating
+When `AUTORESEARCH_PROTOCOL` is unset, this section is descriptive only. Default behavior is documented in all sections above.

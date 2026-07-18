@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers, agents, subagents
   workflow: planning, execution, progress-tracking
+  protocol: autoresearch-opt-in
 ---
 
 ## What I do
@@ -444,3 +445,22 @@ This skill integrates with:
 - `git-semantic-commits` - Commit message formatting
 - `testing-subagent` - Test generation and execution
 - `repo-ops-specialist-subagent` - Git repository operations (release workflows, branch protection, labels)
+
+## Iteration Protocol (opt-in)
+
+**DO NOT execute any of the following unless `AUTORESEARCH_PROTOCOL=1` is set in your environment.** When unset, this skill behaves exactly as documented in all sections above; the Iteration Protocol block is descriptive only.
+
+When `AUTORESEARCH_PROTOCOL=1`:
+
+### Auto-detection
+If invoked on an iterative task, prompt ONCE per session: "This looks iterative. Enable autoresearch protocol? (y/n)". Cache answer for session.
+
+### Skill-specific patterns
+
+**Bounded-by-default.** Plans default to `Iterations: N` (where N = number of phases in the plan). Hard cap 100 iterations. **Stuck detection:** 3 consecutive phase failures → pivot to alternate approach; 5 → escalate to user. See `stuck-detection.md`.
+
+### Citations
+- `autoresearch-core-skill/references/stuck-detection.md`
+
+### Imperative gating
+When `AUTORESEARCH_PROTOCOL` is unset, this section is descriptive only. Default behavior is documented in all sections above.

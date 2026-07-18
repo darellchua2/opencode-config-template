@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: maintenance
+  protocol: autoresearch-opt-in
 ---
 
 ## What I do
@@ -296,4 +297,24 @@ done
 ✓ All required fields present
 ✓ All YAML frontmatter valid
 ✓ All skills categorized correctly
+
+## Iteration Protocol (opt-in)
+
+**DO NOT execute any of the following unless `AUTORESEARCH_PROTOCOL=1` is set in your environment.** When unset, this skill behaves exactly as documented in all sections above; the Iteration Protocol block is descriptive only.
+
+When `AUTORESEARCH_PROTOCOL=1`:
+
+### Auto-detection
+If invoked on an iterative task, prompt ONCE per session: "This looks iterative. Enable autoresearch protocol? (y/n)". Cache answer for session.
+
+### Skill-specific patterns
+
+**Citation-drift check** (rule): flag any SKILL.md containing iteration-related keywords (`{"pass"`, `Iterations:`, `results.tsv`, `keep/revert`, `stuck detection`) WITHOUT a corresponding `autoresearch-core-skill/references/` citation. Also verify `metadata.protocol: autoresearch-opt-in` frontmatter is present iff `## Iteration Protocol` section is present. **Stuck detection:** 3 consecutive audits with same finding → escalate severity. See `evaluator-contract.md` + `stuck-detection.md`.
+
+### Citations
+- `autoresearch-core-skill/references/evaluator-contract.md`
+- `autoresearch-core-skill/references/stuck-detection.md`
+
+### Imperative gating
+When `AUTORESEARCH_PROTOCOL` is unset, this section is descriptive only. Default behavior is documented in all sections above.
 

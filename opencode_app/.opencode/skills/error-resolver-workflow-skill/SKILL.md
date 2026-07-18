@@ -7,6 +7,7 @@ metadata:
   audience: developers
   workflow: debugging
   trigger: explicit-only
+  protocol: autoresearch-opt-in
 ---
 
 ## What I do
@@ -165,4 +166,23 @@ When resolution requires:
 - **Code changes**: Delegate to parent agent for implementation
 - **File operations**: Delegate to parent agent (no write access)
 - **System commands**: Delegate to parent agent (no bash access)
+
+## Iteration Protocol (opt-in)
+
+**DO NOT execute any of the following unless `AUTORESEARCH_PROTOCOL=1` is set in your environment.** When unset, this skill behaves exactly as documented in all sections above; the Iteration Protocol block is descriptive only.
+
+When `AUTORESEARCH_PROTOCOL=1`:
+
+### Auto-detection
+If invoked on an iterative task, prompt ONCE per session: "This looks iterative. Enable autoresearch protocol? (y/n)". Cache answer for session.
+
+### Skill-specific patterns
+
+**Falsifiable-hypothesis protocol** (port from uditgoenka's `/autoresearch:debug`): each debugging iteration MUST state a falsifiable hypothesis, predict the observable outcome, run the experiment, then emit `{"pass":bool,"score":N}` where pass = hypothesis confirmed, score = confidence (0-100) based on reproducibility. Revert experimental changes on pass:false. See `evaluator-contract.md`.
+
+### Citations
+- `autoresearch-core-skill/references/evaluator-contract.md`
+
+### Imperative gating
+When `AUTORESEARCH_PROTOCOL` is unset, this section is descriptive only. Default behavior is documented in all sections above.
 
