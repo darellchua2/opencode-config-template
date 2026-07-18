@@ -500,7 +500,7 @@ USAGE:
                          CONFIGURED FEATURES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-   AGENTS (36):
+   AGENTS (37):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
@@ -584,12 +584,13 @@ USAGE:
       google-gce         Google Compute Engine management
       google-gke         Google Kubernetes Engine management
 
-   SKILLS (106):
-             Framework (19):       test-generator-framework, linting-workflow,
+   SKILLS (107):
+             Framework (20):       test-generator-framework, linting-workflow,
                                       pr-creation-workflow, pr-merge-workflow,
                                       error-resolver-workflow, tdd-workflow,
                                       docx-creation, pptx-specialist,
                                       xlsx-specialist, pdf-specialist, frontend-design,
+                                      uiux-review-skill,
                                       api-design-skill, openapi-contract-adherence-skill,
                                       performance-optimization-skill, srs-creation-skill,
                                       brd-creation-skill, technical-design-creation-skill,
@@ -1662,13 +1663,13 @@ setup_config() {
             log_success "config.json copied successfully"
 
             echo ""
-        echo "✓ Configured 36 agents:"
-             echo "    - build (default) - Full-featured coding agent"
-             echo "    - plan - Planning agent (read-only)"
-             echo "    - explore - Codebase exploration and analysis"
-             echo "    - image-analyzer-subagent - Image/screenshot analysis"
-             echo "    - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
-             echo "    - ... and 31 more agents"
+        echo "✓ Configured 37 agents:"
+        echo "    - build (default) - Full-featured coding agent"
+        echo "    - plan - Planning agent (read-only)"
+        echo "    - explore - Codebase exploration and analysis"
+        echo "    - image-analyzer-subagent - Image/screenshot analysis"
+        echo "    - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
+        echo "    - ... and 32 more agents"
             echo ""
              echo "✓ Configured MCP servers:"
              echo "    Local (auto-start): atlassian, zai-vision-mcp-server, codegraph, mermaid"
@@ -2216,12 +2217,12 @@ print_summary() {
 
     # Agents configured
     if [ -f "$CONFIG_FILE" ]; then
-        echo "✓ Configured 36 agents:"
+        echo "✓ Configured 37 agents:"
         echo "    - build (default) - Full-featured coding agent"
         echo "    - plan - Planning agent (read-only)"
         echo "    - explore - Codebase exploration and analysis"
         echo "    - image-analyzer-subagent - Image/screenshot analysis"
-        echo "    - ... and 32 more agents"
+        echo "    - ... and 33 more agents"
     fi
 
     # MCP servers configured
@@ -2240,7 +2241,7 @@ print_summary() {
     if [ -d "$SKILLS_DIR" ] && [ "$(ls -A ${SKILLS_DIR} 2>/dev/null)" ]; then
         local skill_count=$(find ${SKILLS_DIR} -name "SKILL.md" 2>/dev/null | wc -l)
         echo "✓ skills: ${skill_count} skills deployed to ${SKILLS_DIR}/"
-        echo "    - Framework (19):"
+        echo "    - Framework (20):"
         echo "      - test-generator-framework"
         echo "      - linting-workflow"
         echo "      - pr-creation-workflow"
@@ -2252,6 +2253,7 @@ print_summary() {
         echo "      - xlsx-specialist"
         echo "      - pdf-specialist"
         echo "      - frontend-design"
+        echo "      - uiux-review-skill"
         echo "      - api-design-skill"
         echo "      - openapi-contract-adherence-skill"
         echo "      - performance-optimization-skill"
@@ -2393,22 +2395,22 @@ print_next_steps() {
     echo "                        🚀 Quick Start"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "🤖 Agents (36):"
+    echo "🤖 Agents (37):"
     echo "  - build (default) - Full-featured coding agent"
     echo "  - plan - Planning agent (read-only)"
     echo "  - explore - Fast codebase exploration and analysis"
     echo "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
     echo "  - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
-    echo "  - ... and 31 more agents"
+    echo "  - ... and 32 more agents"
     echo ""
     echo "  Usage: opencode --agent <name> \"prompt\""
     echo "         opencode \"prompt\" (uses build)"
      echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "                     📦 106 Skills Available"
+    echo "                     📦 107 Skills Available"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "  Framework (19) • Language-Specific (6) • Framework-Specific (7)"
+    echo "  Framework (20) • Language-Specific (6) • Framework-Specific (7)"
     echo "  OpenCode Meta (4) • OpenTofu (7) • Git/Workflow (12)"
     echo "  Documentation (3) • JIRA (3) • Code Quality (7)"
     echo "  Agent Optimization (7) • Planning & Alignment (4)"

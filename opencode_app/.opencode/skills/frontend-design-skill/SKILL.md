@@ -33,6 +33,12 @@ Use this skill when:
 - Creating frontend prototypes or demos
 - Refreshing an existing interface with better aesthetics
 
+**Don't use me for** (use these peers instead):
+- Reviewing/critiquing an existing UI → `uiux-review-skill`
+- Full WCAG 2.1 AA compliance audits → `accessibility-a11y-skill`
+- Low-fidelity wireframes before committing to a visual direction → `wireframer-skill`
+- Mechanical responsive breakpoint fixes → `responsive-audit-subagent`
+
 ## Prerequisites
 
 - Frontend framework context (React, Vue, plain HTML/CSS/JS, etc.)
@@ -49,7 +55,21 @@ Use this skill when:
 
 ## Anti-Patterns to AVOID
 
-NEVER produce generic AI-generated aesthetics:
+NEVER produce generic AI-generated aesthetics.
+
+### The 3 AI Design Clusters (red flags — synced with `uiux-review-skill` axis 13)
+
+These three combinations are the most common signals of unmodified AI output. None are inherently wrong — but using them without an intentional brand reason means the result will look like every other AI-generated page.
+
+| Cluster | Telltale combo | Why it's a flag |
+|---------|----------------|-----------------|
+| **A — Cream + Serif** | Warm cream background (`#fdfcf7`, `#faf8f1` family) + Playfair/EB Garamond/Cormorant headlines + clean sans-serif body | Default "editorial boutique" aesthetic; every AI design tool ships this |
+| **B — Dark + Acid Green / Violet** | Near-black background + neon green (`#00ff88`, `#22c55e`) or electric violet (`#8b5cf6`, `#a855f7`) + Inter/Geist + monospace accents | Default "tech startup" aesthetic; conveys no specific brand identity |
+| **C — Broadsheet / Newspaper** | Multi-column grid + heavy horizontal rules + Times-like serif + justified text | Default "information dense" aesthetic; news metaphor rarely matches product purpose |
+
+**If the user requests one of these clusters explicitly, ask why** — surface the brand reason before committing. If they have no specific reason, pick a different direction.
+
+### Other anti-patterns
 
 - **Fonts**: Avoid Inter, Roboto, Arial, system-ui, and other overused families. If the user doesn't specify a preference, choose a different display font each time rather than always reaching for the same one
 - **Colors**: No purple gradients on white backgrounds. No timid, evenly-distributed pastels. No default Tailwind blue as primary
@@ -105,6 +125,8 @@ Use these for inspiration but design one that is true to the specific context. T
 - What is the one thing someone will remember about this interface?
 - What would make someone screenshot and share it?
 
+**The Signature Element discipline** (adapted from `anthropics/skills/frontend-design`): Spend your boldness in one place. Let the signature element be the one memorable thing — every other element should support it, not compete with it. A page with one bold move reads as designed; a page with five bold moves reads as noise.
+
 ## Frontend Aesthetics Guidelines
 
 ### Typography
@@ -122,12 +144,21 @@ Choose fonts that are beautiful, unique, and interesting:
 
 ### Color & Theme
 
-- **CSS variables**: Define all colors as CSS custom properties for consistency
+- **Design tokens first**: Define all visual values as a token system before applying them. Minimum token set:
+  - 4-6 named colors (one dominant, one accent, 2-3 neutrals, optional semantic for success/warn/error)
+  - Type scale (1.25x or 1.333x modular — pick one and commit)
+  - Spacing scale (8pt system: 8/16/24/32/48/64)
+  - Border radii (1-2 values max — e.g., `--radius-sm`, `--radius-lg`)
+  - Shadows (1-3 elevations — e.g., `--shadow-1`, `--shadow-2`, `--shadow-3`)
+- **CSS variables**: Implement tokens as CSS custom properties on `:root` for theme consistency and easy future updates
+- **Never hardcode values**: Every color, size, spacing, radius, and shadow references a token — no `color: #3b82f6` in component code (use `color: var(--color-accent)`)
 - **Dominant colors**: Bold dominant colors with sharp accents outperform timid palettes
 - **Contrast**: High contrast between elements creates visual interest
 - **Palette size**: 3-5 colors maximum. One dominant, one accent, neutrals for rest
 - **Theme consistency**: Commit fully to light OR dark. Do not compromise
 - **Color psychology**: Choose colors that reinforce the aesthetic direction, not just "look nice"
+
+Tokens are the foundation that lets `uiux-review-skill` axis 4 (composition/hierarchy) and axis 6 (polish) pass cleanly later — design tokens = design-system consistency.
 
 ### Motion & Interaction
 
@@ -206,6 +237,24 @@ Choose fonts that are beautiful, unique, and interesting:
 3. Verify all animations respect `prefers-reduced-motion`
 4. Ensure the design feels cohesive — every element serves the aesthetic
 5. Confirm the result does NOT look like generic AI output
+
+### Step 7: Self-Review Against the 13-Axis Rubric
+
+Before declaring the build done, run a self-review using the rubric from `uiux-review-skill` §3. This catches issues before an external reviewer would. For each axis, ask the verification question:
+
+| Axis | Question |
+|------|----------|
+| 1 Typography | Does my type scale show clear hierarchy? Line-height 1.4-1.7 on body? |
+| 2 Color & contrast | Body text ≥ 4.5:1 contrast? Hover/active/focus states distinct? |
+| 3 Rhythm & space | Am I on the 8pt scale? Any orphans or cramped CTAs? |
+| 4 Composition & hierarchy | Squint test: does the primary eye target match the primary message? |
+| 5 Responsive | Tested at 375/768/1440? Touch targets ≥ 44x44? No overflow? |
+| 6 Polish | Border-radius consistent? Shadow direction natural? Icons same weight? |
+| 13 AI cluster detection | Did I default to cluster A/B/C without a brand reason? |
+
+If the primary session is text-only (no inline vision), **delegate screenshots to `image-analyzer-subagent`** for the visual axes (1, 4, 6, 13). Do not self-evaluate pixels inline.
+
+Findings from this self-review should be fixed in the same pass — don't ship a UI you know has axis failures.
 
 ## Best Practices
 
@@ -288,8 +337,24 @@ npx -y html-validate index.html
 # Check accessibility (WCAG AA)
 npx -y pa11y index.html
 
-# Lighthouse performance audit
+# Lighthouse performance audit (requires running server)
 npx -y lighthouse http://localhost:3000 --output=json
+
+# Capture screenshots at 3 breakpoints for visual review
+# (delegates to image-analyzer-subagent — primary session is text-only)
+npx -y playwright install chromium  # one-time
+node -e "
+const { chromium } = require('playwright');
+(async () => {
+  const browser = await chromium.launch();
+  for (const [name, w, h] of [['desktop',1440,900],['tablet',768,1024],['mobile',375,812]]) {
+    const page = await browser.newPage({ viewport: { width: w, height: h } });
+    await page.goto('http://localhost:3000', { waitUntil: 'networkidle' });
+    await page.screenshot({ path: \`review-\${name}.png\`, fullPage: true });
+  }
+  await browser.close();
+})();
+"
 
 # Verify responsive breakpoints (manual test)
 # Test at: 375px, 768px, 1024px, 1440px
@@ -299,8 +364,45 @@ npx -y lighthouse http://localhost:3000 --output=json
 - [ ] Design matches chosen aesthetic direction
 - [ ] Typography uses distinctive fonts (not Inter/Roboto/Arial/system-ui)
 - [ ] Color palette defined via CSS custom properties
-- [ ] At least one memorable/signature design element present
+- [ ] All visual values reference design tokens (no hardcoded colors/sizes)
+- [ ] At least one signature design element present (and only one — see Signature Element discipline)
 - [ ] Animations respect `prefers-reduced-motion` media query
 - [ ] Responsive at 375px, 768px, 1024px minimum
 - [ ] WCAG AA color contrast passes
-- [ ] Result does NOT look like generic AI output
+- [ ] Self-review against 13-axis rubric (Step 7) shows no Critical/Major findings
+- [ ] Result does NOT look like generic AI output (does not match clusters A/B/C without brand reason)
+- [ ] Screenshots captured at 3 breakpoints and reviewed via `image-analyzer-subagent`
+
+## Workflow Context — Where This Skill Fits
+
+This skill is one stage in a design pipeline. Load the right peer at the right time:
+
+```
+wireframer-skill            ← low-fi structural baseline (pre-visual)
+       ↓
+frontend-design-skill       ← THIS SKILL — visual design + build
+       ↓
+uiux-review-skill           ← review built UI against 13-axis rubric
+       ↓
+responsive-audit-subagent   ← mechanical responsive fixes (Playwright-driven)
+       ↓
+accessibility-a11y-skill    ← deep WCAG audit (surface checks already done above)
+```
+
+You don't always need every stage. Typical sequences:
+
+- **Quick build**: `frontend-design-skill` → self-review (Step 7) → ship
+- **Production build**: `wireframer-skill` → `frontend-design-skill` → `uiux-review-skill` → `responsive-audit-subagent` → `accessibility-a11y-skill`
+- **Refresh existing UI**: `uiux-review-skill` first (find issues) → `frontend-design-skill` (apply fixes) → re-review
+
+## Related Skills
+
+| Skill | Relationship | When to use together |
+|-------|--------------|----------------------|
+| **uiux-review-skill** | Peer / inverse — this skill creates, that one reviews | After building: run `uiux-review-skill` to catch what self-review (Step 7) missed. Axis 13 of that skill mirrors our 3-cluster anti-pattern detection. |
+| **accessibility-a11y-skill** | Deep-dive delegation | This skill does surface WCAG AA checks only. For full WCAG 2.1 compliance (ARIA patterns, screen reader flows, keyboard nav), delegate to `accessibility-a11y-skill`. |
+| **wireframer-skill** | Upstream | Before committing to a visual direction, generate low-fi wireframes to validate layout and IA. |
+| **react-nextjs-antipatterns-skill** | Runtime guardrails | When building React/Next.js components, load this peer to avoid hydration mismatches, memory leaks, and RBAC issues that visual review won't catch. |
+| **nextjs-image-usage-skill** | Framework-specific | For Next.js 16 projects — proper `Image` component usage, remote domains, responsive images. |
+| **responsive-audit-subagent** | Downstream fixer | After build, this subagent catches and fixes responsive defects mechanically (Playwright-driven, tier-based). |
+| **image-analyzer-subagent** | Verification helper | Text-only primary sessions delegate screenshot review here during self-review (Step 7) — never interpret pixels inline. |

@@ -36,6 +36,7 @@ Use this skill when:
 
 - **accessibility-a11y-skill**: ARIA patterns for dynamic error banners. This skill handles React anti-patterns.
 - **frontend-design-skill**: UI aesthetics and layout. This skill handles runtime correctness.
+- **uiux-review-skill**: Peer — axis 12 (Nielsen heuristic 4: consistency and standards) catches React components that drift from design-system patterns at runtime; axis 13 (anti-default AI cluster detection) flags generic-looking output. Use this skill for runtime anti-patterns; use `uiux-review-skill` for visual/UX review of the rendered output.
 - **typescript-dry-principle-skill**: Duplicate type definitions and status mappings. This skill covers the React-specific runtime impacts.
 - **security-audit-skill**: Fail-open RBAC auditing. This skill covers the React/middleware implementation patterns.
 - **performance-optimization-skill**: Module-scope cache leaks and N+1 queries. This skill covers the React-specific aspects.

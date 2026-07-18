@@ -192,6 +192,8 @@ Begin immediately with the initialization routine, then generate the requested p
 | Skill | Relationship |
 |---|---|
 | `playwright-responsive-audit-skill` | References wireframer baselines as the structural layout source for responsive audits |
+| `uiux-reviewer-subagent` | Consumes wireframer baselines for structural drift comparison — after visual implementation, the reviewer compares built UI against the wireframe baseline to catch IA/layout deviations |
+| `frontend-design-skill` | Downstream — takes the validated low-fi wireframe and applies visual design direction on top |
 
 ## Supported Environments
 
