@@ -335,7 +335,7 @@ USAGE:
                          CONFIGURED FEATURES
 =======================================================================
 
-   AGENTS (39):
+   AGENTS (36):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
@@ -347,6 +347,7 @@ USAGE:
     typescript-reviewer  TypeScript/JS code review (type safety, React/Next)
     go-reviewer          Go code review (idioms, concurrency, errors)
     rust-reviewer        Rust code review (ownership, unsafe, Result/Option)
+    java-reviewer        Java code review (Effective Java, concurrency, Spring)
     testing              Test generation with framework detection
     pr-workflow          PR creation with quality gates and JIRA integration
     linting              Code linting with auto-fix for Python/JS/TS
@@ -1172,7 +1173,7 @@ function Set-Configuration {
             Write-LogSuccess "config.json copied successfully"
 
             Write-Host ""
-             Write-Host "Configured 39 agents:" -ForegroundColor Green
+             Write-Host "Configured 36 agents:" -ForegroundColor Green
             Write-Host "    - build (default) - Full-featured coding agent"
             Write-Host "    - plan - Planning agent (read-only)"
             Write-Host "    - explore - Codebase exploration and analysis"
@@ -1747,13 +1748,13 @@ function Show-NextSteps {
     Write-Host "  2. Start LM Studio: http://127.0.0.1:1234/v1"
     Write-Host "  3. Verify installation: opencode --version"
     Write-Host ""
-    Write-Host "Agents (39):"
+    Write-Host "Agents (36):"
     Write-Host "  - build (default) - Full-featured coding agent"
     Write-Host "  - plan - Planning agent (read-only)"
     Write-Host "  - explore - Codebase exploration and analysis"
     Write-Host "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
     Write-Host "  - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
-    Write-Host "  - ... and 34 more agents"
+    Write-Host "  - ... and 31 more agents"
     Write-Host ""
     Write-Host "  Usage: opencode --agent <name> `"prompt`""
     Write-Host "         opencode `"prompt`" (uses build)"

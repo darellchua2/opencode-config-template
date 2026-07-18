@@ -305,7 +305,7 @@ This repository implements **skill modularization** with 106 skills organized ac
 
 ### Agents
 
-35 agent `.md` files (plus 4 config-builtin agents defined directly in `config.json`: `build`, `plan`, `explore`, `general`) provide specialized task handling. Note: the 2 `*-primary-agent` files (`startup-founder`, `office-document`) are routing hubs but are declared with `mode: subagent`.
+36 agent `.md` files (plus 4 config-builtin agents defined directly in `config.json`: `build`, `plan`, `explore`, `general`) provide specialized task handling. Note: the 2 `*-primary-agent` files (`startup-founder`, `office-document`) are routing hubs but are declared with `mode: subagent`.
 
 #### Primary Agents
 
@@ -353,6 +353,7 @@ This repository implements **skill modularization** with 106 skills organized ac
 | **typescript-reviewer-subagent** | TypeScript/JS code review (type safety, React, Next.js) | solid-principles, clean-code, code-smells, continuous-learning | `explore`, `general` |
 | **go-reviewer-subagent** | Go code review (idioms, concurrency, error handling) | solid-principles, clean-code, code-smells, continuous-learning | `explore`, `general` |
 | **rust-reviewer-subagent** | Rust code review (ownership, unsafe safety, Result/Option) | solid-principles, clean-code, code-smells, continuous-learning | `explore`, `general` |
+| **java-reviewer-subagent** | Java code review (Effective Java, concurrency, Spring) | solid-principles, clean-code, code-smells, continuous-learning | `explore`, `general` |
 
 > **Built-in Delegation**: Subagents with `explore` can delegate codebase scanning to the built-in `explore` subagent. Subagents with `general` can delegate parallelizable multi-step work to the built-in `general` subagent. Access is controlled via `task` permissions in each agent's frontmatter (`"*": deny` by default, explicit allowlist).
 
