@@ -29,6 +29,8 @@
 #   ./setup.sh --quick            Quick setup (config + skills only, no dependencies)
 #   ./setup.sh --skills-only      Skills deployment only (requires opencode-ai installed)
 #   ./setup.sh --update           Update OpenCode CLI to latest version
+#   ./setup.sh --rollback [TARGET]  Restore ~/.config/opencode/ from a previous backup
+#                                   TARGET: TIMESTAMP | VERSION | latest | list
 #
 # OPTIONS:
 #   -h, --help          Show detailed help with all options and examples
@@ -42,6 +44,8 @@
 #   -D, --disable-auto-update   Disable automatic updates
 #   -S, --schedule-update <schedule>  Set update schedule: daily|weekly|monthly|manual
 #   -C, --check-update  Check for available updates without installing
+#   --rollback [TARGET] Restore from previous backup (see SETUP MODES above)
+#   --no-zip-backup     Skip zip archive creation after flat-file backup
 #
 # REQUIREMENTS (for full setup):
 #   - curl (for downloading)
@@ -303,6 +307,12 @@ UPDATE_SCHEDULE="manual"
 CHECK_UPDATE_ONLY=false
 KEEP_BACKUPS=5
 
+# Rollback mode (set by --rollback)
+ROLLBACK_MODE=false
+ROLLBACK_TARGET=""
+# Zip backup toggle (default on; --no-zip-backup disables)
+ZIP_BACKUP=true
+
 # API Keys (initialize to empty to avoid unbound variable errors)
 # Capture from environment if they exist
 GITHUB_PAT=""
@@ -448,14 +458,25 @@ USAGE:
   --update                Update opencode-ai CLI only           Keep CLI current
                           (No config changes)
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  --rollback [TARGET]     Restore from a previous backup         Undo a bad deploy
+                          TARGET:
+                            (omitted)   Interactive picker
+                            TIMESTAMP   e.g. 20260719_070926
+                            VERSION     e.g. 1.76.0 (closest backup <= tag)
+                            latest      Most recent backup
+                            list        List available backups and exit
+                          Safety: creates a pre-rollback backup first
+                          Combine with --yes to skip confirmation prompt
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
                             OPTIONS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   SETUP OPTIONS:
     -q, --quick           Quick setup mode (config + skills only, no dependencies)
     -s, --skills-only     Skills-only deployment mode
     -u, --update          Update OpenCode CLI to latest version
+    --rollback [TARGET]   Restore from previous backup (see SETUP MODES above)
 
   UPDATE MANAGEMENT:
     -A, --enable-auto-update      Enable automatic opencode-ai updates
@@ -471,6 +492,8 @@ USAGE:
     -v, --verbose         Enable detailed debug logging
     -k, --keep-backups <N>  Keep only N most recent backups (default: 5)
                             0 = delete all old backups, negative = keep all
+    --no-zip-backup       Skip zip archive creation (zip is created by default
+                            alongside the flat-file backup for portability)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
                             EXAMPLES
@@ -495,6 +518,19 @@ USAGE:
     ./setup.sh -A -S daily          # Enable with daily checks
     ./setup.sh -A -S weekly         # Enable with weekly checks
     ./setup.sh -D                   # Disable auto-updates
+
+  Backup and rollback:
+    ./setup.sh --rollback list      # List available backups (timestamp + size + zip)
+    ./setup.sh --rollback latest    # Restore from most recent backup
+    ./setup.sh --rollback 20260719_070926  # Restore from specific timestamp
+    ./setup.sh --rollback 1.76.0    # Restore from backup closest to version 1.76.0
+    ./setup.sh --rollback           # Interactive picker
+    ./setup.sh --rollback latest -y # Restore without confirmation prompt
+    ./setup.sh --rollback latest -d # Dry-run: preview restore, change nothing
+    ./setup.sh --no-zip-backup      # Deploy without creating zip archive
+
+  Note: Every deploy creates BOTH a flat-file backup (~/.opencode-backup-TIMESTAMP/)
+        AND a zip archive (~/.opencode-backup-TIMESTAMP.zip) for portability.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
                          CONFIGURED FEATURES
@@ -696,8 +732,10 @@ USAGE:
   Learnings directory:  ~/.config/opencode/learnings/
   Setup log:            ~/.opencode-setup.log
   Update log:           ~/.config/opencode/update.log
-  Backups:              ~/.opencode-backup-YYYYMMDD_HHMMSS/
+  Backups:              ~/.opencode-backup-YYYYMMDD_HHMMSS/        (flat-file)
+                        ~/.opencode-backup-YYYYMMDD_HHMMSS.zip     (zip archive)
                          Retention: 5 most recent (configurable with --keep-backups)
+                         Rollback:  ./setup.sh --rollback list
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -769,6 +807,20 @@ parse_arguments() {
                     exit 1
                 fi
                 shift 2
+                ;;
+            --rollback)
+                ROLLBACK_MODE=true
+                # Optional positional: TIMESTAMP | VERSION | latest | list
+                if [ -n "${2:-}" ] && [[ "$2" != --* ]]; then
+                    ROLLBACK_TARGET="$2"
+                    shift 2
+                else
+                    shift
+                fi
+                ;;
+            --no-zip-backup)
+                ZIP_BACKUP=false
+                shift
                 ;;
             *)
                 log_error "Unknown option: $1"
@@ -860,7 +912,9 @@ cleanup_old_backups() {
     fi
 
     local all_backups
-    all_backups=$(ls -1d "${HOME}"/.opencode-backup-* "${HOME}"/.opencode-update-backup-* 2>/dev/null | sort -r)
+    # Use find -type d to avoid matching sibling .zip files (which the glob
+    # would otherwise count as separate backups, inflating the keep total).
+    all_backups=$(find "${HOME}" -maxdepth 1 -type d \( -name ".opencode-backup-*" -o -name ".opencode-update-backup-*" \) 2>/dev/null | sort -r)
 
     if [ -z "$all_backups" ]; then
         log_debug "No old backups found"
@@ -886,14 +940,601 @@ cleanup_old_backups() {
         if [ -n "$dir" ] && [ -d "$dir" ]; then
             if [ "$DRY_RUN" = true ]; then
                 echo "[DRY-RUN] Would remove old backup: ${dir}"
+                [ -f "${dir}.zip" ] && echo "[DRY-RUN] Would remove old backup zip: ${dir}.zip"
             else
                 rm -rf "${dir}"
                 log_info "Removed old backup: ${dir}"
+                # Also remove associated zip archive (sibling file)
+                if [ -f "${dir}.zip" ]; then
+                    rm -f "${dir}.zip"
+                    log_info "Removed old backup zip: ${dir}.zip"
+                fi
             fi
         fi
     done
 
     log_success "Cleaned up $delete_count old backup(s)"
+}
+
+################################################################################
+# ZIP BACKUP AND ROLLBACK FUNCTIONS
+################################################################################
+
+# Create a zip archive of the backup directory for portability.
+# Zip path: ${BACKUP_DIR}.zip (sibling of flat-file dir, same timestamp).
+# Uses `zip -r` if available; falls back to `tar -czf` (.tar.gz) if not.
+# Respects DRY_RUN and ZIP_BACKUP toggle.
+create_zip_backup() {
+    # Respect toggle (--no-zip-backup disables)
+    if [ "$ZIP_BACKUP" != true ]; then
+        log_debug "Zip backup disabled (ZIP_BACKUP=$ZIP_BACKUP)"
+        return 0
+    fi
+
+    # No backup dir → nothing to zip
+    if [ ! -d "$BACKUP_DIR" ]; then
+        log_debug "Skipping zip: BACKUP_DIR does not exist ($BACKUP_DIR)"
+        return 0
+    fi
+
+    # Empty backup dir → nothing to zip
+    if [ ! "$(ls -A "$BACKUP_DIR" 2>/dev/null)" ]; then
+        log_debug "Skipping zip: BACKUP_DIR is empty ($BACKUP_DIR)"
+        return 0
+    fi
+
+    local zip_path="${BACKUP_DIR}.zip"
+    local archive_name
+    archive_name=$(basename "$BACKUP_DIR")
+
+    if [ "$DRY_RUN" = true ]; then
+        if command_exists zip; then
+            echo "[DRY-RUN] Would execute: zip -rj ${zip_path} ${BACKUP_DIR}/"
+        else
+            echo "[DRY-RUN] Would execute: tar -czf ${zip_path}.tar.gz -C ${HOME} ${archive_name}"
+        fi
+        return 0
+    fi
+
+    if command_exists zip; then
+        log_info "Creating zip archive: ${zip_path}"
+        # -j: junk paths (store filenames only); -q: quiet
+        if zip -qrj "$zip_path" "$BACKUP_DIR"/; then
+            log_success "Zip archive created: ${zip_path}"
+            return 0
+        else
+            log_warn "zip command failed; archive not created"
+            return 1
+        fi
+    else
+        # Fallback: tar.gz (named .tar.gz so consumers can detect format)
+        local tar_path="${zip_path}.tar.gz"
+        log_info "'zip' not available; creating tar.gz archive: ${tar_path}"
+        if tar -czf "$tar_path" -C "$HOME" "$archive_name"; then
+            log_success "Tar.gz archive created: ${tar_path}"
+            return 0
+        else
+            log_warn "tar command failed; archive not created"
+            return 1
+        fi
+    fi
+}
+
+# List available backups (newest-first) with timestamp, size, and zip availability.
+# Output format (tabular, human-readable):
+#   TIMESTAMP        TYPE       SIZE       ZIP     PATH
+list_backups() {
+    # Combine all backup-prefix directories, newest first.
+    # Use find (not ls) so non-matching globs don't fail with pipefail.
+    local all_dirs
+    all_dirs=$(find "${HOME}" -maxdepth 1 -type d \( \
+        -name ".opencode-backup-*" -o \
+        -name ".opencode-update-backup-*" -o \
+        -name ".opencode-pre-rollback-backup-*" \
+        \) 2>/dev/null | sort -r)
+
+    if [ -z "$all_dirs" ]; then
+        echo "No backups found in ${HOME}/"
+        echo ""
+        echo "Backups are created automatically by:"
+        echo "  - ./setup.sh (full deploy)"
+        echo "  - ./setup.sh --rollback (pre-rollback safety)"
+        return 0
+    fi
+
+    printf "%-17s %-22s %-10s %-5s %s\n" "TIMESTAMP" "TYPE" "SIZE" "ZIP" "PATH"
+    printf -- "--------------------------------------------------------------------------------------------\n"
+
+    local dir
+    while IFS= read -r dir; do
+        [ -z "$dir" ] && continue
+        local name
+        name=$(basename "$dir")
+        local ts=""
+        local btype="backup"
+
+        # Classify and extract timestamp
+        case "$name" in
+            .opencode-backup-*)
+                ts="${name#.opencode-backup-}"
+                btype="backup"
+                ;;
+            .opencode-update-backup-*)
+                ts="${name#.opencode-update-backup-}"
+                btype="update"
+                ;;
+            .opencode-pre-rollback-backup-*)
+                ts="${name#.opencode-pre-rollback-backup-}"
+                btype="pre-rollback"
+                ;;
+            *)
+                ts="?"
+                ;;
+        esac
+
+        # Compute human-readable size of the dir
+        local size_str="?"
+        if command_exists du; then
+            size_str=$(du -sh "$dir" 2>/dev/null | cut -f1)
+        fi
+
+        # Check for sibling .zip or .tar.gz
+        local zip_str="-"
+        if [ -f "${dir}.zip" ]; then
+            zip_str="zip"
+        elif [ -f "${dir}.zip.tar.gz" ]; then
+            zip_str="tgz"
+        fi
+
+        printf "%-17s %-22s %-10s %-5s %s\n" "$ts" "$btype" "$size_str" "$zip_str" "$dir"
+    done <<< "$all_dirs"
+
+    # Also list orphan zip files (where the flat dir no longer exists).
+    # Use find (not ls) to avoid pipefail on non-matching globs.
+    local orphan_zips
+    orphan_zips=$(find "${HOME}" -maxdepth 1 -type f \( \
+        -name ".opencode-backup-*.zip" -o \
+        -name ".opencode-backup-*.zip.tar.gz" -o \
+        -name ".opencode-update-backup-*.zip" -o \
+        -name ".opencode-pre-rollback-backup-*.zip" \
+        \) 2>/dev/null | sort -r)
+    if [ -n "$orphan_zips" ]; then
+        echo ""
+        echo "Orphan archives (no matching flat dir):"
+        while IFS= read -r zpath; do
+            [ -z "$zpath" ] && continue
+            local zname
+            zname=$(basename "$zpath")
+            local zsize="?"
+            if command_exists du; then
+                zsize=$(du -sh "$zpath" 2>/dev/null | cut -f1)
+            fi
+            printf "  %-40s %-10s %s\n" "$zname" "$zsize" "$zpath"
+        done <<< "$orphan_zips"
+    fi
+}
+
+# Get the most recent backup directory (flat-file only, any prefix).
+# Echoes the absolute path; returns 1 if none found.
+get_latest_backup() {
+    local latest
+    latest=$(find "${HOME}" -maxdepth 1 -type d \( \
+        -name ".opencode-backup-*" -o \
+        -name ".opencode-update-backup-*" -o \
+        -name ".opencode-pre-rollback-backup-*" \
+        \) 2>/dev/null | sort -r | head -n1)
+    if [ -z "$latest" ]; then
+        return 1
+    fi
+    echo "$latest"
+}
+
+# Resolve a user-provided rollback target to a concrete backup directory.
+# Accepts:
+#   - TIMESTAMP (YYYYMMDD_HHMMSS)
+#   - VERSION  (vX.Y.Z or X.Y.Z) — resolves via VERSION file git history
+# Echoes the absolute path; returns 1 if not found.
+resolve_backup_target() {
+    local target="$1"
+
+    # TIMESTAMP pattern: 8 digits, underscore, 6 digits
+    if [[ "$target" =~ ^[0-9]{8}_[0-9]{6}$ ]]; then
+        for prefix in ".opencode-backup-" ".opencode-update-backup-" ".opencode-pre-rollback-backup-"; do
+            local candidate="${HOME}/${prefix}${target}"
+            if [ -d "$candidate" ]; then
+                echo "$candidate"
+                return 0
+            fi
+        done
+        # Also accept zip-only backup
+        for prefix in ".opencode-backup-" ".opencode-update-backup-" ".opencode-pre-rollback-backup-"; do
+            if [ -f "${HOME}/${prefix}${target}.zip" ]; then
+                echo "${HOME}/${prefix}${target}.zip"
+                return 0
+            fi
+        done
+        return 1
+    fi
+
+    # VERSION pattern: vX.Y.Z or X.Y.Z
+    if [[ "$target" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        local clean_ver="${target#v}"
+        log_info "Resolving version ${clean_ver} via VERSION file git history..."
+
+        # Get the commit date when VERSION was set to this value
+        local version_commit_date=""
+        if command_exists git && [ -d "${REPO_DIR}/.git" ]; then
+            # Find the commit where VERSION content matched this value
+            version_commit_date=$(cd "$REPO_DIR" && git log -1 --format=%ci -- VERSION 2>/dev/null | head -1)
+            # Also try by tag
+            if [ -z "$version_commit_date" ]; then
+                version_commit_date=$(cd "$REPO_DIR" && git log -1 --format=%ai "v${clean_ver}" 2>/dev/null | head -1)
+            fi
+            # Try by content of VERSION file at commits
+            if [ -z "$version_commit_date" ]; then
+                local matching_commit
+                matching_commit=$(cd "$REPO_DIR" && git log --format=%H -- VERSION 2>/dev/null | while read -r commit; do
+                    local content
+                    content=$(cd "$REPO_DIR" && git show "${commit}:VERSION" 2>/dev/null | tr -d '[:space:]')
+                    if [ "$content" = "$clean_ver" ]; then
+                        echo "$commit"
+                        break
+                    fi
+                done | head -1)
+                if [ -n "$matching_commit" ]; then
+                    version_commit_date=$(cd "$REPO_DIR" && git log -1 --format=%ci "${matching_commit}" 2>/dev/null | head -1)
+                fi
+            fi
+        fi
+
+        if [ -z "$version_commit_date" ]; then
+            log_warn "Could not resolve version ${clean_ver} to a git commit date"
+            return 1
+        fi
+
+        # Convert git date (e.g. "2026-07-19 12:34:56 -0500") to comparable numeric form YYYYMMDDHHMMSS
+        local git_ts_numeric
+        git_ts_numeric=$(echo "$version_commit_date" | awk '{
+            # Parse "YYYY-MM-DD HH:MM:SS ±ZZZZ"
+            gsub(/-/, "", $1)
+            gsub(/:/, "", $2)
+            print $1 $2
+        }')
+
+        if [ -z "$git_ts_numeric" ]; then
+            return 1
+        fi
+
+        log_info "Version ${clean_ver} corresponds to commit timestamp ${git_ts_numeric}"
+
+        # Find the latest backup whose timestamp is <= git_ts_numeric
+        local best_dir=""
+        local best_ts=""
+        local prefixes=(".opencode-backup-" ".opencode-update-backup-" ".opencode-pre-rollback-backup-")
+        for prefix in "${prefixes[@]}"; do
+            while IFS= read -r dir; do
+                [ -z "$dir" ] && continue
+                local name
+                name=$(basename "$dir")
+                local ts="${name#${prefix}}"
+                # Only compare against valid timestamp suffixes
+                [[ "$ts" =~ ^[0-9]{8}_[0-9]{6}$ ]] || continue
+                # Strip underscore for numeric comparison
+                local ts_numeric="${ts%_*}${ts#*_}"
+                if [ "$ts_numeric" -le "$git_ts_numeric" ]; then
+                    if [ -z "$best_ts" ] || [ "$ts_numeric" -gt "$best_ts" ]; then
+                        best_ts="$ts_numeric"
+                        best_dir="$dir"
+                    fi
+                fi
+            done < <(find "${HOME}" -maxdepth 1 -type d -name "${prefix}*" 2>/dev/null)
+        done
+
+        if [ -n "$best_dir" ]; then
+            echo "$best_dir"
+            return 0
+        fi
+        return 1
+    fi
+
+    # Unknown format
+    return 1
+}
+
+# Extract a zip/tar backup to a temporary directory.
+# Echoes the temp dir path; caller MUST clean up.
+# Returns 1 on failure.
+extract_backup_archive() {
+    local archive="$1"
+    local tmp_dir
+    tmp_dir=$(mktemp -d "${TMPDIR:-/tmp}/opencode-rollback-XXXXXX")
+    if [ $? -ne 0 ]; then
+        log_error "Could not create temp dir for extraction"
+        return 1
+    fi
+
+    case "$archive" in
+        *.zip.tar.gz)
+            if ! tar -xzf "$archive" -C "$tmp_dir"; then
+                log_error "Failed to extract tar.gz: $archive"
+                rm -rf "$tmp_dir"
+                return 1
+            fi
+            ;;
+        *.zip)
+            if command_exists unzip; then
+                if ! unzip -q "$archive" -d "$tmp_dir"; then
+                    log_error "Failed to extract zip: $archive"
+                    rm -rf "$tmp_dir"
+                    return 1
+                fi
+            else
+                # Fallback: python's zipfile
+                if command_exists python3; then
+                    python3 -c "import zipfile; zipfile.ZipFile('$archive').extractall('$tmp_dir')" 2>/dev/null
+                    if [ $? -ne 0 ]; then
+                        log_error "Failed to extract zip (no unzip, python fallback failed): $archive"
+                        rm -rf "$tmp_dir"
+                        return 1
+                    fi
+                else
+                    log_error "Cannot extract $archive: neither unzip nor python3 available"
+                    rm -rf "$tmp_dir"
+                    return 1
+                fi
+            fi
+            ;;
+        *)
+            log_error "Unknown archive format: $archive"
+            rm -rf "$tmp_dir"
+            return 1
+            ;;
+    esac
+
+    # If the extracted content has a single top-level dir that matches the
+    # backup name pattern, descend into it so callers see flat content.
+    local first_child
+    first_child=$(ls -1 "$tmp_dir" 2>/dev/null | head -n1)
+    if [ $(ls -1 "$tmp_dir" 2>/dev/null | wc -l) -eq 1 ] && [ -d "${tmp_dir}/${first_child}" ]; then
+        echo "${tmp_dir}/${first_child}"
+    else
+        echo "$tmp_dir"
+    fi
+}
+
+# Restore files from a backup directory into $CONFIG_DIR.
+# Handles both backup layouts:
+#   - flat files (config.json, AGENTS.md) + subdirs (skills/, skills-backup/, agents-backup/)
+#   - update backups (config.json, AGENTS.md, skills/, agents/)
+restore_from_dir() {
+    local src_dir="$1"
+
+    # Restore config.json
+    if [ -f "${src_dir}/config.json" ]; then
+        mkdir -p "$CONFIG_DIR"
+        cp -f "${src_dir}/config.json" "${CONFIG_DIR}/config.json"
+        log_info "Restored: config.json"
+    fi
+
+    # Restore AGENTS.md
+    if [ -f "${src_dir}/AGENTS.md" ]; then
+        mkdir -p "$CONFIG_DIR"
+        cp -f "${src_dir}/AGENTS.md" "${CONFIG_DIR}/AGENTS.md"
+        log_info "Restored: AGENTS.md"
+    fi
+
+    # Restore skills — prefer "skills" over "skills-backup"
+    if [ -d "${src_dir}/skills" ]; then
+        rm -rf "$SKILLS_DIR"
+        cp -r "${src_dir}/skills" "$SKILLS_DIR"
+        log_info "Restored: skills/"
+    elif [ -d "${src_dir}/skills-backup" ]; then
+        rm -rf "$SKILLS_DIR"
+        cp -r "${src_dir}/skills-backup" "$SKILLS_DIR"
+        log_info "Restored: skills/ (from skills-backup/)"
+    fi
+
+    # Restore agents
+    if [ -d "${src_dir}/agents" ]; then
+        rm -rf "$AGENTS_DEST_DIR"
+        cp -r "${src_dir}/agents" "$AGENTS_DEST_DIR"
+        log_info "Restored: agents/"
+    elif [ -d "${src_dir}/agents-backup" ]; then
+        rm -rf "$AGENTS_DEST_DIR"
+        cp -r "${src_dir}/agents-backup" "$AGENTS_DEST_DIR"
+        log_info "Restored: agents/ (from agents-backup/)"
+    fi
+
+    # Restore any other top-level files (*.json, *.md) that aren't config.json/AGENTS.md
+    for f in "${src_dir}"/*; do
+        [ -e "$f" ] || continue
+        local fname
+        fname=$(basename "$f")
+        # Skip already-handled and known subdirs
+        case "$fname" in
+            config.json|AGENTS.md|skills|skills-backup|agents|agents-backup) continue ;;
+        esac
+        # Only restore regular files (skip shell configs etc. — those go to $HOME)
+        if [ -f "$f" ]; then
+            case "$fname" in
+                *.json|*.md)
+                    cp -f "$f" "${CONFIG_DIR}/${fname}"
+                    log_info "Restored: ${fname}"
+                    ;;
+            esac
+        fi
+    done
+}
+
+# Create a safety backup before rollback (so rollback is reversible).
+# Stored in ~/.opencode-pre-rollback-backup-TIMESTAMP/
+create_pre_rollback_backup() {
+    local ts
+    ts=$(date +%Y%m%d_%H%M%S)
+    local pre_dir="${HOME}/.opencode-pre-rollback-backup-${ts}"
+    mkdir -p "$pre_dir"
+
+    log_info "Creating pre-rollback safety backup..."
+
+    if [ -f "$CONFIG_FILE" ]; then
+        cp -f "$CONFIG_FILE" "${pre_dir}/config.json"
+    fi
+    if [ -f "${CONFIG_DIR}/AGENTS.md" ]; then
+        cp -f "${CONFIG_DIR}/AGENTS.md" "${pre_dir}/AGENTS.md"
+    fi
+    if [ -d "$SKILLS_DIR" ]; then
+        cp -r "$SKILLS_DIR" "${pre_dir}/skills"
+    fi
+    if [ -d "$AGENTS_DEST_DIR" ]; then
+        cp -r "$AGENTS_DEST_DIR" "${pre_dir}/agents"
+    fi
+
+    log_success "Pre-rollback backup created: ${pre_dir}"
+    echo "$pre_dir"
+}
+
+# Rollback: restore ~/.config/opencode/ from a previous backup.
+# Uses ROLLBACK_TARGET (set by parse_arguments) to select the backup.
+rollback() {
+    local target="${ROLLBACK_TARGET:-}"
+
+    # Sub-mode: list
+    if [ "$target" = "list" ]; then
+        echo ""
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "                📦 Available Backups"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
+        list_backups
+        return 0
+    fi
+
+    # Resolve target → backup path (dir, or zip file)
+    local backup_path=""
+
+    if [ -z "$target" ]; then
+        # Interactive: list and pick
+        echo ""
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "                📦 Select Backup to Restore"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
+        list_backups
+        echo ""
+        if [ "$AUTO_ACCEPT" != true ]; then
+            local pick
+            read -p "Enter TIMESTAMP to restore (or 'q' to cancel): " pick
+            if [ "$pick" = "q" ] || [ -z "$pick" ]; then
+                log_info "Rollback cancelled"
+                return 0
+            fi
+            target="$pick"
+        else
+            log_error "Interactive rollback requires a TARGET (cannot prompt with --yes)"
+            log_info "Use: ./setup.sh --rollback TIMESTAMP"
+            log_info "Or:  ./setup.sh --rollback latest"
+            return 1
+        fi
+    fi
+
+    if [ "$target" = "latest" ]; then
+        backup_path=$(get_latest_backup)
+        if [ -z "$backup_path" ]; then
+            log_error "No backups available to restore from"
+            return 1
+        fi
+    else
+        backup_path=$(resolve_backup_target "$target")
+        if [ -z "$backup_path" ]; then
+            log_error "No backup found for target: '${target}'"
+            log_info "Available backups:"
+            list_backups
+            return 1
+        fi
+    fi
+
+    log_info "Resolved backup: ${backup_path}"
+
+    # DRY-RUN: print what would happen, change nothing
+    if [ "$DRY_RUN" = true ]; then
+        echo ""
+        echo "[DRY-RUN] Rollback plan:"
+        echo "  Source: ${backup_path}"
+        echo "  Target: ${CONFIG_DIR}/"
+        echo "  Steps:"
+        echo "    1. Create pre-rollback backup of current state"
+        echo "    2. Confirm (or skip with --yes)"
+        if [[ "$backup_path" == *.zip ]]; then
+            echo "    3. Extract archive to temp location"
+            echo "    4. Copy files to ${CONFIG_DIR}/"
+        else
+            echo "    3. Copy files to ${CONFIG_DIR}/"
+        fi
+        echo ""
+        return 0
+    fi
+
+    # Confirmation prompt (unless --yes)
+    if [ "$AUTO_ACCEPT" != true ]; then
+        echo ""
+        echo "⚠️  This will replace files in ${CONFIG_DIR}/ with content from:"
+        echo "    ${backup_path}"
+        echo ""
+        if ! prompt_yes_no "Continue with rollback?" "n"; then
+            log_info "Rollback cancelled by user"
+            return 0
+        fi
+    fi
+
+    # STEP 1: Safety backup (always — even with --yes)
+    local pre_dir
+    pre_dir=$(create_pre_rollback_backup)
+
+    # STEP 2: Resolve src_dir (extract zip if needed)
+    local src_dir="$backup_path"
+    local extracted_tmp=""
+    if [[ "$backup_path" == *.zip ]]; then
+        log_info "Extracting zip archive..."
+        extracted_tmp=$(extract_backup_archive "$backup_path")
+        if [ $? -ne 0 ] || [ -z "$extracted_tmp" ]; then
+            log_error "Failed to extract backup archive"
+            log_info "Your current state is unchanged"
+            return 1
+        fi
+        src_dir="$extracted_tmp"
+    elif [ ! -d "$backup_path" ]; then
+        log_error "Backup path is neither a directory nor a zip: ${backup_path}"
+        return 1
+    fi
+
+    # STEP 3: Restore
+    log_info "Restoring files to ${CONFIG_DIR}/..."
+    mkdir -p "$CONFIG_DIR"
+    restore_from_dir "$src_dir"
+
+    # Cleanup temp dir
+    if [ -n "$extracted_tmp" ]; then
+        # Extracted tmp may be a subdir of mktemp base — remove the base
+        local tmp_base
+        tmp_base=$(echo "$extracted_tmp" | sed -E 's|^(.*)/opencode-rollback-[A-Za-z0-9]+.*$|\1/opencode-rollback-XXXXXX|' 2>/dev/null)
+        # Safer: just remove the parent that mktemp created
+        local tmp_parent
+        tmp_parent="$extracted_tmp"
+        # Walk up until we hit a path containing opencode-rollback-
+        while [ "$tmp_parent" != "/" ] && [[ "$(basename "$tmp_parent")" != opencode-rollback-* ]]; do
+            tmp_parent=$(dirname "$tmp_parent")
+        done
+        if [[ "$(basename "$tmp_parent")" == opencode-rollback-* ]]; then
+            rm -rf "$tmp_parent"
+        fi
+    fi
+
+    echo ""
+    log_success "Rollback complete!"
+    log_info "Restored from: ${backup_path}"
+    log_info "Pre-rollback backup saved to: ${pre_dir}"
+    log_info "If rollback was wrong, run: ./setup.sh --rollback $(basename "$pre_dir" | sed 's/^\.opencode-pre-rollback-backup-//')"
+    return 0
 }
 
 ################################################################################
@@ -2481,6 +3122,12 @@ main() {
     # Initialize logging
     init_logging
 
+    # Handle rollback mode (mutually exclusive with normal setup flow)
+    if [ "$ROLLBACK_MODE" = true ]; then
+        rollback
+        exit $?
+    fi
+
     # Handle update-only mode
     if [ "$UPDATE_ONLY" = true ]; then
         update_opencode_cli
@@ -2627,6 +3274,9 @@ main() {
     deploy_agents || true
     setup_learnings_dir || true
     setup_shell_vars || true
+
+    # Zip backup (after all flat-file backups have been written, before cleanup)
+    create_zip_backup || true
 
     cleanup_old_backups
 
