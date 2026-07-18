@@ -347,6 +347,7 @@ USAGE:
     typescript-reviewer  TypeScript/JS code review (type safety, React/Next)
     go-reviewer          Go code review (idioms, concurrency, errors)
     rust-reviewer        Rust code review (ownership, unsafe, Result/Option)
+    java-reviewer        Java code review (Effective Java, concurrency, Spring)
     testing              Test generation with framework detection
     pr-workflow          PR creation with quality gates and JIRA integration
     linting              Code linting with auto-fix for Python/JS/TS

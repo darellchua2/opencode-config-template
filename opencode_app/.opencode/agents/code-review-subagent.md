@@ -19,6 +19,7 @@ permission:
     typescript-reviewer-subagent: allow
     go-reviewer-subagent: allow
     rust-reviewer-subagent: allow
+    java-reviewer-subagent: allow
     image-analyzer-subagent: allow
   skill:
     solid-principles-skill: allow
@@ -235,6 +236,7 @@ When the codebase is primarily a single language, delegate to the language-speci
 | TypeScript/JS | `typescript-reviewer-subagent` | `*.ts`, `*.tsx`, `*.js`, `*.jsx` files dominate, or React/Next.js/Node detected |
 | Go | `go-reviewer-subagent` | `*.go` files dominate, or Go modules detected |
 | Rust | `rust-reviewer-subagent` | `*.rs` files dominate, or Cargo.toml detected |
+| Java | `java-reviewer-subagent` | `*.java` files dominate, or pom.xml/build.gradle detected |
 
 **Delegation criteria**: If >60% of review files are a single language, delegate to that language reviewer. For mixed-language codebases, delegate language-specific files to appropriate reviewers and handle remaining files directly.
 

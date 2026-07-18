@@ -500,7 +500,7 @@ USAGE:
                          CONFIGURED FEATURES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-   AGENTS (39):
+   AGENTS (36):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
@@ -512,6 +512,7 @@ USAGE:
     typescript-reviewer  TypeScript/JS code review (type safety, React/Next)
     go-reviewer          Go code review (idioms, concurrency, errors)
     rust-reviewer        Rust code review (ownership, unsafe, Result/Option)
+    java-reviewer        Java code review (Effective Java, concurrency, Spring)
     testing              Test generation with framework detection
     pr-workflow          PR creation with quality gates and JIRA integration
     linting              Code linting with auto-fix for Python/JS/TS
@@ -1661,13 +1662,13 @@ setup_config() {
             log_success "config.json copied successfully"
 
             echo ""
-        echo "✓ Configured 39 agents:"
+        echo "✓ Configured 36 agents:"
              echo "    - build (default) - Full-featured coding agent"
              echo "    - plan - Planning agent (read-only)"
              echo "    - explore - Codebase exploration and analysis"
              echo "    - image-analyzer-subagent - Image/screenshot analysis"
              echo "    - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
-             echo "    - ... and 34 more agents"
+             echo "    - ... and 31 more agents"
             echo ""
              echo "✓ Configured MCP servers:"
              echo "    Local (auto-start): atlassian, zai-vision-mcp-server, codegraph, mermaid"
@@ -2215,12 +2216,12 @@ print_summary() {
 
     # Agents configured
     if [ -f "$CONFIG_FILE" ]; then
-        echo "✓ Configured 39 agents:"
+        echo "✓ Configured 36 agents:"
         echo "    - build (default) - Full-featured coding agent"
         echo "    - plan - Planning agent (read-only)"
         echo "    - explore - Codebase exploration and analysis"
         echo "    - image-analyzer-subagent - Image/screenshot analysis"
-        echo "    - ... and 35 more agents"
+        echo "    - ... and 32 more agents"
     fi
 
     # MCP servers configured
@@ -2392,13 +2393,13 @@ print_next_steps() {
     echo "                        🚀 Quick Start"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "🤖 Agents (39):"
+    echo "🤖 Agents (36):"
     echo "  - build (default) - Full-featured coding agent"
     echo "  - plan - Planning agent (read-only)"
     echo "  - explore - Fast codebase exploration and analysis"
     echo "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
     echo "  - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
-    echo "  - ... and 34 more agents"
+    echo "  - ... and 31 more agents"
     echo ""
     echo "  Usage: opencode --agent <name> \"prompt\""
     echo "         opencode \"prompt\" (uses build)"
