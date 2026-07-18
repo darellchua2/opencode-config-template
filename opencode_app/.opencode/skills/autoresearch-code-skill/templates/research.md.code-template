@@ -1,0 +1,87 @@
+# research.md.code-template
+#
+# Inline Goal / Scope / Metric / Verify / Guard format for autoresearch-code-skill.
+# Copy this file into your project, substitute the {{PLACEHOLDERS}}, then run
+# `init_research.py` (or hand the dir to autoresearch-code-subagent).
+#
+# See autoresearch-core-skill/references/audit-trail.md for the TSV format.
+
+# Autoresearch Run: {{GOAL}}
+
+## Goal
+{{GOAL}}
+
+## Scope
+{{SCOPE_GLOB}}
+
+## Metric + Direction
+- **Name:** {{METRIC_NAME}}
+- **Direction:** {{higher_is_better | lower_is_better}}
+- **Target:** {{TARGET_VALUE}}
+
+## Verify (evaluator — emits {"pass":bool,"score":N})
+```
+{{EVALUATOR_COMMAND}}
+```
+The last stdout line must be exactly `{"pass":bool,"score":N}`.
+
+## Guard (optional — exit 0/nonzero, must stay green)
+```
+{{GUARD_COMMAND}}
+```
+
+## Iterations
+{{ITERATIONS}}
+
+---
+
+## Worked examples
+
+### Example A — test coverage to 80%
+
+```
+Goal:        increase test coverage to 80%
+Scope:       src/**/*.ts
+Metric:      coverage_pct
+Direction:   higher_is_better
+Target:      80.0
+Verify:      npm run coverage | tail -1 | python3 -c "import json,sys,re; \
+              line=sys.stdin.read(); m=re.search(r'All files[^|]*\|[^|]*\|[^|]*\|[^|]*\|[^|]*\|([0-9.]+)', line); \
+              s=float(m.group(1)) if m else 0.0; print(json.dumps({'pass':s>=80.0,'score':s}))"
+Guard:       npm test
+Iterations:  25
+```
+
+TDD mapping override: `pass:true` ↔ GREEN, `pass:false` ↔ RED, `score` ↔ coverage %.
+
+### Example B — bundle size under 200 KB
+
+```
+Goal:        reduce production JS bundle below 200 KB
+Scope:       src/**/*, next.config.ts, package.json
+Metric:      bundle_kb
+Direction:   lower_is_better
+Target:      200.0
+Verify:      npm run build && node -e "const fs=require('fs');const s=fs.statSync('.next/static/chunks/main.js');const kb=s.size/1024;console.log(JSON.stringify({pass:kb<=200,score:kb}))"
+Guard:       npm test
+Iterations:  15
+```
+
+Simplicity note: a refactor that removes 5 KB but adds 50 lines of config is a
+candidate for discard. Prefer removing code over adding it.
+
+### Example C — runtime of a hot loop
+
+```
+Goal:        reduce parse_runtime_ms below 50 ms
+Scope:       src/parser/**
+Metric:      parse_runtime_ms
+Direction:   lower_is_better
+Target:      50.0
+Verify:      python3 benchmarks/parse_bench.py
+Guard:       pytest tests/test_parser.py
+Iterations:  20
+```
+
+3-strike pivot applies: after 3 non-improving micro-tweaks, switch to an
+algorithmic change (different data structure, different parse strategy).
