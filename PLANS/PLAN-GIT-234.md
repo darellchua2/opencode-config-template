@@ -48,9 +48,9 @@ The repository currently has 4 language-specific reviewer subagents that share a
     — **Done when:** Two edits applied: (a) In `permission.task` block, add `java-reviewer-subagent: allow` immediately after the `rust-reviewer-subagent: allow` line. (b) In the "Language-Specific Reviewer Delegation" table, add row: `| Java | java-reviewer-subagent | *.java files dominate, or pom.xml/build.gradle detected |` immediately after the Rust row.
     — **Consumers affected:** Anyone invoking code review on a Java codebase
 
-- [x] **2.2** Update `README.md` (Subagents table)
-    — **Why:** README is the primary user-facing documentation; the Subagents table lists every available subagent. Missing the Java row would make it look like the repo still lacks a Java reviewer.
-    — **Done when:** In the Subagents table (around line 355, after the `rust-reviewer-subagent` row), add: `| **java-reviewer-subagent** | Java code review (Effective Java, concurrency, Spring) | solid-principles, clean-code, code-smells, continuous-learning | explore, general |`. **Skill column MUST match sibling rows exactly** — the 4 existing language reviewer rows (README lines 352-355) all list only `solid-principles, clean-code, code-smells, continuous-learning` (the README is a simplified projection that omits `design-patterns` and `search-first` for brevity). Do NOT add `design-patterns` to the Java row, even though the agent's actual frontmatter includes `search-first-skill` — match the documented sibling projection.
+- [x] **2.2** Update `README.md` (Subagents table + prose count at L308)
+    — **Why:** README is the primary user-facing documentation; the Subagents table lists every available subagent. Missing the Java row would make it look like the repo still lacks a Java reviewer. Also: README.md:308 contains a prose count ("35 agent .md files (plus 4 config-builtin agents...)") that must update to 36 in lockstep — this was missed initially and surfaced by post-implementation code review.
+    — **Done when:** Two edits: (a) In the Subagents table (around line 355, after the `rust-reviewer-subagent` row), add: `| **java-reviewer-subagent** | Java code review (Effective Java, concurrency, Spring) | solid-principles, clean-code, code-smells, continuous-learning | explore, general |`. **Skill column MUST match sibling rows exactly** — the 4 existing language reviewer rows (README lines 352-355) all list only `solid-principles, clean-code, code-smells, continuous-learning` (the README is a simplified projection that omits `design-patterns` and `search-first` for brevity). Do NOT add `design-patterns` to the Java row, even though the agent's actual frontmatter includes `search-first-skill` — match the documented sibling projection. (b) Line 308: change `35 agent \`.md\` files (plus 4 config-builtin...)` to `36 agent \`.md\` files (plus 4 config-builtin...)`. The "plus 4 config-builtin" stays at 4 — only the source `.md` count increments.
     — **Consumers affected:** Documentation readers
 
 ### Phase 3: Sync deployment scripts (repo AGENTS.md mandatory sync rule)
@@ -73,9 +73,10 @@ The repository currently has 4 language-specific reviewer subagents that share a
       **(c) Do NOT touch any other count or listing** — only the 7 lines above + the new listing line at ~514. Other counts (skills, MCP servers) are unchanged by this ticket.
     — **Consumers affected:** Anyone running `setup.sh` or `--help`
 
-- [x] **3.2** Mirror listing change in `deploy/setup.ps1`
-    — **Why:** Windows parity — setup.ps1 must mirror setup.sh listings exactly. Note: only the listing line is mirrored; the banner count in setup.ps1 is NOT changed because Windows count drift has not been verified (avoiding speculative corrections).
-    — **Done when:** In the language reviewer listing block (around line 349), add `java-reviewer         Java code review (Effective Java, concurrency, Spring)` immediately after the `rust-reviewer` line.
+- [x] **3.2** Mirror listing + count changes in `deploy/setup.ps1`
+    — **Why:** Windows parity — repo AGENTS.md rule states "deploy/setup.ps1 — Mirror of setup.sh (Windows parity)". Original plan deferred banner count citing "Windows drift not verified", but post-implementation code review (`code-review-subagent`) correctly noted this violates the documented rule now that the actual count is known (36, not speculative).
+    — **Done when:** Five edits: (a) Listing line addition (around L349): `java-reviewer        Java code review (Effective Java, concurrency, Spring)` after the `rust-reviewer` line. (b) Five banner count corrections: L338 `AGENTS (39):` → `AGENTS (36):`; L1176 `Configured 39 agents:` → `Configured 36 agents:`; L1751 `Agents (39):` → `Agents (36):`; L1757 `and 34 more agents` → `and 31 more agents`. (Note: setup.ps1 post-install block at L1176 lists 5 agents but has NO corresponding "and N more" line, unlike setup.sh — only the 39→36 count needs fixing there.)
+    — **Decision reversal:** Original PLAN deferred banner count "avoiding speculative corrections" — reversed after code-review-subagent flagged the documented Windows-parity rule violation. The count is now known (36), so deferral had no justification.
     — **Consumers affected:** Windows users running `setup.ps1`
 
 - [x] **3.3** Update `opencode_app/README.md` (Docker docs)
@@ -110,9 +111,9 @@ The repository currently has 4 language-specific reviewer subagents that share a
 
 - [x] `opencode_app/.opencode/agents/java-reviewer-subagent.md` exists with the 10-section Java checklist, 4-row Framework table, 7 sections total (Prompt Defense, Checklist, Framework, Severity, CodeGraph, Output Format, Return Contract — mirroring Go reviewer scaffolding), and **5-skill allowlist** (no `design-patterns-skill`)
 - [x] `code-review-subagent.md` has `java-reviewer-subagent: allow` in `permission.task` and a Java row in the delegation table
-- [x] `README.md` Subagents table has a `java-reviewer-subagent` row with skill column `solid-principles, clean-code, code-smells, continuous-learning` (matching sibling rows exactly)
+- [x] `README.md` Subagents table has a `java-reviewer-subagent` row with skill column `solid-principles, clean-code, code-smells, continuous-learning` (matching sibling rows exactly) **AND** line 308 prose count updated `35 agent .md files` → `36 agent .md files`
 - [x] `deploy/setup.sh` has the Java reviewer listing line AND zero stale `39`/`34`/`35` count references — all 7 occurrences (lines 503, 1664, 1670, 2218, 2223, 2395, 2401) updated to `36` / `31` / `32` per the math table in step 3.1
-- [x] `deploy/setup.ps1` has the Java reviewer listing line (Windows parity; banner count intentionally untouched)
+- [x] `deploy/setup.ps1` has the Java reviewer listing line **AND** 4 banner count corrections (L338, L1176, L1751, L1757) mirroring setup.sh — decision reversed during code review
 - [x] `opencode_app/README.md` line 25 reads `36 agent .md files` AND line 102 reads `23 of 36 agents have explicit \`task\` permissions`
 - [x] `ls opencode_app/.opencode/agents/ | wc -l` == 36
 - [x] Zero unexpected `java-reviewer` references in non-target files
@@ -125,9 +126,9 @@ The repository currently has 4 language-specific reviewer subagents that share a
 | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|
 | Java checklist omits a critical language concern | med | med | 10-section structure mirrors the depth of Go reviewer (which has 7 sections + framework table); reviewed against Effective Java items |
-| Banner count correction (39→36) breaks downstream consumers expecting 39 | low | low | The 39 figure was already incorrect (drift = stale); correcting to actual is net-positive. README has no count reference, only a table |
-| setup.sh has more stale count refs than anticipated (7, not 2) | high | med | Step 3.1 enumerates all 7 with line numbers and math derivations; step 4.1(b) greps for `39 agents\|39):\|and 3[145] more` and asserts zero matches — false-positive verification closed |
-| setup.ps1 banner NOT corrected (only listing) creates sh/ps1 inconsistency | med | low | Decision documented in step 3.2; Windows banner value was not audited. Avoiding speculative changes is safer than guessing |
+| Banner count correction (39→36) breaks downstream consumers expecting 39 | low | low | The 39 figure was already incorrect (drift = stale); correcting to actual is net-positive. README has one prose count at L308 (caught in code review, fixed); other docs use tables |
+| setup.sh has more stale count refs than anticipated (7, not 2) | high | med | Step 3.1 enumerates all 7 with line numbers and math derivations; step 4.1(b) greps for `39 agents\|39):\|and 3[45] more` and asserts zero matches — false-positive verification closed |
+| setup.ps1 banner NOT corrected (original deferral) | high | med | **REVERSED during code review** — original decision deferred banner count citing "unverified Windows drift"; code-review-subagent correctly noted the documented Windows-parity rule violation. Reversed: 4 setup.ps1 count refs now corrected (39→36, 34 more→31 more) |
 | `code-review-subagent` delegation table row uses wrong trigger condition | low | med | Condition matches sibling rows (`*.java files dominate, or pom.xml/build.gradle detected`) — directly analogous to Rust's `Cargo.toml` condition |
 | Skill allowlist accidentally includes `design-patterns-skill` (matching Python/TS, not Go/Rust) | med | med | Step 1.1 explicitly enumerates 5 skills with rationale; step 4.2 verification asserts "exactly 5 skills, NOT 6"; AC requires 5-skill allowlist |
 | README Java row skill column drifts from sibling projection pattern | med | low | Step 2.2 mandates skill column `solid-principles, clean-code, code-smells, continuous-learning` matching the 4 sibling rows exactly; AC reasserts |
@@ -153,3 +154,5 @@ The repository currently has 4 language-specific reviewer subagents that share a
 ---
 
 *Created by primary agent (build mode) — issue #234. 2026-07-18. Revised 2026-07-18 after `opencode-tooling-subagent` review surfaced 2 CRITICAL + 2 MAJOR issues: (1) Java skill allowlist corrected from 6 skills to 5 (dropped `design-patterns-skill` — Go/Rust siblings have 5, not 6); (2) setup.sh banner count scope expanded from 2 occurrences to all 7 (lines 503, 1664, 1670, 2218, 2223, 2395, 2401 — subagent found 6, primary agent verification found the 7th at line 1670); (3) added Phase 3.3 for `opencode_app/README.md` (2 stale `35` counts at lines 25, 102); (4) README Java row skill column aligned with sibling projection pattern. Plus 4 MINOR + 2 NIT fixes (section enumeration, file count typo, sibling comparison, dual framing, commit msg verification caveat).*
+
+*Revised again 2026-07-18 after post-implementation `code-review-subagent` review surfaced 2 additional MAJOR issues: (5) README.md:308 prose count "35 agent .md files" was missed (PLAN incorrectly claimed "README has no count reference, only a table"); (6) original decision to defer setup.ps1 banner count reversed — the documented Windows-parity rule in repo AGENTS.md mandates mirror, and the count is now known (36), so deferral had no justification. 4 setup.ps1 count refs corrected (L338, L1176, L1751, L1757). All count drift now eliminated repo-wide.*
