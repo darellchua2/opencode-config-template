@@ -1,3 +1,12 @@
+# [1.76.0](https://github.com/darellchua2/opencode-config-template/compare/v1.75.2...v1.76.0) (2026-07-18)
+
+
+### Features
+
+* **autoresearch:** add core skill + 3 domain skills + 3 subagents ([#239](https://github.com/darellchua2/opencode-config-template/issues/239)) ([9785820](https://github.com/darellchua2/opencode-config-template/commit/9785820349a915a524815c5d6456719cf944ea79))
+* **autoresearch:** retrofit Tier 1 + Tier 2 skills with iteration protocol ([#239](https://github.com/darellchua2/opencode-config-template/issues/239)) ([300b73e](https://github.com/darellchua2/opencode-config-template/commit/300b73e0828426df0823e5e1bd59b114d717bbbc))
+* **autoresearch:** retrofit Tier 3 skills with iteration protocol ([#239](https://github.com/darellchua2/opencode-config-template/issues/239)) ([732350b](https://github.com/darellchua2/opencode-config-template/commit/732350b6729fd8202bd140bbbbaaf636b3159ccf))
+
 ## [1.75.2](https://github.com/darellchua2/opencode-config-template/compare/v1.75.1...v1.75.2) (2026-07-18)
 
 
