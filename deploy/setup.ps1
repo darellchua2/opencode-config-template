@@ -335,7 +335,7 @@ USAGE:
                          CONFIGURED FEATURES
 =======================================================================
 
-   AGENTS (36):
+   AGENTS (37):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
@@ -380,7 +380,7 @@ USAGE:
     Usage: opencode --agent build 'implement auth feature'
             opencode --agent explore 'find all API routes'
  
-          SKILLS (106):
+          SKILLS (107):
               Framework (19):       test-generator-framework, linting-workflow,
                                       pr-creation-workflow, pr-merge-workflow,
                                       error-resolver-workflow, tdd-workflow,
@@ -1173,7 +1173,7 @@ function Set-Configuration {
             Write-LogSuccess "config.json copied successfully"
 
             Write-Host ""
-             Write-Host "Configured 36 agents:" -ForegroundColor Green
+             Write-Host "Configured 37 agents:" -ForegroundColor Green
             Write-Host "    - build (default) - Full-featured coding agent"
             Write-Host "    - plan - Planning agent (read-only)"
             Write-Host "    - explore - Codebase exploration and analysis"
@@ -1754,13 +1754,13 @@ function Show-NextSteps {
     Write-Host "  - explore - Codebase exploration and analysis"
     Write-Host "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
     Write-Host "  - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
-    Write-Host "  - ... and 31 more agents"
+    Write-Host "  - ... and 33 more agents"
     Write-Host ""
     Write-Host "  Usage: opencode --agent <name> `"prompt`""
     Write-Host "         opencode `"prompt`" (uses build)"
      Write-Host ""
     Write-Host "=====================================================================" -ForegroundColor White
-      Write-Host "                     106 Skills Available" -ForegroundColor White
+      Write-Host "                     107 Skills Available" -ForegroundColor White
      Write-Host "=====================================================================" -ForegroundColor White
      Write-Host ""
      Write-Host "  Framework (19) • Language-Specific (6) • Framework-Specific (7)"

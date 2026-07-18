@@ -20,8 +20,8 @@ opencode-config-template/
 │   ├── AGENTS.md                # Container-specific instructions
 │   ├── .dockerignore
 │   ├── .opencode/
-│   │       ├── agents/              # 35 subagent .md files
-│   │       └── skills/              # 106 skill directories
+│   │       ├── agents/              # 36 subagent .md files
+│   │       └── skills/              # 107 skill directories
 │   └── README.md                # Docker usage guide
 ├── docker-compose.yml           # Docker Compose service definition
 ├── .env.example                 # Environment variable template
@@ -277,13 +277,13 @@ TypeScript, JavaScript, Python, Go, Rust, Java, C#, PHP, Ruby, C, C++, Swift, Ko
 
 ## Skill Modularization
 
-This repository implements **skill modularization** with 106 skills organized across 16 categories. Skills are designed with clear separation of concerns and explicit dependencies.
+This repository implements **skill modularization** with 107 skills organized across 16 categories. Skills are designed with clear separation of concerns and explicit dependencies.
 
 ### Skill Categories
 
 | Category | Skills | Purpose |
 |-----------|---------|---------|
-| **Framework** (19) | test-generator-framework, linting-workflow, pr-creation-workflow, pr-merge-workflow, error-resolver-workflow, tdd-workflow, docx-creation, pptx-specialist, xlsx-specialist, pdf-specialist, frontend-design, api-design-skill, openapi-contract-adherence-skill, performance-optimization-skill, srs-creation-skill, brd-creation-skill, technical-design-creation-skill, vision-creation-skill, interactive-document-rendering-skill | Generic workflows, testing patterns, document creation, UI design, API design, contract adherence, performance, and the document ladder (BRD/SRS/vision + technical design documents) |
+| **Framework** (20) | test-generator-framework, linting-workflow, pr-creation-workflow, pr-merge-workflow, error-resolver-workflow, tdd-workflow, docx-creation, pptx-specialist, xlsx-specialist, pdf-specialist, frontend-design, uiux-review-skill, api-design-skill, openapi-contract-adherence-skill, performance-optimization-skill, srs-creation-skill, brd-creation-skill, technical-design-creation-skill, vision-creation-skill, interactive-document-rendering-skill | Generic workflows, testing patterns, document creation, UI design + review, API design, contract adherence, performance, and the document ladder (BRD/SRS/vision + technical design documents) |
 | **Language-Specific** (6) | python-pytest-creator, python-ruff-linter, javascript-eslint-linter, changelog-python-cliff, python-backend-skill, python-packaging-skill | Language-specific test, linting, project scaffolding, and packaging |
 | **Framework-Specific** (7) | nextjs-pr-workflow, nextjs-unit-test-creator, nextjs-standard-setup, nextjs-image-usage, typescript-dry-principle, accessibility-a11y-skill, react-nextjs-antipatterns-skill | Next.js 16, React 19, TypeScript, and accessibility workflows |
 | **OpenCode Meta** (4) | opencode-agent-creation, opencode-skill-creation, opencode-skills-maintainer, documentation-consistency-skill | Agent and skill creation/maintenance, documentation consistency auditing |
@@ -305,7 +305,7 @@ This repository implements **skill modularization** with 106 skills organized ac
 
 ### Agents
 
-36 agent `.md` files (plus 4 config-builtin agents defined directly in `config.json`: `build`, `plan`, `explore`, `general`) provide specialized task handling. Note: the 2 `*-primary-agent` files (`startup-founder`, `office-document`) are routing hubs but are declared with `mode: subagent`.
+37 agent `.md` files (plus 4 config-builtin agents defined directly in `config.json`: `build`, `plan`, `explore`, `general`) provide specialized task handling. Note: the 2 `*-primary-agent` files (`startup-founder`, `office-document`) are routing hubs but are declared with `mode: subagent`.
 
 #### Primary Agents
 
@@ -354,6 +354,7 @@ This repository implements **skill modularization** with 106 skills organized ac
 | **go-reviewer-subagent** | Go code review (idioms, concurrency, error handling) | solid-principles, clean-code, code-smells, continuous-learning | `explore`, `general` |
 | **rust-reviewer-subagent** | Rust code review (ownership, unsafe safety, Result/Option) | solid-principles, clean-code, code-smells, continuous-learning | `explore`, `general` |
 | **java-reviewer-subagent** | Java code review (Effective Java, concurrency, Spring) | solid-principles, clean-code, code-smells, continuous-learning | `explore`, `general` |
+| **uiux-reviewer-subagent** | UI/UX design review (13-axis rubric: 6 AslanMazhidov + 5 RNT56 + Nielsen's 10 + anti-default AI cluster detection) | uiux-review-skill, frontend-design-skill, accessibility-a11y-skill, wireframer-skill | `explore`, `general`, `image-analyzer-subagent` |
 
 > **Built-in Delegation**: Subagents with `explore` can delegate codebase scanning to the built-in `explore` subagent. Subagents with `general` can delegate parallelizable multi-step work to the built-in `general` subagent. Access is controlled via `task` permissions in each agent's frontmatter (`"*": deny` by default, explicit allowlist).
 
@@ -367,6 +368,7 @@ Some subagents recognize natural language triggers:
 | **ticket-creation-subagent** | "create issue", "new ticket", "jira ticket" |
 | **pptx-specialist-subagent** | "PowerPoint", ".pptx", "presentation", "slides", "deck", "html to pptx" |
 | **startup-ceo-subagent** | "pitch deck", "investor deck", "board update", "fundraising", "demo day" |
+| **uiux-reviewer-subagent** | "design review", "UI audit", "UX review", "visual review", "review UI design" |
 
 ### Skill Architecture
 
