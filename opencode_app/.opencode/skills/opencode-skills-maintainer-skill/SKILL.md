@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: maintenance
+  protocol: autoresearch-opt-in
 ---
 
 ## What I do
@@ -296,4 +297,34 @@ done
 ✓ All required fields present
 ✓ All YAML frontmatter valid
 ✓ All skills categorized correctly
+
+## Citation drift audit (autoresearch protocol)
+
+When auditing skills for protocol compliance, check:
+
+1. **Keyword-presence-without-citation**: flag any SKILL.md containing iteration-related keywords (`{"pass"`, `Iterations:`, `results.tsv`, `keep/revert`, `stuck detection`, `autoresearch`) WITHOUT a corresponding `autoresearch-core-skill/references/` path citation.
+2. **Frontmatter-section mismatch**: `metadata.protocol: autoresearch-opt-in` MUST be present in frontmatter iff `## Iteration Protocol (opt-in)` section is present in body. Flag mismatches in either direction.
+3. **Reference existence**: every `autoresearch-core-skill/references/<name>.md` path cited must resolve to an actual file. Stale citations (renamed/removed references) are flagged.
+
+Report findings in standard audit output format with skill path + violation type + suggested fix.
+
+## Iteration Protocol (opt-in)
+
+**DO NOT execute any of the following unless `AUTORESEARCH_PROTOCOL=1` is set in your environment.** When unset, this skill behaves exactly as documented in all sections above; the Iteration Protocol block is descriptive only.
+
+When `AUTORESEARCH_PROTOCOL=1`:
+
+### Auto-detection
+If invoked on an iterative task, prompt ONCE per session: "This looks iterative. Enable autoresearch protocol? (y/n)". Cache answer for session.
+
+### Skill-specific patterns
+
+**Citation-drift check** (rule): flag any SKILL.md containing iteration-related keywords (`{"pass"`, `Iterations:`, `results.tsv`, `keep/revert`, `stuck detection`) WITHOUT a corresponding `autoresearch-core-skill/references/` citation. Also verify `metadata.protocol: autoresearch-opt-in` frontmatter is present iff `## Iteration Protocol` section is present. **Stuck detection:** 3 consecutive audits with same finding → escalate severity. See `evaluator-contract.md` + `stuck-detection.md`.
+
+### Citations
+- `autoresearch-core-skill/references/evaluator-contract.md`
+- `autoresearch-core-skill/references/stuck-detection.md`
+
+### Imperative gating
+When `AUTORESEARCH_PROTOCOL` is unset, this section is descriptive only. Default behavior is documented in all sections above.
 

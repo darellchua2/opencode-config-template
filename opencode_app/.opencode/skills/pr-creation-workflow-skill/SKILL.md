@@ -7,6 +7,7 @@ metadata:
   audience: developers
   workflow: pr-creation
   languages: [language-agnostic]
+  protocol: autoresearch-opt-in
 ---
 
 ## What I do
@@ -634,3 +635,22 @@ gh pr create --title "feat: add user auth" --add-label "minor"
 - `jira-git-integration` - JIRA operations (image handling, API utilities)
 - `linting-workflow` - Quality checks
 - `ticket-plan-workflow-skill` - Initial setup (branch, PLAN.md)
+
+## Iteration Protocol (opt-in)
+
+**DO NOT execute any of the following unless `AUTORESEARCH_PROTOCOL=1` is set in your environment.** When unset, this skill behaves exactly as documented in all sections above; the Iteration Protocol block is descriptive only.
+
+When `AUTORESEARCH_PROTOCOL=1`:
+
+### Auto-detection
+If invoked on an iterative task, prompt ONCE per session: "This looks iterative. Enable autoresearch protocol? (y/n)". Cache answer for session.
+
+### Skill-specific patterns
+
+**Guard vs verify separation.** Verify = the quality gate (lint/build/test) producing `{"pass":bool,"score":N}`. Guard = the safety-net check (e.g., 'no breaking changes to public API') that runs alongside verify; guard failure always reverts regardless of verify score. See `evaluator-contract.md`.
+
+### Citations
+- `autoresearch-core-skill/references/evaluator-contract.md`
+
+### Imperative gating
+When `AUTORESEARCH_PROTOCOL` is unset, this section is descriptive only. Default behavior is documented in all sections above.

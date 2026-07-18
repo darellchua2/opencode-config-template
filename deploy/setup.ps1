@@ -335,7 +335,7 @@ USAGE:
                          CONFIGURED FEATURES
 =======================================================================
 
-    AGENTS (36):
+    AGENTS (39):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
@@ -379,7 +379,7 @@ USAGE:
     Usage: opencode --agent build 'implement auth feature'
             opencode --agent explore 'find all API routes'
  
-           SKILLS (108):
+           SKILLS (113):
               Framework (20):       test-generator-framework, linting-workflow,
                                       pr-creation-workflow, pr-merge-workflow,
                                       error-resolver-workflow, tdd-workflow,
@@ -1174,7 +1174,7 @@ function Set-Configuration {
             Write-LogSuccess "config.json copied successfully"
 
             Write-Host ""
-             Write-Host "Configured 36 agents:" -ForegroundColor Green
+             Write-Host "Configured 39 agents:" -ForegroundColor Green
             Write-Host "    - build (default) - Full-featured coding agent"
             Write-Host "    - plan - Planning agent (read-only)"
             Write-Host "    - explore - Codebase exploration and analysis"
@@ -1502,6 +1502,21 @@ function Set-ShellVariables {
     Write-Host "PowerShell profile: $PROFILE"
     Write-Host ""
 
+    # Install autoresearch protocol helpers into PowerShell profile (if it exists)
+    if (Test-Path $PROFILE) {
+        $profileContent = Get-Content $PROFILE -Raw -ErrorAction SilentlyContinue
+        if ($profileContent -notmatch 'function ar-enable') {
+            Add-Content -Path $PROFILE -Value @'
+
+function ar-enable { $env:AUTORESEARCH_PROTOCOL = "1"; Write-Host "autoresearch protocol: ON" }
+function ar-disable { Remove-Item Env:\AUTORESEARCH_PROTOCOL -ErrorAction SilentlyContinue; Write-Host "autoresearch protocol: OFF" }
+'@
+            Write-LogSuccess "Added ar-enable / ar-disable helpers to $PROFILE"
+        } else {
+            Write-LogInfo "ar-enable / ar-disable helpers already exist in $PROFILE"
+        }
+    }
+
     if (-not [string]::IsNullOrWhiteSpace($ZaiApiKey)) {
         $profileContent = Get-Content $PROFILE -Raw -ErrorAction SilentlyContinue
         if ($profileContent -match "ZAI_API_KEY") {
@@ -1763,7 +1778,7 @@ function Show-NextSteps {
     Write-Host "         opencode `"prompt`" (uses build)"
      Write-Host ""
     Write-Host "=====================================================================" -ForegroundColor White
-      Write-Host "                     108 Skills Available" -ForegroundColor White
+      Write-Host "                     113 Skills Available" -ForegroundColor White
      Write-Host "=====================================================================" -ForegroundColor White
      Write-Host ""
      Write-Host "  Framework (20) • Language-Specific (6) • Framework-Specific (8)"

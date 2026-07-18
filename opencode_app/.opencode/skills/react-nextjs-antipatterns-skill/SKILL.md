@@ -8,6 +8,7 @@ metadata:
   workflow: code-quality
   languages: [typescript, javascript]
   frameworks: [react, nextjs]
+  protocol: autoresearch-opt-in
 ---
 
 ## What I do
@@ -485,3 +486,23 @@ test('works in all projects', ({}, testInfo) => {
   }
 })
 ```
+
+## Iteration Protocol (opt-in)
+
+**DO NOT execute any of the following unless `AUTORESEARCH_PROTOCOL=1` is set in your environment.** When unset, this skill behaves exactly as documented in all sections above; the Iteration Protocol block is descriptive only.
+
+When `AUTORESEARCH_PROTOCOL=1`:
+
+### Auto-detection
+If invoked on an iterative task, prompt ONCE per session: "This looks iterative. Enable autoresearch protocol? (y/n)". Cache answer for session.
+
+### Skill-specific patterns
+
+**Detect→fix→revert cycle.** Each iteration: detect anti-pattern (regex/AST), apply fix, run hydration/runtime check, emit `{"pass":bool,"score":N}` (pass = no regression introduced; score = anti-patterns removed). Revert on pass:false via `git reset --hard HEAD~1`. Log to `react-antipatterns-results.tsv`. See `evaluator-contract.md` + `audit-trail.md`.
+
+### Citations
+- `autoresearch-core-skill/references/evaluator-contract.md`
+- `autoresearch-core-skill/references/audit-trail.md`
+
+### Imperative gating
+When `AUTORESEARCH_PROTOCOL` is unset, this section is descriptive only. Default behavior is documented in all sections above.

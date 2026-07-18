@@ -1,0 +1,68 @@
+# research.md.litreview-template
+#
+# Living-state format for autoresearch-research-skill.
+# Copy into your project, substitute {{RESEARCH_QUESTION}}, then hand the
+# directory to autoresearch-research-subagent. Unlike code/ML research.md,
+# THIS FILE IS EDITED AS THE LOOP RUNS — categories, paper count, and gaps
+# all grow over iterations.
+#
+# See autoresearch-core-skill/references/audit-trail.md for the TSV format.
+
+# Literature Review: {{RESEARCH_QUESTION}}
+
+**Started:** {{TIMESTAMP}}
+**Status:** in progress
+
+## Research question
+{{RESEARCH_QUESTION}}
+
+## Inclusion / exclusion criteria
+- **Include:** {{INCLUDE_CRITERIA}}
+- **Exclude:** {{EXCLUDE_CRITERIA}}
+
+## Categories covered
+
+> This table is the loop's primary progress signal. The agent-as-evaluator
+> scores new papers by whether they advance any open category.
+
+| Category | Papers | Status | Last updated |
+|----------|--------|--------|--------------|
+| {{CATEGORY_1}} | 0 | open | — |
+| {{CATEGORY_2}} | 0 | open | — |
+| {{CATEGORY_3}} | 0 | open | — |
+
+Status values: `open` (no papers yet) / `seeded` (1-2 papers) / `covered` (3+) / `saturated` (new papers duplicate existing findings).
+
+## Summary statistics
+
+- **Papers in corpus:** 0
+- **Categories covered (3+ papers):** 0 / {{TOTAL_CATEGORIES}}
+- **Categories open (0 papers):** {{TOTAL_CATEGORIES}}
+- **Gaps identified:** 0
+- **Iterations logged:** 0
+
+## Open gaps
+
+> Each gap is a candidate for the next fetch iteration. Closed when a paper
+> addresses it.
+
+- [ ] {{GAP_1}}
+- [ ] {{GAP_2}}
+
+## Closed gaps
+
+(moved here from Open gaps as they are addressed)
+
+## Paper index
+
+> One-line per paper; full synthesis in `paper-synthesis/<slug>.md`.
+
+| # | Citation | Year | Category | Relevance |
+|---|----------|------|----------|-----------|
+| — | *(empty)* | — | — | — |
+
+## Notes
+
+- This file is **append-mostly**; the table rows grow but existing rows are not rewritten.
+- See `paper-synthesis/` for full structured summaries.
+- See `autoresearch-research-results.tsv` for the iteration audit trail.

@@ -20,8 +20,8 @@ opencode-config-template/
 │   ├── AGENTS.md                # Container-specific instructions
 │   ├── .dockerignore
 │   ├── .opencode/
-│   │       ├── agents/              # 36 subagent .md files
-│   │       └── skills/              # 108 skill directories
+│   │       ├── agents/              # 39 subagent .md files
+│   │       └── skills/              # 113 skill directories
 │   └── README.md                # Docker usage guide
 ├── docker-compose.yml           # Docker Compose service definition
 ├── .env.example                 # Environment variable template
@@ -277,7 +277,7 @@ TypeScript, JavaScript, Python, Go, Rust, Java, C#, PHP, Ruby, C, C++, Swift, Ko
 
 ## Skill Modularization
 
-This repository implements **skill modularization** with 108 skills organized across 16 categories. Skills are designed with clear separation of concerns and explicit dependencies.
+This repository implements **skill modularization** with 113 skills organized across 17 categories. Skills are designed with clear separation of concerns and explicit dependencies.
 
 ### Skill Categories
 
@@ -293,6 +293,7 @@ This repository implements **skill modularization** with 108 skills organized ac
 | **JIRA** (3) | jira-status-updater, jira-git-integration, jira-ticket-labeler | JIRA integration via MCP server |
 | **Code Quality** (7) | solid-principles, clean-code, clean-architecture, design-patterns, object-design, code-smells, complexity-management | Code quality analysis and patterns |
 | **Agent Optimization** (7) | continuous-learning, eval-harness, strategic-compact, verification-loop, search-first, context-budget, agent-introspection-debugging | AI agent session optimization, research-first workflow, context auditing, and agent debugging |
+| **Autoresearch** (4) | autoresearch-core-skill, autoresearch-ml-skill, autoresearch-code-skill, autoresearch-research-skill | Autonomous research loops: 5-stage Understand→Hypothesize→Experiment→Evaluate→Log methodology. ML training (GPU), code optimization, literature review. Evaluated by mechanical `{"pass":bool,"score":N}` — no LLM self-judgment. Ported from uditgoenka/autoresearch + karpathy/autoresearch (MIT). |
 | **Startup/Business** (3) | startup-pitch-deck-skill, startup-business-docs-skill, construction-bd-skill | Startup pitch decks, business documentation, construction proposals |
 | **Configuration** (2) | microsoft-m365-config-skill, codegraph-setup-skill | Microsoft 365 MCP and CodeGraph setup |
 | **Security** (2) | security-audit-skill, authentication-authorization-skill | Security auditing, vulnerability scanning, and auth implementation |
@@ -305,7 +306,7 @@ This repository implements **skill modularization** with 108 skills organized ac
 
 ### Agents
 
-36 agent `.md` files (plus 4 config-builtin agents defined directly in `config.json`: `build`, `plan`, `explore`, `general`) provide specialized task handling. Note: the 2 `*-primary-agent` files (`startup-founder`, `office-document`) are routing hubs but are declared with `mode: subagent`.
+39 agent `.md` files (plus 4 config-builtin agents defined directly in `config.json`: `build`, `plan`, `explore`, `general`) provide specialized task handling. Note: the 2 `*-primary-agent` files (`startup-founder`, `office-document`) are routing hubs but are declared with `mode: subagent`.
 
 #### Primary Agents
 
@@ -348,6 +349,9 @@ This repository implements **skill modularization** with 108 skills organized ac
 | **xlsx-specialist-subagent** | Spreadsheets (read, create, edit, analyze) | xlsx-specialist | — |
 | **startup-ceo-subagent** | Startup presentations (pitch decks, investor slides, board updates) | pptx-specialist | — |
 | **loop-operator-subagent** | Autonomous loop execution with self-correction | verification-loop, continuous-learning, strategic-compact | `explore`, `general` |
+| **autoresearch-ml-subagent** | Autonomous ML training loop (Karpathy-style). Requires NVIDIA GPU. | autoresearch-core, autoresearch-ml, strategic-compact | `explore`, `general` |
+| **autoresearch-code-subagent** | Autonomous code optimization (test coverage, bundle size, runtime) | autoresearch-core, autoresearch-code, continuous-learning, strategic-compact | `explore`, `general` |
+| **autoresearch-research-subagent** | Literature review / paper synthesis (Tier 2 web-only, no Bash) | autoresearch-core, autoresearch-research, search-first, strategic-compact | `explore`, `general` |
 | **python-reviewer-subagent** | Python-specific code review (PEP 8, type hints, async) | solid-principles, clean-code, code-smells, continuous-learning | `explore`, `general` |
 | **typescript-reviewer-subagent** | TypeScript/JS code review (type safety, React, Next.js) | solid-principles, clean-code, code-smells, continuous-learning | `explore`, `general` |
 | **go-reviewer-subagent** | Go code review (idioms, concurrency, error handling) | solid-principles, clean-code, code-smells, continuous-learning | `explore`, `general` |
@@ -368,6 +372,25 @@ Some subagents recognize natural language triggers:
 | **pptx-specialist-subagent** | "PowerPoint", ".pptx", "presentation", "slides", "deck", "html to pptx" |
 | **startup-ceo-subagent** | "pitch deck", "investor deck", "board update", "fundraising", "demo day" |
 | **uiux-reviewer-subagent** | "design review", "UI audit", "UX review", "visual review", "review UI design" |
+
+### Iteration Protocol (opt-in)
+
+The repository ships an **autoresearch iteration protocol** — a 5-stage loop (Understand → Hypothesize → Experiment → Evaluate → Log & Iterate) that 30 existing skills can opt into. The protocol is **off by default**; enable it via:
+
+| Method | How |
+|--------|-----|
+| Environment variable | `export AUTORESEARCH_PROTOCOL=1` |
+| Shell helper (after `setup.sh`) | `ar-enable` / `ar-disable` |
+| Per-invocation | Set the env var inline before invoking the skill |
+
+When enabled, retrofitted skills emit mechanical evaluator output `{"pass":bool,"score":N}` (no LLM self-judgment), append to `<skill>-results.tsv` audit trails, and auto-revert failed experiments via Git-as-memory. See `opencode_app/.opencode/skills/autoresearch-core-skill/references/iteration-safety.md` for safety blocks and prompt-injection boundaries.
+
+**Retrofitted skills (30 total):**
+- **Tier 1 (full loop, 7)**: verification-loop, tdd-workflow, eval-harness, continuous-learning, deprecated-code-cleanup, linting-workflow, coverage-readme-workflow
+- **Tier 2 (partial, 8)**: documentation-consistency, error-resolver-workflow, opencode-skills-maintainer, plan-execution, pr-creation-workflow, pr-merge-workflow, react-nextjs-antipatterns, playwright-responsive-audit
+- **Tier 3 (light safety, 15)**: search-first, api-design, security-audit, code-smells, performance-optimization, typescript-dry-principle, solid-principles, clean-code, test-generator-framework, python-pytest-creator, nextjs-unit-test-creator, nextjs-pr-workflow, mermaid-diagram-creator, wireframer, frontend-design
+
+**Maintenance:** `opencode-skills-maintainer-skill` includes a Citation drift audit rule that flags skills with iteration-keyword mentions lacking proper `autoresearch-core-skill/references/` citations.
 
 ### Skill Architecture
 
