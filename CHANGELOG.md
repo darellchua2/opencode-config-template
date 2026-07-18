@@ -1,3 +1,10 @@
+## [1.75.2](https://github.com/darellchua2/opencode-config-template/compare/v1.75.1...v1.75.2) (2026-07-18)
+
+
+### Bug Fixes
+
+* update pm2 ([031c3fb](https://github.com/darellchua2/opencode-config-template/commit/031c3fbafdfeb69b4fe07f95fe56805844ba8b3b))
+
 ## [1.75.1](https://github.com/darellchua2/opencode-config-template/compare/v1.75.0...v1.75.1) (2026-07-18)
 
 
