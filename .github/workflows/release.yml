@@ -61,9 +61,9 @@ jobs:
 
       - name: Lint validation
         run: |
-          echo "Validating deploy/config.json..."
-          jq . deploy/config.json
-          echo "config.json is valid"
+          echo "Validating opencode_app/opencode.json..."
+          jq . opencode_app/opencode.json
+          echo "opencode.json is valid"
 
           echo "Validating deploy/setup.sh syntax..."
           bash -n deploy/setup.sh
