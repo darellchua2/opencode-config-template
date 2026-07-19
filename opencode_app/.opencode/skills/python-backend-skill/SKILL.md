@@ -211,6 +211,39 @@ async def get_user_service(repo: Annotated[UserRepository, Depends(get_user_repo
 UserServiceDep = Annotated[UserService, Depends(get_user_service)]
 ```
 
+### Prefer DI Over Global Singletons
+
+**Learning**: `module-singleton-global-mutation`
+
+Module-level singletons via `global _service` hide coupling, resist testing, and have no lifecycle management. The `httpx.AsyncClient` inside never gets closed, connections leak, and tests must null globals between runs.
+
+```python
+# WRONG — hidden coupling, no lifecycle, tests must mutate global state
+_service: Optional[MyService] = None
+
+def get_service() -> MyService:
+    global _service
+    if _service is None:
+        _service = MyService(client=httpx.AsyncClient())  # Never closed!
+    return _service
+
+# CORRECT — FastAPI Depends() with app.state lifecycle
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    app.state.client = httpx.AsyncClient()
+    yield
+    await app.state.client.aclose()  # Clean shutdown
+
+app = FastAPI(lifespan=lifespan)
+
+async def get_service(client: httpx.AsyncClient = Depends(lambda r: r.app.state.client)):
+    return MyService(client=client)
+```
+
+**Rule:** Use `FastAPI Depends()` with `app.state` for lifecycle-managed singletons. Never use `global _x` patterns — they hide dependencies from type checkers and prevent test overrides.
+
 ---
 
 ## Step 3: Django Project Structure

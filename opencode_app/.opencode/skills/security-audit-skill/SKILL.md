@@ -149,6 +149,42 @@ function requireAdmin(req, res, next) {
 }
 ```
 
+#### auth-early-return-null-account-id
+
+Skipping the ownership check when `account_id` is `None` (or missing from headers) allows any header-less user full access to resources. This is **horizontal privilege escalation** — one missing header bypasses all authorization.
+
+```bash
+# Detection: find auth checks that early-return on None/missing input
+rg 'account_id is None|account_id == None|if not account_id' --type py -A 3 | \
+  rg 'return (True|None|next|$)'
+```
+
+```python
+# VULNERABLE — None account_id skips ownership check entirely
+async def get_run(run_id: str, account_id: str | None):
+    run = await db.get_run(run_id)
+    if account_id is None:
+        return run  # ANY authenticated user gets ANY run
+    if run.account_id != account_id:
+        raise Forbidden()
+    return run
+
+# SECURE — separate legacy access from ownership verification
+async def get_run(run_id: str, account_id: str | None):
+    run = await db.get_run(run_id)
+
+    # Legacy: NULL-account runs are publicly readable (migration period only)
+    if run.account_id is None:
+        return run
+
+    # Non-NULL runs REQUIRE header match — no exception
+    if not account_id or run.account_id != account_id:
+        raise Forbidden("Ownership verification required")
+    return run
+```
+
+**Rule:** Never skip authorization on missing optional input. Separate "this resource is legacy/public" from "the caller didn't send a header" — they are different conditions with different security implications.
+
 ### A02: Cryptographic Failures
 
 - [ ] Verify TLS 1.2+ enforced everywhere
@@ -156,6 +192,96 @@ function requireAdmin(req, res, next) {
 - [ ] Confirm sensitive data encrypted at rest
 - [ ] Verify proper hashing algorithms (bcrypt, argon2 — not MD5/SHA1)
 - [ ] Check PII handling and data classification
+
+#### claim-check-ephemeral-secret-cache
+
+Store decrypted secrets in a short-lived in-memory TTL cache keyed by an opaque UUID. Pass only the **claim ID** through durable workflow history — never the plaintext credential.
+
+```bash
+# Detection: find plaintext secrets passed to workflow/activity arguments
+rg 'decrypt|get_secret|plaintext.*secret' --type py -A 5 | \
+  rg 'workflow\.(execute|start)|activity|yield|await.*\('
+```
+
+```python
+# VULNERABLE — plaintext secret persisted to orchestrator execution history
+@activity
+async def process_payment(run_id: str, api_key: str):  # api_key in durable history!
+    client = PaymentClient(api_key)
+
+# SECURE — claim-check pattern; only opaque UUID in history
+import asyncio, time, uuid
+from collections import OrderedDict
+
+class SecretCache:
+    def __init__(self, ttl: int = 300, max_size: int = 100):
+        self._cache: OrderedDict[str, tuple[str, float]] = OrderedDict()
+        self._ttl = ttl
+        self._max_size = max_size
+        self._lock = asyncio.Lock()
+
+    async def deposit(self, plaintext: str) -> str:
+        claim_id = str(uuid.uuid4())
+        async with self._lock:
+            self._cache[claim_id] = (plaintext, time.monotonic() + self._ttl)
+            if len(self._cache) > self._max_size:
+                self._cache.popitem(last=False)  # LRU eviction
+        return claim_id
+
+    async def redeem(self, claim_id: str) -> str | None:
+        async with self._lock:
+            entry = self._cache.pop(claim_id, None)  # Single-read (pop)
+            if entry and entry[1] > time.monotonic():
+                return entry[0]
+        return None  # Expired or already consumed
+
+@activity
+async def process_payment(run_id: str, claim_id: str):  # Only UUID in history
+    api_key = await secret_cache.redeem(claim_id)
+    if api_key is None:
+        raise ActivityError("Secret expired")
+```
+
+**Rule:** Plaintext credentials must never touch durable storage (workflow history, message queues, logs). Use opaque claim IDs as references; `pop()` (single-read) at execution time; TTL-based expiry.
+
+#### encryption-key-length-not-validated
+
+`base64-valid` does **not** mean crypto-valid. A key that decodes from base64 successfully may still be the wrong length for the cipher. Validate decoded byte length at **config-load time**, not at the first `encrypt()` call.
+
+```bash
+# Detection: find base64 decode without length validation
+rg 'b64decode|base64\.decode' --type py -B 2 -A 5 | grep -v 'len('
+```
+
+```python
+# VULNERABLE — broken config reaches production, fails at first customer-facing encrypt()
+import base64
+import os
+
+key_b64 = os.getenv("ENCRYPTION_KEY")  # "YWFhYQ==" decodes fine (4 bytes)
+key = base64.b64decode(key_b64)  # No error!
+# ... hours later, first customer request ...
+cipher = AESGCM(key)  # ValueError: "Invalid key length" — too late
+
+# SECURE — fail-fast at startup with clear error message
+import sys
+
+def validate_encryption_key(key_b64: str, expected_len: int = 32) -> bytes:
+    try:
+        key = base64.b64decode(key_b64)
+    except Exception as e:
+        sys.exit(f"FATAL: ENCRYPTION_KEY is not valid base64: {e}")
+    if len(key) != expected_len:
+        sys.exit(
+            f"FATAL: ENCRYPTION_KEY must be {expected_len} bytes "
+            f"for AES-256-GCM, got {len(key)}"
+        )
+    return key
+
+key = validate_encryption_key(os.getenv("ENCRYPTION_KEY"))  # Called at import time
+```
+
+**Rule:** Validate cryptographic key length, algorithm compatibility, and encoding at application startup. A clear error at boot is infinitely better than a cryptic `ValueError` on the first customer request.
 
 ### A03: Injection
 
