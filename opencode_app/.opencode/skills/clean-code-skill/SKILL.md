@@ -395,6 +395,32 @@ class Account {
 const result = account.withdraw(amount);
 ```
 
+### Learning: `two-phase-dataclass-initialization`
+
+A function returns an object with sentinel/placeholder values (`0.0`, `None`, `""`) that the caller must separately patch. If the second call is forgotten, the result is silently wrong — not an error, just incorrect data.
+
+**Rule:** Every function must return a **complete** object. If a field cannot be computed at construction time, make it `Optional[None]` so the type system surfaces the incompleteness.
+
+```python
+# BAD — caller must know to call compute_bounds() separately
+def create_template(name: str) -> Template:
+    return Template(name=name, mean=0.0, stddev=0.0, low=0.0, high=0.0)
+# ... later ...
+tpl = create_template("sensor")
+tpl.compute_bounds(data)  # FORGOTTEN → silent wrong results, 0.0 bounds
+
+# GOOD — split into separate complete-returning functions
+def create_empty_template(name: str) -> Template:
+    """Returns template with None bounds — caller MUST call populate()."""
+    return Template(name=name, mean=None, stddev=None, low=None, high=None)
+
+def populate_template(tpl: Template, data: list[float]) -> Template:
+    """Returns a NEW template with computed bounds."""
+    return Template(name=tpl.name, mean=mean(data), stddev=stdev(data), ...)
+```
+
+**Detection:** Look for functions returning objects with hardcoded `0.0`, `""`, `None`, `[]` defaults that have companion `compute_*` or `populate_*` methods.
+
 ---
 
 ## Comments
@@ -458,6 +484,90 @@ def extract_report_id(response: requests.Response) -> str:
         f"Could not extract report_id from response "
         f"(status={response.status_code}, body={response.text[:200]})"
     )
+```
+
+---
+
+## Error Handling
+
+### Learning: `broad-except-masks-bugs`
+
+**Suggestion #1 + #8 merged** — same root cause observed across 3 projects (Python async, Python DSP, TypeScript sequential async).
+
+Narrow catches handle expected transport errors; broad `except Exception` masks programming bugs as service outages. Expected errors (`ConnectError`, `TimeoutException`, `HTTPStatusError`) are caught and degraded. Unexpected errors (`AttributeError`, `KeyError`, `TypeError`) must propagate as 500s so monitoring surfaces them — they are never "service unreachable."
+
+```python
+# BAD — programming bugs (KeyError, AttributeError) are silently treated as "service down"
+try:
+    result = await client.call()
+except Exception:
+    logger.warning("Service unreachable, degrading...")
+    return fallback  # Bug is now invisible — circuit breaker trips on a typo
+
+# GOOD — narrow catch for expected transport errors; bugs propagate
+try:
+    result = await client.call()
+except (ConnectError, TimeoutException, HTTPStatusError):
+    logger.warning("Service unreachable, degrading...")
+    return fallback
+# AttributeError, KeyError, TypeError propagate as 500 → surfaces in monitoring
+```
+
+**Detection:**
+
+```bash
+# Find broad excepts in auth/transport/processing paths
+rg 'except Exception\b|except:' --type py -l
+# DSP/ML/processing modules are especially dangerous — wrong results with no error
+rg 'except Exception' --type py -g '*dsp*' -g '*audio*' -g '*process*'
+```
+
+**Rule:** Define a domain exception hierarchy for expected failures. Never catch `Exception` or bare `except:` in code paths that process external data — you will mask genuine bugs as degraded results.
+
+### Learning: `silent-failure-sequential-async`
+
+A critical async operation that catches its own failure and logs only `console.error` (or `logger.error`) prevents the caller from detecting the failure. The caller continues with stale or missing data, entering an inconsistent state with no feedback.
+
+**Rule:** Sequential async operations must either:
+1. **Throw on failure** — let the caller decide whether to degrade, or
+2. **Return a discriminated union** — `Result[T, E]` type so the caller explicitly handles both paths.
+
+```python
+# BAD — caller cannot detect failure; enters inconsistent state
+async def sync_engine_to_cds():
+    try:
+        data = await engine.get_data()
+        await cds.upload(data)
+    except Exception:
+        logger.error("Sync failed")  # Caller gets None, thinks everything is fine
+
+# GOOD — throws; caller catches explicitly
+async def sync_engine_to_cds() -> None:
+    data = await engine.get_data()
+    await cds.upload(data)  # Raises on failure — caller handles
+```
+
+```typescript
+// BAD — fire-and-forget with internal catch; caller has no signal
+toast.promise(apiCall(), {
+  error: "Failed",  // User sees toast, but caller's await never throws
+})
+await apiCall() // Unhandled rejection if no catch — see react-nextjs-antipatterns
+
+// GOOD — single consumer; error propagates
+try {
+  const result = await apiCall()
+  toast.success("Done")
+} catch (e) {
+  toast.error("Failed")
+}
+```
+
+**Detection:**
+
+```bash
+# Functions that catch their own errors and only log
+rg 'except.*:\s*\n\s*(logger|console)\.(error|warning)' --type py --type ts -U
 ```
 
 ---

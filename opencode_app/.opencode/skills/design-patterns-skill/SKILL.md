@@ -633,6 +633,51 @@ history.undo();  // Removes item
 
 ---
 
+## Concurrency Patterns
+
+### Learning: `atomic-sql-update-race-free-transition`
+
+Use a single `UPDATE ... WHERE expected_state RETURNING cols` as an optimistic lock. The `WHERE` clause acts as the guard; `RETURNING` fetches needed columns in one round-trip. Losers re-read and reconcile idempotently.
+
+```python
+# WRONG — read-then-write race; two callers both transition state
+run = await db.get_run(run_id)
+if run.status == "pending":
+    run.status = "running"
+    await db.commit()  # RACE: another worker already committed "running"
+    await launch_side_effects(run)  # Duplicate side effects!
+
+# CORRECT — atomic conditional UPDATE
+from sqlalchemy import update
+
+result = await session.execute(
+    update(Run)
+    .where(Run.id == run_id, Run.status == "pending")  # Optimistic lock
+    .values(status="running", started_at=func.now())
+    .returning(Run)  # Fetch in same round-trip
+)
+row = result.fetchone()
+if row is None:
+    # Another worker already transitioned — reconcile idempotently
+    return await db.get_run(run_id)
+
+await launch_side_effects(row)  # Exactly ONE worker reaches here
+```
+
+**Key properties:**
+- **Race-free**: the database row-level lock ensures only one `UPDATE` matches
+- **One round-trip**: no separate SELECT + UPDATE
+- **Idempotent reconciliation**: losers simply re-read current state
+
+**Detection:**
+
+```bash
+# Find read-then-write patterns vulnerable to races
+rg 'get_.*\(\|fetch_.*\(' --type py -A 10 | rg 'status|state' | rg 'commit|save|update'
+```
+
+---
+
 ## Pattern Selection Guide
 
 | Problem | Pattern | Key Indicator |
