@@ -87,6 +87,14 @@ After completing the review, use the `continuous-learning` skill to persist find
 
 The continuous-learning skill auto-provisions `LEARNINGS/` if it doesn't exist in the project.
 
+## Pattern Reference (cross-skill)
+
+Actively scan for these architecture-relevant patterns during review:
+
+- **Global singleton mutation** — `global _service` pattern hides coupling, no lifecycle management; prefer FastAPI `Depends()` with `app.state` (see `python-backend-skill` → Prefer DI Over Global Singletons)
+- **Claim-check pattern for secrets** — in workflow orchestrators, plaintext credentials must never touch durable history; use opaque UUID claim IDs with TTL cache + single-read `pop()` (see `security-audit-skill` A02 → claim-check-ephemeral-secret-cache)
+- **Atomic conditional UPDATE** — race-free state transitions via `UPDATE ... WHERE expected_state RETURNING cols` as optimistic lock; avoids read-then-write TOCTOU races (see `design-patterns-skill` → Concurrency Patterns)
+
 ## Mandatory Consumer Traversal Gate
 
 **This is a blocking gate, not optional guidance.** Before sign-off, you MUST map every changed symbol's consumers. The review verdict is capped at `partial` if any changed symbol's consumers were not inspected.
