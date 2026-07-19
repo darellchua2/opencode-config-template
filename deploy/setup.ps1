@@ -379,7 +379,7 @@ USAGE:
     Usage: opencode --agent build 'implement auth feature'
             opencode --agent explore 'find all API routes'
  
-           SKILLS (113):
+           SKILLS (114):
               Framework (20):       test-generator-framework, linting-workflow,
                                       pr-creation-workflow, pr-merge-workflow,
                                       error-resolver-workflow, tdd-workflow,
@@ -395,11 +395,12 @@ USAGE:
                                   javascript-eslint-linter, changelog-python-cliff,
                                   python-backend-skill, python-packaging-skill
 
-           Framework-Specific (8): nextjs-pr-workflow, nextjs-unit-test-creator,
+           Framework-Specific (9): nextjs-pr-workflow, nextjs-unit-test-creator,
                                   nextjs-standard-setup, nextjs-image-usage,
                                   nextjs-devtools-mcp,
                                   typescript-dry-principle, accessibility-a11y-skill,
-                                  react-nextjs-antipatterns-skill
+                                  react-nextjs-antipatterns-skill,
+                                  threejs-nextjs-skill
            OpenCode Meta (4):    opencode-agent-creation, opencode-skill-creation,
                                  opencode-skills-maintainer,
                                  documentation-consistency-skill
@@ -1261,12 +1262,13 @@ function Deploy-Skills {
         Write-Host "      - python-pytest-creator, python-ruff-linter"
         Write-Host "      - javascript-eslint-linter, changelog-python-cliff"
         Write-Host "      - python-backend-skill, python-packaging-skill"
-        Write-Host "    Framework-Specific (8):"
+        Write-Host "    Framework-Specific (9):"
         Write-Host "      - nextjs-pr-workflow, nextjs-unit-test-creator"
         Write-Host "      - nextjs-standard-setup, nextjs-image-usage"
         Write-Host "      - nextjs-devtools-mcp"
         Write-Host "      - typescript-dry-principle, accessibility-a11y-skill"
         Write-Host "      - react-nextjs-antipatterns-skill"
+        Write-Host "      - threejs-nextjs-skill"
         Write-Host "    OpenCode Meta (4):"
         Write-Host "      - opencode-agent-creation, opencode-skill-creation"
         Write-Host "      - opencode-skills-maintainer"
@@ -1778,10 +1780,10 @@ function Show-NextSteps {
     Write-Host "         opencode `"prompt`" (uses build)"
      Write-Host ""
     Write-Host "=====================================================================" -ForegroundColor White
-      Write-Host "                     113 Skills Available" -ForegroundColor White
+      Write-Host "                     114 Skills Available" -ForegroundColor White
      Write-Host "=====================================================================" -ForegroundColor White
      Write-Host ""
-     Write-Host "  Framework (20) • Language-Specific (6) • Framework-Specific (8)"
+     Write-Host "  Framework (20) • Language-Specific (6) • Framework-Specific (9)"
       Write-Host "  OpenCode Meta (4) • OpenTofu (7) • Git/Workflow (12)"
      Write-Host "  Documentation (3) • JIRA (3) • Code Quality (7)"
       Write-Host "  Agent Optimization (7) • Planning & Alignment (4)"

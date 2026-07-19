@@ -7,7 +7,7 @@ metadata:
   audience: developers, agents
   workflow: planning, alignment
   trigger: auto
-version: 1
+  version: "1"
 ---
 
 ## What I do
