@@ -1,7 +1,8 @@
 services:
   opencode:
     build:
-      context: ./opencode_app
+      context: .
+      dockerfile: opencode_app/Dockerfile
     container_name: opencode
     env_file: .env
     ports:

@@ -1,7 +1,6 @@
 ---
 description: Java code review subagent focusing on Effective Java idioms, concurrency safety via java.util.concurrent, exception handling, generics, and modern Java (records, sealed classes, pattern matching) for thorough Java quality analysis
 mode: subagent
-model: zai-coding-plan/glm-5.1
 steps: 25
 permission:
   read: allow

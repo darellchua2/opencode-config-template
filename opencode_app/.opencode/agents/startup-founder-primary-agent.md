@@ -1,7 +1,6 @@
 ---
 description: Primary agent for startup founders - reports, quotations, spreadsheets, presentations, and day-to-day business operations
 mode: subagent
-model: zai-coding-plan/glm-5-turbo
 temperature: 0.7
 steps: 30
 permission:

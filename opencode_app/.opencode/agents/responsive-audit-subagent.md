@@ -1,7 +1,6 @@
 ---
 description: "Responsive UI audit and fix subagent. Audits Next.js pages for responsive defects using Playwright (6 detection assertions across mobile/tablet/desktop breakpoints), applies fixes by confidence tier (Tier 1 auto-fix, Tier 2 propose+verify, Tier 3 report), and re-verifies after each fix. Delegates screenshot review to image-analyzer-subagent. The primary session orchestrates the closed-loop iteration."
 mode: subagent
-model: zai-coding-plan/glm-5.1
 steps: 12
 permission:
   read: allow

@@ -5,7 +5,6 @@ description: >-
   diagnosis via next-devtools-mcp, (3) proactive project audit. Routes to the
   appropriate skills based on task type.
 mode: subagent
-model: zai-coding-plan/glm-5-turbo
 permission:
   read: allow
   edit: allow

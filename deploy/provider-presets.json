@@ -1,0 +1,54 @@
+{
+  "$comment": "Provider presets for the interactive picker (tui.mjs provider-picker flow) and the --provider CLI flag. Each preset is a complete {primary, tiers} map. Selecting a preset writes ~/.config/opencode/models.json from the chosen entry. LM Studio maps all tiers to the single locally-loaded model (vision gets a warning since local models are rarely multimodal). Edit model IDs here as providers release newer versions.",
+  "zai": {
+    "label": "Z.AI (default)",
+    "primary": "zai-coding-plan/glm-5.2",
+    "tiers": {
+      "reasoning": "zai-coding-plan/glm-5.1",
+      "fast": "zai-coding-plan/glm-5-turbo",
+      "docs": "zai-coding-plan/glm-4.7",
+      "vision": "zai-coding-plan/glm-5v-turbo"
+    }
+  },
+  "anthropic": {
+    "label": "Anthropic (Claude)",
+    "primary": "anthropic/claude-opus-4-8",
+    "tiers": {
+      "reasoning": "anthropic/claude-sonnet-4-6",
+      "fast": "anthropic/claude-haiku-4-6",
+      "docs": "anthropic/claude-haiku-4-6",
+      "vision": "anthropic/claude-sonnet-4-6"
+    }
+  },
+  "openai": {
+    "label": "OpenAI (GPT)",
+    "primary": "openai/gpt-5",
+    "tiers": {
+      "reasoning": "openai/gpt-5",
+      "fast": "openai/gpt-5-mini",
+      "docs": "openai/gpt-5-mini",
+      "vision": "openai/gpt-5"
+    }
+  },
+  "openrouter": {
+    "$comment": "OpenRouter is a router - picker prompts for a model string per tier. This entry is a template; tui.mjs expands it by prompting.",
+    "label": "OpenRouter (custom per tier)",
+    "primary": "openrouter/<model>",
+    "tiers": {
+      "reasoning": "openrouter/<model>",
+      "fast": "openrouter/<model>",
+      "docs": "openrouter/<model>",
+      "vision": "openrouter/<model>"
+    }
+  },
+  "lmstudio": {
+    "label": "LM Studio (local)",
+    "primary": "openai/gpt-oss-20b",
+    "tiers": {
+      "reasoning": "openai/gpt-oss-20b",
+      "fast": "openai/gpt-oss-20b",
+      "docs": "openai/gpt-oss-20b",
+      "vision": "openai/gpt-oss-20b"
+    }
+  }
+}

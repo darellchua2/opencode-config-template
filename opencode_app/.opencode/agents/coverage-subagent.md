@@ -1,7 +1,6 @@
 ---
 description: Specialized subagent for test coverage reporting and documentation. Handles coverage badge generation, README updates, and coverage threshold enforcement for Next.js and Python projects.
 mode: subagent
-model: zai-coding-plan/glm-4.7
 permission:
   read: allow
   edit: allow
