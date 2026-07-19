@@ -3,7 +3,7 @@
 **JIRA**: [BT-74](https://betekk.atlassian.net/browse/BT-74)
 **Branch**: `BT-74`
 **Created**: 2026-06-26
-**Status**: v2.0 complete + verified (Phases 1–11, merged with main, on PR #231)
+**Status**: v2.0 complete + verified (Phases 1–11, merged with main, post-review fixes applied, on PR #231)
 
 ## Overview
 
@@ -180,6 +180,29 @@ Allows each of the 5 categories — `primary`, `reasoning`, `fast`, `docs`, `vis
     - **Done when:** A mixed `models.json` (e.g. primary=zai, reasoning=anthropic, fast=openai, docs=zai, vision=openai) resolves each category's agents to the expected provider; interactive `--mix` writes that map; `--dry-run` preview shows the mixed models; per-category override still respects the 5-level precedence (a per-agent override still beats a category map).
     - **Consumers affected:** all (correctness gate)
 
+### Phase 12: Post-review fixes (opencode-tooling-subagent review)
+
+Review run after the main merge + Phase 9 doc sync. The subagent verified the v2.0 system end-to-end (tier registry 39/39, resolver passes dry-run + provider swap, setup.sh/ps1 parity, counts consistent, migration gated) but flagged defects that are fixed here.
+
+- [x] **12.1** `--json` apply mode must actually write files (`deploy/resolve-models.mjs`)
+    - **Defect:** The `if (O.json) { console.log(...); return; }` block fired *before* the write block. Apply mode with `--json` reported `written: 39` but wrote 0 files and never patched config. Production deploys were unaffected (setup.sh/ps1/Dockerfile never pass `--json`), but any CI/automation consuming `--json` for structured output got a false success.
+    - **Fix:** Moved JSON emission to the end of `main()` (after the agent-file + config + sidecar writes). Guarded the human table / dry-run sample dump with `if (!O.json)` so stdout stays clean. Replaced the `--dry-run && !--preview-dir` early `return` with a guarded message so `--json` callers still get a structured summary in that path.
+    - **Verified:** `--json` apply now writes 39 files + patches config (was 0); `--dry-run --json` writes 0 + emits JSON (unchanged); `--dry-run --json --preview-dir` stages 39 + emits JSON (improvement — preview was previously ignored under `--json`); non-JSON apply unchanged.
+
+- [x] **12.2** `deploy/config.json` `agent.general.model` was stale (`glm-5-turbo` → `glm-5.1`)
+    - **Defect:** `deploy/config.json` carried `general.model = glm-5-turbo` (fast tier) while the declared source `opencode_app/opencode.json` had `glm-5.1` (reasoning). `setup_config` copies this file to `~/.config/opencode/config.json` before the resolver runs. On a full successful deploy the resolver overwrote it correctly, but if `deploy_agents` was skipped (node missing — main flow uses `deploy_agents || true`) the stale value would ship. Migration's `lift_customizations` also treated `glm-5-turbo` as a known default, silently adopting the stale value.
+    - **Fix:** Updated `deploy/config.json` `agent.general.model` to `zai-coding-plan/glm-5.1`. The two files are now semantically identical (verified via sorted-key JSON diff).
+    - **Long-term recommendation (not implemented):** have `setup_config` copy from `opencode_app/opencode.json` (the declared single source of truth) instead of maintaining a duplicate at `deploy/config.json`.
+
+- [x] **12.3** `deploy/.AGENTS.md` routing description hardcoded a model ID
+    - **Defect (nit):** Line 41 said "Runs at glm-5.1 (sound-reasoning)" for `technical-design-specialist-subagent`. Accurate today, but would drift silently if the reasoning-tier default ever changed.
+    - **Fix:** Rephrased to "Runs on the **reasoning** tier (default `glm-5.1`; see `deploy/agent-tiers.json`)" — tier-first, model-second, with pointer to the registry.
+
+- [x] **12.4** `Set-ModelProvider` naming in `deploy/setup.ps1` (no change required)
+    - **Note:** Reviewer's task spec referenced `Setup-ModelProvider`; the actual PS1 function is `Set-ModelProvider`. This is *correct* per PowerShell's approved-verb list (Setup is not approved; Set- is the right verb for "change state"). Bash equivalent is `setup_model_provider` (no verb restriction). Functionally identical and correctly wired. No change made — documented here to close the loop.
+
+    - **Consumers affected:** resolver CI/automation callers (12.1); full-deploy fallback path when node is absent (12.2); future tier-default edits (12.3).
+
 ---
 
 ## Acceptance Criteria
@@ -198,6 +221,7 @@ Allows each of the 5 categories — `primary`, `reasoning`, `fast`, `docs`, `vis
 - [x] Existing v1.x installs migrate without losing customizations (lifted into `agent-overrides.json`)
 - [x] Per-category provider/model mixing: each of `primary`/`reasoning`/`fast`/`docs`/`vision` can use a different provider/model (interactive `--mix` + `models.json`); verified across all 5 categories (Phase 11)
 - [x] Mixing docs + auth caveat present in MIGRATION.md / AGENTS.md / README (Phase 11)
+- [x] Post-review: `--json` apply mode writes files + patches config (not just emits summary); `deploy/config.json` matches `opencode_app/opencode.json` source of truth; no out-of-tier hardcoded model IDs in routing docs (Phase 12)
 
 ---
 
@@ -215,6 +239,7 @@ Allows each of the 5 categories — `primary`, `reasoning`, `fast`, `docs`, `vis
 | Team-managed Jira has no delete — closed child tasks BT-75…84 remain visible | low | low | Accepted; consolidated tracking lives in BT-74 description + this PLAN |
 | Mixed-provider maps reference models the user hasn't authenticated | med | med | Phase 11.3 documents the auth requirement per provider (`opencode auth login`); resolver doesn't validate reachability, so a wrong/unauthed model fails at runtime, not at deploy |
 | `--provider <X>` silently overrides a hand-mixed `models.json` | med | med | By design: `--provider` is a forced single-provider shortcut and ranks above `models.json` in precedence. Mixing is done by writing `models.json` (via `--mix`/editor) and resolving WITHOUT `--provider`. Documented in Phase 11.3. |
+| `--json` mode silently no-ops side-effects (early return before writes) | low | high | Phase 12.1: JSON emission moved to the end of `main()` after all writes. PATTERN for future contributors: any "emit-and-return" branch in a tool that mutates state must run AFTER the mutation, not before. |
 
 ---
 

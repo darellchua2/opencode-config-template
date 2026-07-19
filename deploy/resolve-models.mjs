@@ -293,44 +293,35 @@ async function main() {
     .filter(([, t]) => t === "vision")
     .map(([stem]) => stem);
 
-  // ── output ──
+  // ── output counters ──
   const written = rows.filter((r) => r.action === "WRITE").length;
   const preserved = rows.filter((r) => r.action.startsWith("PRESERVE")).length;
   const skipped = rows.filter((r) => r.action.startsWith("SKIP")).length;
 
-  if (O.json) {
-    console.log(JSON.stringify({
-      mode: O.dryRun ? "dry-run" : "apply",
-      provider: O.provider || null,
-      primary, exploreModel, generalModel, configPatched,
-      written, preserved, skipped,
-      agents: rows,
-    }, null, 2));
-    return;
-  }
-
-  // human table
-  const cStem = Math.max(4, ...rows.map((r) => r.stem.length));
-  const cTier = Math.max(4, ...rows.map((r) => (r.tier || "-").length));
-  const cModel = Math.max(5, ...rows.map((r) => (r.model || "-").length));
-  const cAction = Math.max(6, ...rows.map((r) => r.action.length));
-  const fmt = (s, w) => (s + " ".repeat(w)).slice(0, w);
-  const header = `${fmt("AGENT", cStem)}  ${fmt("TIER", cTier)}  ${fmt("MODEL", cModel)}  ACTION`;
-  const bar = "=".repeat(header.length);
-  if (O.verbose || O.dryRun) {
-    console.error(`${O.dryRun ? "[DRY-RUN] " : ""}Model resolution:`);
-    console.error(bar);
-    console.error(header);
-    console.error(bar);
-    for (const r of rows) {
-      console.error(`${fmt(r.stem, cStem)}  ${fmt(r.tier || "-", cTier)}  ${fmt(r.model || "-", cModel)}  ${r.action}`);
+  // Human table (stderr). Suppressed in --json mode so stdout stays clean.
+  if (!O.json) {
+    const cStem = Math.max(4, ...rows.map((r) => r.stem.length));
+    const cTier = Math.max(4, ...rows.map((r) => (r.tier || "-").length));
+    const cModel = Math.max(5, ...rows.map((r) => (r.model || "-").length));
+    const cAction = Math.max(6, ...rows.map((r) => r.action.length));
+    const fmt = (s, w) => (s + " ".repeat(w)).slice(0, w);
+    const header = `${fmt("AGENT", cStem)}  ${fmt("TIER", cTier)}  ${fmt("MODEL", cModel)}  ACTION`;
+    const bar = "=".repeat(header.length);
+    if (O.verbose || O.dryRun) {
+      console.error(`${O.dryRun ? "[DRY-RUN] " : ""}Model resolution:`);
+      console.error(bar);
+      console.error(header);
+      console.error(bar);
+      for (const r of rows) {
+        console.error(`${fmt(r.stem, cStem)}  ${fmt(r.tier || "-", cTier)}  ${fmt(r.model || "-", cModel)}  ${r.action}`);
+      }
+      console.error(bar);
     }
-    console.error(bar);
-  }
-  console.error(`Primary: ${primary || "-"}  |  explore: ${exploreModel || "-"}  |  general: ${generalModel || "-"}${configPatched ? "  (config patched)" : ""}`);
-  console.error(`Summary: ${written} written, ${preserved} preserved, ${skipped} skipped.`);
-  if (visionStems.length && O.verbose) {
-    console.error(`Note: vision-tier agents [${visionStems.join(", ")}] require a multimodal model.`);
+    console.error(`Primary: ${primary || "-"}  |  explore: ${exploreModel || "-"}  |  general: ${generalModel || "-"}${configPatched ? "  (config patched)" : ""}`);
+    console.error(`Summary: ${written} written, ${preserved} preserved, ${skipped} skipped.`);
+    if (visionStems.length && O.verbose) {
+      console.error(`Note: vision-tier agents [${visionStems.join(", ")}] require a multimodal model.`);
+    }
   }
 
   // Determine where resolved files go and whether to write at all.
@@ -368,8 +359,10 @@ async function main() {
   }
 
   if (O.dryRun && !O.previewDir) {
-    console.error("(dry-run: no files written — pass --preview-dir <path> to stage complete resolved files)");
-    return;
+    if (!O.json) console.error("(dry-run: no files written — pass --preview-dir <path> to stage complete resolved files)");
+    // Do not return early: fall through to JSON emission (if --json) so callers
+    // still get the structured summary. The write block below is guarded by
+    // `doWrite` (= !dryRun || previewDir) so nothing is written here.
   }
 
   // ── write resolved agent files ──
@@ -411,6 +404,19 @@ async function main() {
   if (O.state && !O.dryRun) {
     await mkdir(dirname(O.state), { recursive: true });
     await writeFile(O.state, JSON.stringify(newState, null, 2) + "\n", "utf8");
+  }
+
+  // JSON summary emitted LAST so `written` / `configPatched` reflect what was
+  // actually persisted to disk (writes happen above). stdout stays clean
+  // because all human output is guarded by `!O.json`.
+  if (O.json) {
+    console.log(JSON.stringify({
+      mode: O.dryRun ? "dry-run" : "apply",
+      provider: O.provider || null,
+      primary, exploreModel, generalModel, configPatched,
+      written, preserved, skipped,
+      agents: rows,
+    }, null, 2));
   }
 }
 

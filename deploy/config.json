@@ -290,7 +290,7 @@
       "model": "zai-coding-plan/glm-5-turbo"
     },
     "general": {
-      "model": "zai-coding-plan/glm-5-turbo"
+      "model": "zai-coding-plan/glm-5.1"
     }
   }
 }
