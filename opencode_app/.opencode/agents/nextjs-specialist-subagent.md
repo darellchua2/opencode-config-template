@@ -20,6 +20,7 @@ permission:
     nextjs-image-usage-skill: allow
     react-nextjs-antipatterns-skill: allow
     nextjs-devtools-mcp-skill: allow
+    amplify-nextjs-deployment-skill: allow
 ---
 
 ## Prompt Defense Baseline

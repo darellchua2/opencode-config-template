@@ -628,7 +628,7 @@ USAGE:
       google-gce         Google Compute Engine management
       google-gke         Google Kubernetes Engine management
 
-    SKILLS (114):
+    SKILLS (116):
               Framework (20):       test-generator-framework, linting-workflow,
                                       pr-creation-workflow, pr-merge-workflow,
                                       error-resolver-workflow, tdd-workflow,
@@ -644,9 +644,9 @@ USAGE:
                                   javascript-eslint-linter, changelog-python-cliff,
                                   python-backend-skill, python-packaging-skill
 
-           Framework-Specific (9): nextjs-pr-workflow, nextjs-unit-test-creator,
-                                  nextjs-standard-setup, nextjs-image-usage,
-                                  nextjs-devtools-mcp,
+          Framework-Specific (10): nextjs-pr-workflow, nextjs-unit-test-creator,
+                                 nextjs-standard-setup, nextjs-image-usage,
+                                 nextjs-devtools-mcp, amplify-nextjs-deployment,
                                   typescript-dry-principle, accessibility-a11y-skill,
                                   react-nextjs-antipatterns-skill,
                                   threejs-nextjs-skill
@@ -2535,12 +2535,13 @@ print_summary() {
         echo "      - changelog-python-cliff"
         echo "      - python-backend-skill"
         echo "      - python-packaging-skill"
-        echo "    - Framework-Specific (9):"
+        echo "    - Framework-Specific (10):"
         echo "      - nextjs-pr-workflow"
         echo "      - nextjs-unit-test-creator"
         echo "      - nextjs-standard-setup"
         echo "      - nextjs-image-usage"
         echo "      - nextjs-devtools-mcp"
+        echo "      - amplify-nextjs-deployment"
         echo "      - typescript-dry-principle"
         echo "      - accessibility-a11y-skill"
         echo "      - react-nextjs-antipatterns-skill"
@@ -2676,10 +2677,10 @@ print_next_steps() {
     echo "         opencode \"prompt\" (uses build)"
      echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-      echo "                     📦 114 Skills Available"
+      echo "                     📦 116 Skills Available"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-     echo "  Framework (20) • Language-Specific (6) • Framework-Specific (9)"
+     echo "  Framework (20) • Language-Specific (6) • Framework-Specific (10)"
     echo "  OpenCode Meta (4) • OpenTofu (7) • Git/Workflow (12)"
      echo "  Documentation (3) • JIRA (3) • Code Quality (8)"
     echo "  Agent Optimization (7) • Planning & Alignment (4)"
