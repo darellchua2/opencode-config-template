@@ -20,7 +20,7 @@ git pull
 git stash pop 2>/dev/null || true
 
 pm2 delete opencode 2>/dev/null || true
-pm2 start "opencode serve --hostname 0.0.0.0 --port 4096" --name opencode
+pm2 start "opencode serve --hostname 0.0.0.0 --port 4096" --name opencode --cwd /home/silentx/VSCODE/opencode-config-template/opencode_app
 pm2 save
 
 echo "Waiting for opencode to start..."

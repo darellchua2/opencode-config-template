@@ -1,7 +1,7 @@
 ---
 description: TypeScript/JavaScript code review subagent focusing on type safety, modern ES patterns, React/Node best practices, and framework-specific quality analysis
 mode: subagent
-steps: 15
+steps: 25
 permission:
   read: allow
   edit: deny

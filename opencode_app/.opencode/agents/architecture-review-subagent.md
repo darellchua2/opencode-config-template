@@ -1,7 +1,7 @@
 ---
 description: Specialized subagent for architecture review using clean architecture principles, design patterns, and complexity management. Evaluates system design and suggests improvements.
 mode: subagent
-steps: 20
+steps: 40
 permission:
   read: allow
   edit: deny

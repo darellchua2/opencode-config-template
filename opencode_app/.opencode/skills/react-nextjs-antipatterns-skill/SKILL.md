@@ -8,6 +8,7 @@ metadata:
   workflow: code-quality
   languages: [typescript, javascript]
   frameworks: [react, nextjs]
+  protocol: autoresearch-opt-in
 ---
 
 ## What I do
@@ -36,6 +37,7 @@ Use this skill when:
 
 - **accessibility-a11y-skill**: ARIA patterns for dynamic error banners. This skill handles React anti-patterns.
 - **frontend-design-skill**: UI aesthetics and layout. This skill handles runtime correctness.
+- **uiux-review-skill**: Peer — axis 12 (Nielsen heuristic 4: consistency and standards) catches React components that drift from design-system patterns at runtime; axis 13 (anti-default AI cluster detection) flags generic-looking output. Use this skill for runtime anti-patterns; use `uiux-review-skill` for visual/UX review of the rendered output.
 - **typescript-dry-principle-skill**: Duplicate type definitions and status mappings. This skill covers the React-specific runtime impacts.
 - **security-audit-skill**: Fail-open RBAC auditing. This skill covers the React/middleware implementation patterns.
 - **performance-optimization-skill**: Module-scope cache leaks and N+1 queries. This skill covers the React-specific aspects.
@@ -484,3 +486,23 @@ test('works in all projects', ({}, testInfo) => {
   }
 })
 ```
+
+## Iteration Protocol (opt-in)
+
+**DO NOT execute any of the following unless `AUTORESEARCH_PROTOCOL=1` is set in your environment.** When unset, this skill behaves exactly as documented in all sections above; the Iteration Protocol block is descriptive only.
+
+When `AUTORESEARCH_PROTOCOL=1`:
+
+### Auto-detection
+If invoked on an iterative task, prompt ONCE per session: "This looks iterative. Enable autoresearch protocol? (y/n)". Cache answer for session.
+
+### Skill-specific patterns
+
+**Detect→fix→revert cycle.** Each iteration: detect anti-pattern (regex/AST), apply fix, run hydration/runtime check, emit `{"pass":bool,"score":N}` (pass = no regression introduced; score = anti-patterns removed). Revert on pass:false via `git reset --hard HEAD~1`. Log to `react-antipatterns-results.tsv`. See `evaluator-contract.md` + `audit-trail.md`.
+
+### Citations
+- `autoresearch-core-skill/references/evaluator-contract.md`
+- `autoresearch-core-skill/references/audit-trail.md`
+
+### Imperative gating
+When `AUTORESEARCH_PROTOCOL` is unset, this section is descriptive only. Default behavior is documented in all sections above.

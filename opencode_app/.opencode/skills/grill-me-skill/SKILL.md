@@ -7,7 +7,7 @@ metadata:
   audience: developers
   workflow: planning, alignment
   trigger: explicit-only
-version: 1
+  version: "1"
 ---
 
 ## What I do

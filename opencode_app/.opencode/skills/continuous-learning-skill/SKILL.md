@@ -7,7 +7,8 @@ metadata:
   audience: developers, agents
   workflow: learning, optimization
   trigger: explicit-only
-version: 2
+  protocol: autoresearch-opt-in
+  version: "2"
 ---
 
 ## What I do
@@ -564,3 +565,27 @@ The skill will:
 - `eval-harness` - Evaluates code and skill quality
 - `context-budget` - Audit learning overhead
 - `search-first` - Research decisions feed into learning
+
+## Iteration Protocol (opt-in)
+
+**DO NOT execute any of the following unless `AUTORESEARCH_PROTOCOL=1` is set in your environment.** When unset, this skill behaves exactly as documented in all sections above; the Iteration Protocol block is descriptive only.
+
+When `AUTORESEARCH_PROTOCOL=1`:
+
+1. **Gate check**: confirm env var is set; if unset, follow default behavior above.
+2. **Auto-detection**: if this skill is invoked on a task that looks iterative (multiple cycles expected), prompt ONCE per session: "This looks iterative. Enable autoresearch protocol? (y/n)". On "y", continue; on "n", default behavior. Cache the answer for the session.
+3. **5-stage loop**: cycle Understand → Hypothesize → Experiment → Evaluate → Log & Iterate. See `autoresearch-core-skill/SKILL.md`.
+4. **Evaluator contract**: emit `{"pass":bool,"score":N}` JSON from a mechanical evaluator. Pass determines keep/revert; score logged to `continuous-learning-results.tsv`. See `autoresearch-core-skill/references/evaluator-contract.md`.
+5. **Stuck detection**: 3 consecutive non-improving iterations → strategy pivot; 5 consecutive → paradigm shift. See `autoresearch-core-skill/references/stuck-detection.md`.
+6. **Audit trail**: append every iteration to `continuous-learning-results.tsv` (8-column: iteration, commit, metric, delta, status, description, timestamp, evaluator_output). See `autoresearch-core-skill/references/audit-trail.md`.
+7. **Crash recovery**: syntax errors → fix immediately (don't count); runtime → max 3 fix attempts then skip; timeout → revert + log; OOM → smaller variant. See `autoresearch-core-skill/references/crash-recovery.md`.
+8. **Git-as-memory**: commit before each verify; auto-revert (`git reset --hard HEAD~1`) on `pass:false`.
+9. **Iteration safety**: bounded-by-default (`Iterations: 25`); safety blocks `.env`, `node_modules/`, `rm -rf`, `git push --force`. See `autoresearch-core-skill/references/iteration-safety.md`.
+
+### Skill-specific override
+
+**Mechanical confidence validation.** Subjective confidence scores (0.0-1.0) are REPLACED by mechanical `{"pass":bool,"score":N}` from a validation eval: does the learned pattern reproduce on a held-out test set / second codebase / different scenario? Pass = reproduces; score = reproduction rate (0-100).
+
+### Max iterations
+- Default: 25 iterations
+- Hard cap: 100 (explicit `Iterations: unlimited` overrides)

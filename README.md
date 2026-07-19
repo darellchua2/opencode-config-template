@@ -20,8 +20,8 @@ opencode-config-template/
 │   ├── AGENTS.md                # Container-specific instructions
 │   ├── .dockerignore
 │   ├── .opencode/
-│   │       ├── agents/              # 35 subagent .md files
-│   │       └── skills/              # 106 skill directories
+│   │       ├── agents/              # 39 subagent .md files
+│   │       └── skills/              # 114 skill directories
 │   └── README.md                # Docker usage guide
 ├── docker-compose.yml           # Docker Compose service definition
 ├── .env.example                 # Environment variable template
@@ -309,15 +309,15 @@ TypeScript, JavaScript, Python, Go, Rust, Java, C#, PHP, Ruby, C, C++, Swift, Ko
 
 ## Skill Modularization
 
-This repository implements **skill modularization** with 106 skills organized across 16 categories. Skills are designed with clear separation of concerns and explicit dependencies.
+This repository implements **skill modularization** with 114 skills organized across 17 categories. Skills are designed with clear separation of concerns and explicit dependencies.
 
 ### Skill Categories
 
 | Category | Skills | Purpose |
 |-----------|---------|---------|
-| **Framework** (19) | test-generator-framework, linting-workflow, pr-creation-workflow, pr-merge-workflow, error-resolver-workflow, tdd-workflow, docx-creation, pptx-specialist, xlsx-specialist, pdf-specialist, frontend-design, api-design-skill, openapi-contract-adherence-skill, performance-optimization-skill, srs-creation-skill, brd-creation-skill, technical-design-creation-skill, vision-creation-skill, interactive-document-rendering-skill | Generic workflows, testing patterns, document creation, UI design, API design, contract adherence, performance, and the document ladder (BRD/SRS/vision + technical design documents) |
+| **Framework** (20) | test-generator-framework, linting-workflow, pr-creation-workflow, pr-merge-workflow, error-resolver-workflow, tdd-workflow, docx-creation, pptx-specialist, xlsx-specialist, pdf-specialist, frontend-design, uiux-review-skill, api-design-skill, openapi-contract-adherence-skill, performance-optimization-skill, srs-creation-skill, brd-creation-skill, technical-design-creation-skill, vision-creation-skill, interactive-document-rendering-skill | Generic workflows, testing patterns, document creation, UI design + review, API design, contract adherence, performance, and the document ladder (BRD/SRS/vision + technical design documents) |
 | **Language-Specific** (6) | python-pytest-creator, python-ruff-linter, javascript-eslint-linter, changelog-python-cliff, python-backend-skill, python-packaging-skill | Language-specific test, linting, project scaffolding, and packaging |
-| **Framework-Specific** (7) | nextjs-pr-workflow, nextjs-unit-test-creator, nextjs-standard-setup, nextjs-image-usage, typescript-dry-principle, accessibility-a11y-skill, react-nextjs-antipatterns-skill | Next.js 16, React 19, TypeScript, and accessibility workflows |
+| **Framework-Specific** (9) | nextjs-pr-workflow, nextjs-unit-test-creator, nextjs-standard-setup, nextjs-image-usage, nextjs-devtools-mcp, typescript-dry-principle, accessibility-a11y-skill, react-nextjs-antipatterns-skill, threejs-nextjs-skill | Next.js 16, React 19, TypeScript, accessibility workflows, and Three.js integration |
 | **OpenCode Meta** (4) | opencode-agent-creation, opencode-skill-creation, opencode-skills-maintainer, documentation-consistency-skill | Agent and skill creation/maintenance, documentation consistency auditing |
 | **OpenTofu** (7) | opentofu-aws-explorer, opentofu-keycloak-explorer, opentofu-kubernetes-explorer, opentofu-neon-explorer, opentofu-provider-setup, opentofu-provisioning-workflow, opentofu-ecr-provision | Infrastructure as Code |
 | **Git/Workflow** (12) | ascii-diagram-creator, mermaid-diagram-creator, ticket-plan-workflow-skill, plan-execution-skill, git-issue-labeler, git-issue-updater, git-semantic-commits, semantic-release-convention, git-compact-commits, plan-updater, version-bump-standard, git-branch-workflow-setup-skill | Diagrams, git operations, release conventions, version bumping, compact commits, and branch workflow orchestration |
@@ -325,6 +325,7 @@ This repository implements **skill modularization** with 106 skills organized ac
 | **JIRA** (3) | jira-status-updater, jira-git-integration, jira-ticket-labeler | JIRA integration via MCP server |
 | **Code Quality** (7) | solid-principles, clean-code, clean-architecture, design-patterns, object-design, code-smells, complexity-management | Code quality analysis and patterns |
 | **Agent Optimization** (7) | continuous-learning, eval-harness, strategic-compact, verification-loop, search-first, context-budget, agent-introspection-debugging | AI agent session optimization, research-first workflow, context auditing, and agent debugging |
+| **Autoresearch** (4) | autoresearch-core-skill, autoresearch-ml-skill, autoresearch-code-skill, autoresearch-research-skill | Autonomous research loops: 5-stage Understand→Hypothesize→Experiment→Evaluate→Log methodology. ML training (GPU), code optimization, literature review. Evaluated by mechanical `{"pass":bool,"score":N}` — no LLM self-judgment. Ported from uditgoenka/autoresearch + karpathy/autoresearch (MIT). |
 | **Startup/Business** (3) | startup-pitch-deck-skill, startup-business-docs-skill, construction-bd-skill | Startup pitch decks, business documentation, construction proposals |
 | **Configuration** (2) | microsoft-m365-config-skill, codegraph-setup-skill | Microsoft 365 MCP and CodeGraph setup |
 | **Security** (2) | security-audit-skill, authentication-authorization-skill | Security auditing, vulnerability scanning, and auth implementation |
@@ -337,7 +338,7 @@ This repository implements **skill modularization** with 106 skills organized ac
 
 ### Agents
 
-35 agent `.md` files (plus 4 config-builtin agents defined directly in `config.json`: `build`, `plan`, `explore`, `general`) provide specialized task handling. Note: the 2 `*-primary-agent` files (`startup-founder`, `office-document`) are routing hubs but are declared with `mode: subagent`.
+39 agent `.md` files (plus 4 config-builtin agents defined directly in `config.json`: `build`, `plan`, `explore`, `general`) provide specialized task handling. Note: the 2 `*-primary-agent` files (`startup-founder`, `office-document`) are routing hubs but are declared with `mode: subagent`.
 
 #### Primary Agents
 
@@ -367,7 +368,7 @@ This repository implements **skill modularization** with 106 skills organized ac
 | **code-review-subagent** | Comprehensive code review | All 7 Code Quality skills + continuous-learning, complexity-management | `explore`, `general` |
 | **repo-ops-specialist-subagent** | Git repository operations | version-bump-standard, semantic-release-convention, pr-creation-workflow, pr-merge-workflow, git-issue-labeler | `explore`, `general` |
 | **error-resolver-subagent** | Error diagnosis and resolution | error-resolver-workflow | — |
-| **nextjs-setup-subagent** | Next.js project setup | nextjs-standard-setup (also see docstring-generator for TSDoc) | — |
+| **nextjs-specialist-subagent** | Next.js scaffolding + runtime MCP diagnosis + project audit | nextjs-standard-setup, nextjs-devtools-mcp, docstring-generator, nextjs-image-usage, react-nextjs-antipatterns | — |
 | **opencode-tooling-subagent** | Skills, agents, and rules creation + doc sync | opencode-skill-creation, opencode-agent-creation, opencode-skills-maintainer, documentation-sync-workflow | — |
 | **docx-creation-subagent** | Word document creation | docx-creation | — |
 | **image-analyzer-subagent** | Image analysis and conversion | (built-in capabilities) | — |
@@ -376,15 +377,19 @@ This repository implements **skill modularization** with 106 skills organized ac
 | **cad-specialist-subagent** | CAD, robotics, hardware design — orchestrates 14 CAD/engineering skills | cad-generation, cad-viewer, cad-step-parts, cad-dxf, cad-urdf, cad-srdf, cad-sdf, cad-sendcutsend, cad-gcode, cad-bambu-labs, cad-implicit, autodesk-aps-skill, civil-3d-skill, open3d-skill | — |
 | **microsoft-m365-specialist-subagent** | Microsoft 365 MCP setup and usage | microsoft-teams, microsoft-mail, microsoft-calendar, microsoft-sharepoint | — |
 | **explorer-subagent** | Fast codebase exploration and analysis | (built-in search capabilities) | — |
-| **nextjs-mcp-advisor-subagent** | Next.js runtime guidance with MCP | nextjs-pr-workflow, nextjs-unit-test-creator | — |
 | **pptx-specialist-subagent** | PowerPoint presentations (read, create, edit, analyze) | pptx-specialist | — |
 | **xlsx-specialist-subagent** | Spreadsheets (read, create, edit, analyze) | xlsx-specialist | — |
 | **startup-ceo-subagent** | Startup presentations (pitch decks, investor slides, board updates) | pptx-specialist | — |
 | **loop-operator-subagent** | Autonomous loop execution with self-correction | verification-loop, continuous-learning, strategic-compact | `explore`, `general` |
+| **autoresearch-ml-subagent** | Autonomous ML training loop (Karpathy-style). Requires NVIDIA GPU. | autoresearch-core, autoresearch-ml, strategic-compact | `explore`, `general` |
+| **autoresearch-code-subagent** | Autonomous code optimization (test coverage, bundle size, runtime) | autoresearch-core, autoresearch-code, continuous-learning, strategic-compact | `explore`, `general` |
+| **autoresearch-research-subagent** | Literature review / paper synthesis (Tier 2 web-only, no Bash) | autoresearch-core, autoresearch-research, search-first, strategic-compact | `explore`, `general` |
 | **python-reviewer-subagent** | Python-specific code review (PEP 8, type hints, async) | solid-principles, clean-code, code-smells, continuous-learning | `explore`, `general` |
 | **typescript-reviewer-subagent** | TypeScript/JS code review (type safety, React, Next.js) | solid-principles, clean-code, code-smells, continuous-learning | `explore`, `general` |
 | **go-reviewer-subagent** | Go code review (idioms, concurrency, error handling) | solid-principles, clean-code, code-smells, continuous-learning | `explore`, `general` |
 | **rust-reviewer-subagent** | Rust code review (ownership, unsafe safety, Result/Option) | solid-principles, clean-code, code-smells, continuous-learning | `explore`, `general` |
+| **java-reviewer-subagent** | Java code review (Effective Java, concurrency, Spring) | solid-principles, clean-code, code-smells, continuous-learning | `explore`, `general` |
+| **uiux-reviewer-subagent** | UI/UX design review (13-axis rubric: 6 AslanMazhidov + 5 RNT56 + Nielsen's 10 + anti-default AI cluster detection) | uiux-review-skill, frontend-design-skill, accessibility-a11y-skill, wireframer-skill | `explore`, `general`, `image-analyzer-subagent` |
 
 > **Built-in Delegation**: Subagents with `explore` can delegate codebase scanning to the built-in `explore` subagent. Subagents with `general` can delegate parallelizable multi-step work to the built-in `general` subagent. Access is controlled via `task` permissions in each agent's frontmatter (`"*": deny` by default, explicit allowlist).
 
@@ -398,6 +403,26 @@ Some subagents recognize natural language triggers:
 | **ticket-creation-subagent** | "create issue", "new ticket", "jira ticket" |
 | **pptx-specialist-subagent** | "PowerPoint", ".pptx", "presentation", "slides", "deck", "html to pptx" |
 | **startup-ceo-subagent** | "pitch deck", "investor deck", "board update", "fundraising", "demo day" |
+| **uiux-reviewer-subagent** | "design review", "UI audit", "UX review", "visual review", "review UI design" |
+
+### Iteration Protocol (opt-in)
+
+The repository ships an **autoresearch iteration protocol** — a 5-stage loop (Understand → Hypothesize → Experiment → Evaluate → Log & Iterate) that 30 existing skills can opt into. The protocol is **off by default**; enable it via:
+
+| Method | How |
+|--------|-----|
+| Environment variable | `export AUTORESEARCH_PROTOCOL=1` |
+| Shell helper (after `setup.sh`) | `ar-enable` / `ar-disable` |
+| Per-invocation | Set the env var inline before invoking the skill |
+
+When enabled, retrofitted skills emit mechanical evaluator output `{"pass":bool,"score":N}` (no LLM self-judgment), append to `<skill>-results.tsv` audit trails, and auto-revert failed experiments via Git-as-memory. See `opencode_app/.opencode/skills/autoresearch-core-skill/references/iteration-safety.md` for safety blocks and prompt-injection boundaries.
+
+**Retrofitted skills (30 total):**
+- **Tier 1 (full loop, 7)**: verification-loop, tdd-workflow, eval-harness, continuous-learning, deprecated-code-cleanup, linting-workflow, coverage-readme-workflow
+- **Tier 2 (partial, 8)**: documentation-consistency, error-resolver-workflow, opencode-skills-maintainer, plan-execution, pr-creation-workflow, pr-merge-workflow, react-nextjs-antipatterns, playwright-responsive-audit
+- **Tier 3 (light safety, 15)**: search-first, api-design, security-audit, code-smells, performance-optimization, typescript-dry-principle, solid-principles, clean-code, test-generator-framework, python-pytest-creator, nextjs-unit-test-creator, nextjs-pr-workflow, mermaid-diagram-creator, wireframer, frontend-design
+
+**Maintenance:** `opencode-skills-maintainer-skill` includes a Citation drift audit rule that flags skills with iteration-keyword mentions lacking proper `autoresearch-core-skill/references/` citations.
 
 ### Skill Architecture
 

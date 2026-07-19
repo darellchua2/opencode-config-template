@@ -7,7 +7,7 @@ metadata:
   audience: developers, agents
   workflow: documentation, domain-design
   trigger: auto
-version: 1
+  version: "1"
 ---
 
 ## What I do

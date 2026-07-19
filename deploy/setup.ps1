@@ -157,7 +157,10 @@ function Test-CommandExists {
 }
 
 function Invoke-WithDryRun {
-    param([Parameter(Mandatory)][string]$Command, [string]$Description = $Command)
+    param(
+        [Parameter(Mandatory)][string]$Command,
+        [string]$Description = $Command
+    )
 
     Write-LogDebug "Executing: $Command"
 
@@ -166,8 +169,18 @@ function Invoke-WithDryRun {
         return $true
     }
 
+    # Execute via ScriptBlock so stdout flows through and $LASTEXITCODE is
+    # honoured for native executables (npm, winget, choco, etc.). The previous
+    # implementation only caught parsing exceptions and ALWAYS returned $true,
+    # which masked real failures like `npm install -g opencode-ai` errors.
     try {
-        $result = Invoke-Expression $Command
+        $scriptBlock = [ScriptBlock]::Create($Command)
+        & $scriptBlock | Out-Host
+        # $LASTEXITCODE is set by native executables. PowerShell cmdlets that
+        # fail throw instead, so we're covered both ways.
+        if (Test-Path Variable:\LASTEXITCODE) {
+            return $LASTEXITCODE -eq 0
+        }
         return $true
     } catch {
         Write-LogError "Command failed: $Description"
@@ -370,7 +383,7 @@ USAGE:
                          CONFIGURED FEATURES
 =======================================================================
 
-   AGENTS (39):
+    AGENTS (39):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
@@ -382,6 +395,7 @@ USAGE:
     typescript-reviewer  TypeScript/JS code review (type safety, React/Next)
     go-reviewer          Go code review (idioms, concurrency, errors)
     rust-reviewer        Rust code review (ownership, unsafe, Result/Option)
+    java-reviewer        Java code review (Effective Java, concurrency, Spring)
     testing              Test generation with framework detection
     pr-workflow          PR creation with quality gates and JIRA integration
     linting              Code linting with auto-fix for Python/JS/TS
@@ -403,8 +417,7 @@ USAGE:
     office-document      Office document specialist: Word, PowerPoint, Excel
     google-mcp           Google Cloud MCP (BigQuery, Maps, GCE, GKE)
     microsoft-m365       Microsoft 365 MCP (Teams, Mail, Calendar, SharePoint, etc.)
-    nextjs-mcp-advisor   Next.js runtime guidance with MCP integration
-    nextjs-setup         Next.js project setup and configuration
+     nextjs-specialist  Next.js scaffolding + runtime MCP diagnosis
     opentofu-explorer    OpenTofu/Terraform infrastructure management
     cad-specialist       CAD, robotics, hardware design orchestration
     discovery-specialist Customer-facing discovery: Vision docs + wireframes
@@ -414,12 +427,13 @@ USAGE:
     Usage: opencode --agent build 'implement auth feature'
             opencode --agent explore 'find all API routes'
  
-          SKILLS (106):
-              Framework (19):       test-generator-framework, linting-workflow,
+           SKILLS (114):
+              Framework (20):       test-generator-framework, linting-workflow,
                                       pr-creation-workflow, pr-merge-workflow,
                                       error-resolver-workflow, tdd-workflow,
                                       docx-creation, pptx-specialist,
                                       xlsx-specialist, pdf-specialist, frontend-design,
+                                      uiux-review-skill,
                                       api-design-skill, openapi-contract-adherence-skill,
                                       performance-optimization-skill, srs-creation-skill,
                                       brd-creation-skill, technical-design-creation-skill,
@@ -429,10 +443,12 @@ USAGE:
                                   javascript-eslint-linter, changelog-python-cliff,
                                   python-backend-skill, python-packaging-skill
 
-           Framework-Specific (7): nextjs-pr-workflow, nextjs-unit-test-creator,
-                                 nextjs-standard-setup, nextjs-image-usage,
-                                 typescript-dry-principle, accessibility-a11y-skill,
-                                 react-nextjs-antipatterns-skill
+           Framework-Specific (9): nextjs-pr-workflow, nextjs-unit-test-creator,
+                                  nextjs-standard-setup, nextjs-image-usage,
+                                  nextjs-devtools-mcp,
+                                  typescript-dry-principle, accessibility-a11y-skill,
+                                  react-nextjs-antipatterns-skill,
+                                  threejs-nextjs-skill
            OpenCode Meta (4):    opencode-agent-creation, opencode-skill-creation,
                                  opencode-skills-maintainer,
                                  documentation-consistency-skill
@@ -731,7 +747,9 @@ function Set-PeonPing {
 
             Remove-Item $installerTemp -Force -ErrorAction SilentlyContinue
 
-            if ($installExitCode -ne 0 -and $installExitCode -ne 0) {
+            # Treat 0 and 3010 (ERROR_SUCCESS_REBOOT_REQUIRED) as success.
+            # Everything else is a real failure worth warning about.
+            if ($installExitCode -ne 0 -and $installExitCode -ne 3010) {
                 Write-LogWarn "PeonPing installer exited with code: $installExitCode"
             }
         } else {
@@ -1026,11 +1044,7 @@ function Set-OpenCode {
 
         Write-LogInfo "opencode-ai is already installed (v$currentVersion)"
 
-        try {
-            $latestVersion = (Invoke-Expression "npm view opencode-ai version" 2>$null).Trim()
-        } catch {
-            $latestVersion = "unknown"
-        }
+        $latestVersion = Get-OpenCodeVersion -Latest
 
         Write-LogInfo "Latest version: v$latestVersion"
 
@@ -1103,11 +1117,7 @@ function Update-OpenCodeCLI {
     Write-LogInfo "Current version: v$currentVersion"
 
     Write-LogInfo "Checking for updates..."
-    try {
-        $latestVersion = (Invoke-Expression "npm view opencode-ai version" 2>$null).Trim()
-    } catch {
-        $latestVersion = "unknown"
-    }
+    $latestVersion = Get-OpenCodeVersion -Latest
 
     if ($latestVersion -eq "unknown") {
         Write-LogError "Could not fetch latest version from npm registry"
@@ -1276,28 +1286,31 @@ function Deploy-Skills {
         Write-Host "Deployed $skillCount skills to $SkillsDir" -ForegroundColor Green
         Write-Host ""
         Write-Host "  Skill Categories:" -ForegroundColor Cyan
-          Write-Host "    Framework (19):"
-          Write-Host "      - test-generator-framework, linting-workflow"
-          Write-Host "      - pr-creation-workflow, pr-merge-workflow"
-          Write-Host "      - error-resolver-workflow, tdd-workflow"
-          Write-Host "      - docx-creation, pptx-specialist, xlsx-specialist, pdf-specialist"
-          Write-Host "      - frontend-design"
-          Write-Host "      - api-design-skill, openapi-contract-adherence-skill"
-          Write-Host "      - performance-optimization-skill"
-          Write-Host "      - srs-creation-skill"
-          Write-Host "      - brd-creation-skill"
-          Write-Host "      - technical-design-creation-skill"
-          Write-Host "      - vision-creation-skill"
-          Write-Host "      - interactive-document-rendering-skill"
+          Write-Host "    Framework (20):"
+        Write-Host "      - test-generator-framework, linting-workflow"
+        Write-Host "      - pr-creation-workflow, pr-merge-workflow"
+        Write-Host "      - error-resolver-workflow, tdd-workflow"
+        Write-Host "      - docx-creation, pptx-specialist, xlsx-specialist, pdf-specialist"
+        Write-Host "      - frontend-design"
+        Write-Host "      - uiux-review-skill"
+        Write-Host "      - api-design-skill, openapi-contract-adherence-skill"
+        Write-Host "      - performance-optimization-skill"
+        Write-Host "      - srs-creation-skill"
+        Write-Host "      - brd-creation-skill"
+        Write-Host "      - technical-design-creation-skill"
+        Write-Host "      - vision-creation-skill"
+        Write-Host "      - interactive-document-rendering-skill"
         Write-Host "    Language-Specific (6):"
         Write-Host "      - python-pytest-creator, python-ruff-linter"
         Write-Host "      - javascript-eslint-linter, changelog-python-cliff"
         Write-Host "      - python-backend-skill, python-packaging-skill"
-        Write-Host "    Framework-Specific (7):"
+        Write-Host "    Framework-Specific (9):"
         Write-Host "      - nextjs-pr-workflow, nextjs-unit-test-creator"
         Write-Host "      - nextjs-standard-setup, nextjs-image-usage"
+        Write-Host "      - nextjs-devtools-mcp"
         Write-Host "      - typescript-dry-principle, accessibility-a11y-skill"
         Write-Host "      - react-nextjs-antipatterns-skill"
+        Write-Host "      - threejs-nextjs-skill"
         Write-Host "    OpenCode Meta (4):"
         Write-Host "      - opencode-agent-creation, opencode-skill-creation"
         Write-Host "      - opencode-skills-maintainer"
@@ -1613,25 +1626,78 @@ function Set-ShellVariables {
     Write-Host "=====================================================================" -ForegroundColor White
     Write-Host ""
 
-    if (-not (Test-Path $PROFILE)) {
-        $profileDir = Split-Path $PROFILE -Parent
-        if (-not (Test-Path $profileDir)) {
-            New-Item -ItemType Directory -Path $profileDir -Force | Out-Null
-        }
-        New-Item -ItemType File -Path $PROFILE -Force | Out-Null
-        Write-LogInfo "Created PowerShell profile: $PROFILE"
-    }
-
     Write-Host "PowerShell profile: $PROFILE"
     Write-Host ""
 
-    if (-not [string]::IsNullOrWhiteSpace($ZaiApiKey)) {
+    # Decide whether we need to write anything to the profile before creating it.
+    # Previously, an empty $PROFILE was created unconditionally as a side effect,
+    # which surprised users who never wanted a profile at all.
+    $profileExists = Test-Path $PROFILE
+
+    # Offer to install autoresearch protocol helpers (ar-enable / ar-disable)
+    if ($profileExists) {
         $profileContent = Get-Content $PROFILE -Raw -ErrorAction SilentlyContinue
+    } else {
+        $profileContent = ""
+    }
+    if ($profileContent -notmatch 'function ar-enable') {
+        if (Read-YesNo "Install 'ar-enable' / 'ar-disable' helpers in your PowerShell profile?" $false) {
+            if (-not $profileExists) {
+                $profileDir = Split-Path $PROFILE -Parent
+                if (-not (Test-Path $profileDir)) {
+                    if (-not $DryRun) {
+                        New-Item -ItemType Directory -Path $profileDir -Force | Out-Null
+                    }
+                }
+                if (-not $DryRun) {
+                    New-Item -ItemType File -Path $PROFILE -Force | Out-Null
+                }
+                Write-LogInfo "Created PowerShell profile: $PROFILE"
+                $profileExists = $true
+            } else {
+                New-FileBackup $PROFILE
+            }
+            if (-not $DryRun) {
+                Add-Content -Path $PROFILE -Value @'
+
+function ar-enable { $env:AUTORESEARCH_PROTOCOL = "1"; Write-Host "autoresearch protocol: ON" }
+function ar-disable { Remove-Item Env:\AUTORESEARCH_PROTOCOL -ErrorAction SilentlyContinue; Write-Host "autoresearch protocol: OFF" }
+'@
+            }
+            Write-LogSuccess "Added ar-enable / ar-disable helpers to $PROFILE"
+        } else {
+            Write-LogInfo "Skipping ar-enable / ar-disable helpers"
+        }
+    } else {
+        Write-LogInfo "ar-enable / ar-disable helpers already exist in $PROFILE"
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($ZaiApiKey)) {
+        # Re-read profile content in case we just created it / added ar-* above
+        if (Test-Path $PROFILE) {
+            $profileContent = Get-Content $PROFILE -Raw -ErrorAction SilentlyContinue
+        } else {
+            $profileContent = ""
+        }
         if ($profileContent -match "ZAI_API_KEY") {
             Write-LogInfo "ZAI_API_KEY already exists in $PROFILE"
         } else {
             if (Read-YesNo "Add ZAI_API_KEY to your PowerShell profile for persistent access?" $true) {
-                New-FileBackup $PROFILE
+                if (-not $profileExists) {
+                    $profileDir = Split-Path $PROFILE -Parent
+                    if (-not (Test-Path $profileDir)) {
+                        if (-not $DryRun) {
+                            New-Item -ItemType Directory -Path $profileDir -Force | Out-Null
+                        }
+                    }
+                    if (-not $DryRun) {
+                        New-Item -ItemType File -Path $PROFILE -Force | Out-Null
+                    }
+                    Write-LogInfo "Created PowerShell profile: $PROFILE"
+                    $profileExists = $true
+                } else {
+                    New-FileBackup $PROFILE
+                }
                 if (-not $DryRun) {
                     Add-Content -Path $PROFILE -Value "`n# Z.AI API Key (added by opencode setup)"
                     Add-Content -Path $PROFILE -Value "`$env:ZAI_API_KEY = `"$ZaiApiKey`""
@@ -1680,8 +1746,15 @@ function Get-OpenCodeVersion {
     param([switch]$Latest)
 
     if ($Latest) {
+        # Call npm directly — Invoke-Expression swallows non-throwing failures
+        # (npm writes to stderr and returns non-zero $LASTEXITCODE), causing
+        # the caller to see an empty string instead of "unknown".
         try {
-            return (Invoke-Expression "npm view opencode-ai version" 2>$null).Trim()
+            $output = & npm view opencode-ai version 2>$null
+            if ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace($output)) {
+                return $output.Trim()
+            }
+            return "unknown"
         } catch {
             return "unknown"
         }
@@ -1874,22 +1947,22 @@ function Show-NextSteps {
     Write-Host "  2. Start LM Studio: http://127.0.0.1:1234/v1"
     Write-Host "  3. Verify installation: opencode --version"
     Write-Host ""
-    Write-Host "Agents (39):"
+    Write-Host "Agents (36):"
     Write-Host "  - build (default) - Full-featured coding agent"
     Write-Host "  - plan - Planning agent (read-only)"
     Write-Host "  - explore - Codebase exploration and analysis"
     Write-Host "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
     Write-Host "  - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
-    Write-Host "  - ... and 34 more agents"
+    Write-Host "  - ... and 31 more agents"
     Write-Host ""
     Write-Host "  Usage: opencode --agent <name> `"prompt`""
     Write-Host "         opencode `"prompt`" (uses build)"
      Write-Host ""
     Write-Host "=====================================================================" -ForegroundColor White
-      Write-Host "                     106 Skills Available" -ForegroundColor White
+      Write-Host "                     114 Skills Available" -ForegroundColor White
      Write-Host "=====================================================================" -ForegroundColor White
      Write-Host ""
-     Write-Host "  Framework (19) • Language-Specific (6) • Framework-Specific (7)"
+     Write-Host "  Framework (20) • Language-Specific (6) • Framework-Specific (9)"
       Write-Host "  OpenCode Meta (4) • OpenTofu (7) • Git/Workflow (12)"
      Write-Host "  Documentation (3) • JIRA (3) • Code Quality (7)"
       Write-Host "  Agent Optimization (7) • Planning & Alignment (4)"

@@ -155,7 +155,7 @@ This skill is invocable by any framework **setup agent** (an `.opencode/agents/*
 
 | Consumer | Type | Status |
 |----------|------|--------|
-| `nextjs-setup-subagent` | Setup agent | **Active** — signals `NEEDS_GIT_BRANCH_SETUP: true` after scaffolding |
+| `nextjs-specialist-subagent` | Setup agent | **Active** — signals `NEEDS_GIT_BRANCH_SETUP: true` after scaffolding |
 
 ### Future Setup Agents
 

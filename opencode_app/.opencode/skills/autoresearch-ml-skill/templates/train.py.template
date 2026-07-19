@@ -1,0 +1,127 @@
+# train.py.template
+#
+# Parameterized derivation of karpathy/autoresearch train.py.
+# Source: karpathy/autoresearch (MIT). Full notice: THIRD_PARTY_LICENSES.md.
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# SIMPLICITY CRITERION (from program.md — applies to every change you make):
+#
+#   All else being equal, simpler is better.
+#     - A 0.001 val_bpb improvement that adds 20 lines of hacky code?
+#       Probably NOT worth it.
+#     - A 0.001 val_bpb improvement from DELETING code?
+#       Definitely keep.
+#     - An improvement of ~0 but much simpler code?
+#       Keep.
+#
+#   Weigh complexity cost against improvement magnitude. Reverting complexity
+#   is as valuable as adding cleverness.
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# This is the file the autoresearch agent modifies. Everything is fair game:
+# architecture, optimizer, hyperparameters, batch size, model size.
+# The only constraints: code runs without crashing and finishes within
+# TIME_BUDGET (default 5 min). Goal: lowest val_bpb.
+"""
+Autoresearch pretraining script. Single-GPU, single-file.
+Cherry-picked and simplified from nanochat.
+Usage: uv run train.py
+"""
+
+import os
+os.environ["PYTORCH_ALLOC_CONF"] = "expandable_segments:True"
+os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
+
+import gc
+import math
+import time
+from dataclasses import dataclass, asdict
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+# kernels / flash-attn imports — see upstream karpathy train.py for the
+# device-capability check that picks the right FA3 kernel repo.
+# from kernels import get_kernel
+# cap = torch.cuda.get_device_capability()
+# repo = "varunneal/flash-attention-3" if cap == (9, 0) else "kernels-community/flash-attn3"
+# fa3 = get_kernel(repo).flash_attn_interface
+
+from prepare import MAX_SEQ_LEN, TIME_BUDGET, Tokenizer, make_dataloader, evaluate_bpb
+
+# ---------------------------------------------------------------------------
+# GPT Model — tune freely (see SIMPLICITY CRITERION above)
+# ---------------------------------------------------------------------------
+
+@dataclass
+class GPTConfig:
+    sequence_len: int = MAX_SEQ_LEN
+    vocab_size: int = 32768
+    n_layer: int = 12            # DEPTH — primary complexity knob
+    n_head: int = 6
+    n_kv_head: int = 6
+    n_embd: int = 768
+    window_pattern: str = "SSSL"  # alternatives: "L" (local), "SSSS"
+
+
+def norm(x):
+    return F.rms_norm(x, (x.size(-1),))
+
+
+# ---------------------------------------------------------------------------
+# Optimizer (default: Muon + AdamW) — fair game to swap
+# ---------------------------------------------------------------------------
+
+def build_optimizer(model, learning_rate=0.02):
+    """Construct the optimizer. Default Muon+AdamW; feel free to swap."""
+    # See upstream karpathy train.py for the full Muon implementation.
+    return torch.optim.AdamW(model.parameters(), lr=learning_rate)
+
+
+# ---------------------------------------------------------------------------
+# Training loop — runs for TIME_BUDGET seconds (wall clock)
+# ---------------------------------------------------------------------------
+
+def train():
+    device = "cuda"
+    torch.manual_seed(1337)
+
+    config = GPTConfig()
+    # model = GPT(config).to(device)        # construct model (see upstream)
+    # optimizer = build_optimizer(model)
+
+    start = time.time()
+    last_log = start
+    # train_loader = make_dataloader(batch_size=..., split="train")
+
+    step = 0
+    while True:
+        now = time.time()
+        if now - start >= TIME_BUDGET:
+            break
+
+        # ... forward, backward, step (see upstream karpathy train.py)
+
+        if now - last_log > 10:
+            last_log = now
+            # periodic logging
+
+        step += 1
+
+    # Final evaluation — this is the ground-truth metric (see program.md).
+    # val_bpb = evaluate_bpb(model, device)
+
+    # Summary block — the autoresearch loop greps this for the metric.
+    peak_vram_mb = torch.cuda.max_memory_allocated() / 1e6 if torch.cuda.is_available() else 0
+    print("---")
+    # print(f"val_bpb:          {val_bpb:.6f}")
+    print(f"training_seconds: {time.time() - start:.1f}")
+    print(f"total_seconds:    {time.time() - start:.1f}")
+    print(f"peak_vram_mb:     {peak_vram_mb:.1f}")
+    print(f"num_steps:        {step}")
+    print(f"depth:            {config.n_layer}")
+
+
+if __name__ == "__main__":
+    train()

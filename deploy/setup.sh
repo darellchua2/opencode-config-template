@@ -133,7 +133,8 @@ detect_platform() {
             ;;
         *)
             # Check for Windows environment variables
-            if [ -n "$OS" ] && [[ "$OS" == "Windows_NT" ]]; then
+            # ${OS:-} guards against nounset abort when $OS is not exported
+            if [ -n "${OS:-}" ] && [[ "$OS" == "Windows_NT" ]]; then
                 echo "Windows"
             else
                 echo "Unknown"
@@ -228,13 +229,7 @@ PACKAGE_MANAGER=$(detect_package_manager "$DETECTED_OS")
 get_distribution_name() {
     local pkg_manager="$1"
     case "$pkg_manager" in
-        apt:*|apt:*)
-            echo "${pkg_manager#*:}"
-            ;;
-        dnf:*|dnf:*)
-            echo "${pkg_manager#*:}"
-            ;;
-        pacman:*|pacman:*)
+        apt:*|dnf:*|pacman:*)
             echo "${pkg_manager#*:}"
             ;;
         zypper:*)
@@ -402,6 +397,18 @@ error_handler() {
     local line_number=$1
     local error_code=$2
     log_error "Script failed at line ${line_number} with exit code ${error_code}"
+
+    # Print the call stack so the user can see WHERE the failure happened.
+    # FUNCNAME / BASH_LINENO / BASH_SOURCE are parallel arrays — same length,
+    # indexed from the innermost (current) function outward.
+    if [ "${#FUNCNAME[@]}" -gt 1 ]; then
+        log_error "Call stack:"
+        local i
+        for ((i = 1; i < ${#FUNCNAME[@]}; i++)); do
+            log_error "  ${BASH_SOURCE[$i]:-setup.sh}:${BASH_LINENO[$((i-1))]:-?}  ${FUNCNAME[$i]}"
+        done
+    fi
+
     log_error "Check ${LOG_FILE} for details"
 
     # Suggest recovery actions
@@ -427,8 +434,9 @@ cleanup_on_error() {
     fi
 }
 
-# Trap errors
-trap 'error_handler ${LINENO} $?' ERR
+# Trap errors — capture the actual failing line via BASH_LINENO, not the trap
+# definition site. Without this, every error reports the trap's own line number.
+trap 'error_handler "${BASH_LINENO[0]}" "$?"' ERR
 
 # Trap interruption
 trap 'echo ""; log_warn "Setup interrupted by user"; exit 130' INT
@@ -549,6 +557,7 @@ USAGE:
     typescript-reviewer  TypeScript/JS code review (type safety, React/Next)
     go-reviewer          Go code review (idioms, concurrency, errors)
     rust-reviewer        Rust code review (ownership, unsafe, Result/Option)
+    java-reviewer        Java code review (Effective Java, concurrency, Spring)
     testing              Test generation with framework detection
     pr-workflow          PR creation with quality gates and JIRA integration
     linting              Code linting with auto-fix for Python/JS/TS
@@ -570,8 +579,7 @@ USAGE:
     office-document      Office document specialist: Word, PowerPoint, Excel
     google-mcp           Google Cloud MCP (BigQuery, Maps, GCE, GKE)
     microsoft-m365       Microsoft 365 MCP (Teams, Mail, Calendar, SharePoint, etc.)
-    nextjs-mcp-advisor   Next.js runtime guidance with MCP integration
-    nextjs-setup         Next.js project setup and configuration
+     nextjs-specialist  Next.js scaffolding + runtime MCP diagnosis
     opentofu-explorer    OpenTofu/Terraform infrastructure management
     cad-specialist       CAD, robotics, hardware design orchestration
     discovery-specialist Customer-facing discovery: Vision docs + wireframes
@@ -620,12 +628,13 @@ USAGE:
       google-gce         Google Compute Engine management
       google-gke         Google Kubernetes Engine management
 
-   SKILLS (106):
-             Framework (19):       test-generator-framework, linting-workflow,
+    SKILLS (114):
+              Framework (20):       test-generator-framework, linting-workflow,
                                       pr-creation-workflow, pr-merge-workflow,
                                       error-resolver-workflow, tdd-workflow,
                                       docx-creation, pptx-specialist,
                                       xlsx-specialist, pdf-specialist, frontend-design,
+                                      uiux-review-skill,
                                       api-design-skill, openapi-contract-adherence-skill,
                                       performance-optimization-skill, srs-creation-skill,
                                       brd-creation-skill, technical-design-creation-skill,
@@ -635,10 +644,12 @@ USAGE:
                                   javascript-eslint-linter, changelog-python-cliff,
                                   python-backend-skill, python-packaging-skill
 
-           Framework-Specific (7): nextjs-pr-workflow, nextjs-unit-test-creator,
-                                 nextjs-standard-setup, nextjs-image-usage,
-                                 typescript-dry-principle, accessibility-a11y-skill,
-                                 react-nextjs-antipatterns-skill
+           Framework-Specific (9): nextjs-pr-workflow, nextjs-unit-test-creator,
+                                  nextjs-standard-setup, nextjs-image-usage,
+                                  nextjs-devtools-mcp,
+                                  typescript-dry-principle, accessibility-a11y-skill,
+                                  react-nextjs-antipatterns-skill,
+                                  threejs-nextjs-skill
 
            OpenCode Meta (4):    opencode-agent-creation, opencode-skill-creation,
                                  opencode-skills-maintainer,
@@ -784,12 +795,19 @@ parse_arguments() {
                 shift
                 ;;
             -S|--schedule-update)
-                if [ -n "$2" ]; then
-                    UPDATE_SCHEDULE="$2"
-                else
-                    log_error "--schedule-update requires an argument (daily, weekly, monthly)"
+                if [ -z "$2" ]; then
+                    log_error "--schedule-update requires an argument (daily, weekly, monthly, manual)"
                     exit 1
                 fi
+                case "$2" in
+                    daily|weekly|monthly|manual)
+                        UPDATE_SCHEDULE="$2"
+                        ;;
+                    *)
+                        log_error "Invalid --schedule-update value: '$2' (allowed: daily, weekly, monthly, manual)"
+                        exit 1
+                        ;;
+                esac
                 shift 2
                 ;;
             -C|--check-update)
@@ -839,17 +857,27 @@ parse_arguments() {
     done
 }
 
-# Safe execution with dry-run support
+# Safe execution with dry-run support.
+# Supports two calling conventions:
+#   - Multi-arg (preferred):  run_cmd cp "$src" "$dest"      # preserves spaces
+#   - Single-string (legacy): run_cmd "cp $src $dest"        # eval'd for back-comat
+# Prefer the multi-arg form in new code — it survives paths with spaces, quotes,
+# and glob chars without an eval injection risk.
 run_cmd() {
-    local cmd="$*"
-    log_debug "Executing: ${cmd}"
+    log_debug "Executing: $*"
 
     if [ "$DRY_RUN" = true ]; then
-        echo "[DRY-RUN] Would execute: ${cmd}"
+        echo "[DRY-RUN] Would execute: $*"
         return 0
     fi
 
-    eval "$cmd"
+    if [ $# -gt 1 ]; then
+        # Multi-arg: execute directly so each arg is its own word.
+        "$@"
+    else
+        # Single-string legacy form: requires eval for word-splitting.
+        eval "$1"
+    fi
 }
 
 # Prompt user with default
@@ -898,7 +926,7 @@ prompt_yes_no() {
 # Create backup of existing files
 create_backup() {
     local file_to_backup="$1"
-    local backup_path="${BACKUP_DIR}/$(basename ${file_to_backup})"
+    local backup_path="${BACKUP_DIR}/$(basename "$file_to_backup")"
 
     if [ ! -d "$BACKUP_DIR" ]; then
         mkdir -p "$BACKUP_DIR"
@@ -906,7 +934,7 @@ create_backup() {
     fi
 
     if [ -f "$file_to_backup" ]; then
-        run_cmd "cp ${file_to_backup} ${backup_path}"
+        run_cmd cp "$file_to_backup" "$backup_path"
         log_info "Backed up: ${file_to_backup} -> ${backup_path}"
     fi
 }
@@ -1674,7 +1702,7 @@ setup_config() {
     echo ""
 
     # Create config directory
-    run_cmd "mkdir -p ${CONFIG_DIR}"
+    run_cmd mkdir -p "$CONFIG_DIR"
     log_info "Created ${CONFIG_DIR} directory"
 
     # Copy AGENTS.md from project to global config
@@ -1683,11 +1711,11 @@ setup_config() {
             log_warn "AGENTS.md already exists at ${CONFIG_DIR}/AGENTS.md"
             if prompt_yes_no "Do you want to overwrite it?" "n"; then
                 create_backup "${CONFIG_DIR}/AGENTS.md"
-                run_cmd "cp ${SCRIPT_DIR}/.AGENTS.md ${CONFIG_DIR}/AGENTS.md"
+                run_cmd cp "${SCRIPT_DIR}/.AGENTS.md" "${CONFIG_DIR}/AGENTS.md"
                 log_success "AGENTS.md copied successfully (renamed from .AGENTS.md)"
             fi
         else
-            run_cmd "cp ${SCRIPT_DIR}/.AGENTS.md ${CONFIG_DIR}/AGENTS.md"
+            run_cmd cp "${SCRIPT_DIR}/.AGENTS.md" "${CONFIG_DIR}/AGENTS.md"
             log_success "AGENTS.md copied successfully (renamed from .AGENTS.md)"
         fi
     else
@@ -1719,17 +1747,17 @@ setup_config() {
     # Copy config.json
     if [ "$SKIP_CONFIG_COPY" != true ]; then
         if [ -f "${SCRIPT_DIR}/config.json" ]; then
-            run_cmd "cp ${SCRIPT_DIR}/config.json ${CONFIG_FILE}"
+            run_cmd cp "${SCRIPT_DIR}/config.json" "$CONFIG_FILE"
             log_success "config.json copied successfully"
 
             echo ""
         echo "✓ Configured 39 agents:"
-             echo "    - build (default) - Full-featured coding agent"
-             echo "    - plan - Planning agent (read-only)"
-             echo "    - explore - Codebase exploration and analysis"
-             echo "    - image-analyzer-subagent - Image/screenshot analysis"
-             echo "    - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
-             echo "    - ... and 34 more agents"
+        echo "    - build (default) - Full-featured coding agent"
+        echo "    - plan - Planning agent (read-only)"
+        echo "    - explore - Codebase exploration and analysis"
+        echo "    - image-analyzer-subagent - Image/screenshot analysis"
+        echo "    - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
+        echo "    - ... and 31 more agents"
             echo ""
              echo "✓ Configured MCP servers:"
              echo "    Local (auto-start): atlassian, zai-vision-mcp-server, codegraph, mermaid"
@@ -1746,19 +1774,19 @@ setup_config() {
     log_info "Setting up skills directory..."
 
     # Create skills directory
-    run_cmd "mkdir -p ${SKILLS_DIR}"
+    run_cmd mkdir -p "$SKILLS_DIR"
     log_info "Created ${SKILLS_DIR} directory"
 
     # Check if skills folder exists in script directory
     if [ -d "${REPO_DIR}/opencode_app/.opencode/skills" ]; then
         # Check if skills directory already has content
-        if [ -d "${SKILLS_DIR}" ] && [ "$(ls -A ${SKILLS_DIR} 2>/dev/null)" ]; then
+        if [ -d "${SKILLS_DIR}" ] && [ "$(ls -A "${SKILLS_DIR}" 2>/dev/null)" ]; then
             log_warn "Skills directory already contains files"
 
             if prompt_yes_no "Do you want to overwrite existing skills?" "n"; then
                 # Backup existing skills
                 if [ -d "${BACKUP_DIR}" ]; then
-                    run_cmd "cp -r ${SKILLS_DIR} ${BACKUP_DIR}/skills-backup"
+                    run_cmd cp -r "$SKILLS_DIR" "${BACKUP_DIR}/skills-backup"
                     log_info "Backed up existing skills to ${BACKUP_DIR}/skills-backup"
                 fi
             else
@@ -1769,7 +1797,7 @@ setup_config() {
 
         # Copy skills folder (excluding _archived)
         if command -v rsync &> /dev/null; then
-            run_cmd "rsync -av --exclude='_archived' ${REPO_DIR}/opencode_app/.opencode/skills/ ${SKILLS_DIR}/"
+            run_cmd rsync -av --exclude='_archived' "${REPO_DIR}/opencode_app/.opencode/skills/" "${SKILLS_DIR}/"
         else
             # Fallback: copy all except _archived
             mkdir -p "${SKILLS_DIR}"
@@ -2020,14 +2048,15 @@ setup_learnings_dir() {
     local learnings_categories=("patterns" "decisions" "anti-patterns" "solutions" "conventions")
 
     if [ ! -d "${LEARNINGS_DIR}" ]; then
-        run_cmd "mkdir -p ${LEARNINGS_DIR}"
+        run_cmd mkdir -p "$LEARNINGS_DIR"
         log_info "Created ${LEARNINGS_DIR}"
     fi
 
     for category in "${learnings_categories[@]}"; do
         local category_dir="${LEARNINGS_DIR}/${category}"
         if [ ! -d "${category_dir}" ]; then
-            run_cmd "mkdir -p ${category_dir} && touch ${category_dir}/.gitkeep"
+            run_cmd mkdir -p "$category_dir"
+            run_cmd touch "${category_dir}/.gitkeep"
         fi
     done
 
@@ -2117,12 +2146,45 @@ setup_shell_vars() {
             if grep -q "ZAI_API_KEY" "$SHELL_CONFIG_FILE" 2>/dev/null; then
                 log_info "ZAI_API_KEY already exists in ${SHELL_CONFIG_FILE}"
             else
-                if prompt_yes_no "Add ZAI_API_KEY to $(basename ${SHELL_CONFIG_FILE}) for persistent access?" "y"; then
+                if prompt_yes_no "Add ZAI_API_KEY to $(basename "${SHELL_CONFIG_FILE}") for persistent access?" "y"; then
                     create_backup "$SHELL_CONFIG_FILE"
-                    run_cmd "echo 'export ZAI_API_KEY=\"${ZAI_API_KEY}\"' >> ${SHELL_CONFIG_FILE}"
+                    run_cmd "printf '%s\\n' 'export ZAI_API_KEY=\"${ZAI_API_KEY}\"' >> \"${SHELL_CONFIG_FILE}\""
                     log_success "ZAI_API_KEY added to ${SHELL_CONFIG_FILE}"
                 else
                     log_info "Skipping shell config update for ZAI_API_KEY"
+                fi
+            fi
+        fi
+    fi
+
+    # Offer to install autoresearch protocol helpers (ar-enable / ar-disable)
+    # into existing bashrc / zshrc. Prompted — never silent.
+    if ! is_windows; then
+        local rc_files=()
+        [ -f "$HOME/.bashrc" ] && rc_files+=("$HOME/.bashrc")
+        [ -f "$HOME/.zshrc" ] && rc_files+=("$HOME/.zshrc")
+        if [ ${#rc_files[@]} -gt 0 ]; then
+            local already_present=true
+            for rc in "${rc_files[@]}"; do
+                grep -q 'ar-enable()' "$rc" 2>/dev/null || already_present=false
+            done
+            if [ "$already_present" = false ]; then
+                if prompt_yes_no "Install 'ar-enable' / 'ar-disable' helpers in your shell rc?" "n"; then
+                    for rc in "${rc_files[@]}"; do
+                        if ! grep -q 'ar-enable()' "$rc" 2>/dev/null; then
+                            create_backup "$rc"
+                            {
+                                echo ''
+                                echo '# autoresearch protocol helpers (added by opencode setup)'
+                                echo 'ar-enable()  { export AUTORESEARCH_PROTOCOL=1; echo "autoresearch protocol: ON"; }'
+                                echo 'ar-disable() { unset AUTORESEARCH_PROTOCOL;   echo "autoresearch protocol: OFF"; }'
+                            } >> "$rc"
+                            log_info "Added ar-enable/ar-disable to ${rc}"
+                        fi
+                    done
+                    log_success "autoresearch protocol helpers installed"
+                else
+                    log_info "Skipping autoresearch protocol helpers"
                 fi
             fi
         fi
@@ -2139,7 +2201,12 @@ setup_shell_vars() {
 update_last_check_time() {
     local timestamp=$(date +%s)
     echo "$timestamp" > "$LAST_UPDATE_CHECK"
-    log_debug "Updated last check time: $(date -d @$timestamp)"
+    # date -d @<ts> is GNU-only (Linux). BSD date (macOS) uses -r <ts>.
+    if [ "$DETECTED_OS" = "macOS" ]; then
+        log_debug "Updated last check time: $(date -r "$timestamp" 2>/dev/null || echo "$timestamp")"
+    else
+        log_debug "Updated last check time: $(date -d "@$timestamp" 2>/dev/null || echo "$timestamp")"
+    fi
 }
 
 # Check if enough time has passed since last check
@@ -2415,7 +2482,7 @@ print_summary() {
         echo "    - plan - Planning agent (read-only)"
         echo "    - explore - Codebase exploration and analysis"
         echo "    - image-analyzer-subagent - Image/screenshot analysis"
-        echo "    - ... and 35 more agents"
+        echo "    - ... and 32 more agents"
     fi
 
     # MCP servers configured
@@ -2431,10 +2498,10 @@ print_summary() {
     fi
 
     # skills directory status
-    if [ -d "$SKILLS_DIR" ] && [ "$(ls -A ${SKILLS_DIR} 2>/dev/null)" ]; then
-        local skill_count=$(find ${SKILLS_DIR} -name "SKILL.md" 2>/dev/null | wc -l)
+    if [ -d "$SKILLS_DIR" ] && [ "$(ls -A "${SKILLS_DIR}" 2>/dev/null)" ]; then
+        local skill_count=$(find "${SKILLS_DIR}" -type f -name "SKILL.md" 2>/dev/null | wc -l)
         echo "✓ skills: ${skill_count} skills deployed to ${SKILLS_DIR}/"
-        echo "    - Framework (19):"
+        echo "    - Framework (20):"
         echo "      - test-generator-framework"
         echo "      - linting-workflow"
         echo "      - pr-creation-workflow"
@@ -2446,6 +2513,7 @@ print_summary() {
         echo "      - xlsx-specialist"
         echo "      - pdf-specialist"
         echo "      - frontend-design"
+        echo "      - uiux-review-skill"
         echo "      - api-design-skill"
         echo "      - openapi-contract-adherence-skill"
         echo "      - performance-optimization-skill"
@@ -2461,14 +2529,16 @@ print_summary() {
         echo "      - changelog-python-cliff"
         echo "      - python-backend-skill"
         echo "      - python-packaging-skill"
-        echo "    - Framework-Specific (7):"
+        echo "    - Framework-Specific (9):"
         echo "      - nextjs-pr-workflow"
         echo "      - nextjs-unit-test-creator"
         echo "      - nextjs-standard-setup"
         echo "      - nextjs-image-usage"
+        echo "      - nextjs-devtools-mcp"
         echo "      - typescript-dry-principle"
         echo "      - accessibility-a11y-skill"
         echo "      - react-nextjs-antipatterns-skill"
+        echo "      - threejs-nextjs-skill"
         echo "    - OpenCode Meta (4):"
         echo "      - opencode-agent-creation"
         echo "      - opencode-skill-creation"
@@ -2587,22 +2657,22 @@ print_next_steps() {
     echo "                        🚀 Quick Start"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "🤖 Agents (39):"
+    echo "🤖 Agents (36):"
     echo "  - build (default) - Full-featured coding agent"
     echo "  - plan - Planning agent (read-only)"
     echo "  - explore - Fast codebase exploration and analysis"
     echo "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
     echo "  - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
-    echo "  - ... and 34 more agents"
+    echo "  - ... and 31 more agents"
     echo ""
     echo "  Usage: opencode --agent <name> \"prompt\""
     echo "         opencode \"prompt\" (uses build)"
      echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "                     📦 106 Skills Available"
+      echo "                     📦 114 Skills Available"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "  Framework (19) • Language-Specific (6) • Framework-Specific (7)"
+     echo "  Framework (20) • Language-Specific (6) • Framework-Specific (9)"
     echo "  OpenCode Meta (4) • OpenTofu (7) • Git/Workflow (12)"
     echo "  Documentation (3) • JIRA (3) • Code Quality (7)"
     echo "  Agent Optimization (7) • Planning & Alignment (4)"
@@ -2712,6 +2782,8 @@ main() {
         fi
 
         setup_config || true
+        deploy_agents || true
+        setup_learnings_dir || true
         print_summary
         echo ""
         echo "Skills deployment complete!"
@@ -2740,12 +2812,13 @@ main() {
         fi
     fi
 
-    # Auto-update check (run before main menu)
-    if [ "$AUTO_ACCEPT" = true ] || [ "$CHECK_UPDATE_ONLY" = false ]; then
-        if [ "$ENABLE_AUTO_UPDATE" = true ]; then
-            log_info "Auto-update is enabled (schedule: ${UPDATE_SCHEDULE})"
-            auto_update_opencode
-        fi
+    # Auto-update check (run before main menu).
+    # Note: $CHECK_UPDATE_ONLY is guaranteed false here — we exit at the block
+    # above when it's true. The previous `|| [ "$CHECK_UPDATE_ONLY" = false ]`
+    # was always-true and therefore a no-op.
+    if [ "$ENABLE_AUTO_UPDATE" = true ]; then
+        log_info "Auto-update is enabled (schedule: ${UPDATE_SCHEDULE})"
+        auto_update_opencode
     fi
 
     # Main menu (if not quick setup or skills-only)
@@ -2785,6 +2858,8 @@ main() {
                 fi
 
                 setup_config || true
+                deploy_agents || true
+                setup_learnings_dir || true
                 print_summary
                 echo ""
                 echo "Skills deployment complete!"
@@ -2856,94 +2931,4 @@ main() {
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     main "$@"
 fi
-
-
-# Generate skills section from skills folder
-generate_and_inject_skills() {
-    echo ""
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "                  📋 Generating Skills Section"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo ""
-    
-    local config_file="${SCRIPT_DIR}/config.json"
-    local temp_config="${SCRIPT_DIR}/config.json.tmp"
-    
-    # Check if Python script exists
-    local gen_script="${REPO_DIR}/scripts/generate-skills.py"
-    if [ ! -f "$gen_script" ]; then
-        log_warn "Skills generator script not found: ${gen_script}"
-        log_info "Skipping skills section generation"
-        return 0
-    fi
-    
-    # Generate skills markdown
-    log_info "Generating skills section from skills/ folder..."
-    local skills_md=$("$gen_script" 2>&1)
-    
-    if [ $? -ne 0 ]; then
-        log_warn "Skills generation failed"
-        return 1
-    fi
-    
-    # Read config.json
-    if ! command_exists python3; then
-        log_error "Python 3 is required for skills generation"
-        return 1
-    fi
-    
-    # Inject skills section into config.json
-    log_info "Injecting skills section into config.json..."
-    
-    # Use Python to replace placeholder with skills
-    python3 << EOF
-import json
-import sys
-
-# Read config
-try:
-    with open('${config_file}', 'r') as f:
-        config = json.load(f)
-except:
-    print(f"Error: Cannot read {config_file}", file=sys.stderr)
-    sys.exit(1)
-
-# Skills markdown (passed as argument)
-skills_md = """${skills_md}"""
-
-# Update standard agents if they exist in config
-for agent in ['build', 'plan']:
-    if agent in config.get('agent', {}):
-        old_prompt = config['agent'][agent].get('prompt', '')
-        placeholder = '{{SKILLS_SECTION_PLACEHOLDER}}'
-        
-        if placeholder in old_prompt:
-            new_prompt = old_prompt.replace(placeholder, skills_md)
-            config['agent'][agent]['prompt'] = new_prompt
-            print(f"Updated {agent}")
-
-# Write back
-try:
-    with open('${temp_config}', 'w') as f:
-        json.dump(config, f, indent=2)
-    print("Temporary config written")
-except Exception as e:
-    print(f"Error: {e}", file=sys.stderr)
-    sys.exit(1)
-EOF
-    
-    if [ $? -eq 0 ] && [ -f "$temp_config" ]; then
-        # Replace original with temp
-        run_cmd "mv ${temp_config} ${config_file}"
-        log_success "Skills section generated and injected"
-        
-        # Show summary
-        echo ""
-        local skill_count=$(echo "$skills_md" | grep -c "^- \*\*")
-        echo "✓ Generated skills section with ${skill_count} skills"
-        echo "✓ Skills will be auto-discovered at runtime"
-    else
-        log_warn "Skills injection failed, using original config"
-    fi
-}
 

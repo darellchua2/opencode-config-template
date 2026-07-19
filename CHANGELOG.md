@@ -1,3 +1,54 @@
+## [1.77.1](https://github.com/darellchua2/opencode-config-template/compare/v1.77.0...v1.77.1) (2026-07-19)
+
+
+### Bug Fixes
+
+* **deploy:** harden setup.sh/ps1 against paths, errors, silent failures ([f4f9aa4](https://github.com/darellchua2/opencode-config-template/commit/f4f9aa452f154510015708972f5978de22f71845))
+
+# [1.77.0](https://github.com/darellchua2/opencode-config-template/compare/v1.76.0...v1.77.0) (2026-07-19)
+
+
+### Features
+
+* **skills:** add threejs-nextjs-skill + repair frontmatter spec violations ([#245](https://github.com/darellchua2/opencode-config-template/issues/245)) ([#246](https://github.com/darellchua2/opencode-config-template/issues/246)) ([1e1fef7](https://github.com/darellchua2/opencode-config-template/commit/1e1fef7d5afef0595a0367115d9db70606383ed6))
+
+# [1.76.0](https://github.com/darellchua2/opencode-config-template/compare/v1.75.2...v1.76.0) (2026-07-18)
+
+
+### Features
+
+* **autoresearch:** add core skill + 3 domain skills + 3 subagents ([#239](https://github.com/darellchua2/opencode-config-template/issues/239)) ([9785820](https://github.com/darellchua2/opencode-config-template/commit/9785820349a915a524815c5d6456719cf944ea79))
+* **autoresearch:** retrofit Tier 1 + Tier 2 skills with iteration protocol ([#239](https://github.com/darellchua2/opencode-config-template/issues/239)) ([300b73e](https://github.com/darellchua2/opencode-config-template/commit/300b73e0828426df0823e5e1bd59b114d717bbbc))
+* **autoresearch:** retrofit Tier 3 skills with iteration protocol ([#239](https://github.com/darellchua2/opencode-config-template/issues/239)) ([732350b](https://github.com/darellchua2/opencode-config-template/commit/732350b6729fd8202bd140bbbbaaf636b3159ccf))
+
+## [1.75.2](https://github.com/darellchua2/opencode-config-template/compare/v1.75.1...v1.75.2) (2026-07-18)
+
+
+### Bug Fixes
+
+* update pm2 ([031c3fb](https://github.com/darellchua2/opencode-config-template/commit/031c3fbafdfeb69b4fe07f95fe56805844ba8b3b))
+
+## [1.75.1](https://github.com/darellchua2/opencode-config-template/compare/v1.75.0...v1.75.1) (2026-07-18)
+
+
+### Bug Fixes
+
+* **deploy:** correct unbalanced parens in setup.ps1 Deploy-Agents function ([#242](https://github.com/darellchua2/opencode-config-template/issues/242)) ([a8e5cd9](https://github.com/darellchua2/opencode-config-template/commit/a8e5cd925ddcfd69f841c5720f9f63eb97d5811c)), closes [#241](https://github.com/darellchua2/opencode-config-template/issues/241)
+
+# [1.75.0](https://github.com/darellchua2/opencode-config-template/compare/v1.74.0...v1.75.0) (2026-07-18)
+
+
+### Features
+
+* **agents:** add uiux-reviewer-subagent + uiux-review-skill (13-axis design review) ([#237](https://github.com/darellchua2/opencode-config-template/issues/237)) ([83ef55c](https://github.com/darellchua2/opencode-config-template/commit/83ef55c6455649fdfbe2fb4c0fa698eb890d2cc6))
+
+# [1.74.0](https://github.com/darellchua2/opencode-config-template/compare/v1.73.0...v1.74.0) (2026-07-18)
+
+
+### Features
+
+* **agents:** add java-reviewer-subagent for Java code review ([#236](https://github.com/darellchua2/opencode-config-template/issues/236)) ([78b74d4](https://github.com/darellchua2/opencode-config-template/commit/78b74d48ff2b53cc56b31641b45778d05a9757ff)), closes [#234](https://github.com/darellchua2/opencode-config-template/issues/234)
+
 # [1.73.0](https://github.com/darellchua2/opencode-config-template/compare/v1.72.0...v1.73.0) (2026-06-26)
 
 

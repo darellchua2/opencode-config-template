@@ -1,6 +1,8 @@
 ---
 name: pr-merge-workflow-skill
 description: Post-merge workflow triggered by "pr merge to [branch]", "merge the PR", "merge it", "complete the PR". Merges PR, monitors GitHub Actions CI, auto-fixes failures, updates JIRA ticket status, and deletes source branch on success. Do NOT trigger for "create pr" — that is handled by pr-workflow-subagent.
+metadata:
+  protocol: autoresearch-opt-in
 ---
 
 # PR Merge + Monitor + Fix Workflow
@@ -135,3 +137,22 @@ This skill expects the loading agent to have:
 - `read: allow` / `glob: allow` / `grep: allow` — for code analysis
 - Access to atlassian MCP tools — for JIRA integration
 - `jira-status-updater` skill — for ticket transitions
+
+## Iteration Protocol (opt-in)
+
+**DO NOT execute any of the following unless `AUTORESEARCH_PROTOCOL=1` is set in your environment.** When unset, this skill behaves exactly as documented in all sections above; the Iteration Protocol block is descriptive only.
+
+When `AUTORESEARCH_PROTOCOL=1`:
+
+### Auto-detection
+If invoked on an iterative task, prompt ONCE per session: "This looks iterative. Enable autoresearch protocol? (y/n)". Cache answer for session.
+
+### Skill-specific patterns
+
+**CI auto-fix crash recovery.** CI failure mode → response: (a) lint failure → auto-fix and re-push; (b) test failure → debug, fix, re-push (max 3 attempts); (c) build failure → revert + log; (d) environment/infra failure → wait + retry. All responses logged to `pr-merge-results.tsv`. See `crash-recovery.md`.
+
+### Citations
+- `autoresearch-core-skill/references/crash-recovery.md`
+
+### Imperative gating
+When `AUTORESEARCH_PROTOCOL` is unset, this section is descriptive only. Default behavior is documented in all sections above.

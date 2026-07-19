@@ -1,0 +1,119 @@
+# prepare.py.template
+#
+# Parameterized derivation of karpathy/autoresearch prepare.py.
+# Source: karpathy/autoresearch (MIT). Full notice: THIRD_PARTY_LICENSES.md.
+#
+# This is a TEMPLATE — substitute the {{PLACEHOLDERS}} for your platform:
+#   {{MAX_SEQ_LEN}}   — context length (H100 default: 2048; smaller GPUs: 256-1024)
+#   {{EVAL_TOKENS}}   — tokens used for val eval (H100 default: 40 * 524288;
+#                       smaller GPUs: 4 * 524288 or less)
+#   {{VOCAB_SIZE}}    — tokenizer vocab size (H100 default: 8192;
+#                       byte-level fallback: 256)
+#   {{TIME_BUDGET}}   — training time budget in seconds (default: 300 = 5 min)
+#
+# Do NOT modify this file once an experiment has started — it is the
+# read-only half of the train.py / prepare.py split (see program.md).
+"""
+One-time data preparation for autoresearch experiments.
+Downloads data shards and trains a BPE tokenizer.
+
+Usage:
+    python prepare.py                  # full prep (download + tokenizer)
+    python prepare.py --num-shards 8   # download only 8 shards (for testing)
+
+Data and tokenizer are stored in ~/.cache/autoresearch/.
+"""
+
+import os
+import sys
+import time
+import math
+import argparse
+import pickle
+from multiprocessing import Pool
+
+import requests
+import pyarrow.parquet as pq
+import rustbpe
+import tiktoken
+import torch
+
+# ---------------------------------------------------------------------------
+# Constants (fixed, do not modify once a run has started)
+# ---------------------------------------------------------------------------
+
+MAX_SEQ_LEN = {{MAX_SEQ_LEN}}            # context length (H100: 2048)
+TIME_BUDGET = {{TIME_BUDGET}}            # training time budget in seconds (5 min)
+EVAL_TOKENS = {{EVAL_TOKENS}}            # number of tokens for val eval
+
+# ---------------------------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------------------------
+
+CACHE_DIR = os.path.join(os.path.expanduser("~"), ".cache", "autoresearch")
+DATA_DIR = os.path.join(CACHE_DIR, "data")
+TOKENIZER_DIR = os.path.join(CACHE_DIR, "tokenizer")
+BASE_URL = "https://huggingface.co/datasets/karpathy/climbmix-400b-shuffle/resolve/main"
+MAX_SHARD = 6542  # the last datashard is shard_06542.parquet
+VAL_SHARD = MAX_SHARD  # pinned validation shard (shard_06542)
+VAL_FILENAME = f"shard_{VAL_SHARD:05d}.parquet"
+VOCAB_SIZE = {{VOCAB_SIZE}}
+
+# BPE split pattern (GPT-4 style, with \p{N}{1,2} instead of {1,3})
+SPLIT_PATTERN = r"""'(?i:[sdmt]|ll|ve|re)|[^\r\n\p{L}\p{N}]?+\p{L}+|\p{N}{1,2}| ?[^\s\p{L}\p{N}]++[\r\n]*|\s*[\r\n]|\s+(?!\S)|\s+"""
+
+SPECIAL_TOKENS = [f"<|reserved_{i}|>" for i in range(4)]
+BOS_TOKEN = "<|reserved_0|>"
+
+
+# ---------------------------------------------------------------------------
+# Data download (full implementation in karpathy/autoresearch prepare.py)
+# ---------------------------------------------------------------------------
+
+def download_single_shard(index):
+    """Download one parquet shard with retries. Returns True on success."""
+    filename = f"shard_{index:05d}.parquet"
+    filepath = os.path.join(DATA_DIR, filename)
+    if os.path.exists(filepath):
+        return True
+    # ... (retry loop, temp-file rename — see upstream karpathy prepare.py)
+    return False
+
+
+# ---------------------------------------------------------------------------
+# Tokenizer, dataloader, evaluation
+# (Imported by train.py: from prepare import MAX_SEQ_LEN, TIME_BUDGET,
+#  Tokenizer, make_dataloader, evaluate_bpb)
+# ---------------------------------------------------------------------------
+
+class Tokenizer:
+    """BPE tokenizer wrapper. See upstream karpathy prepare.py for full impl."""
+    pass
+
+
+def make_dataloader(batch_size, split="train"):
+    """Yield (x, y) batches. See upstream karpathy prepare.py for full impl."""
+    raise NotImplementedError("see karpathy/autoresearch prepare.py")
+
+
+def evaluate_bpb(model, device):
+    """Compute val_bpb (validation bits per byte). Ground-truth metric.
+    Must remain unmodified across experiments — see program.md."""
+    raise NotImplementedError("see karpathy/autoresearch prepare.py")
+
+
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--num-shards", type=int, default=MAX_SHARD)
+    args = parser.parse_args()
+    # Full prep flow in upstream karpathy prepare.py
+    print(f"prepare.py: MAX_SEQ_LEN={MAX_SEQ_LEN} TIME_BUDGET={TIME_BUDGET} "
+          f"EVAL_TOKENS={EVAL_TOKENS} VOCAB_SIZE={VOCAB_SIZE}")
+
+
+if __name__ == "__main__":
+    main()

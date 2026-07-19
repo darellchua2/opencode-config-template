@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 
 PROJECT_ROOT="$(cd "${BATS_TEST_DIRNAME}/.." && pwd)"
-SETUP_SH="${PROJECT_ROOT}/setup.sh"
+SETUP_SH="${PROJECT_ROOT}/deploy/setup.sh"
 
 setup() {
     TEST_HOME="$(mktemp -d)"

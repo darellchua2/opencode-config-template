@@ -1,7 +1,7 @@
 ---
 description: Rust code review subagent focusing on ownership, borrow checker, unsafe safety, error handling with Result/Option, and idiomatic Rust patterns for thorough quality analysis
 mode: subagent
-steps: 15
+steps: 25
 permission:
   read: allow
   edit: deny

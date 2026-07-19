@@ -1,7 +1,7 @@
 ---
 description: Go code review subagent focusing on Go idioms, concurrency safety, error handling, and effective Go patterns for thorough Go quality analysis
 mode: subagent
-steps: 15
+steps: 25
 permission:
   read: allow
   edit: deny

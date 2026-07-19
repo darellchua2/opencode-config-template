@@ -1,7 +1,7 @@
 ---
 description: Python-specific code review subagent combining PEP 8, type hints, Pythonic patterns, security best practices, and async/concurrency review for thorough Python quality analysis
 mode: subagent
-steps: 15
+steps: 25
 permission:
   read: allow
   edit: deny

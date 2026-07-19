@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers, agents, subagents
   workflow: documentation, audit, consistency
+  protocol: autoresearch-opt-in
 ---
 
 ## What I do
@@ -432,3 +433,23 @@ Run the full set of validation commands one more time to confirm all issues are 
 6. **Fix all files in one pass** — update setup.sh, setup.ps1, README.md, and AGENTS.md together
 7. **Re-validate after fixes** — always run checks again to confirm resolution
 8. **Keep the report** — store validation reports in `LEARNINGS/solutions/` for future reference
+
+## Iteration Protocol (opt-in)
+
+**DO NOT execute any of the following unless `AUTORESEARCH_PROTOCOL=1` is set in your environment.** When unset, this skill behaves exactly as documented in all sections above; the Iteration Protocol block is descriptive only.
+
+When `AUTORESEARCH_PROTOCOL=1`:
+
+### Auto-detection
+If invoked on an iterative task, prompt ONCE per session: "This looks iterative. Enable autoresearch protocol? (y/n)". Cache answer for session.
+
+### Skill-specific patterns
+
+**TSV audit trail.** Documentation drift checks append to `documentation-consistency-results.tsv` (8-column format per `audit-trail.md`). **Crash recovery.** On missing-file error: log + skip; on YAML parse failure: log + skip; do NOT abort the entire audit. See `crash-recovery.md`.
+
+### Citations
+- `autoresearch-core-skill/references/audit-trail.md`
+- `autoresearch-core-skill/references/crash-recovery.md`
+
+### Imperative gating
+When `AUTORESEARCH_PROTOCOL` is unset, this section is descriptive only. Default behavior is documented in all sections above.
