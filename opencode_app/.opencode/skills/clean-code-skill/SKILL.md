@@ -723,6 +723,49 @@ rg 'except.*:\s*\n\s*(logger|console)\.(error|warning)' --type py --type ts -U
 
 ---
 
+## Frontend Patterns
+
+### Learning: `scattered-z-index-magic-numbers`
+
+**Symptom:** Z-index values hardcoded in 10+ CSS/TSX files, making layering impossible to reason about. Two developers adding modals both pick `9999`; the second one wins; the first one's modal is now buried.
+
+```css
+/* SMELL: scattered across 10+ files */
+.modal-overlay { z-index: 9999; }
+.dropdown-menu  { z-index: 1000; }
+.toast          { z-index: 8000; }
+.sidebar        { z-index: 500; }
+```
+
+```css
+/* REFACTORED: single source of truth */
+:root {
+  --z-sidebar:    100;
+  --z-dropdown:   200;
+  --z-sticky:     300;
+  --z-modal-backdrop: 400;
+  --z-modal:      500;
+  --z-popover:    600;
+  --z-toast:      700;
+}
+
+.modal-overlay { z-index: var(--z-modal-backdrop); }
+.dropdown-menu  { z-index: var(--z-dropdown); }
+.toast          { z-index: var(--z-toast); }
+.sidebar        { z-index: var(--z-sidebar); }
+```
+
+**Detection:**
+
+```bash
+# Find hardcoded z-index values across the codebase
+rg 'z-index:\s*\d+' --type css --type tsx -c | rg '[3-9]|[1-9][0-9]+'
+```
+
+**Rule:** Z-index values MUST be centralized as CSS custom properties (or a TypeScript constants file). Hardcoded numeric values drift across files and create layering races that are nearly impossible to debug after the fact.
+
+---
+
 ## Formatting
 
 ### Vertical Spacing

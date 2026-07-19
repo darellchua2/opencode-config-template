@@ -820,3 +820,121 @@ rg 'SomeEnum\(' --type py -A 1 | rg -v 'except|try|return None'
 ```
 
 **Rule:** Never call an enum constructor directly on a DB-sourced string. Always wrap it in a helper that catches `ValueError`/`KeyError` and returns `None`, so stale or corrupt rows degrade instead of crashing.
+
+### Learning: `inline-http-header-parsing-in-handlers`
+
+**Symptom:** Parsing `Location` response headers inline across 5+ handler methods — the same 3-line extraction repeated everywhere, drifting over time.
+
+```python
+# SMELL: repeated in every handler
+def create_report(self, data):
+    response = self.client.post("/reports", json=data)
+    location = response.headers.get("Location", "")
+    report_id = location.split("/")[-1] if location else None
+    return report_id
+
+def create_schedule(self, data):
+    response = self.client.post("/schedules", json=data)
+    location = response.headers.get("Location", "")
+    schedule_id = location.split("/")[-1] if location else None
+    return schedule_id
+```
+
+```python
+# REFACTORED: shared helper
+def extract_resource_id(headers: dict) -> str | None:
+    location = headers.get("Location", "")
+    return location.rstrip("/").split("/")[-1] if location else None
+
+def create_report(self, data):
+    response = self.client.post("/reports", json=data)
+    return extract_resource_id(response.headers)
+```
+
+**Detection:**
+
+```bash
+rg 'headers\.get\(["\']Location' --type py -c | rg '[2-9]|[1-9][0-9]+'
+```
+
+**Rule:** When the same header-parsing logic appears in 2+ handlers, extract a module-level helper. Resource-ID extraction from `Location` headers is particularly drift-prone because each handler handles missing/malformed headers slightly differently.
+
+### Learning: `duplicated-response-parsing-in-llm-nodes`
+
+**Symptom:** Identical 25-line response-parsing logic copied into multiple LangChain/LangGraph node functions. A bug fix applied to one node misses the others.
+
+```python
+# SMELL: same 25 lines in parse_agent_output, parse_tool_result, etc.
+def parse_agent_output(result):
+    if not result:
+        return None
+    try:
+        data = json.loads(result)
+        if "error" in data:
+            raise ValueError(data["error"])
+        return data.get("output", {}).get("text")
+    except json.JSONDecodeError:
+        match = re.search(r'"text":\s*"([^"]*)"', result)
+        return match.group(1) if match else None
+```
+
+```python
+# REFACTORED: mixin method
+class OutputParserMixin:
+    def parse_response(self, result: str | dict) -> str | None:
+        if not result:
+            return None
+        data = result if isinstance(result, dict) else self._try_parse_json(result)
+        if isinstance(data, dict) and "error" in data:
+            raise ValueError(data["error"])
+        return data.get("output", {}).get("text") if isinstance(data, dict) else self._fallback_extract(result)
+
+    def _try_parse_json(self, raw: str) -> dict | str:
+        try:
+            return json.loads(raw)
+        except json.JSONDecodeError:
+            return raw
+
+    def _fallback_extract(self, raw: str) -> str | None:
+        match = re.search(r'"text":\s*"([^"]*)"', raw)
+        return match.group(1) if match else None
+```
+
+**Detection:**
+
+```bash
+rg 'json\.loads.*result|re\.search.*text' --type py -c | rg '[2-9]|[1-9][0-9]+'
+```
+
+**Rule:** LLM response parsing is inherently fragile (JSON-in-text, fallback regex, error wrappers). When 2+ nodes need it, extract a mixin or base class — a single fix propagates to all consumers.
+
+### Learning: `duplicate-service-account-check`
+
+**Symptom:** Same expensive method (network call, DB query, file I/O) called twice in a single function body — once for a check, once for use.
+
+```python
+# SMELL: two calls, two network round-trips
+def process_payment(self, order):
+    if self.auth_service.get_service_account() is None:
+        raise NoServiceAccount()
+    account = self.auth_service.get_service_account()
+    self.charge(account, order.total)
+```
+
+```python
+# REFACTORED: single call, local variable
+def process_payment(self, order):
+    account = self.auth_service.get_service_account()
+    if account is None:
+        raise NoServiceAccount()
+    self.charge(account, order.total)
+```
+
+**Detection:**
+
+```bash
+# Find methods called twice in the same function body
+rg '(\w+\.\w+\([^)]*\))' --type py | sort | uniq -c | sort -rn | head -20
+```
+
+**Rule:** Any method that crosses a process boundary (network, DB, file, subprocess) must be called at most once per function. Bind to a local variable on first call, reuse thereafter.
