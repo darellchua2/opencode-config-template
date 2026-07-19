@@ -1,3 +1,10 @@
+# [1.77.0](https://github.com/darellchua2/opencode-config-template/compare/v1.76.0...v1.77.0) (2026-07-19)
+
+
+### Features
+
+* **skills:** add threejs-nextjs-skill + repair frontmatter spec violations ([#245](https://github.com/darellchua2/opencode-config-template/issues/245)) ([#246](https://github.com/darellchua2/opencode-config-template/issues/246)) ([1e1fef7](https://github.com/darellchua2/opencode-config-template/commit/1e1fef7d5afef0595a0367115d9db70606383ed6))
+
 # [1.76.0](https://github.com/darellchua2/opencode-config-template/compare/v1.75.2...v1.76.0) (2026-07-18)
 
 
