@@ -39,28 +39,64 @@ AGENTS_DIR="opencode_app/.opencode/agents"
 }
 
 # =============================================================================
-# Subagent model-tier assertions (glm-5.1 / glm-5-turbo, NEVER glm-5.2)
+# Subagent model-tier assertions (v2.0: agents are model-free in source;
+# concrete models are injected at deploy time via deploy/agent-tiers.json)
 # =============================================================================
 
-@test "subagent_autoresearch_ml_uses_glm_5_1_not_glm_5_2" {
+@test "subagent_autoresearch_ml_no_hardcoded_model_in_frontmatter" {
   agent_md="$AGENTS_DIR/autoresearch-ml-subagent.md"
   [ -f "$agent_md" ]
-  grep -q "model: zai-coding-plan/glm-5.1" "$agent_md"
-  ! grep -q "model: zai-coding-plan/glm-5.2" "$agent_md"
+  # Source agents must NOT have a model: line in frontmatter (injected at deploy)
+  ! python3 -c "
+import yaml
+d=open('$agent_md').read()
+fm=yaml.safe_load(d.split('---')[1])
+assert 'model' not in fm, f'frontmatter must not contain model (v2.0), got: {fm.get(\"model\")}'
+"
+  # Verify it IS in agent-tiers.json under 'reasoning' tier
+  python3 -c "
+import json
+tiers=json.load(open('deploy/agent-tiers.json'))
+agents=[a for g in tiers.values() for a in g]
+assert 'autoresearch-ml-subagent' in agents, 'must be registered in agent-tiers.json'
+assert tiers.get('reasoning') and 'autoresearch-ml-subagent' in tiers['reasoning'], 'must be in reasoning tier'
+"
 }
 
-@test "subagent_autoresearch_code_uses_glm_5_1_not_glm_5_2" {
+@test "subagent_autoresearch_code_no_hardcoded_model_in_frontmatter" {
   agent_md="$AGENTS_DIR/autoresearch-code-subagent.md"
   [ -f "$agent_md" ]
-  grep -q "model: zai-coding-plan/glm-5.1" "$agent_md"
-  ! grep -q "model: zai-coding-plan/glm-5.2" "$agent_md"
+  ! python3 -c "
+import yaml
+d=open('$agent_md').read()
+fm=yaml.safe_load(d.split('---')[1])
+assert 'model' not in fm, f'frontmatter must not contain model (v2.0), got: {fm.get(\"model\")}'
+"
+  python3 -c "
+import json
+tiers=json.load(open('deploy/agent-tiers.json'))
+agents=[a for g in tiers.values() for a in g]
+assert 'autoresearch-code-subagent' in agents, 'must be registered in agent-tiers.json'
+assert tiers.get('fast') and 'autoresearch-code-subagent' in tiers['fast'], 'must be in fast tier'
+"
 }
 
-@test "subagent_autoresearch_research_uses_glm_5_turbo_not_glm_5_2" {
+@test "subagent_autoresearch_research_no_hardcoded_model_in_frontmatter" {
   agent_md="$AGENTS_DIR/autoresearch-research-subagent.md"
   [ -f "$agent_md" ]
-  grep -q "model: zai-coding-plan/glm-5-turbo" "$agent_md"
-  ! grep -q "model: zai-coding-plan/glm-5.2" "$agent_md"
+  ! python3 -c "
+import yaml
+d=open('$agent_md').read()
+fm=yaml.safe_load(d.split('---')[1])
+assert 'model' not in fm, f'frontmatter must not contain model (v2.0), got: {fm.get(\"model\")}'
+"
+  python3 -c "
+import json
+tiers=json.load(open('deploy/agent-tiers.json'))
+agents=[a for g in tiers.values() for a in g]
+assert 'autoresearch-research-subagent' in agents, 'must be registered in agent-tiers.json'
+assert tiers.get('fast') and 'autoresearch-research-subagent' in tiers['fast'], 'must be in fast tier'
+"
 }
 
 # =============================================================================
