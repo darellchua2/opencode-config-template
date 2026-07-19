@@ -381,6 +381,64 @@ export interface User { id: string; name: string; email: string }
 
 **After (single source):**
 ```tsx
+// types/user.ts
+export interface User { id: string; name: string; email: string }
+
+// ComponentA.tsx
+import type { User } from '@/types/user' // single source of truth
+```
+
+### C6. `toast-promise-await-without-catch` — Double Consumer on toast.promise
+
+`toast.promise(apiCall(), { ... })` and a bare `await apiCall()` are two INDEPENDENT consumers of the same promise. The toast wrapper handles the rejection (shows the error UI), but the bare `await` still lets the rejection propagate up the call stack. If the containing function is called from a path that has no try/catch, the unhandled rejection fires a Sentry alert for an error the user has already seen and dismissed. Add an empty `.catch(() => {})` to the awaited promise to swallow the already-surfaced error, OR drop the `await` entirely if only the toast UX is needed.
+
+```tsx
+import { toast } from 'sonner'
+
+// BAD — toast handles the error UI, but the bare await re-surfaces it to Sentry
+async function handleSubmit() {
+  toast.promise(apiCall(), {
+    loading: 'Saving...',
+    success: 'Saved',
+    error: 'Save failed',        // user sees this
+  })
+  await apiCall()                // rejection propagates AGAIN → Sentry noise
+}
+
+// GOOD (option A) — swallow the already-surfaced error
+async function handleSubmit() {
+  toast.promise(apiCall(), {
+    loading: 'Saving...',
+    success: 'Saved',
+    error: 'Save failed',
+  })
+  await apiCall().catch(() => {}) // user already saw the toast; don't double-report
+}
+
+// GOOD (option B) — single consumer; await drives both UX and error handling
+async function handleSubmit() {
+  const promise = apiCall()
+  toast.promise(promise, { loading: 'Saving...', success: 'Saved', error: 'Save failed' })
+  try {
+    await promise
+  } catch {
+    // already surfaced by toast; swallow to avoid Sentry noise
+  }
+}
+```
+
+**Detection:**
+
+```bash
+rg "toast\.promise" --type ts --type tsx -A 8 | rg "await" | rg -v "catch|try"
+```
+
+**Rule:** `toast.promise()` and a bare `await` of the same promise are two independent consumers. If the toast handles the error UI, add `.catch(() => {})` to the await (or drop the await) to prevent the rejection from being re-surfaced as Sentry noise for an error the user has already seen.
+
+---
+
+**After (single source):**
+```tsx
 // ComponentA.tsx
 import type { User } from '@/types/user'
 // Always imports canonical definition
