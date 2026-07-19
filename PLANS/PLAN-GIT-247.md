@@ -208,10 +208,10 @@
 
 ---
 
-## Phase 5 — Optional (1 atomic step, BLOCKED ON USER CONFIRMATION)
+## Phase 5 — COMPLETE (1 atomic step, user confirmation received 2026-07-19)
 
-- [ ] **5.1** Granularize `code-smells-skill` items #8–11 — move project-specific smells into domain skills (inline-http-header-parsing → `python-backend-skill`, duplicated-response-parsing → `python-backend-skill`, duplicate-service-account-check → `python-backend-skill`, scattered-z-index-magic-numbers → `clean-code-skill` or frontend-design-skill)
-  — **Why:** Generic code-smell descriptions with project-specific examples reduce the skill's reusability; domain skills provide better context.
+- [x] **5.1** Granularize `code-smells-skill` items #8–11 — moved project-specific smells into domain skills (inline-http-header-parsing → `python-backend-skill`, duplicated-response-parsing → `python-backend-skill`, duplicate-service-account-check → `python-backend-skill`, scattered-z-index-magic-numbers → `clean-code-skill`)
+  — **Why:** Generic code-smell descriptions with project-specific examples reduced the skill's reusability; domain skills provide better context.
   — **Done when:** Project-specific items removed from `code-smells-skill/SKILL.md` AND equivalent Learning sections added to target domain skills AND `documentation-sync-workflow` run to update `setup.sh` counts if skill file structure changed.
   — **Consumers affected:** `code-review-subagent` (references both code-smells-skill and domain skills), all domain target skills.
-  — **BLOCKED ON USER CONFIRMATION:** This changes `code-smells-skill` scope and may require documentation-sync-workflow run.
+  — **Status:** User confirmation received 2026-07-19. Items #8-10 moved to `python-backend-skill/SKILL.md` (appended after defensive-enum-mapping section). Item #11 moved to `clean-code-skill/SKILL.md` under new `## Frontend Patterns` section. Source rows also removed from the Couplers summary table in code-smells-skill. **No sync-file update needed** — file counts unchanged (no skill directories added/removed); content edits only.
