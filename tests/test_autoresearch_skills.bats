@@ -56,10 +56,9 @@ assert 'model' not in fm, f'frontmatter must not contain model (v2.0), got: {fm.
   # Verify it IS in agent-tiers.json under 'reasoning' tier
   python3 -c "
 import json
-tiers=json.load(open('deploy/agent-tiers.json'))
-agents=[a for g in tiers.values() for a in g]
-assert 'autoresearch-ml-subagent' in agents, 'must be registered in agent-tiers.json'
-assert tiers.get('reasoning') and 'autoresearch-ml-subagent' in tiers['reasoning'], 'must be in reasoning tier'
+data=json.load(open('deploy/agent-tiers.json'))
+tiers=data['tiers']
+assert tiers.get('autoresearch-ml-subagent') == 'reasoning', f'must be in reasoning tier, got: {tiers.get(\"autoresearch-ml-subagent\")}'
 "
 }
 
@@ -74,10 +73,9 @@ assert 'model' not in fm, f'frontmatter must not contain model (v2.0), got: {fm.
 "
   python3 -c "
 import json
-tiers=json.load(open('deploy/agent-tiers.json'))
-agents=[a for g in tiers.values() for a in g]
-assert 'autoresearch-code-subagent' in agents, 'must be registered in agent-tiers.json'
-assert tiers.get('fast') and 'autoresearch-code-subagent' in tiers['fast'], 'must be in fast tier'
+data=json.load(open('deploy/agent-tiers.json'))
+tiers=data['tiers']
+assert tiers.get('autoresearch-code-subagent') == 'reasoning', f'must be in reasoning tier, got: {tiers.get(\"autoresearch-code-subagent\")}'
 "
 }
 
@@ -92,10 +90,9 @@ assert 'model' not in fm, f'frontmatter must not contain model (v2.0), got: {fm.
 "
   python3 -c "
 import json
-tiers=json.load(open('deploy/agent-tiers.json'))
-agents=[a for g in tiers.values() for a in g]
-assert 'autoresearch-research-subagent' in agents, 'must be registered in agent-tiers.json'
-assert tiers.get('fast') and 'autoresearch-research-subagent' in tiers['fast'], 'must be in fast tier'
+data=json.load(open('deploy/agent-tiers.json'))
+tiers=data['tiers']
+assert tiers.get('autoresearch-research-subagent') == 'fast', f'must be in fast tier, got: {tiers.get(\"autoresearch-research-subagent\")}'
 "
 }
 
