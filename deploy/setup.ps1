@@ -131,7 +131,10 @@ function Test-CommandExists {
 }
 
 function Invoke-WithDryRun {
-    param([Parameter(Mandatory)][string]$Command, [string]$Description = $Command)
+    param(
+        [Parameter(Mandatory)][string]$Command,
+        [string]$Description = $Command
+    )
 
     Write-LogDebug "Executing: $Command"
 
@@ -140,8 +143,18 @@ function Invoke-WithDryRun {
         return $true
     }
 
+    # Execute via ScriptBlock so stdout flows through and $LASTEXITCODE is
+    # honoured for native executables (npm, winget, choco, etc.). The previous
+    # implementation only caught parsing exceptions and ALWAYS returned $true,
+    # which masked real failures like `npm install -g opencode-ai` errors.
     try {
-        $result = Invoke-Expression $Command
+        $scriptBlock = [ScriptBlock]::Create($Command)
+        & $scriptBlock | Out-Host
+        # $LASTEXITCODE is set by native executables. PowerShell cmdlets that
+        # fail throw instead, so we're covered both ways.
+        if (Test-Path Variable:\LASTEXITCODE) {
+            return $LASTEXITCODE -eq 0
+        }
         return $true
     } catch {
         Write-LogError "Command failed: $Description"
@@ -699,7 +712,9 @@ function Set-PeonPing {
 
             Remove-Item $installerTemp -Force -ErrorAction SilentlyContinue
 
-            if ($installExitCode -ne 0 -and $installExitCode -ne 0) {
+            # Treat 0 and 3010 (ERROR_SUCCESS_REBOOT_REQUIRED) as success.
+            # Everything else is a real failure worth warning about.
+            if ($installExitCode -ne 0 -and $installExitCode -ne 3010) {
                 Write-LogWarn "PeonPing installer exited with code: $installExitCode"
             }
         } else {
@@ -994,11 +1009,7 @@ function Set-OpenCode {
 
         Write-LogInfo "opencode-ai is already installed (v$currentVersion)"
 
-        try {
-            $latestVersion = (Invoke-Expression "npm view opencode-ai version" 2>$null).Trim()
-        } catch {
-            $latestVersion = "unknown"
-        }
+        $latestVersion = Get-OpenCodeVersion -Latest
 
         Write-LogInfo "Latest version: v$latestVersion"
 
@@ -1071,11 +1082,7 @@ function Update-OpenCodeCLI {
     Write-LogInfo "Current version: v$currentVersion"
 
     Write-LogInfo "Checking for updates..."
-    try {
-        $latestVersion = (Invoke-Expression "npm view opencode-ai version" 2>$null).Trim()
-    } catch {
-        $latestVersion = "unknown"
-    }
+    $latestVersion = Get-OpenCodeVersion -Latest
 
     if ($latestVersion -eq "unknown") {
         Write-LogError "Could not fetch latest version from npm registry"
@@ -1361,52 +1368,66 @@ function Deploy-Agents {
     if (Test-Path $AgentsSrcDir) {
         $primaryCount = 0
         $subagentCount = 0
+
+        # Detect layout: flat files in agents/, or primary/+subagents/ subdirs.
+        # Use the subdir layout if EITHER subdir exists; otherwise fall back to flat.
+        # This guard prevents double-counting when both layouts are present
+        # (the previous version iterated both branches unconditionally).
+        $useSubdirLayout = (Test-Path (Join-Path $AgentsSrcDir "primary")) -or `
+                           (Test-Path (Join-Path $AgentsSrcDir "subagents"))
         
-        # Detect layout: flat files or subdirectories?
-        $flatLayout = $true
-        if ((Test-Path (Join-Path $AgentsSrcDir "primary")) -or (Test-Path (Join-Path $AgentsSrcDir "subagents"))) {
-            $flatLayout = $false
-        }
-        
-        # Copy primary agents (flat into agents/)
-        $primaryDir = Join-Path $AgentsSrcDir "primary"
-        if (Test-Path $primaryDir) {
-            $primaryFiles = @(Get-ChildItem $primaryDir -Filter "*.md" -ErrorAction SilentlyContinue)
-            foreach ($file in $primaryFiles) {
+        if ($useSubdirLayout) {
+            # Subdirectory layout — copy primary/ and subagents/ separately
+            $primaryDir = Join-Path $AgentsSrcDir "primary"
+            if (Test-Path $primaryDir) {
+                $primaryFiles = @(Get-ChildItem $primaryDir -Filter "*.md" -ErrorAction SilentlyContinue)
+                foreach ($file in $primaryFiles) {
+                    if (-not $DryRun) {
+                        Copy-Item $file.FullName (Join-Path $AgentsDestDir $file.Name) -Force
+                    }
+                    $primaryCount++
+                }
+            }
+
+            $subagentsDir = Join-Path $AgentsSrcDir "subagents"
+            if (Test-Path $subagentsDir) {
+                $subagentFiles = @(Get-ChildItem $subagentsDir -Filter "*.md" -ErrorAction SilentlyContinue)
+                foreach ($file in $subagentFiles) {
+                    if (-not $DryRun) {
+                        Copy-Item $file.FullName (Join-Path $AgentsDestDir $file.Name) -Force
+                    }
+                    $subagentCount++
+                }
+            }
+
+            # Also copy any flat *.md files at the root of agents/ (legacy support)
+            $flatAgentFiles = @(Get-ChildItem $AgentsSrcDir -Filter "*.md" -ErrorAction SilentlyContinue)
+            foreach ($file in $flatAgentFiles) {
                 if (-not $DryRun) {
                     Copy-Item $file.FullName (Join-Path $AgentsDestDir $file.Name) -Force
                 }
-                $primaryCount++
+                # Check mode in frontmatter to determine type
+                $content = Get-Content $file.FullName -Raw -ErrorAction SilentlyContinue
+                if ($content -match "^mode:\s*primary") {
+                    $primaryCount++
+                } else {
+                    $subagentCount++
+                }
             }
-        }
-        
-        # Copy subagents (flat into agents/)
-        $subagentsDir = Join-Path $AgentsSrcDir "subagents"
-        if (Test-Path $subagentsDir) {
-            $subagentFiles = @(Get-ChildItem $subagentsDir -Filter "*.md" -ErrorAction SilentlyContinue)
-            foreach ($file in $subagentFiles) {
+        } else {
+            # Flat layout — all *.md files live directly under agents/
+            $flatAgentFiles = @(Get-ChildItem $AgentsSrcDir -Filter "*.md" -ErrorAction SilentlyContinue)
+            foreach ($file in $flatAgentFiles) {
                 if (-not $DryRun) {
                     Copy-Item $file.FullName (Join-Path $AgentsDestDir $file.Name) -Force
                 }
-                $subagentCount++
-            }
-        }
-        
-        # Also copy flat agent files from root of agents dir (count correctly)
-        $flatAgentFiles = @(Get-ChildItem $AgentsSrcDir -Filter "*.md" -ErrorAction SilentlyContinue)
-        foreach ($file in $flatAgentFiles) {
-            if (-not $DryRun) {
-                Copy-Item $file.FullName (Join-Path $AgentsDestDir $file.Name) -Force
-            }
-            # Check mode in frontmatter to determine type
-            $content = Get-Content $file.FullName -Raw -ErrorAction SilentlyContinue
-            if ($content -match "^mode:\s*primary") {
-                $primaryCount++
-            } elseif ($content -match "^mode:\s*subagent") {
-                $subagentCount++
-            } else {
-                # Default to subagent if mode not specified
-                $subagentCount++
+                # Check mode in frontmatter to determine type
+                $content = Get-Content $file.FullName -Raw -ErrorAction SilentlyContinue
+                if ($content -match "^mode:\s*primary") {
+                    $primaryCount++
+                } elseif ($content -match "^mode:\s*subagent") {
+                    $subagentCount++
+                }
             }
         }
 
@@ -1492,40 +1513,78 @@ function Set-ShellVariables {
     Write-Host "=====================================================================" -ForegroundColor White
     Write-Host ""
 
-    if (-not (Test-Path $PROFILE)) {
-        $profileDir = Split-Path $PROFILE -Parent
-        if (-not (Test-Path $profileDir)) {
-            New-Item -ItemType Directory -Path $profileDir -Force | Out-Null
-        }
-        New-Item -ItemType File -Path $PROFILE -Force | Out-Null
-        Write-LogInfo "Created PowerShell profile: $PROFILE"
-    }
-
     Write-Host "PowerShell profile: $PROFILE"
     Write-Host ""
 
-    # Install autoresearch protocol helpers into PowerShell profile (if it exists)
-    if (Test-Path $PROFILE) {
+    # Decide whether we need to write anything to the profile before creating it.
+    # Previously, an empty $PROFILE was created unconditionally as a side effect,
+    # which surprised users who never wanted a profile at all.
+    $profileExists = Test-Path $PROFILE
+
+    # Offer to install autoresearch protocol helpers (ar-enable / ar-disable)
+    if ($profileExists) {
         $profileContent = Get-Content $PROFILE -Raw -ErrorAction SilentlyContinue
-        if ($profileContent -notmatch 'function ar-enable') {
-            Add-Content -Path $PROFILE -Value @'
+    } else {
+        $profileContent = ""
+    }
+    if ($profileContent -notmatch 'function ar-enable') {
+        if (Read-YesNo "Install 'ar-enable' / 'ar-disable' helpers in your PowerShell profile?" $false) {
+            if (-not $profileExists) {
+                $profileDir = Split-Path $PROFILE -Parent
+                if (-not (Test-Path $profileDir)) {
+                    if (-not $DryRun) {
+                        New-Item -ItemType Directory -Path $profileDir -Force | Out-Null
+                    }
+                }
+                if (-not $DryRun) {
+                    New-Item -ItemType File -Path $PROFILE -Force | Out-Null
+                }
+                Write-LogInfo "Created PowerShell profile: $PROFILE"
+                $profileExists = $true
+            } else {
+                New-FileBackup $PROFILE
+            }
+            if (-not $DryRun) {
+                Add-Content -Path $PROFILE -Value @'
 
 function ar-enable { $env:AUTORESEARCH_PROTOCOL = "1"; Write-Host "autoresearch protocol: ON" }
 function ar-disable { Remove-Item Env:\AUTORESEARCH_PROTOCOL -ErrorAction SilentlyContinue; Write-Host "autoresearch protocol: OFF" }
 '@
+            }
             Write-LogSuccess "Added ar-enable / ar-disable helpers to $PROFILE"
         } else {
-            Write-LogInfo "ar-enable / ar-disable helpers already exist in $PROFILE"
+            Write-LogInfo "Skipping ar-enable / ar-disable helpers"
         }
+    } else {
+        Write-LogInfo "ar-enable / ar-disable helpers already exist in $PROFILE"
     }
 
     if (-not [string]::IsNullOrWhiteSpace($ZaiApiKey)) {
-        $profileContent = Get-Content $PROFILE -Raw -ErrorAction SilentlyContinue
+        # Re-read profile content in case we just created it / added ar-* above
+        if (Test-Path $PROFILE) {
+            $profileContent = Get-Content $PROFILE -Raw -ErrorAction SilentlyContinue
+        } else {
+            $profileContent = ""
+        }
         if ($profileContent -match "ZAI_API_KEY") {
             Write-LogInfo "ZAI_API_KEY already exists in $PROFILE"
         } else {
             if (Read-YesNo "Add ZAI_API_KEY to your PowerShell profile for persistent access?" $true) {
-                New-FileBackup $PROFILE
+                if (-not $profileExists) {
+                    $profileDir = Split-Path $PROFILE -Parent
+                    if (-not (Test-Path $profileDir)) {
+                        if (-not $DryRun) {
+                            New-Item -ItemType Directory -Path $profileDir -Force | Out-Null
+                        }
+                    }
+                    if (-not $DryRun) {
+                        New-Item -ItemType File -Path $PROFILE -Force | Out-Null
+                    }
+                    Write-LogInfo "Created PowerShell profile: $PROFILE"
+                    $profileExists = $true
+                } else {
+                    New-FileBackup $PROFILE
+                }
                 if (-not $DryRun) {
                     Add-Content -Path $PROFILE -Value "`n# Z.AI API Key (added by opencode setup)"
                     Add-Content -Path $PROFILE -Value "`$env:ZAI_API_KEY = `"$ZaiApiKey`""
@@ -1574,8 +1633,15 @@ function Get-OpenCodeVersion {
     param([switch]$Latest)
 
     if ($Latest) {
+        # Call npm directly — Invoke-Expression swallows non-throwing failures
+        # (npm writes to stderr and returns non-zero $LASTEXITCODE), causing
+        # the caller to see an empty string instead of "unknown".
         try {
-            return (Invoke-Expression "npm view opencode-ai version" 2>$null).Trim()
+            $output = & npm view opencode-ai version 2>$null
+            if ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace($output)) {
+                return $output.Trim()
+            }
+            return "unknown"
         } catch {
             return "unknown"
         }
