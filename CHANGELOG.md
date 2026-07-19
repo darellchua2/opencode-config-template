@@ -1,3 +1,10 @@
+## [1.77.1](https://github.com/darellchua2/opencode-config-template/compare/v1.77.0...v1.77.1) (2026-07-19)
+
+
+### Bug Fixes
+
+* **deploy:** harden setup.sh/ps1 against paths, errors, silent failures ([f4f9aa4](https://github.com/darellchua2/opencode-config-template/commit/f4f9aa452f154510015708972f5978de22f71845))
+
 # [1.77.0](https://github.com/darellchua2/opencode-config-template/compare/v1.76.0...v1.77.0) (2026-07-19)
 
 
