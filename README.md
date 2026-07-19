@@ -451,7 +451,7 @@ Skills follow a modular architecture:
 The setup scripts automatically:
 - Copies `deploy/.AGENTS.md` to `~/.config/opencode/AGENTS.md` (renaming it)
 - Copies `opencode_app/.opencode/skills/` folder to `~/.config/opencode/skills/`
-- Copies `deploy/config.json` to `~/.config/opencode/config.json`
+- Copies `opencode_app/opencode.json` to `~/.config/opencode/config.json` (single source of truth — model resolver patches primary/explore/general in-place during deploy)
 - Backs up existing files before overwriting
 
 ### Environment Variable Persistence

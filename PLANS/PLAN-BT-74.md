@@ -189,10 +189,11 @@ Review run after the main merge + Phase 9 doc sync. The subagent verified the v2
     - **Fix:** Moved JSON emission to the end of `main()` (after the agent-file + config + sidecar writes). Guarded the human table / dry-run sample dump with `if (!O.json)` so stdout stays clean. Replaced the `--dry-run && !--preview-dir` early `return` with a guarded message so `--json` callers still get a structured summary in that path.
     - **Verified:** `--json` apply now writes 39 files + patches config (was 0); `--dry-run --json` writes 0 + emits JSON (unchanged); `--dry-run --json --preview-dir` stages 39 + emits JSON (improvement — preview was previously ignored under `--json`); non-JSON apply unchanged.
 
-- [x] **12.2** `deploy/config.json` `agent.general.model` was stale (`glm-5-turbo` → `glm-5.1`)
-    - **Defect:** `deploy/config.json` carried `general.model = glm-5-turbo` (fast tier) while the declared source `opencode_app/opencode.json` had `glm-5.1` (reasoning). `setup_config` copies this file to `~/.config/opencode/config.json` before the resolver runs. On a full successful deploy the resolver overwrote it correctly, but if `deploy_agents` was skipped (node missing — main flow uses `deploy_agents || true`) the stale value would ship. Migration's `lift_customizations` also treated `glm-5-turbo` as a known default, silently adopting the stale value.
-    - **Fix:** Updated `deploy/config.json` `agent.general.model` to `zai-coding-plan/glm-5.1`. The two files are now semantically identical (verified via sorted-key JSON diff).
-    - **Long-term recommendation (not implemented):** have `setup_config` copy from `opencode_app/opencode.json` (the declared single source of truth) instead of maintaining a duplicate at `deploy/config.json`.
+- [x] **12.2** `deploy/config.json` `agent.general.model` was stale (`glm-5-turbo` → `glm-5.1`) — root cause eliminated
+    - **Defect:** `deploy/config.json` carried `general.model = glm-5-turbo` (fast tier) while the declared source `opencode_app/opencode.json` had `glm-5.1` (reasoning). `setup_config` copied this duplicate to `~/.config/opencode/config.json` before the resolver ran. On a full successful deploy the resolver overwrote it correctly, but if `deploy_agents` was skipped (node missing — main flow uses `deploy_agents || true`) the stale value would ship. Migration's `lift_customizations` also treated `glm-5-turbo` as a known default, silently adopting the stale value.
+    - **Immediate fix (commit `b20a2d1`):** updated `deploy/config.json` `agent.general.model` to `zai-coding-plan/glm-5.1`.
+    - **Root-cause fix (this commit):** eliminated the duplicate entirely. `setup_config` (setup.sh) and `Set-Configuration` (setup.ps1) now copy from `$SOURCE_CONFIG` / `$SourceConfig` (= `opencode_app/opencode.json`, the declared single source of truth — variables already existed for the resolver's `--config-src`). `deploy/config.json` deleted. README "Configuration Files" section updated. Drift class is now structurally impossible: there is only one config source.
+    - **Verified:** `bash -n` + `node --check` clean; simulated `setup_config` copy → `general.model=glm-5.1` straight from source; resolver apply writes 39 agents + patches config in-place. Dockerfile unaffected (already copies `opencode_app/` → `/app/`).
 
 - [x] **12.3** `deploy/.AGENTS.md` routing description hardcoded a model ID
     - **Defect (nit):** Line 41 said "Runs at glm-5.1 (sound-reasoning)" for `technical-design-specialist-subagent`. Accurate today, but would drift silently if the reasoning-tier default ever changed.
@@ -221,7 +222,7 @@ Review run after the main merge + Phase 9 doc sync. The subagent verified the v2
 - [x] Existing v1.x installs migrate without losing customizations (lifted into `agent-overrides.json`)
 - [x] Per-category provider/model mixing: each of `primary`/`reasoning`/`fast`/`docs`/`vision` can use a different provider/model (interactive `--mix` + `models.json`); verified across all 5 categories (Phase 11)
 - [x] Mixing docs + auth caveat present in MIGRATION.md / AGENTS.md / README (Phase 11)
-- [x] Post-review: `--json` apply mode writes files + patches config (not just emits summary); `deploy/config.json` matches `opencode_app/opencode.json` source of truth; no out-of-tier hardcoded model IDs in routing docs (Phase 12)
+- [x] Post-review: `--json` apply mode writes files + patches config (not just emits summary); `deploy/config.json` duplicate eliminated — `setup_config`/`Set-Configuration` copy from `opencode_app/opencode.json` single source of truth; no out-of-tier hardcoded model IDs in routing docs (Phase 12)
 
 ---
 

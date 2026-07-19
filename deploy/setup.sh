@@ -1747,11 +1747,14 @@ setup_config() {
         fi
     fi
 
-    # Copy config.json
+    # Copy config.json from the single source of truth (opencode_app/opencode.json).
+    # Historically this copied deploy/config.json, but maintaining a duplicate
+    # caused drift (see PLAN-BT-74 Phase 12.2). The resolver (run later in
+    # deploy_agents) patches this file in-place for primary/explore/general models.
     if [ "$SKIP_CONFIG_COPY" != true ]; then
-        if [ -f "${SCRIPT_DIR}/config.json" ]; then
-            run_cmd cp "${SCRIPT_DIR}/config.json" "$CONFIG_FILE"
-            log_success "config.json copied successfully"
+        if [ -f "$SOURCE_CONFIG" ]; then
+            run_cmd cp "$SOURCE_CONFIG" "$CONFIG_FILE"
+            log_success "config.json copied successfully (from ${SOURCE_CONFIG})"
 
             echo ""
         echo "✓ Configured 39 agents:"
@@ -1767,7 +1770,7 @@ setup_config() {
              echo "    Remote (needs key): web-reader, web-search-prime, zread"
             echo ""
         else
-            log_error "config.json not found in ${SCRIPT_DIR}"
+            log_error "config.json source not found: ${SOURCE_CONFIG}"
             return 1
         fi
     fi

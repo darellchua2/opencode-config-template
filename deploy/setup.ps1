@@ -1214,10 +1214,14 @@ function Set-Configuration {
     }
 
     if (-not $script:SkipConfigCopy) {
-        $configSrc = Join-Path $ScriptDir "config.json"
+        # Copy config.json from the single source of truth (opencode_app/opencode.json).
+        # Historically this copied deploy/config.json, but maintaining a duplicate
+        # caused drift (see PLAN-BT-74 Phase 12.2). The resolver (run later in
+        # Deploy-Agents) patches this file in-place for primary/explore/general models.
+        $configSrc = $SourceConfig
         if (Test-Path $configSrc) {
             if (-not $DryRun) { Copy-Item $configSrc $ConfigFile -Force }
-            Write-LogSuccess "config.json copied successfully"
+            Write-LogSuccess "config.json copied successfully (from $SourceConfig)"
 
             Write-Host ""
              Write-Host "Configured 39 agents:" -ForegroundColor Green
@@ -1233,7 +1237,7 @@ function Set-Configuration {
             Write-Host "    - Available but disabled (opt-in): web-search-prime, filesystem, next-devtools"
             Write-Host ""
         } else {
-            Write-LogError "config.json not found in $ScriptDir"
+            Write-LogError "config.json source not found: $SourceConfig"
         }
     }
 
