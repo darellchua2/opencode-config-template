@@ -1,5 +1,7 @@
 # PLAN-GIT-240 — Consolidate Next.js Subagents
 
+> **STATUS: RESOLVED** — Completed via [PR #241](https://github.com/darellchua2/opencode-config-template/pull/241) (commit `10ebe7a`, merged 2026-07-18). Issue [#240](https://github.com/darellchua2/opencode-config-template/issues/240) CLOSED. This plan is retained for historical reference; checkboxes below reflect the plan-as-drafted, not post-merge state.
+
 **Branch:** `refactor/issue-240-consolidate-nextjs-subagents`
 **Issue:** [#240](https://github.com/darellchua2/opencode-config-template/issues/240)
 **Title:** [Refactor] Consolidate nextjs-setup-subagent + nextjs-mcp-advisor-subagent into nextjs-specialist-subagent
