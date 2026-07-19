@@ -174,6 +174,43 @@ class User:
     pass
 ```
 
+### Learning: `method-name-reuse-different-semantics`
+
+A method name reused across classes with DIFFERENT semantics violates the principle of least surprise — `process()` on `OrderService` mutates state, `process()` on `PaymentGateway` makes a network call, and `process()` on `ReportBuilder` returns a new immutable value. The reader assumes one meaning; the code does another. Before naming a method, grep for the proposed name across the codebase. If it exists elsewhere, either verify the semantic meaning is IDENTICAL, or include the specific condition/context in the name (`process_for_refund`, `build_draft`).
+
+```python
+# BAD — same name, three different contracts
+class OrderService:
+    def process(self, order):           # mutates order.status in DB
+        order.status = "processed"
+        db.commit()
+
+class PaymentGateway:
+    def process(self, amount):          # network call, returns bool
+        return self.client.charge(amount)
+
+class ReportBuilder:
+    def process(self, rows):            # pure, returns new Report
+        return Report(rows)
+
+# GOOD — names encode the distinguishing condition
+class OrderService:
+    def mark_processed(self, order): ...
+class PaymentGateway:
+    def charge_card(self, amount) -> bool: ...
+class ReportBuilder:
+    def build_from_rows(self, rows) -> Report: ...
+```
+
+**Detection:**
+
+```bash
+# find method names defined on more than one class
+rg 'def (\w+)\(self' --type py --type ts -o --no-filename | sort | uniq -c | sort -rn | head -30
+```
+
+**Rule:** Before naming a method, grep the codebase for the proposed name. If it exists elsewhere, confirm the semantic contract is identical, or qualify the name with the specific condition. Never let one name mean two different things.
+
 ---
 
 ## Object Calisthenics (9 Rules)
@@ -421,6 +458,52 @@ def populate_template(tpl: Template, data: list[float]) -> Template:
 
 **Detection:** Look for functions returning objects with hardcoded `0.0`, `""`, `None`, `[]` defaults that have companion `compute_*` or `populate_*` methods.
 
+### Learning: `parallel-hierarchies-for-report-type-variants`
+
+When two container+hook+component trees are near-identical for different report types (e.g. `FinancialReportContainer` + `useFinancialReport` + `FinancialReportTable` vs `OperationalReportContainer` + `useOperationalReport` + `OperationalReportTable`), and the similarity is >70% (same fetch → transform → render lifecycle, same state machine, only the data shape differs), maintaining them as parallel trees is a duplication smell. Every bug fix must be applied twice and drifts silently on the second pass. Extract the shared container/hook structure and parameterize the report type via a strategy or a config object, so there is exactly one tree driven by a `ReportType` discriminator.
+
+```typescript
+// BAD — two parallel trees, >70% identical, every fix applied twice
+// features/financial-report/_containers/FinancialReport/index.tsx
+// features/financial-report/hooks/useFinancialReport.ts        // identical fetch/transform
+// features/operational-report/_containers/OperationalReport/index.tsx
+// features/operational-report/hooks/useOperationalReport.ts    // identical except URL
+
+// GOOD — one tree, report type drives the differences
+type ReportType = 'financial' | 'operational'
+
+const REPORT_CONFIG: Record<ReportType, {
+  endpoint: string
+  transform: (raw: unknown) => ReportRow[]
+  columns: Column[]
+}> = {
+  financial:   { endpoint: '/api/financial-reports',   transform: toFinancialRows,   columns: FINANCIAL_COLUMNS   },
+  operational: { endpoint: '/api/operational-reports', transform: toOperationalRows, columns: OPERATIONAL_COLUMNS },
+}
+
+function useReport(type: ReportType, id: string) {
+  const { endpoint, transform } = REPORT_CONFIG[type]
+  // single fetch/state/transform implementation
+  return useFetchReport(endpoint, id, transform)
+}
+
+function ReportContainer({ type, id }: { type: ReportType; id: string }) {
+  const { data, isLoading } = useReport(type, id)
+  const { columns } = REPORT_CONFIG[type]
+  return <ReportTable rows={data} columns={columns} loading={isLoading} />
+}
+```
+
+**Detection:**
+
+```bash
+# find pairs of containers/hooks with >70% similarity
+rg -l 'use[A-Z]\w+Report' --type ts --type tsx | xargs -I{} basename {} | sort
+# or run a structural diff: jsdiff / difftastic on sibling feature folders
+```
+
+**Rule:** When two container+hook+component trees for different report types share >70% of their structure, extract a single parameterized tree driven by a `ReportType` discriminator and a config object. Maintaining parallel trees guarantees drift on the second copy.
+
 ---
 
 ## Comments
@@ -454,6 +537,36 @@ if (user.subscriptionLevel >= 2 && !user.isBanned) { }
 if (user.canAccessPremiumFeatures()) { }
 ```
 
+### Learning: `self-documented-duplication`
+
+Comments like `# could be replaced by X, tracked as follow-up` or `# TODO: extract this into a shared helper` are permanent confessions — the follow-up ticket is never filed and the comment ships to production as a badge of known debt. A self-documenting comment that describes duplication without eliminating it is worse than no comment at all: it makes the duplication feel deliberate. Convert every "could be replaced by" or "should extract" comment into a JIRA or GitHub ticket immediately, and either delete the comment or replace it with a reference to the ticket (`# See PROJ-1234 for extraction plan`).
+
+```python
+# BAD — permanent confession, never lands
+# This could be replaced by shared_validation.validate_email,
+# tracked as follow-up (not done yet)
+def validate_email(email: str) -> bool:
+    return "@" in email
+
+# Three other files paste the same comment — duplication now feels intentional
+
+# GOOD — ticket created, comment references it, or just fix it now
+# See PROJ-1234: consolidate email validation
+def validate_email(email: str) -> bool:  # DELETE once PROJ-1234 lands
+    return "@" in email
+
+# BEST — just extract it and delete the comment entirely
+from shared_validation import validate_email  # one source of truth
+```
+
+**Detection:**
+
+```bash
+rg "could be replaced|should be extracted|tracked as follow-up|TODO.*extract|FIXME.*duplicate" --type py --type ts --type tsx
+```
+
+**Rule:** "Could be replaced by" and "should extract" comments are debt that never ships. Either file a ticket and reference it in the comment, or eliminate the duplication now. Never let a confession comment ship as if the duplication were intentional.
+
 ---
 
 ### Learning: `brittle-single-strategy-data-extraction`
@@ -485,6 +598,44 @@ def extract_report_id(response: requests.Response) -> str:
         f"(status={response.status_code}, body={response.text[:200]})"
     )
 ```
+
+### Learning: `inline-imports-in-functions`
+
+Imports inside function bodies (lazy imports) hide the module's true dependencies from static analysis tools (mypy, pylint, IDE go-to-definition) and mask circular-import problems that should be fixed by restructuring the module graph. When `from heavy_sdk import Client` lives inside `process()`, the import graph looks clean in `pydeps` output but is actually broken. Fix the architecture — split the module, extract an interface, or move the import to module level. Lazy imports are acceptable ONLY for optional/heavy imports behind feature flags (e.g. `import torch` only when GPU inference is requested) where the dependency is genuinely conditional.
+
+```python
+# BAD — hides a circular import; mypy can't see Client; IDE autocomplete broken
+def process_payment(order):
+    from services.audit import log_event   # circular: services.audit imports this module
+    from heavy_payment_sdk import Client   # heavy SDK loaded on every cold call
+    client = Client()
+    log_event("payment_started")
+    return client.charge(order.total)
+
+# GOOD — module-level imports expose the dependency graph to static analysis
+from services.audit import log_event
+from heavy_payment_sdk import Client
+
+def process_payment(order):
+    client = Client()
+    log_event("payment_started")
+    return client.charge(order.total)
+
+# ACCEPTABLE — genuinely conditional dependency behind a feature flag
+def run_inference(model_path: str):
+    if not settings.GPU_ENABLED:
+        raise RuntimeError("GPU inference disabled")
+    import torch  # heavy, optional, only loaded when actually needed
+    return torch.load(model_path)
+```
+
+**Detection:**
+
+```bash
+rg "^\s+(import|from)\s" --type py
+```
+
+**Rule:** Module-level imports are the default. Inline imports hide dependencies from static analysis and mask circular-import bugs — fix the architecture instead. Exception: genuinely conditional/heavy dependencies behind feature flags.
 
 ---
 

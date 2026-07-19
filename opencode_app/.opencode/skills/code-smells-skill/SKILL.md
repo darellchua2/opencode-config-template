@@ -406,6 +406,68 @@ def create_user(email: Email, age: Age, address: Address):
     # Type system prevents invalid data
 ```
 
+#### `feature-bounds-value-object`
+
+When a dataclass carries 3+ features that each share the same sub-field pattern (e.g. `mean`/`std`/`low`/`high` for each feature, or `min`/`max`/`default`), the flat field list is primitive obsession disguised as structure. A template with 3 features explodes to 12-15 scalar fields, every new feature adds 4 more, and validation/serialization must touch each one individually. Extract a single frozen value object (`FeatureBounds`) holding the sub-field tuple; the parent dataclass then holds 3 `FeatureBounds` fields instead of 12 scalars. The class shrinks from ~23 fields to ~11, and adding a new feature is one field, not four.
+
+```python
+from dataclasses import dataclass, replace
+from typing import Optional
+
+# SMELL — 23 fields, every new feature adds 4 more
+@dataclass
+class TemplateFlat:
+    name: str
+    # feature A
+    feat_a_mean: float = 0.0
+    feat_a_std: float = 0.0
+    feat_a_low: float = 0.0
+    feat_a_high: float = 0.0
+    # feature B
+    feat_b_mean: float = 0.0
+    feat_b_std: float = 0.0
+    feat_b_low: float = 0.0
+    feat_b_high: float = 0.0
+    # feature C
+    feat_c_mean: float = 0.0
+    feat_c_std: float = 0.0
+    feat_c_low: float = 0.0
+    feat_c_high: float = 0.0
+    # ... 11 more metadata fields ...
+
+# REFACTORED — FeatureBounds value object; parent holds 3 features, not 12 scalars
+@dataclass(frozen=True)
+class FeatureBounds:
+    mean: Optional[float] = None
+    std: Optional[float] = None
+    low: Optional[float] = None
+    high: Optional[float] = None
+
+    def with_computed(self, data: list[float]) -> 'FeatureBounds':
+        return FeatureBounds(mean=mean(data), std=stdev(data),
+                             low=min(data), high=max(data))
+
+@dataclass
+class Template:
+    name: str
+    feature_a: FeatureBounds = FeatureBounds()  # one field, not four
+    feature_b: FeatureBounds = FeatureBounds()
+    feature_c: FeatureBounds = FeatureBounds()
+    # metadata fields follow
+
+# Adding a new feature is one field, not four
+new_template = replace(old_template, feature_d=FeatureBounds(mean=1.0))
+```
+
+**Detection:**
+
+```bash
+# find dataclasses with 3+ groups of fields sharing a common suffix
+rg '@dataclass' --type py -A 40 | rg 'mean|std|low|high|min|max|default' | sort | uniq -c | sort -rn
+```
+
+**Rule:** When a dataclass has 3+ features each with the same sub-field pattern (`mean`/`std`/`low`/`high`, `min`/`max`/`default`), extract a frozen value object holding the sub-field tuple. The parent shrinks from ~23 fields to ~11, and adding a feature is 1 field, not 4.
+
 ### 5. Switch Statements
 
 **Symptom:** Switching on type, repeated across codebase.

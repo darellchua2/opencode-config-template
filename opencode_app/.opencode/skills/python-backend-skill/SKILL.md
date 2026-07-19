@@ -162,6 +162,58 @@ class Settings(BaseSettings):
 settings = Settings()
 ```
 
+### Centralize Config in a Single Settings Class
+
+**Learning**: `centralized-single-source-config`
+
+ALL environment variables MUST be read in exactly one `pydantic-settings` `Settings` class. Derived values (a full URL assembled from host/port/scheme, a Redis URL from host/port/db) are computed by `@field_validator` or `@model_validator` on that class, never re-derived in feature code via `os.getenv()`. When the same derived value is recomputed in 3+ files, the next environment override leaves one of them stale and silently routes to the wrong service.
+
+```python
+# WRONG — each module rebuilds the same derived URL from raw env vars
+# services/cache.py
+import os
+REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+REDIS_PORT = os.getenv("REDIS_PORT", "6379")
+REDIS_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"   # drifts from config.py
+
+# services/queue.py
+REDIS_URL = f"redis://{os.getenv('REDIS_HOST')}:{os.getenv('REDIS_PORT')}/1"  # different db!
+
+# CORRECT — one Settings class, validators derive values, one import surface
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import field_validator
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env")
+
+    REDIS_HOST: str = "localhost"
+    REDIS_PORT: int = 6379
+    REDIS_DB: int = 0
+
+    @field_validator("REDIS_PORT", mode="after")
+    @classmethod
+    def _port_range(cls, v: int) -> int:
+        if not 1 <= v <= 65535:
+            raise ValueError("REDIS_PORT out of range")
+        return v
+
+    @property
+    def REDIS_URL(self) -> str:
+        return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"
+
+settings = Settings()
+# services/cache.py and services/queue.py both import settings.REDIS_URL
+```
+
+**Detection:**
+
+```bash
+# find env reads OUTSIDE the Settings module
+rg "os\.getenv|os\.environ" --type py
+```
+
+**Rule:** The `Settings` class is the single source of truth for every environment-derived value. Derived values are properties or validators on that class — never recomputed via `os.getenv()` in feature code.
+
 ### Repository Pattern
 
 ```python
@@ -507,6 +559,48 @@ if isinstance(value, BaseModel):
     value = value.model_dump()
 ```
 
+### json.dumps default=str Masks Numpy Types
+
+**Learning**: `json-default-str-numpy-masking`
+
+`json.dump(..., default=str)` is a silent type-masking trap. It converts any object the JSON encoder cannot serialize — including numpy scalars (`np.int64`, `np.float64`), datetimes, and sets — into their string representation. The JSON type contract is silently broken: a downstream consumer expecting `{"count": 42}` receives `{"count": "42"}`. Cast every numpy value to a Python native type BEFORE building the output dict, so the JSON encoder never needs the `default` fallback.
+
+```python
+# WRONG — default=str turns np.int64 into "42" silently
+import json
+import numpy as np
+
+def serialize_bad(row):
+    return json.dumps({"count": np.int64(42)}, default=str)
+    # → '{"count": "42"}' — type contract broken, downstream parse fails
+
+# CORRECT — cast at the source so default=str never fires
+def _to_native(value):
+    if isinstance(value, np.integer):
+        return int(value)
+    if isinstance(value, np.floating):
+        return float(value)
+    if isinstance(value, np.ndarray):
+        return value.tolist()
+    raise TypeError(f"Unsupported type: {type(value)}")
+
+def serialize_good(row):
+    payload = {
+        "count": _to_native(row["count"]),
+        "mean": _to_native(row["mean"]),
+    }
+    return json.dumps(payload)
+    # → '{"count": 42, "mean": 3.14}' — contract preserved
+```
+
+**Detection:**
+
+```bash
+rg "default=str" --type py
+```
+
+**Rule:** `default=str` is a debugging escape hatch, never a production strategy. Convert numpy/scientific types to Python natives at the source so the JSON encoder never reaches the fallback.
+
 ---
 
 ## Step 8: Database Migration Gotchas
@@ -677,3 +771,52 @@ process({"k": "v"})                            # default
 process({"k": "v"}, "fast")                   # string
 process({"k": "v"}, ProcessingStrategy.THOROUGH)  # enum member
 ```
+
+### Defensive Enum Mapping From DB Strings
+
+**Learning**: `defensive-enum-mapping-from-db-strings`
+
+Database columns that store enum keys as strings usually lack `CHECK` constraints — the DB will happily accept `"PENDINGG"`, `"pending_v2"`, or `""`. When such a value is read back and passed to `ProcessingStrategy(row.status)`, the resulting `ValueError` crashes the request or kills the stream. Wrap every enum-from-DB lookup in a private helper that catches `ValueError`/`KeyError` and returns `None`, then filter `None` out of the stream. This gives graceful degradation for stale, corrupt, or forward-incompatible values rather than a hard crash.
+
+```python
+# WRONG — one corrupt row kills the whole list endpoint
+from enum import Enum
+
+class ProcessingStrategy(str, Enum):
+    FAST = "fast"
+    THOROUGH = "thorough"
+
+async def list_workflows_bad(db: AsyncSession):
+    rows = await db.execute(select(Workflow))
+    return [
+        {"id": r.id, "strategy": ProcessingStrategy(r.strategy)}  # ValueError on stale row
+        for r in rows.scalars()
+    ]
+
+# CORRECT — private helper degrades gracefully; corrupt rows are skipped
+def _safe_strategy(raw: str | None) -> ProcessingStrategy | None:
+    if not raw:
+        return None
+    try:
+        return ProcessingStrategy(raw)
+    except (ValueError, KeyError):
+        logger.warning("Unknown strategy value in DB", extra={"raw": raw})
+        return None
+
+async def list_workflows(db: AsyncSession):
+    rows = await db.execute(select(Workflow))
+    mapped = [
+        {"id": r.id, "strategy": strategy}
+        for r in rows.scalars()
+        if (strategy := _safe_strategy(r.strategy)) is not None
+    ]
+    return mapped
+```
+
+**Detection:**
+
+```bash
+rg 'SomeEnum\(' --type py -A 1 | rg -v 'except|try|return None'
+```
+
+**Rule:** Never call an enum constructor directly on a DB-sourced string. Always wrap it in a helper that catches `ValueError`/`KeyError` and returns `None`, so stale or corrupt rows degrade instead of crashing.

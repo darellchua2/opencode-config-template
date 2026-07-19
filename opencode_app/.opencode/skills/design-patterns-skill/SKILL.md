@@ -676,6 +676,67 @@ await launch_side_effects(row)  # Exactly ONE worker reaches here
 rg 'get_.*\(\|fetch_.*\(' --type py -A 10 | rg 'status|state' | rg 'commit|save|update'
 ```
 
+### Learning: `double-checked-locking-async-refresh`
+
+When a token or cache entry needs refreshing, naive locking produces a thundering herd: every concurrent request acquires the lock serially and each one re-fetches from the upstream provider. The fix is double-checked locking: (1) check validity WITHOUT a lock, (2) if invalid, acquire the lock, (3) RE-CHECK validity under the lock, (4) refresh only if still invalid. The second check ensures exactly ONE HTTP POST refreshes the token; every other waiter sees the freshly refreshed value and skips the network call. Use `time.monotonic()` (not `time.time()`) for expiry so NTP adjustments never falsely expire or extend a token. Refresh proactively at 80% of TTL so the first request after expiry doesn't pay the refresh cost.
+
+```python
+# WRONG — every waiter acquires the lock serially and re-fetches
+class TokenRefresher:
+    def __init__(self):
+        self._lock = asyncio.Lock()
+        self._token: str | None = None
+        self._expires_at = 0.0
+
+    async def get_token(self) -> str:
+        async with self._lock:                       # acquired on EVERY call once expired
+            if self._is_stale():
+                self._token = await self._refresh()  # N callers → N HTTP POSTs
+                self._expires_at = time.monotonic() + 3600
+        return self._token
+
+# CORRECT — double-checked locking caps concurrent refreshes to exactly ONE POST
+class TokenRefresher:
+    def __init__(self, ttl: int = 3600):
+        self._lock = asyncio.Lock()
+        self._token: str | None = None
+        self._expires_at = 0.0
+        self._ttl = ttl
+
+    def _is_stale(self) -> bool:
+        # proactive refresh at 80% of TTL
+        return time.monotonic() >= (self._expires_at - 0.2 * self._ttl)
+
+    async def get_token(self) -> str:
+        # (1) unlocked check — hot path skips the lock entirely
+        if self._token and not self._is_stale():
+            return self._token
+
+        async with self._lock:
+            # (2) RE-CHECK under the lock — only ONE caller refreshes
+            if self._token and not self._is_stale():
+                return self._token
+            # (3) the single refresh
+            self._token = await self._refresh()
+            self._expires_at = time.monotonic() + self._ttl
+        return self._token
+```
+
+**Key properties:**
+- **One refresh per expiry window** — the second check under the lock guarantees only the first waiter hits the provider
+- **Hot path lock-free** — callers within TTL never acquire the lock
+- **Monotonic clock** — immune to NTP adjustments
+- **Proactive 80% refresh** — no first-request penalty after expiry
+
+**Detection:**
+
+```bash
+# find async refresh paths missing the second (under-lock) validity check
+rg 'async with self\._lock|async with.*Lock' --type py -A 15 | rg 'await.*refresh|await.*fetch' | rg -v 'if.*stale|if.*expired'
+```
+
+**Rule:** Async token/cache refreshes must use double-checked locking (unlocked check → acquire lock → re-check → refresh only if still invalid) so exactly one caller hits the upstream provider. Always pair with `time.monotonic()` for expiry and proactive refresh at 80% of TTL.
+
 ---
 
 ## Pattern Selection Guide
