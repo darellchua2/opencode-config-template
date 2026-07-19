@@ -3,7 +3,7 @@
 v2.0 is a **major breaking change**. Agent models are no longer hardcoded per
 agent file — they are resolved at deploy time from a tier registry, so you can
 switch providers (Z.AI / Anthropic / OpenAI / OpenRouter / local LM Studio)
-without editing 35 files. This guide covers what changed, the automatic
+without editing every agent file. This guide covers what changed, the automatic
 migration, and how to revert.
 
 ---

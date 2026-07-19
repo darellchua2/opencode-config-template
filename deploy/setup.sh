@@ -672,14 +672,17 @@ USAGE:
 
           JIRA (3):             jira-status-updater, jira-git-integration, jira-ticket-labeler
 
-         Code Quality (7):     solid-principles-skill, clean-code-skill, clean-architecture-skill,
+         Code Quality (8):     solid-principles-skill, clean-code-skill, clean-architecture-skill,
                                design-patterns-skill, object-design-skill, code-smells-skill,
-                               complexity-management-skill
+                               complexity-management-skill, deprecated-code-cleanup-skill
 
-      Agent Optimization (7):  continuous-learning-skill, eval-harness-skill,
+       Agent Optimization (7):  continuous-learning-skill, eval-harness-skill,
                                 strategic-compact-skill, verification-loop-skill,
                                 search-first-skill, context-budget-skill,
                                 agent-introspection-debugging-skill
+
+            Autoresearch (4):  autoresearch-core-skill, autoresearch-ml-skill,
+                                autoresearch-code-skill, autoresearch-research-skill
 
             Startup/Business (3): startup-pitch-deck-skill, startup-business-docs-skill,
                                   construction-bd-skill
@@ -1757,7 +1760,7 @@ setup_config() {
         echo "    - explore - Codebase exploration and analysis"
         echo "    - image-analyzer-subagent - Image/screenshot analysis"
         echo "    - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
-        echo "    - ... and 31 more agents"
+        echo "    - ... and 34 more agents"
             echo ""
              echo "✓ Configured MCP servers:"
              echo "    Local (auto-start): atlassian, zai-vision-mcp-server, codegraph, mermaid"
@@ -2482,7 +2485,7 @@ print_summary() {
         echo "    - plan - Planning agent (read-only)"
         echo "    - explore - Codebase exploration and analysis"
         echo "    - image-analyzer-subagent - Image/screenshot analysis"
-        echo "    - ... and 32 more agents"
+        echo "    - ... and 35 more agents"
     fi
 
     # MCP servers configured
@@ -2573,7 +2576,7 @@ print_summary() {
          echo "      - jira-status-updater"
          echo "      - jira-git-integration"
          echo "      - jira-ticket-labeler"
-        echo "    - Code Quality (7):"
+        echo "    - Code Quality (8):"
         echo "      - solid-principles"
         echo "      - clean-code"
         echo "      - clean-architecture"
@@ -2581,6 +2584,7 @@ print_summary() {
         echo "      - object-design"
         echo "      - code-smells"
         echo "      - complexity-management"
+        echo "      - deprecated-code-cleanup-skill"
          echo "    - Planning & Alignment (4):"
          echo "      - grilling-skill"
          echo "      - domain-modeling-skill"
@@ -2657,13 +2661,13 @@ print_next_steps() {
     echo "                        🚀 Quick Start"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "🤖 Agents (36):"
+    echo "🤖 Agents (39):"
     echo "  - build (default) - Full-featured coding agent"
     echo "  - plan - Planning agent (read-only)"
     echo "  - explore - Fast codebase exploration and analysis"
     echo "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
     echo "  - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
-    echo "  - ... and 31 more agents"
+    echo "  - ... and 34 more agents"
     echo ""
     echo "  Usage: opencode --agent <name> \"prompt\""
     echo "         opencode \"prompt\" (uses build)"
@@ -2674,7 +2678,7 @@ print_next_steps() {
     echo ""
      echo "  Framework (20) • Language-Specific (6) • Framework-Specific (9)"
     echo "  OpenCode Meta (4) • OpenTofu (7) • Git/Workflow (12)"
-    echo "  Documentation (3) • JIRA (3) • Code Quality (7)"
+     echo "  Documentation (3) • JIRA (3) • Code Quality (8)"
     echo "  Agent Optimization (7) • Planning & Alignment (4)"
     echo "  Responsive & Visual Testing (2)"
     echo "  CAD & Hardware Design (14)"

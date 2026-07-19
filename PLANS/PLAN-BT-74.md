@@ -3,7 +3,7 @@
 **JIRA**: [BT-74](https://betekk.atlassian.net/browse/BT-74)
 **Branch**: `BT-74`
 **Created**: 2026-06-26
-**Status**: v2.0 complete + verified (Phases 1–11, on PR #231)
+**Status**: v2.0 complete + verified (Phases 1–11, merged with main, on PR #231)
 
 ## Overview
 
@@ -132,14 +132,16 @@ Replace hardcoded z.ai models in all 35 source agent `.md` files with a **tier-b
 
 ### Phase 9: Documentation sync
 
-- [ ] **9.1** Update `README.md`, `opencode_app/README.md`, repo `AGENTS.md`
+- [x] **9.1** Update `README.md`, `opencode_app/README.md`, repo `AGENTS.md`
     - **Why:** Repo AGENTS.md mandates doc sync after infra changes; model-tier table must reference the new tier system (not hardcoded z.ai IDs).
     - **Done when:** README documents tiers, override files, new flags, provider presets, migration pointer. repo `AGENTS.md` "Subagent Model Tiering" table reframed around tiers (`reasoning/fast/docs/vision`) + override mechanism (was: hardcoded `glm-*` IDs per tier). `opencode_app/README.md` Docker notes mention build-time resolution. Banner agent/skill counts unchanged (no agent/skill added — only model sourcing changed).
+    - **Post-merge reconciliation:** main added 6 agents (java/uiux/autoresearch-code/ml/research/nextjs-specialist) and removed 2 (nextjs-setup/nextjs-mcp-advisor) → agent-tiers.json updated (35→39 agents), AGENTS.md tier rows extended with new agents, README `--force` flag added to quick-list, MIGRATION.md "35 files" → "every agent file", banner arithmetic fixed (39 agents consistent across setup.sh/ps1 + README). Skill counts reconciled: missing `Autoresearch` category + `deprecated-code-cleanup-skill` added to setup.sh/ps1/README → 114 skills / 18 categories everywhere.
     - **Consumers affected:** documentation readers, model-tier routing
 
-- [ ] **9.2** Run `documentation-sync-workflow` skill
+- [x] **9.2** Run `documentation-sync-workflow` skill
     - **Why:** Validates cross-file consistency after the changes.
     - **Done when:** Skill confirms setup.sh, setup.ps1, README, AGENTS.md mutually consistent.
+    - **Verified:** SKILLS (114) header = sum of 18 category counts in setup.sh, setup.ps1, and README.md. Agent count (39) consistent across all banners + `Configured N` lines + `agent-tiers.json`. `bash -n`/`node --check` clean.
     - **Consumers affected:** documentation integrity
 
 ### Phase 10: Verification
@@ -191,7 +193,7 @@ Allows each of the 5 categories — `primary`, `reasoning`, `fast`, `docs`, `vis
 - [x] `deploy/setup.ps1` mirrors setup.sh
 - [x] Dockerfile resolves models at build time
 - [x] `VERSION` = 2.0.0; `MIGRATION.md` exists
-- [ ] README/AGENTS.md/opencode_app README synced; `documentation-sync-workflow` passes
+- [x] README/AGENTS.md/opencode_app README synced; `documentation-sync-workflow` passes
 - [x] All dry-run commands pass; shellcheck clean; `node --check` clean
 - [x] Existing v1.x installs migrate without losing customizations (lifted into `agent-overrides.json`)
 - [x] Per-category provider/model mixing: each of `primary`/`reasoning`/`fast`/`docs`/`vision` can use a different provider/model (interactive `--mix` + `models.json`); verified across all 5 categories (Phase 11)

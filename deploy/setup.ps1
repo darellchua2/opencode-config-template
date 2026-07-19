@@ -466,14 +466,17 @@ USAGE:
                                  documentation-sync-workflow
 
           JIRA (3):             jira-status-updater, jira-git-integration, jira-ticket-labeler
-          Code Quality (7):     solid-principles, clean-code, clean-architecture,
+          Code Quality (8):     solid-principles, clean-code, clean-architecture,
                                 design-patterns, object-design, code-smells,
-                                complexity-management
+                                complexity-management, deprecated-code-cleanup-skill
 
-      Agent Optimization (7):  continuous-learning, eval-harness,
+       Agent Optimization (7):  continuous-learning, eval-harness,
                                  strategic-compact, verification-loop,
                                  search-first, context-budget,
                                  agent-introspection-debugging
+
+            Autoresearch (4):  autoresearch-core-skill, autoresearch-ml-skill,
+                                autoresearch-code-skill, autoresearch-research-skill
 
             Startup/Business (3): startup-pitch-deck-skill, startup-business-docs-skill,
                                   construction-bd-skill
@@ -1334,10 +1337,10 @@ function Deploy-Skills {
         Write-Host "      - documentation-sync-workflow"
         Write-Host "    JIRA (3):"
          Write-Host "      - jira-status-updater, jira-git-integration, jira-ticket-labeler"
-        Write-Host "    Code Quality (7):"
+        Write-Host "    Code Quality (8):"
         Write-Host "      - solid-principles, clean-code, clean-architecture"
         Write-Host "      - design-patterns, object-design, code-smells"
-        Write-Host "      - complexity-management"
+        Write-Host "      - complexity-management, deprecated-code-cleanup-skill"
         Write-Host "    Agent Optimization (7):"
         Write-Host "      - continuous-learning, eval-harness"
         Write-Host "      - strategic-compact, verification-loop"
@@ -1947,13 +1950,13 @@ function Show-NextSteps {
     Write-Host "  2. Start LM Studio: http://127.0.0.1:1234/v1"
     Write-Host "  3. Verify installation: opencode --version"
     Write-Host ""
-    Write-Host "Agents (36):"
+    Write-Host "Agents (39):"
     Write-Host "  - build (default) - Full-featured coding agent"
     Write-Host "  - plan - Planning agent (read-only)"
     Write-Host "  - explore - Codebase exploration and analysis"
     Write-Host "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
     Write-Host "  - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
-    Write-Host "  - ... and 31 more agents"
+    Write-Host "  - ... and 34 more agents"
     Write-Host ""
     Write-Host "  Usage: opencode --agent <name> `"prompt`""
     Write-Host "         opencode `"prompt`" (uses build)"
@@ -1964,7 +1967,7 @@ function Show-NextSteps {
      Write-Host ""
      Write-Host "  Framework (20) • Language-Specific (6) • Framework-Specific (9)"
       Write-Host "  OpenCode Meta (4) • OpenTofu (7) • Git/Workflow (12)"
-     Write-Host "  Documentation (3) • JIRA (3) • Code Quality (7)"
+     Write-Host "  Documentation (3) • JIRA (3) • Code Quality (8)"
       Write-Host "  Agent Optimization (7) • Planning & Alignment (4)"
      Write-Host "  Responsive & Visual Testing (2)"
      Write-Host "  CAD & Hardware Design (14)"
