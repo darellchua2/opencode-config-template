@@ -222,9 +222,13 @@ Option B (verify runtime tolerance first) was rejected because even if the runti
 
 - **27 files** had `languages: [...]` converted to `languages: ...` (comma-joined, brackets removed).
 - **1 file** (`react-nextjs-antipatterns-skill`) also had `frameworks: [react, nextjs]` converted to `frameworks: react, nextjs`.
-- **1 file** (`threejs-nextjs-skill`) also had `frameworks: [three.js, react-three-fiber, next.js, react]` converted to `frameworks: three.js, react-three-fiber, next.js, react`.
-- **1 file** (`interactive-document-rendering-skill`) already used a quoted comma-string form (`languages: "html, css, javascript, typescript, react, vue"`) and was left unchanged — already spec-compliant.
-- **Total files touched:** 27 of the 28 flagged in §6. (The 28th was already compliant.)
+- **Total files touched:** 27 of the 28 flagged in §6.
+
+### Reconciliation: 27 of 28 (not 28 of 28)
+
+The §6 table lists 28 skills. Only **27** were found and modified during the implementation pass. The missing entry is **`threejs-nextjs-skill`** — the directory does not exist under `opencode_app/.opencode/skills/` (verified via `find . -type d -name "*threejs*"` → 0 results, and `find . -name "SKILL.md" -path "*three*"` → 0 results). This is an **audit enumeration error**: the §6 row for `threejs-nextjs-skill` references a file that is not present in the repo. The system-prompt skill catalog still references `threejs-nextjs-skill`, so it may have been deleted from the source tree without updating the catalog, or it may exist in a different deploy target outside this configurator repo.
+
+**Net effect on compliance:** zero. The 27 skills that did exist and used array values are all normalized. The phantom 28th entry has no file to be non-compliant.
 
 ### Verification
 
