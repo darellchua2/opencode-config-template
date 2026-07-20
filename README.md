@@ -394,6 +394,18 @@ This repository implements **skill modularization** with 116 skills organized ac
 
 > **Built-in Delegation**: Subagents with `explore` can delegate codebase scanning to the built-in `explore` subagent. Subagents with `general` can delegate parallelizable multi-step work to the built-in `general` subagent. Access is controlled via `task` permissions in each agent's frontmatter (`"*": deny` by default, explicit allowlist).
 
+##### Subagent Nesting Depth
+
+`opencode_app/opencode.json` sets `subagent_depth: 3` (opencode's default is `1`). This is required for nested delegation chains used by the autoresearch subagents and other deep workflows:
+
+| Depth | Chain | Example |
+|-------|-------|---------|
+| `1` (opencode default) | primary → subagent | Blocks nesting entirely — autoresearch loops fail with "Subagent depth limit reached" |
+| `2` | primary → subagent → 1 nested | Minimum for autoresearch to delegate research/exploration |
+| `3` (set here) | primary → subagent → nested → one more | Comfortable headroom for autoresearch-code/ml/research loops |
+
+Each extra level multiplies token cost (every nested subagent runs its own full context). Lower it to `2` for tighter runs; raise it only if a deeper chain hits the wall again. See the [Subagent depth docs](https://opencode.ai/docs/config#subagent-depth).
+
 #### Trigger Phrases
 
 Some subagents recognize natural language triggers:
