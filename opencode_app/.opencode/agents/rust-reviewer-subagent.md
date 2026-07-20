@@ -1,7 +1,6 @@
 ---
 description: Rust code review subagent focusing on ownership, borrow checker, unsafe safety, error handling with Result/Option, and idiomatic Rust patterns for thorough quality analysis
 mode: subagent
-model: zai-coding-plan/glm-5.1
 steps: 25
 permission:
   read: allow
@@ -100,6 +99,18 @@ You are a Rust code review specialist. Perform thorough quality analysis with Ru
 | **Major** | Excessive cloning, missing error variant, `Arc<Mutex>` where unnecessary, `Deref` abuse | **WARN** |
 | **Minor** | Missing doc comment on public item, naming inconsistency, unnecessary `#[inline]` | **NOTE** |
 
+## Mandatory Consumer Coverage Gate
+
+**Blocking gate, not optional.** Before approving any changed symbol, you MUST enumerate its consumers and verify none are broken. Mirrors the gold standard in `code-review-subagent.md:201-227`.
+
+- **Impact (mandatory)**: Run `codegraph_impact` on changed files. If `.codegraph/` is absent, do NOT skip — use `grep -r`/`glob` to find every file that imports or references the changed symbol.
+- **Consumer enumeration (mandatory)**: For every changed public symbol (function, struct, enum, trait, pub method), enumerate its consumers via `codegraph_callers`. If `.codegraph/` is absent, use these Rust-specific grep patterns:
+  - Use statements: `grep -rn 'use\s\+crate::<path>::<Symbol>' --include="*.rs"`
+  - Symbol usage: `grep -rn '\b<SymbolName>\b' --include="*.rs"`
+  - Trait implementations: `grep -rn 'impl\s\+<TraitName>\s\+for' --include="*.rs"`
+  - Macro invocations: `grep -rn '<macro_name>!' --include="*.rs"`
+- **Gate rule**: If any changed symbol has uninspected downstream consumers, report it under Critical/Major issues. **Return `Status: partial` if consumer coverage is incomplete; only return `success` when all consumers of all changed symbols are inspected.**
+
 ## CodeGraph Integration
 
 When `.codegraph/` exists in the project:
@@ -107,7 +118,7 @@ When `.codegraph/` exists in the project:
 - Use `codegraph_callers`/`callees` to verify changed trait implementations don't break consumers
 - Use `codegraph_search` to find duplicate trait implementations
 
-If `.codegraph/` does not exist, fall back to grep/glob/read normally.
+If `.codegraph/` does not exist, use the grep patterns in the Mandatory Consumer Coverage Gate above — the gate still applies, only the tooling changes.
 
 ## Output Format
 
@@ -115,6 +126,7 @@ If `.codegraph/` does not exist, fall back to grep/glob/read normally.
 ## Rust Code Review Summary
 - Files reviewed: X
 - Issues found: Y (Critical: A, Major: B, Minor: C)
+- Consumer coverage: complete | partial (N of M changed symbols' consumers inspected)
 
 ## Critical Issues (BLOCK)
 - [file:line] Description + Fix recommendation

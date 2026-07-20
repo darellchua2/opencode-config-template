@@ -1,7 +1,6 @@
 ---
 description: Specialized subagent for pull request workflows with framework-specific quality checks. Handles PR creation, quality gates (lint/build/test), semantic versioning, and JIRA integration for Next.js, Python, and generic projects.
 mode: subagent
-model: zai-coding-plan/glm-5-turbo
 permission:
   read: allow
   edit: allow

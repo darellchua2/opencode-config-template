@@ -11,7 +11,7 @@ metadata:
 
 ## What I do
 
-I run an autonomous code-optimization loop. Each iteration: read the audit trail → hypothesize one atomic code change → apply → commit → run the benchmark evaluator → keep the commit if `{"pass":true,"score":N}` shows improvement (and the guard stays green), else `git reset --hard HEAD~1`. I am Tier 1 (mechanical evaluator) — every keep/revert decision comes from a program, never from LLM self-judgment. I overlap with `tdd-workflow-skill`, but I am autonomous-loop-flavored (iterate to a target overnight) where TDD is single-cycle (write-one-test-then-implement).
+I run an autonomous code-optimization loop. Each iteration: read the audit trail → hypothesize one atomic code change → apply → commit → run the benchmark evaluator → run the Guard command → **run the Consumer Coverage check** → keep the commit if `{"pass":true,"score":N}` shows improvement AND the guard stays green AND no downstream consumer is broken, else `git reset --hard HEAD~1`. I am Tier 1 (mechanical evaluator) — every keep/revert decision comes from a program, never from LLM self-judgment. I overlap with `tdd-workflow-skill`, but I am autonomous-loop-flavored (iterate to a target overnight) where TDD is single-cycle (write-one-test-then-implement).
 
 ## Triggers
 
@@ -41,10 +41,14 @@ Do **not** trigger for ML training (→ `autoresearch-ml-skill`) or literature r
    - `pass: false`  **RED** (any targeted test fails)
    - `score`  **pass-count** (number of tests passing)
    - This makes `tdd-workflow-skill` and this skill mechanically equivalent when the metric is test-pass; the difference is I iterate to a target autonomously rather than running one RED→GREEN cycle.
-2. **Verify vs Guard.** Verify emits `{"pass":bool,"score":N}` (e.g. `pytest --cov` → coverage %). Guard is a separate command that must stay green (e.g. `npm test`). A failing guard forces revert **regardless of Verify** — you cannot trade test-green for bundle-size.
+2. **Verify vs Guard vs Consumer Coverage.** Verify emits `{"pass":bool,"score":N}` (e.g. `pytest --cov` → coverage %). Guard is a separate command that must stay green (e.g. `npm test`). **Consumer Coverage** is a third mandatory check that enumerates downstream callers of every changed symbol and forces revert on any broken reference. A failing Guard **or** a failing Consumer Coverage check forces revert **regardless of Verify** — you cannot trade test-green for a broken downstream consumer.
 3. **Tier 1** (mechanical evaluator). No agent-as-evaluator fallback.
 4. **Git-as-memory.** Commit before Verify so revert is one command. Never edit the working tree without committing first — an uncommitted change cannot be cleanly reverted.
 5. **Bounded-by-default.** `Iterations: 25` default. Lower for fast benchmarks (e.g. `Iterations: 10` for `npm run build` cycles).
+6. **Consumer Coverage sub-step** (mandatory, between Guard and Keep/Revert). Guard is necessary but **not sufficient** — Guard validates a fixed suite (e.g. `npm test`), but it cannot detect downstream breakage in code paths the suite does not exercise. The Consumer Coverage sub-step traces the actual call graph of the symbols this iteration touched:
+   - With `.codegraph/`: `codegraph_callers` on each changed symbol; revert if any caller is broken.
+   - Without `.codegraph/`: `grep -r`/`glob` for importers and references of each changed symbol; revert if any grep hit references the old (now-renamed/removed) symbol.
+   - Log `discard` with `consumer-broken` note in `*-results.tsv` when this gate forces a revert. Cross-references the agent's implementation in `autoresearch-code-subagent.md` §Consumer Coverage Gate.
 
 ## Templates
 

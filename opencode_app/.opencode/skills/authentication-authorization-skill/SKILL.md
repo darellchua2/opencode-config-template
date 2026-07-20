@@ -6,7 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: authentication
-  languages: [typescript, python]
+  languages: typescript, python
 ---
 
 ## What I do
@@ -532,3 +532,65 @@ cookies.set('session', token, {
 })
 const session = cookies.get('session') // always finds it
 ```
+
+### `cookie-only-proxy-with-server-rbac`
+
+In stateless mode, the proxy/middleware's ONLY job is "does a session cookie exist?" — a fast, local check that adds negligible latency. Pushing token refresh (a network call to the IdP) or RBAC (a database or policy lookup) into the middleware adds 50–500 ms to EVERY navigation, because the middleware runs on every matched route. Move token refresh to `customSession` (runs once per session, not per request) and move RBAC to per-route server layouts or resolver-level guards (runs only for the route actually being rendered). The middleware should never make a network call.
+
+```typescript
+// WRONG — middleware does refresh + RBAC on every navigation (50-500ms each)
+export async function middleware(request: NextRequest) {
+  const token = request.cookies.get('session')
+  if (!token) return NextResponse.redirect(new URL('/login', request.url))
+
+  // network call #1 — refresh token if expiring (adds latency to every nav)
+  const refreshed = await refreshIfExpiring(token.value)
+  // network call #2 — RBAC lookup (adds latency to every nav)
+  const role = await getUserRole(refreshed.userId)
+  if (!canAccess(request.nextUrl.pathname, role)) {
+    return NextResponse.redirect(new URL('/forbidden', request.url))
+  }
+  const response = NextResponse.next()
+  response.cookies.set('session', refreshed.token, { httpOnly: true, secure: true })
+  return response
+}
+
+// CORRECT — middleware only checks cookie existence; refresh + RBAC move server-side
+export async function middleware(request: NextRequest) {
+  const token = request.cookies.get('session')
+  if (!token) {
+    return NextResponse.redirect(new URL('/login', request.url))  // local check only
+  }
+  return NextResponse.next()  // no network call — fast on every navigation
+}
+
+// auth.config.ts — token refresh runs once per session, not per request
+export const { auth, signIn, signOut } = NextAuth({
+  session: { strategy: 'jwt' },
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) return { ...token, ...user }
+      // refresh only when the JWT is close to expiry — not on every request
+      if (Date.now() < (token.exp ?? 0) * 1000 - 5 * 60 * 1000) return token
+      return await refreshAccessToken(token)
+    },
+  },
+})
+
+// app/admin/layout.tsx — RBAC at the route layout level, not in middleware
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const session = await auth()
+  if (session?.user?.role !== 'admin') {
+    redirect('/forbidden')  // runs only when this layout renders, not on every nav
+  }
+  return <>{children}</>
+}
+```
+
+**Detection:**
+
+```bash
+rg 'export\s+(async\s+)?function\s+middleware' --type ts -A 30 | rg 'await|fetch|http'
+```
+
+**Rule:** In stateless mode, middleware checks ONLY for cookie existence. Move token refresh to `customSession`/JWT callbacks (once per session) and RBAC to per-route server layouts or resolver guards (only when that route renders). Never make a network call from the proxy/middleware — it runs on every navigation.

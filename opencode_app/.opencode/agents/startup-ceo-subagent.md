@@ -1,7 +1,6 @@
 ---
 description: Specialized subagent for startup-style PowerPoint presentations (pitch decks, investor slides, board updates)
 mode: subagent
-model: zai-coding-plan/glm-5-turbo
 steps: 12
 permission:
   edit: allow

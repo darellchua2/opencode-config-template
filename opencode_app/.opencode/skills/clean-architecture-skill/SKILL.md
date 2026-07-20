@@ -6,7 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: architecture
-  languages: [language-agnostic]
+  languages: language-agnostic
 ---
 
 ## What I do
@@ -156,6 +156,51 @@ class PayPalGateway implements PaymentGateway { }
 class MockGateway implements PaymentGateway { }  // For tests
 ```
 
+### Learning: `doc-claimed-purity-vs-reality`
+
+A layer rule documented as "the domain layer is pure and has no I/O" but violated by more than 10 call sites is a false contract. Either the rule is wrong for this codebase, or it is unenforced. Leaving the doc and the code in disagreement trains every new developer to ignore BOTH — the next rule they see, they assume is aspirational too. If violations exceed a threshold (10 is a reasonable heuristic), either enforce the boundary with a tool (ESLint `no-restricted-imports`, `eslint-plugin-import` boundaries, dependency-cruiser, or `madge` in CI) OR update the doc to describe what the code actually does. Do not let docs and code drift.
+
+```typescript
+// PROBLEM: doc says "domain is pure" but 14 domain files import the DB
+// src/domain/order/aggregate.ts
+import { PrismaClient } from '@prisma/client'   // violation #14
+// ... 13 more like it ...
+
+// OPTION A — enforce the rule in CI (preferred when the rule is correct)
+// .eslintrc.js
+module.exports = {
+  rules: {
+    'no-restricted-imports': ['error', {
+      patterns: [
+        { group: ['@prisma/client', 'pg', 'redis'], message: 'Domain layer must be pure — no I/O imports' }
+      ],
+      paths: [
+        { name: '@prisma/client', message: 'Move to infrastructure/' }
+      ]
+    }]
+  },
+  overrides: [{
+    files: ['src/domain/**'],
+    rules: { 'no-restricted-imports': 'error' }
+  }]
+}
+
+// OPTION B — update the doc to match reality
+// "The domain layer MAY import read-side query helpers from infrastructure
+//  via the QueryPort interface (see ADR-009). Direct PrismaClient imports
+//  are still prohibited; route through QueryPort implementations."
+```
+
+**Detection:**
+
+```bash
+# count violations of a documented layer rule
+rg "from '@prisma/client'|from 'pg'|import.*prisma" src/domain/ --type ts -l | wc -l
+npx madge --circular --extensions ts src/domain/
+```
+
+**Rule:** A layer rule with >10 violations is a false contract. Either enforce it with tooling (`no-restricted-imports`, madge, dependency-cruiser) or rewrite the doc to match reality. Never let architecture docs and code drift — the drift itself becomes the de facto standard.
+
 ### 5. Cross-Cutting Concerns
 
 Concerns that span multiple features: logging, auth, validation, error handling.
@@ -252,6 +297,32 @@ src/
     hooks/       # Truly shared hooks
     utils/       # Truly shared utilities
 ```
+
+### Learning: `cross-container-hook-borrowing`
+
+A feature container (`features/reports/_containers/ReportList/index.tsx`) must NEVER import from a sibling container via a relative path (`../../_containers/ReportDetail/useReportDetail`). Relative cross-container imports create invisible coupling: refactoring `ReportDetail` silently breaks `ReportList`, the dependency graph hides the edge, and moving one container forces the other to follow. If a hook is genuinely needed by two containers, extract it to the feature's `hooks/` directory (for intra-feature reuse) or to `domains/{feature}/hooks/` (for cross-feature reuse). Containers import ONLY from `@/`-aliased shared locations or from their own feature's `hooks/`.
+
+```typescript
+// BAD — sibling container imported via relative path; invisible coupling
+// features/reports/_containers/ReportList/index.tsx
+import { useReportDetail } from '../../_containers/ReportDetail/useReportDetail'
+// refactoring ReportDetail's folder structure silently breaks ReportList
+
+// GOOD — extract the shared hook to the feature's hooks directory
+// features/reports/hooks/useReportDetail.ts  ← extracted
+import { useReportDetail } from '@/features/reports/hooks/useReportDetail'
+// or for cross-feature reuse: src/domains/reports/hooks/useReportDetail.ts
+```
+
+**Detection:**
+
+```bash
+# find relative imports crossing container boundaries
+rg "from\s+['\"](\.\./)+.*_containers" --type ts --type tsx
+rg "from\s+['\"](\.\./)+.*(use|hook)" --type ts --type tsx -g '*_containers/*'
+```
+
+**Rule:** Containers import only from `@/`-aliased shared locations or their own feature's `hooks/`. If you need a sibling container's hook, extract it to `hooks/` or `domains/{feature}/hooks/` first. Never reach across container boundaries with relative imports.
 
 ### Backend Structure
 

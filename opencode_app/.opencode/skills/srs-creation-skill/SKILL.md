@@ -7,7 +7,7 @@ metadata:
   audience: business analysts, developers, agents
   workflow: requirements-engineering
   trigger: explicit-only
-  languages: [markdown]
+  languages: markdown
 ---
 
 ## What I do

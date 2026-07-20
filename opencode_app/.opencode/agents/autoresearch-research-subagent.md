@@ -1,7 +1,6 @@
 ---
 description: Autonomous literature-review subagent (Tier 2, web-only). Fetches papers, extracts structured summaries, builds a living research.md with categories-covered tracking. No Bash, no code execution. Path-restricted edit (research files only).
 mode: subagent
-model: zai-coding-plan/glm-5-turbo
 steps: 30
 permission:
   read: allow

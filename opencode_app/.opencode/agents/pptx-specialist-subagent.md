@@ -1,7 +1,6 @@
 ---
 description: Specialized agent for PowerPoint presentation tasks. Orchestrates reading, creating, editing, and analyzing .pptx files by loading the pptx-specialist skill for detailed workflow execution.
 mode: subagent
-model: zai-coding-plan/glm-5-turbo
 steps: 15
 permission:
   edit: allow

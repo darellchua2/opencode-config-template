@@ -6,7 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: code-quality
-  languages: [language-agnostic]
+  languages: language-agnostic
   protocol: autoresearch-opt-in
 ---
 
@@ -97,137 +97,6 @@ Excessive coupling between classes.
 | **Inappropriate Intimacy** | Classes know too much about each other | Move Method, Extract Class |
 | **Message Chains** | `a.getB().getC().getD()` | Hide Delegate |
 | **Middle Man** | Class only delegates | Inline Class |
-| **Inline HTTP Header Parsing** | Location headers parsed inline in 5+ handlers | Extract to shared helper |
-| **Duplicated Response Parsing** | Identical 25-line parsing in multiple nodes | Extract to mixin method |
-| **Duplicate Service Account Check** | Same method called twice in one method | Extract to local variable |
-| **Scattered Z-Index Magic Numbers** | Z-index hardcoded in 10+ files | Centralize as CSS custom properties |
-
----
-
-## Extended Code Smells with Refactoring Guidance
-
-### 8. Inline HTTP Header Parsing in Handlers (Couplers)
-
-**Symptom:** Parsing `Location` response headers inline across 5+ handler methods.
-
-```python
-# SMELL: repeated in every handler
-def create_report(self, data):
-    response = self.client.post("/reports", json=data)
-    location = response.headers.get("Location", "")
-    report_id = location.split("/")[-1] if location else None
-    return report_id
-
-def create_schedule(self, data):
-    response = self.client.post("/schedules", json=data)
-    location = response.headers.get("Location", "")
-    schedule_id = location.split("/")[-1] if location else None
-    return schedule_id
-```
-
-```python
-# REFACTORED: shared helper
-def extract_resource_id(headers: dict) -> str | None:
-    location = headers.get("Location", "")
-    return location.rstrip("/").split("/")[-1] if location else None
-
-def create_report(self, data):
-    response = self.client.post("/reports", json=data)
-    return extract_resource_id(response.headers)
-```
-
-### 9. Duplicated Response Parsing in LLM Nodes (Dispensables)
-
-**Symptom:** Identical 25-line response-parsing logic copied into multiple LangChain node functions.
-
-```python
-# SMELL: same 25 lines in parse_agent_output, parse_tool_result, etc.
-def parse_agent_output(result):
-    if not result:
-        return None
-    try:
-        data = json.loads(result)
-        if "error" in data:
-            raise ValueError(data["error"])
-        return data.get("output", {}).get("text")
-    except json.JSONDecodeError:
-        match = re.search(r'"text":\s*"([^"]*)"', result)
-        return match.group(1) if match else None
-```
-
-```python
-# REFACTORED: mixin method
-class OutputParserMixin:
-    def parse_response(self, result: str | dict) -> str | None:
-        if not result:
-            return None
-        data = result if isinstance(result, dict) else self._try_parse_json(result)
-        if isinstance(data, dict) and "error" in data:
-            raise ValueError(data["error"])
-        return data.get("output", {}).get("text") if isinstance(data, dict) else self._fallback_extract(result)
-
-    def _try_parse_json(self, raw: str) -> dict | str:
-        try:
-            return json.loads(raw)
-        except json.JSONDecodeError:
-            return raw
-
-    def _fallback_extract(self, raw: str) -> str | None:
-        match = re.search(r'"text":\s*"([^"]*)"', raw)
-        return match.group(1) if match else None
-```
-
-### 10. Duplicate Service Account Check (Dispensables)
-
-**Symptom:** Same expensive method called twice in a single function body.
-
-```python
-# SMELL: two calls, two network round-trips
-def process_payment(self, order):
-    if self.auth_service.get_service_account() is None:
-        raise NoServiceAccount()
-    account = self.auth_service.get_service_account()
-    self.charge(account, order.total)
-```
-
-```python
-# REFACTORED: single call, local variable
-def process_payment(self, order):
-    account = self.auth_service.get_service_account()
-    if account is None:
-        raise NoServiceAccount()
-    self.charge(account, order.total)
-```
-
-### 11. Scattered Z-Index Magic Numbers (Bloaters)
-
-**Symptom:** Z-index values hardcoded in 10+ CSS/TSX files, making layering impossible to reason about.
-
-```css
-/* SMELL: scattered across 10+ files */
-.modal-overlay { z-index: 9999; }
-.dropdown-menu  { z-index: 1000; }
-.toast          { z-index: 8000; }
-.sidebar        { z-index: 500; }
-```
-
-```css
-/* REFACTORED: single source of truth */
-:root {
-  --z-sidebar:    100;
-  --z-dropdown:   200;
-  --z-sticky:     300;
-  --z-modal-backdrop: 400;
-  --z-modal:      500;
-  --z-popover:    600;
-  --z-toast:      700;
-}
-
-.modal-overlay { z-index: var(--z-modal-backdrop); }
-.dropdown-menu  { z-index: var(--z-dropdown); }
-.toast          { z-index: var(--z-toast); }
-.sidebar        { z-index: var(--z-sidebar); }
-```
 
 ---
 
@@ -405,6 +274,68 @@ class Age:
 def create_user(email: Email, age: Age, address: Address):
     # Type system prevents invalid data
 ```
+
+#### `feature-bounds-value-object`
+
+When a dataclass carries 3+ features that each share the same sub-field pattern (e.g. `mean`/`std`/`low`/`high` for each feature, or `min`/`max`/`default`), the flat field list is primitive obsession disguised as structure. A template with 3 features explodes to 12-15 scalar fields, every new feature adds 4 more, and validation/serialization must touch each one individually. Extract a single frozen value object (`FeatureBounds`) holding the sub-field tuple; the parent dataclass then holds 3 `FeatureBounds` fields instead of 12 scalars. The class shrinks from ~23 fields to ~11, and adding a new feature is one field, not four.
+
+```python
+from dataclasses import dataclass, replace
+from typing import Optional
+
+# SMELL — 23 fields, every new feature adds 4 more
+@dataclass
+class TemplateFlat:
+    name: str
+    # feature A
+    feat_a_mean: float = 0.0
+    feat_a_std: float = 0.0
+    feat_a_low: float = 0.0
+    feat_a_high: float = 0.0
+    # feature B
+    feat_b_mean: float = 0.0
+    feat_b_std: float = 0.0
+    feat_b_low: float = 0.0
+    feat_b_high: float = 0.0
+    # feature C
+    feat_c_mean: float = 0.0
+    feat_c_std: float = 0.0
+    feat_c_low: float = 0.0
+    feat_c_high: float = 0.0
+    # ... 11 more metadata fields ...
+
+# REFACTORED — FeatureBounds value object; parent holds 3 features, not 12 scalars
+@dataclass(frozen=True)
+class FeatureBounds:
+    mean: Optional[float] = None
+    std: Optional[float] = None
+    low: Optional[float] = None
+    high: Optional[float] = None
+
+    def with_computed(self, data: list[float]) -> 'FeatureBounds':
+        return FeatureBounds(mean=mean(data), std=stdev(data),
+                             low=min(data), high=max(data))
+
+@dataclass
+class Template:
+    name: str
+    feature_a: FeatureBounds = FeatureBounds()  # one field, not four
+    feature_b: FeatureBounds = FeatureBounds()
+    feature_c: FeatureBounds = FeatureBounds()
+    # metadata fields follow
+
+# Adding a new feature is one field, not four
+new_template = replace(old_template, feature_d=FeatureBounds(mean=1.0))
+```
+
+**Detection:**
+
+```bash
+# find dataclasses with 3+ groups of fields sharing a common suffix
+rg '@dataclass' --type py -A 40 | rg 'mean|std|low|high|min|max|default' | sort | uniq -c | sort -rn
+```
+
+**Rule:** When a dataclass has 3+ features each with the same sub-field pattern (`mean`/`std`/`low`/`high`, `min`/`max`/`default`), extract a frozen value object holding the sub-field tuple. The parent shrinks from ~23 fields to ~11, and adding a feature is 1 field, not 4.
 
 ### 5. Switch Statements
 

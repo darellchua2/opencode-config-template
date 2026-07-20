@@ -4,7 +4,7 @@ LABEL org.opencontainers.image.title="opencode-config-template" \
       org.opencontainers.image.description="OpenCode standalone web endpoint - configurable agent/skill runner" \
       org.opencontainers.image.source="https://github.com/darellchua2/opencode-config-template"
 
-ARG OPENCODE_VERSION=1.15.3
+ARG OPENCODE_VERSION=1.18.3
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -42,7 +42,23 @@ RUN pip install --no-cache-dir \
 
 RUN useradd -m -d /home/opencode -s /bin/bash opencode
 
-COPY . /app/
+# v2.0: build context is repo root. Copy app + the model-resolver assets (deploy/).
+ARG OPENCODE_PROVIDER=""
+COPY opencode_app/ /app/
+COPY deploy/ /app/deploy/
+
+# Bake resolved models into the image at build time (default z.ai unless
+# OPENCODE_PROVIDER build-arg swaps the provider preset).
+RUN node /app/deploy/resolve-models.mjs \
+        --agents-src /app/.opencode/agents \
+        --agents-dest /app/.opencode/agents \
+        --tiers /app/deploy/agent-tiers.json \
+        --default-map /app/deploy/models.default.json \
+        --presets /app/deploy/provider-presets.json \
+        $([ -n "$OPENCODE_PROVIDER" ] && echo "--provider $OPENCODE_PROVIDER") \
+        --config-dest /app/opencode.json \
+        --state /tmp/.resolved-models.json \
+    && rm -f /tmp/.resolved-models.json
 
 RUN chmod +x /app/docker-entrypoint.sh \
     && mkdir -p /home/opencode/.local/share/opencode \

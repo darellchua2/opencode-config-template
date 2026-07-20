@@ -6,7 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: accessibility
-  languages: [typescript, javascript, html, css]
+  languages: typescript, javascript, html, css
 ---
 
 ## What I do

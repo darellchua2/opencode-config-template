@@ -6,7 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: observability
-  languages: [typescript, python]
+  languages: typescript, python
 ---
 
 ## What I do

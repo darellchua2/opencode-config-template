@@ -6,7 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: performance
-  languages: [typescript, python, javascript]
+  languages: typescript, python, javascript
   protocol: autoresearch-opt-in
 ---
 
@@ -407,6 +407,119 @@ useEffect(() => {
   }
 }, [])
 ```
+
+### Hardcoded Magic Timeouts in Activities
+
+**Learning**: `hardcoded-magic-timeout-activities`
+
+HTTP client timeouts hardcoded as magic numbers (`timeout=30`) cannot be tuned without a redeploy, and they are inconsistent with per-node or per-request config that operators need to set during incidents. When a slow downstream needs 120s for a specific report type, the only fix is a code change + redeploy. Make the base timeout configurable via settings, and honor a node-level `timeout_seconds` override so operators can tune a single slow integration without touching global defaults.
+
+```python
+# WRONG — magic number, not tunable, ignores per-node config
+class ActivityClient:
+    async def call_node(self, node: Node):
+        async with httpx.AsyncClient(timeout=30) as client:  # hardcoded
+            return await client.post(node.url, json=node.payload)
+
+# CORRECT — base from settings, node-level override wins
+from app.config import settings
+
+class ActivityClient:
+    async def call_node(self, node: Node):
+        # node may override; fall back to global default
+        timeout = getattr(node, "timeout_seconds", None) or settings.HTTP_TIMEOUT_SECONDS
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            return await client.post(node.url, json=node.payload, timeout=timeout)
+```
+
+**Detection:**
+
+```bash
+rg 'timeout\s*=\s*\d+' --type py --type ts | rg -v 'test|spec'
+```
+
+**Rule:** Never hardcode HTTP client timeouts. Make the base configurable via settings and honor a per-node/per-request `timeout_seconds` override so operators can tune slow integrations without a redeploy.
+
+### Zero-Copy Buffer to Uint8Array
+
+**Learning**: `zero-copy-buffer-to-uint8array`
+
+In memory-constrained runtimes (AWS Lambda, Cloudflare Workers), `new Uint8Array(buffer)` COPIES the entire buffer into a new ArrayBuffer. For a 500 MB upload this doubles resident memory to 1 GB and trips the Lambda memory limit. The zero-copy form `new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength)` creates a VIEW over the same memory — no allocation, no copy. This correctly handles BOTH pool-allocated Buffers (< 8 KB, shared pool) and standalone Buffers (>= 8 KB), because it passes the original `byteOffset` and `byteLength` rather than assuming offset 0.
+
+```typescript
+// WRONG — copies 500 MB, doubles memory, trips Lambda limit
+function uploadBad(buffer: Buffer) {
+  const bytes = new Uint8Array(buffer) // allocates new ArrayBuffer, copies
+  return s3.send(new PutObjectCommand({ Body: bytes }))
+}
+
+// CORRECT — zero-copy view, handles pool-allocated AND standalone Buffers
+function uploadGood(buffer: Buffer) {
+  const bytes = new Uint8Array(
+    buffer.buffer,        // the underlying ArrayBuffer (shared pool for <8KB)
+    buffer.byteOffset,    // critical: not always 0 in the pool
+    buffer.byteLength,    // only the bytes this Buffer actually owns
+  )
+  return s3.send(new PutObjectCommand({ Body: bytes }))
+}
+```
+
+**Detection:**
+
+```bash
+rg 'new Uint8Array\(' --type ts --type tsx | rg -v 'byteOffset|buffer\.buffer'
+```
+
+**Rule:** Convert Node.js `Buffer` to `Uint8Array` with the three-argument form `new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength)` — a zero-copy view. The one-argument form copies the entire buffer, doubling memory and tripping Lambda limits on large files.
+
+### Three.js Line Not Disposed in Overlay Cleanup
+
+**Learning**: `three-line-not-disposed-in-overlay-cleanup`
+
+Overlay cleanup `useEffect` returns must dispose geometry AND material for ALL object types they create (Mesh, Sprite, Line, LineSegments). A common bug is disposing only `Mesh` types and skipping `Line`/`LineSegments`. During drag operations that recreate overlays at 60 fps, every undisposed Line geometry accumulates on the GPU. The leak is invisible in short sessions but accelerates GPU memory growth significantly in long-running editors — a classic "works in dev, OOM in production" pattern.
+
+```typescript
+// WRONG — only disposes Mesh, leaks Line geometries at 60fps during drag
+useEffect(() => {
+  const mesh = new THREE.Mesh(geometry, material)
+  const line = new THREE.Line(lineGeometry, lineMaterial)
+  scene.add(mesh, line)
+  return () => {
+    scene.remove(mesh, line)
+    if ('dispose' in mesh) {
+      geometry.dispose()
+      material.dispose()
+    }
+    // line.geometry and lineMaterial NEVER disposed → GPU memory leak
+  }
+}, [deps])
+
+// CORRECT — dispose geometry and material for ALL added objects
+useEffect(() => {
+  const mesh = new THREE.Mesh(geometry, material)
+  const line = new THREE.Line(lineGeometry, lineMaterial)
+  const segments = new THREE.LineSegments(segGeometry, segMaterial)
+  const sprite = new THREE.Sprite(spriteMaterial)
+  scene.add(mesh, line, segments, sprite)
+  return () => {
+    scene.remove(mesh, line, segments, sprite)
+    // dispose every geometry and every material, regardless of object type
+    geometry.dispose(); material.dispose()
+    lineGeometry.dispose(); lineMaterial.dispose()
+    segGeometry.dispose(); segMaterial.dispose()
+    spriteMaterial.dispose() // Sprite has no geometry, only material
+  }
+}, [deps])
+```
+
+**Detection:**
+
+```bash
+rg 'new THREE\.(Line|LineSegments|Mesh|Sprite)' --type ts --type tsx -A 15 | rg 'return' | rg -v 'dispose'
+rg 'useEffect' --type ts --type tsx -A 30 | rg 'remove\(' | rg -v 'dispose'
+```
+
+**Rule:** Overlay cleanup must dispose geometry AND material for every object type added (Mesh, Sprite, Line, LineSegments). Skipping Line disposal during 60fps drag operations accelerates GPU memory leaks. Walk every object in the cleanup, dispose its `.geometry` (if present) and its `.material`.
 
 ---
 

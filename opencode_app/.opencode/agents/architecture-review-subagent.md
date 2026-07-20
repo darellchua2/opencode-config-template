@@ -1,7 +1,6 @@
 ---
 description: Specialized subagent for architecture review using clean architecture principles, design patterns, and complexity management. Evaluates system design and suggests improvements.
 mode: subagent
-model: zai-coding-plan/glm-5.1
 steps: 40
 permission:
   read: allow
@@ -87,6 +86,14 @@ After completing the review, use the `continuous-learning` skill to persist find
 - Anti-patterns with detailed explanations → `LEARNINGS/anti-patterns/`
 
 The continuous-learning skill auto-provisions `LEARNINGS/` if it doesn't exist in the project.
+
+## Pattern Reference (cross-skill)
+
+Actively scan for these architecture-relevant patterns during review:
+
+- **Global singleton mutation** — `global _service` pattern hides coupling, no lifecycle management; prefer FastAPI `Depends()` with `app.state` (see `python-backend-skill` → Prefer DI Over Global Singletons)
+- **Claim-check pattern for secrets** — in workflow orchestrators, plaintext credentials must never touch durable history; use opaque UUID claim IDs with TTL cache + single-read `pop()` (see `security-audit-skill` A02 → claim-check-ephemeral-secret-cache)
+- **Atomic conditional UPDATE** — race-free state transitions via `UPDATE ... WHERE expected_state RETURNING cols` as optimistic lock; avoids read-then-write TOCTOU races (see `design-patterns-skill` → Concurrency Patterns)
 
 ## Mandatory Consumer Traversal Gate
 

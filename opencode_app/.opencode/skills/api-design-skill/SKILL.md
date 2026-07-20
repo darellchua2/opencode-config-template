@@ -6,7 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: api-design
-  languages: [typescript, python, openapi, graphql]
+  languages: typescript, python, openapi, graphql
   protocol: autoresearch-opt-in
 ---
 
@@ -383,6 +383,99 @@ async function getReport(id: string) {
 ```
 
 **Rule**: When adding fields to a multi-source response, update all code paths that produce that response and validate output against a shared schema.
+
+---
+
+## Step 5.55: Output Schema Contract Verification
+
+### `schema-output-contract-gap`
+
+An `output_schema` dict declared alongside a handler is a contract. If a key in `output_schema['properties']` is missing from the `execute()` return dict — or present but `None` on some code path and required by consumers — the schema lies. The lie is invisible to tests that mock the happy path and surfaces only as a downstream `KeyError` or a silently dropped UI field. Verify both directions: every schema property is returned, and every required property is non-null on every return path.
+
+```python
+# PROBLEM: output_schema promises fields that execute() doesn't always return
+output_schema = {
+    "type": "object",
+    "properties": {
+        "report_id": {"type": "string"},
+        "status": {"type": "string"},
+        "summary": {"type": "string"},   # declared...
+        "created_at": {"type": "string"},
+    },
+    "required": ["report_id", "status", "summary", "created_at"],
+}
+
+async def execute(report_id: str) -> dict:
+    report = await db.get(report_id)
+    if report is None:
+        return {"report_id": report_id, "status": "not_found"}  # missing summary + created_at!
+    return {
+        "report_id": report.id,
+        "status": report.status,
+        # summary forgotten — schema lied
+        "created_at": report.created_at.isoformat(),
+    }
+```
+
+```python
+# FIX: verify the contract in tests against every return path
+def assert_schema_contract(schema: dict, payload: dict) -> None:
+    schema_props = set(schema["properties"].keys())
+    return_keys = set(payload.keys())
+    missing = schema_props - return_keys
+    assert not missing, f"Schema declares keys missing from return: {missing}"
+    required = set(schema.get("required", []))
+    null_required = {k for k in required if payload.get(k) is None}
+    assert not null_required, f"Required keys are null: {null_required}"
+
+async def test_execute_all_paths():
+    ok = await execute("rep_123")
+    assert_schema_contract(output_schema, ok)
+
+    missing = await execute("rep_404")
+    assert_schema_contract(output_schema, missing)  # fails fast — fix the schema or the path
+```
+
+**Rule**: Every key in `output_schema['properties']` MUST appear in every return dict from `execute()`, and every key in `output_schema['required']` MUST be non-null on every return path. Add a contract test that computes `schema_props = set(schema['properties'].keys()); return_keys = set(return_dict.keys()); missing = schema_props - return_keys`.
+
+---
+
+## Step 5.57: Placeholder Swap for File-Reference Validation
+
+### `placeholder-swap-validation`
+
+When request bodies contain file-reference fields (`s3://...`, presigned URLs, CDS URIs), JSON-Schema validation either (a) fails on the URI format and rejects valid requests, or (b) forces the schema to accept arbitrary strings, defeating validation entirely. The fix is to swap file-reference fields for a stable placeholder string BEFORE JSON-Schema validation, then restore the originals in a `finally` block. This validates the request shape without coupling the schema to every transport scheme the system ever supports.
+
+```python
+import re
+
+# Pattern matches s3://, https://presigned..., cds://... style references
+_FILE_REF_RE = re.compile(r"^(s3|cds|https?)://", re.IGNORECASE)
+_PLACEHOLDER = "__FILE_REFERENCE_PLACEHOLDER__"
+_FILE_FIELDS = frozenset({"file_uri", "manifest_url", "report_url", "attachment"})
+
+async def validate_request(payload: dict) -> dict:
+    restored = False
+    originals: dict[str, object] = {}
+    try:
+        # swap file-reference fields for placeholders
+        for field in _FILE_FIELDS:
+            value = payload.get(field)
+            if isinstance(value, str) and _FILE_REF_RE.match(value):
+                originals[field] = value
+                payload[field] = _PLACEHOLDER
+
+        # now the JSON Schema validates shape without needing every transport scheme
+        validate_instance(payload, REQUEST_SCHEMA)
+
+        return payload
+    finally:
+        # always restore originals, even if validation raised
+        for field, value in originals.items():
+            payload[field] = value
+```
+
+**Rule**: Detect file-reference fields (`s3://`, presigned URLs, CDS URIs) and swap them for a placeholder before JSON-Schema validation, restoring originals in a `finally` block. This validates shape without coupling the schema to every transport scheme.
 
 ---
 

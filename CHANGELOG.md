@@ -1,3 +1,56 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+## [2.3.0](https://github.com/darellchua2/opencode-config-template/compare/v2.2.1...v2.3.0) (2026-07-20)
+
+## [2.2.1](https://github.com/darellchua2/opencode-config-template/compare/v2.2.0...v2.2.1) (2026-07-20)
+
+## [2.2.0](https://github.com/darellchua2/opencode-config-template/compare/v2.1.0...v2.2.0) (2026-07-19)
+
+## [2.1.0](https://github.com/darellchua2/opencode-config-template/compare/v2.0.0...v2.1.0) (2026-07-19)
+
+# [2.0.0](https://github.com/darellchua2/opencode-config-template/compare/v1.77.1...v2.0.0) (2026-07-19)
+
+
+* feat(models)!: tier-based provider-agnostic model resolution (v2.0) [BT-74] ([f8b4de9](https://github.com/darellchua2/opencode-config-template/commit/f8b4de9940f3a32c065977c6f40faf4cc4ed0e1a))
+
+
+### Bug Fixes
+
+* **bt-74:** post-review fixes — --json writes, config.json unstale ([b20a2d1](https://github.com/darellchua2/opencode-config-template/commit/b20a2d13995fb5cc5541a3fc74348cfd7bec1dd4))
+* **ci:** repoint release workflow lint at canonical opencode.json ([#250](https://github.com/darellchua2/opencode-config-template/issues/250)) ([b1f66bd](https://github.com/darellchua2/opencode-config-template/commit/b1f66bddd090d51d7f43e5d483346eb916e24d03)), closes [#231](https://github.com/darellchua2/opencode-config-template/issues/231) [#248](https://github.com/darellchua2/opencode-config-template/issues/248) [#249](https://github.com/darellchua2/opencode-config-template/issues/249) [#231](https://github.com/darellchua2/opencode-config-template/issues/231)
+* **tests:** correct agent-tiers.json structure lookup in assertions [BT-74] ([1dbe59d](https://github.com/darellchua2/opencode-config-template/commit/1dbe59d3389bdddbc0efe3213cee00e485960668))
+* **tests:** update autoresearch model assertions for v2.0 tier-based resolution [BT-74] ([ebf3be3](https://github.com/darellchua2/opencode-config-template/commit/ebf3be35dbbd201829991fcaee801c6526cb8070))
+* **tui:** exit after interactive flows + show resolution progress [BT-74] ([4d938d2](https://github.com/darellchua2/opencode-config-template/commit/4d938d2d75ea4495b7bf5fd1432a73f8c45304b2))
+* update SKILL ([952dc2d](https://github.com/darellchua2/opencode-config-template/commit/952dc2dac72b61ac83c5b3946ea612a4ffb535a8))
+
+
+### Features
+
+* **models:** per-category provider/model mixing (--mix) [BT-74] ([97eaea3](https://github.com/darellchua2/opencode-config-template/commit/97eaea3ca2a7e78039fcac76509ccb69310c01e1))
+
+
+### BREAKING CHANGES
+
+* agent .md files no longer carry a hardcoded model; redeploy via
+./deploy/setup.sh (or setup.ps1) to resolve models from tiers. Existing v1.x
+installs auto-migrate on first run. See MIGRATION.md.
+
+## [1.77.1](https://github.com/darellchua2/opencode-config-template/compare/v1.77.0...v1.77.1) (2026-07-19)
+
+
+### Bug Fixes
+
+* **deploy:** harden setup.sh/ps1 against paths, errors, silent failures ([f4f9aa4](https://github.com/darellchua2/opencode-config-template/commit/f4f9aa452f154510015708972f5978de22f71845))
+
+# [1.77.0](https://github.com/darellchua2/opencode-config-template/compare/v1.76.0...v1.77.0) (2026-07-19)
+
+
+### Features
+
+* **skills:** add threejs-nextjs-skill + repair frontmatter spec violations ([#245](https://github.com/darellchua2/opencode-config-template/issues/245)) ([#246](https://github.com/darellchua2/opencode-config-template/issues/246)) ([1e1fef7](https://github.com/darellchua2/opencode-config-template/commit/1e1fef7d5afef0595a0367115d9db70606383ed6))
+
 # [1.76.0](https://github.com/darellchua2/opencode-config-template/compare/v1.75.2...v1.76.0) (2026-07-18)
 
 

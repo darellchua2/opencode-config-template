@@ -8,7 +8,7 @@ metadata:
   workflow: learning, optimization
   trigger: explicit-only
   protocol: autoresearch-opt-in
-version: 2
+  version: "2"
 ---
 
 ## What I do
