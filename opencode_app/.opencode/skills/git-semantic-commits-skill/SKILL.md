@@ -8,7 +8,9 @@ description: >-
   type (feat, fix, docs, refactor, etc.), adds scopes, identifies breaking
   changes, and provides semantic versioning guidance. Use for structuring
   commit messages properly — NOT for making commits shorter or more compact
-  (use git-compact-commits-skill for that).
+  (use git-compact-commits-skill for that). Also covers commit granularity
+  guidance — when to split work into separate atomic commits by layer
+  (migration, model, schema, logic, tests, docs).
 license: Apache-2.0
 compatibility: opencode
 metadata:
@@ -580,6 +582,59 @@ refactor(api): extract user service into separate module
 Move user-related API calls from auth service to dedicated user service.
 Improve code organization and testability.
 ```
+
+## Commit Granularity
+
+### Principle
+
+**One logical change per commit.** Each commit should be compilable and pass tests on its own. If a commit touches multiple layers or concerns, split it.
+
+### Before / After
+
+| Instead of | Do this |
+|---|---|
+| One commit for migration + ORM + schema + tests | One commit per layer (4 commits) |
+| `feat: add X, update Y, fix Z` | Three separate commits (`feat: add X`, `refactor: update Y`, `fix: Z`) |
+| `chore: cleanup + docs + plan update` | Three separate commits (`chore: cleanup`, `docs: ...`, `docs: update plan`) |
+| Style changes mixed with logic changes | `style:` commit separate from `feat:`/`fix:` commit |
+| Tests bundled with implementation | Tests in the same commit as the code they test, OR a separate `test:` commit if tests are large |
+
+### Layer-Specific Guidelines
+
+| Layer | Commit type | Why isolate |
+|-------|-------------|-------------|
+| **Database migration** | `feat(db):` or `chore(db):` | DDL changes are irreversible; isolated rollback |
+| **ORM/model changes** | `feat(model):` | Schema definition; downstream code depends on it |
+| **Pydantic/schema (API contract)** | `feat(schema):` | API contract changes; consumers need to adapt |
+| **Business logic** | `feat:` / `fix:` / `refactor:` | One commit per concern |
+| **Tests** | Same commit as code, or `test:` | Tests validate the code they accompany |
+| **Docs / plan updates** | `docs:` | Separate from code changes; doesn't affect runtime |
+| **Style / formatting** | `style:` | Always its own commit; noise if mixed with logic |
+
+### Decision Tree: Split or Combine?
+
+```
+Is the change a single logical concern?
+├── Yes → One commit
+└── No → Split
+    ├── Are the concerns in different layers (db, model, logic, test)?
+    │   └── Yes → One commit per layer
+    └── Are the concerns in the same layer?
+        ├── Tightly coupled (can't compile/test separately)?
+        │   └── Yes → Combine into one commit
+        └── Independent?
+            └── Yes → Separate commits
+```
+
+### Body Line Length
+
+- Default: wrap body lines at **72 characters**.
+- Projects may override via commitlint `body-max-line-length` rule (commonly 72 or 120).
+- When generating commit bodies, respect the project's configured limit if one exists (check `.commitlintrc*` or `commitlint.config.*`).
+
+### Project Override
+
+These are **defaults**. Project-level `AGENTS.md` files may override with team-specific conventions (e.g., different layer naming, different line length, squash-merge policies). Always check the project's `AGENTS.md` first.
 
 ## Common Issues
 
