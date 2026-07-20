@@ -5,6 +5,8 @@ A dual-mode OpenCode configurator repository:
 1. **User-Space Deploy** — Run `./deploy/setup.sh` to copy config, agents, and skills to `~/.config/opencode/` for global use
 2. **Docker Standalone** — Run `docker compose up -d` to launch OpenCode as a web endpoint
 
+> **v2.0.0 upgrade?** See [`MIGRATION.md`](./MIGRATION.md) for breaking changes (stale agent cleanup, zip backup format, new `--rollback` / `--no-zip-backup` flags) and rollback instructions.
+
 ## Repository Structure
 
 ```
@@ -115,6 +117,20 @@ powershell -ExecutionPolicy Bypass -File .\deploy\setup.ps1 -ModelsOnly
 # Show help with all options
 powershell -ExecutionPolicy Bypass -File .\deploy\setup.ps1 -Help
 ```
+
+### Common Options
+
+| Option (bash) | Option (PowerShell) | Description |
+|----------------|----------------------|-------------|
+| `--quick` | `-Quick` | Copy config + skills only (skip dependency checks) |
+| `--skills-only` | `-SkillsOnly` | Deploy skills only (requires opencode-ai installed) |
+| `--update` | `-Update` | Update OpenCode CLI to latest version |
+| `--dry-run` | `-DryRun` | Preview all actions without making changes |
+| `--yes` | `-Yes` | Auto-accept all prompts (non-interactive) |
+| `--rollback [TARGET]` | `-Rollback [-RollbackTarget\|-RollbackArg <T>]` | Restore `~/.config/opencode/` from a previous backup. `TARGET`: `list`, `latest`, `TIMESTAMP` (e.g. `20260719_070926`), or `VERSION` (e.g. `1.76.0`). Always creates a pre-rollback safety backup first. |
+| `--no-zip-backup` | `-NoZipBackup` | Skip zip archive creation (zip is created by default alongside the flat-file backup for portability) |
+| `--keep-backups <N>` | `-KeepBackups <N>` | Keep only N most recent backups (default: 5; 0 = delete all; negative = keep all) |
+| `--help` | `-Help` | Show detailed help with all options and examples |
 
 ### Docker Standalone
 

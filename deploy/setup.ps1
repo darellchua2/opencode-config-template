@@ -13,6 +13,10 @@
     .\setup.ps1 -Update              # Update OpenCode CLI to latest
     .\setup.ps1 -DryRun              # Preview all actions without changes
     .\setup.ps1 -Yes                 # Auto-accept all prompts
+    .\setup.ps1 -Rollback -RollbackTarget list   # List available backups
+    .\setup.ps1 -Rollback -RollbackTarget latest # Restore most recent backup
+    .\setup.ps1 -Rollback -RollbackArg 20260719_070926  # Restore by TIMESTAMP
+    .\setup.ps1 -NoZipBackup         # Deploy without creating zip archive
     .\setup.ps1 -Help                # Show detailed help
 
 .NOTES
@@ -36,6 +40,17 @@ param(
     [switch]$CheckUpdate,
 
     [int]$KeepBackups = 5,
+
+    # v2.0.0: Rollback mode (mirrors --rollback in setup.sh)
+    [switch]$Rollback,
+    [ValidateSet("list", "latest", "")]
+    [string]$RollbackTarget = "",
+    # RollbackTarget only accepts 'list' or 'latest' via parameter validation.
+    # For TIMESTAMP or VERSION targets, pass -RollbackArg "<value>" instead.
+    [string]$RollbackArg = "",
+
+    # v2.0.0: Skip zip archive creation (zip is on by default)
+    [switch]$NoZipBackup,
 
     # v2.0 model resolution
     [string]$Provider = "",
@@ -275,13 +290,447 @@ function Remove-OldBackups {
     foreach ($dir in $toDelete) {
         if ($DryRun) {
             Write-Host "[DRY-RUN] Would remove old backup: $($dir.FullName)" -ForegroundColor Cyan
+            $siblingZip = "$($dir.FullName).zip"
+            if (Test-Path $siblingZip) {
+                Write-Host "[DRY-RUN] Would remove old backup zip: $siblingZip" -ForegroundColor Cyan
+            }
         } else {
             Remove-Item $dir.FullName -Recurse -Force
             Write-LogInfo "Removed old backup: $($dir.FullName)"
+            # Also remove sibling .zip archive if it exists
+            $siblingZip = "$($dir.FullName).zip"
+            if (Test-Path $siblingZip) {
+                Remove-Item $siblingZip -Force
+                Write-LogInfo "Removed old backup zip: $siblingZip"
+            }
         }
     }
 
     Write-LogSuccess "Cleaned up $($toDelete.Count) old backup(s)"
+}
+
+################################################################################
+# ZIP BACKUP AND ROLLBACK FUNCTIONS (v2.0.0)
+################################################################################
+
+function New-ZipBackup {
+    # Respects $NoZipBackup toggle and $DryRun
+    if ($NoZipBackup) {
+        Write-LogDebug "Zip backup disabled (-NoZipBackup)"
+        return $true
+    }
+
+    if (-not (Test-Path $BackupDir)) {
+        Write-LogDebug "Skipping zip: BackupDir does not exist ($BackupDir)"
+        return $true
+    }
+
+    $items = @(Get-ChildItem $BackupDir -ErrorAction SilentlyContinue)
+    if ($items.Count -eq 0) {
+        Write-LogDebug "Skipping zip: BackupDir is empty ($BackupDir)"
+        return $true
+    }
+
+    $zipPath = "$BackupDir.zip"
+
+    if ($DryRun) {
+        Write-Host "[DRY-RUN] Would execute: Compress-Archive -Path $BackupDir\* -DestinationPath $zipPath -Force" -ForegroundColor Cyan
+        return $true
+    }
+
+    Write-LogInfo "Creating zip archive: $zipPath"
+    try {
+        Compress-Archive -Path "$BackupDir\*" -DestinationPath $zipPath -Force -ErrorAction Stop
+        Write-LogSuccess "Zip archive created: $zipPath"
+        return $true
+    } catch {
+        Write-LogWarn "Compress-Archive failed: $($_.Exception.Message)"
+        return $false
+    }
+}
+
+function Get-Backups {
+    # Returns an array of backup directory objects (newest first), any prefix.
+    $result = @()
+    $result += @(Get-ChildItem $HOME -Directory -Filter ".opencode-backup-*" -ErrorAction SilentlyContinue)
+    $result += @(Get-ChildItem $HOME -Directory -Filter ".opencode-update-backup-*" -ErrorAction SilentlyContinue)
+    $result += @(Get-ChildItem $HOME -Directory -Filter ".opencode-pre-rollback-backup-*" -ErrorAction SilentlyContinue)
+    return ($result | Sort-Object Name -Descending)
+}
+
+function Show-Backups {
+    $all = Get-Backups
+    if ($all.Count -eq 0) {
+        Write-Host "No backups found in $HOME"
+        Write-Host ""
+        Write-Host "Backups are created automatically by:"
+        Write-Host "  - .\setup.ps1 (full deploy)"
+        Write-Host "  - .\setup.ps1 -Rollback (pre-rollback safety)"
+        return
+    }
+
+    $fmt = "{0,-17} {1,-22} {2,-10} {3,-5} {4}"
+    Write-Host ($fmt -f "TIMESTAMP", "TYPE", "SIZE", "ZIP", "PATH")
+    Write-Host ("-" * 100)
+
+    foreach ($dir in $all) {
+        $name = $dir.Name
+        $ts = ""
+        $btype = "backup"
+
+        if ($name -like ".opencode-backup-*") {
+            $ts = $name -replace "^\.opencode-backup-", ""
+            $btype = "backup"
+        } elseif ($name -like ".opencode-update-backup-*") {
+            $ts = $name -replace "^\.opencode-update-backup-", ""
+            $btype = "update"
+        } elseif ($name -like ".opencode-pre-rollback-backup-*") {
+            $ts = $name -replace "^\.opencode-pre-rollback-backup-", ""
+            $btype = "pre-rollback"
+        }
+
+        $size = "?"
+        try {
+            $sizeBytes = (Get-ChildItem $dir.FullName -Recurse -File -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum
+            if ($sizeBytes -ge 1MB) { $size = "{0:N0}M" -f ($sizeBytes / 1MB) }
+            elseif ($sizeBytes -ge 1KB) { $size = "{0:N0}K" -f ($sizeBytes / 1KB) }
+            else { $size = "$sizeBytes" }
+        } catch {}
+
+        $zipMarker = "-"
+        if (Test-Path "$($dir.FullName).zip") { $zipMarker = "zip" }
+
+        Write-Host ($fmt -f $ts, $btype, $size, $zipMarker, $dir.FullName)
+    }
+
+    # List orphan zips (no matching flat dir)
+    $orphanZips = @()
+    $orphanZips += @(Get-ChildItem $HOME -File -Filter ".opencode-backup-*.zip" -ErrorAction SilentlyContinue)
+    $orphanZips += @(Get-ChildItem $HOME -File -Filter ".opencode-update-backup-*.zip" -ErrorAction SilentlyContinue)
+    $orphanZips += @(Get-ChildItem $HOME -File -Filter ".opencode-pre-rollback-backup-*.zip" -ErrorAction SilentlyContinue)
+    $orphanZips = $orphanZips | Sort-Object Name -Descending
+    if ($orphanZips.Count -gt 0) {
+        Write-Host ""
+        Write-Host "Orphan archives (no matching flat dir):"
+        foreach ($z in $orphanZips) {
+            $zsize = "?"
+            try { $zsize = "{0:N0}K" -f ($z.Length / 1KB) } catch {}
+            Write-Host ("  {0,-40} {1,-10} {2}" -f $z.Name, $zsize, $z.FullName)
+        }
+    }
+}
+
+function Get-LatestBackup {
+    $all = Get-Backups
+    if ($all.Count -eq 0) { return $null }
+    return $all[0]
+}
+
+function Resolve-BackupTarget {
+    param([Parameter(Mandatory)][string]$Target)
+
+    # TIMESTAMP pattern: YYYYMMDD_HHMMSS
+    if ($Target -match "^\d{8}_\d{6}$") {
+        foreach ($prefix in @(".opencode-backup-", ".opencode-update-backup-", ".opencode-pre-rollback-backup-")) {
+            $candidate = Join-Path $HOME "${prefix}${Target}"
+            if (Test-Path $candidate) { return $candidate }
+        }
+        # Fall back to zip-only
+        foreach ($prefix in @(".opencode-backup-", ".opencode-update-backup-", ".opencode-pre-rollback-backup-")) {
+            $candidate = Join-Path $HOME "${prefix}${Target}.zip"
+            if (Test-Path $candidate) { return $candidate }
+        }
+        return $null
+    }
+
+    # VERSION pattern: vX.Y.Z or X.Y.Z
+    if ($Target -match "^v?\d+\.\d+\.\d+$") {
+        $cleanVer = $Target -replace "^v", ""
+        Write-LogInfo "Resolving version $cleanVer via VERSION file git history..."
+
+        $versionCommitDate = $null
+        if ((Test-CommandExists "git") -and (Test-Path (Join-Path $RepoDir ".git"))) {
+            try {
+                Push-Location $RepoDir
+                $versionCommitDate = git log -1 --format=%ci -- VERSION 2>$null | Select-Object -First 1
+                if (-not $versionCommitDate) {
+                    $versionCommitDate = git log -1 --format=%ai "v$cleanVer" 2>$null | Select-Object -First 1
+                }
+                # Try by VERSION file content at each commit
+                if (-not $versionCommitDate) {
+                    $commits = git log --format=%H -- VERSION 2>$null
+                    foreach ($commit in $commits) {
+                        $content = (git show "${commit}:VERSION" 2>$null) -replace "\s", ""
+                        if ($content -eq $cleanVer) {
+                            $versionCommitDate = git log -1 --format=%ci $commit 2>$null | Select-Object -First 1
+                            break
+                        }
+                    }
+                }
+                Pop-Location
+            } catch {
+                try { Pop-Location } catch {}
+            }
+        }
+
+        if (-not $versionCommitDate) {
+            Write-LogWarn "Could not resolve version $cleanVer to a git commit date"
+            return $null
+        }
+
+        # Convert git date string to comparable YYYYMMDDHHMMSS
+        $gitDate = [datetime]$versionCommitDate
+        $gitTsNumeric = $gitDate.ToString("yyyyMMddHHmmss")
+        Write-LogInfo "Version $cleanVer corresponds to commit timestamp $gitTsNumeric"
+
+        $bestDir = $null
+        $bestTs = ""
+        foreach ($dir in (Get-Backups)) {
+            $name = $dir.Name
+            $ts = ""
+            foreach ($prefix in @(".opencode-backup-", ".opencode-update-backup-", ".opencode-pre-rollback-backup-")) {
+                if ($name -like "${prefix}*") {
+                    $ts = $name -replace "^$([regex]::Escape($prefix))", ""
+                    break
+                }
+            }
+            if ($ts -notmatch "^\d{8}_\d{6}$") { continue }
+            $tsNumeric = ($ts -replace "_", "")
+            if ([int64]$tsNumeric -le [int64]$gitTsNumeric) {
+                if (-not $bestTs -or ([int64]$tsNumeric -gt [int64]$bestTs)) {
+                    $bestTs = $tsNumeric
+                    $bestDir = $dir.FullName
+                }
+            }
+        }
+
+        return $bestDir
+    }
+
+    return $null
+}
+
+function Restore-FromDir {
+    param([Parameter(Mandatory)][string]$SrcDir)
+
+    if (-not (Test-Path $SrcDir)) {
+        Write-LogError "Source dir does not exist: $SrcDir"
+        return $false
+    }
+
+    if (-not (Test-Path $ConfigDir)) {
+        New-Item -ItemType Directory -Path $ConfigDir -Force | Out-Null
+    }
+
+    # config.json
+    if (Test-Path (Join-Path $SrcDir "config.json")) {
+        Copy-Item (Join-Path $SrcDir "config.json") $ConfigFile -Force
+        Write-LogInfo "Restored: config.json"
+    }
+
+    # AGENTS.md
+    $agentsDest = Join-Path $ConfigDir "AGENTS.md"
+    if (Test-Path (Join-Path $SrcDir "AGENTS.md")) {
+        Copy-Item (Join-Path $SrcDir "AGENTS.md") $agentsDest -Force
+        Write-LogInfo "Restored: AGENTS.md"
+    }
+
+    # skills/ (prefer "skills" over "skills-backup")
+    if (Test-Path (Join-Path $SrcDir "skills")) {
+        if (Test-Path $SkillsDir) { Remove-Item $SkillsDir -Recurse -Force }
+        Copy-Item (Join-Path $SrcDir "skills") $SkillsDir -Recurse -Force
+        Write-LogInfo "Restored: skills/"
+    } elseif (Test-Path (Join-Path $SrcDir "skills-backup")) {
+        if (Test-Path $SkillsDir) { Remove-Item $SkillsDir -Recurse -Force }
+        Copy-Item (Join-Path $SrcDir "skills-backup") $SkillsDir -Recurse -Force
+        Write-LogInfo "Restored: skills/ (from skills-backup/)"
+    }
+
+    # agents/
+    if (Test-Path (Join-Path $SrcDir "agents")) {
+        if (Test-Path $AgentsDestDir) { Remove-Item $AgentsDestDir -Recurse -Force }
+        Copy-Item (Join-Path $SrcDir "agents") $AgentsDestDir -Recurse -Force
+        Write-LogInfo "Restored: agents/"
+    } elseif (Test-Path (Join-Path $SrcDir "agents-backup")) {
+        if (Test-Path $AgentsDestDir) { Remove-Item $AgentsDestDir -Recurse -Force }
+        Copy-Item (Join-Path $SrcDir "agents-backup") $AgentsDestDir -Recurse -Force
+        Write-LogInfo "Restored: agents/ (from agents-backup/)"
+    }
+
+    # Other top-level *.json / *.md files
+    Get-ChildItem $SrcDir -File -ErrorAction SilentlyContinue | Where-Object {
+        $_.Name -notin @("config.json", "AGENTS.md") -and ($_.Extension -in ".json", ".md")
+    } | ForEach-Object {
+        Copy-Item $_.FullName (Join-Path $ConfigDir $_.Name) -Force
+        Write-LogInfo "Restored: $($_.Name)"
+    }
+
+    return $true
+}
+
+function New-PreRollbackBackup {
+    $ts = Get-Date -Format "yyyyMMdd_HHmmss"
+    $preDir = Join-Path $HOME ".opencode-pre-rollback-backup-$ts"
+
+    Write-LogInfo "Creating pre-rollback safety backup..."
+
+    if (-not (Test-Path $preDir)) {
+        New-Item -ItemType Directory -Path $preDir -Force | Out-Null
+    }
+
+    if (Test-Path $ConfigFile) {
+        Copy-Item $ConfigFile (Join-Path $preDir "config.json") -Force
+    }
+    $agentsMd = Join-Path $ConfigDir "AGENTS.md"
+    if (Test-Path $agentsMd) {
+        Copy-Item $agentsMd (Join-Path $preDir "AGENTS.md") -Force
+    }
+    if (Test-Path $SkillsDir) {
+        Copy-Item $SkillsDir (Join-Path $preDir "skills") -Recurse -Force
+    }
+    if (Test-Path $AgentsDestDir) {
+        Copy-Item $AgentsDestDir (Join-Path $preDir "agents") -Recurse -Force
+    }
+
+    Write-LogSuccess "Pre-rollback backup created: $preDir"
+    return $preDir
+}
+
+function Invoke-Rollback {
+    # Determine the effective target string
+    $target = $RollbackTarget
+    if ([string]::IsNullOrWhiteSpace($target) -and -not [string]::IsNullOrWhiteSpace($RollbackArg)) {
+        $target = $RollbackArg
+    }
+
+    # Sub-mode: list
+    if ($target -eq "list") {
+        Write-Host ""
+        Write-Host "=====================================================================" -ForegroundColor White
+        Write-Host "                Available Backups" -ForegroundColor White
+        Write-Host "=====================================================================" -ForegroundColor White
+        Write-Host ""
+        Show-Backups
+        return
+    }
+
+    # Resolve target → backup path (dir or zip)
+    $backupPath = $null
+
+    if ([string]::IsNullOrWhiteSpace($target)) {
+        # Interactive picker
+        Write-Host ""
+        Write-Host "=====================================================================" -ForegroundColor White
+        Write-Host "                Select Backup to Restore" -ForegroundColor White
+        Write-Host "=====================================================================" -ForegroundColor White
+        Write-Host ""
+        Show-Backups
+        Write-Host ""
+
+        if (-not $Yes) {
+            $pick = Read-Host "Enter TIMESTAMP to restore (or 'q' to cancel)"
+            if ([string]::IsNullOrWhiteSpace($pick) -or $pick -eq "q") {
+                Write-LogInfo "Rollback cancelled"
+                return
+            }
+            $target = $pick
+        } else {
+            Write-LogError "Interactive rollback requires a TARGET (cannot prompt with -Yes)"
+            Write-LogInfo "Use: .\setup.ps1 -RollbackArg <TIMESTAMP>"
+            Write-LogInfo "Or:  .\setup.ps1 -RollbackTarget latest"
+            throw "Interactive rollback cannot proceed with -Yes and no target"
+        }
+    }
+
+    if ($target -eq "latest") {
+        $latest = Get-LatestBackup
+        if (-not $latest) {
+            Write-LogError "No backups available to restore from"
+            throw "No backups available"
+        }
+        $backupPath = $latest.FullName
+    } else {
+        $backupPath = Resolve-BackupTarget -Target $target
+        if (-not $backupPath) {
+            Write-LogError "No backup found for target: '$target'"
+            Write-LogInfo "Available backups:"
+            Show-Backups
+            throw "No backup found for target: '$target'"
+        }
+    }
+
+    Write-LogInfo "Resolved backup: $backupPath"
+
+    # DRY-RUN: print plan, change nothing
+    if ($DryRun) {
+        Write-Host ""
+        Write-Host "[DRY-RUN] Rollback plan:" -ForegroundColor Cyan
+        Write-Host "  Source: $backupPath"
+        Write-Host "  Target: $ConfigDir\"
+        Write-Host "  Steps:"
+        Write-Host "    1. Create pre-rollback backup of current state"
+        Write-Host "    2. Confirm (or skip with -Yes)"
+        if ($backupPath -like "*.zip") {
+            Write-Host "    3. Extract archive to temp location"
+            Write-Host "    4. Copy files to $ConfigDir\"
+        } else {
+            Write-Host "    3. Copy files to $ConfigDir\"
+        }
+        Write-Host ""
+        return
+    }
+
+    # Confirmation prompt (unless -Yes)
+    if (-not $Yes) {
+        Write-Host ""
+        Write-Host "WARNING: This will replace files in $ConfigDir\ with content from:" -ForegroundColor Yellow
+        Write-Host "    $backupPath"
+        Write-Host ""
+        if (-not (Read-YesNo "Continue with rollback?" $false)) {
+            Write-LogInfo "Rollback cancelled by user"
+            return
+        }
+    }
+
+    # STEP 1: Pre-rollback safety backup (ALWAYS — even with -Yes)
+    $preDir = New-PreRollbackBackup
+
+    # STEP 2: Resolve src dir (extract zip if needed)
+    $srcDir = $backupPath
+    $extractedTmp = $null
+    if ($backupPath -like "*.zip") {
+        Write-LogInfo "Extracting zip archive..."
+        $extractedTmp = Join-Path $env:TEMP "opencode-rollback-$(Get-Date -Format 'yyyyMMddHHmmss')"
+        New-Item -ItemType Directory -Path $extractedTmp -Force | Out-Null
+        try {
+            Expand-Archive -Path $backupPath -DestinationPath $extractedTmp -Force -ErrorAction Stop
+            $srcDir = $extractedTmp
+        } catch {
+            Write-LogError "Failed to extract backup archive: $($_.Exception.Message)"
+            Write-LogInfo "Your current state is unchanged"
+            Remove-Item $extractedTmp -Recurse -Force -ErrorAction SilentlyContinue
+            throw "Archive extraction failed"
+        }
+    } elseif (-not (Test-Path $backupPath)) {
+        Write-LogError "Backup path is neither a directory nor a zip: $backupPath"
+        throw "Invalid backup path"
+    }
+
+    # STEP 3: Restore
+    Write-LogInfo "Restoring files to $ConfigDir\..."
+    [void](Restore-FromDir -SrcDir $srcDir)
+
+    # Cleanup temp dir
+    if ($extractedTmp -and (Test-Path $extractedTmp)) {
+        Remove-Item $extractedTmp -Recurse -Force -ErrorAction SilentlyContinue
+    }
+
+    Write-Host ""
+    Write-LogSuccess "Rollback complete!"
+    Write-LogInfo "Restored from: $backupPath"
+    Write-LogInfo "Pre-rollback backup saved to: $preDir"
+    $preTs = (Split-Path $preDir -Leaf) -replace "^\.opencode-pre-rollback-backup-", ""
+    Write-LogInfo "If rollback was wrong, run: .\setup.ps1 -Rollback -RollbackArg `"$preTs`""
 }
 
 function Test-ApiKey {
@@ -348,14 +797,26 @@ USAGE:
 
   -Update                 Update opencode-ai CLI only           Keep CLI current
 
-=======================================================================
+  -Rollback [-RollbackTarget|-RollbackArg <T>]
+                                                Restore from a previous backup
+                          TARGET:
+                            (omitted)             Interactive picker
+                            -RollbackTarget latest     Most recent backup
+                            -RollbackTarget list       List backups and exit
+                            -RollbackArg <TIMESTAMP>   e.g. 20260719_070926
+                            -RollbackArg <VERSION>     e.g. 1.76.0 (closest <= tag)
+                          Safety: creates a pre-rollback backup first
+                          Combine with -Yes to skip confirmation prompt
+
+======================================================================
                             OPTIONS
-=======================================================================
+======================================================================
 
   SETUP OPTIONS:
     -Quick                Quick setup mode (config + skills only)
     -SkillsOnly           Skills-only deployment mode
     -Update               Update OpenCode CLI to latest version
+    -Rollback             Restore from previous backup (see above)
 
   UPDATE MANAGEMENT:
     -EnableAutoUpdate         Enable automatic opencode-ai updates
@@ -369,6 +830,24 @@ USAGE:
     -Yes                 Auto-accept all prompts (non-interactive)
     -KeepBackups <N>     Keep only N most recent backups (default: 5)
                            0 = delete all old backups, negative = keep all
+    -NoZipBackup         Skip zip archive creation (zip is created by default
+                           alongside the flat-file backup for portability)
+
+======================================================================
+                          BACKUP AND ROLLBACK EXAMPLES
+======================================================================
+
+    .\setup.ps1 -Rollback -RollbackTarget list            # List backups
+    .\setup.ps1 -Rollback -RollbackTarget latest          # Restore latest
+    .\setup.ps1 -Rollback -RollbackArg 20260719_070926    # Restore by TIMESTAMP
+    .\setup.ps1 -Rollback -RollbackArg 1.76.0             # Restore by VERSION
+    .\setup.ps1 -Rollback -RollbackTarget latest -Yes     # No confirmation
+    .\setup.ps1 -Rollback -RollbackTarget latest -DryRun  # Dry-run preview
+    .\setup.ps1 -NoZipBackup                              # Deploy without zip
+
+    Note: Every deploy creates BOTH a flat-file backup
+          (~/.opencode-backup-TIMESTAMP/) AND a zip archive
+          (~/.opencode-backup-TIMESTAMP.zip) for portability.
 
   MODEL RESOLUTION (v2.0):
     -Provider <name>     Non-interactive provider preset: zai|anthropic|openai|
@@ -2085,6 +2564,17 @@ function Main {
     Write-Host ""
     Initialize-Logging
 
+    # v2.0.0: Rollback mode (mutually exclusive with normal setup flow)
+    if ($Rollback) {
+        try {
+            Invoke-Rollback
+        } catch {
+            Write-LogError $_.Exception.Message
+            exit 1
+        }
+        return
+    }
+
     if (-not $Quick) {
         if (-not (Test-Dependencies)) {
             Write-LogError "Dependency check failed. Please install missing dependencies."
@@ -2179,6 +2669,9 @@ function Main {
     Set-Configuration
     Set-LearningsDir
     Set-ShellVariables
+
+    # v2.0.0: Zip backup (after all flat-file backups, before cleanup)
+    New-ZipBackup | Out-Null
 
     Remove-OldBackups
 
