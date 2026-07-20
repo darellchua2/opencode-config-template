@@ -6,7 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: project-setup
-  languages: [python]
+  languages: python
 ---
 
 ## What I do

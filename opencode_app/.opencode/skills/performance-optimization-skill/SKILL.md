@@ -6,7 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: performance
-  languages: [typescript, python, javascript]
+  languages: typescript, python, javascript
   protocol: autoresearch-opt-in
 ---
 

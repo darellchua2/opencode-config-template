@@ -44,9 +44,10 @@ Each iteration:
 3. Apply, `git add -A && git commit -m "experiment: <description>"`.
 4. Run the Verify evaluator; parse `{"pass":bool,"score":N}` from last stdout line.
 5. Run the Guard command (if configured); exit ≠ 0 forces revert.
-6. **Keep** if pass:true AND guard green; otherwise revert.
-7. Append the 8-column row to `*-results.tsv` and a section to `research_log.md`.
-8. Loop. **NEVER STOP** to ask whether to continue.
+6. **Consumer coverage check** (mandatory — see §Consumer Coverage Gate below): enumerate consumers of the changed symbol(s); if any consumer is broken (missing reference, syntax error, failed import), force revert — even if Verify and Guard both pass. This catches downstream breakage the benchmark does not exercise.
+7. **Keep** if pass:true AND guard green AND consumer coverage clean; otherwise revert.
+8. Append the 8-column row to `*-results.tsv` and a section to `research_log.md`.
+9. Loop. **NEVER STOP** to ask whether to continue.
 
 ## Git-as-Memory
 
@@ -81,17 +82,50 @@ This makes you mechanically equivalent to a TDD loop when the metric is
 test-pass; the difference is you iterate autonomously to a target rather
 than running one RED→GREEN cycle.
 
-## Verify vs Guard
+## Verify vs Guard vs Consumer Coverage
 
-| | Verify | Guard |
-|---|---|---|
-| Emits | `{"pass":bool,"score":N}` | exit 0/nonzero |
-| Decides | keep/revert | forces revert on failure |
-| Example | `pytest --cov` → coverage % | `npm test` must stay green |
-| Runs | every iteration, before guard | every iteration, after verify |
+| | Verify | Guard | Consumer Coverage |
+|---|---|---|---|
+| Emits | `{"pass":bool,"score":N}` | exit 0/nonzero | broken-ref count (0 = clean) |
+| Decides | keep/revert | forces revert on failure | forces revert on breakage |
+| Example | `pytest --cov` → coverage % | `npm test` must stay green | grep callers → check for missing refs |
+| Runs | every iteration, before guard | every iteration, after verify | every iteration, after guard, before keep |
+| Catches | metric regression | guard-suite regression | downstream breakage the benchmark misses |
 
-A failing Guard forces revert **regardless of Verify**. You cannot trade
-test-green for bundle-size.
+A failing Guard **or** a failing Consumer Coverage check forces revert
+**regardless of Verify**. You cannot trade test-green for a broken downstream
+consumer.
+
+## Consumer Coverage Gate
+
+**Blocking gate, not optional.** The benchmark evaluator (Verify) and the
+Guard command together validate the optimization target and the guard-suite —
+but neither can detect downstream breakage in code paths the benchmark does
+not exercise. A renamed function whose only caller is in an untested module
+will pass both checks and silently break the build.
+
+Before the keep/revert decision (step 6 of the iteration flow), you MUST:
+
+1. **Enumerate consumers** of every symbol changed in this iteration's commit:
+   - With `.codegraph/`: `codegraph_callers` on each changed symbol.
+   - Without `.codegraph/`: `grep -r`/`glob` for importers and references of
+     each changed symbol across the repo. Do NOT skip just because
+     CodeGraph is absent.
+2. **Check each consumer** for breakage:
+   - Syntax errors (run the project's lint or parse check on consumer files).
+   - Missing references (grep returns hits for the old symbol name that the
+     rename/removal did not update).
+   - Failed imports (the consumer file no longer resolves).
+3. **Decide**:
+   - Zero broken consumers → consumer coverage clean, proceed to keep/revert
+     based on Verify + Guard.
+   - Any broken consumer → **force revert** (`git reset --hard HEAD~1`),
+     log `discard` with `consumer-broken` note in `*-results.tsv`, move to
+     next iteration. Do NOT keep the commit even if Verify improved.
+
+This gate is distinct from the Guard command: Guard validates a fixed
+suite (e.g. `npm test`); Consumer Coverage traces the actual call graph of
+the symbols this iteration touched. Both are required.
 
 ## Safety Blocks (hard refusals)
 
@@ -116,6 +150,7 @@ Per `autoresearch-core-skill/references/crash-recovery.md`:
 - **Runtime error** → up to 3 fix attempts; then skip idea, log `crash`, revert.
 - **Timeout** → kill, revert, log `crash`.
 - **Guard failure** → revert regardless of metric improvement, log `discard` with guard-failure note.
+- **Consumer coverage failure** → revert regardless of Verify/Guard results, log `discard` with `consumer-broken` note.
 - **Hook-blocked commit** → do NOT bypass (`--no-verify` forbidden); log `hook-blocked`, revert, move on.
 
 ## Delegation
@@ -131,10 +166,10 @@ Per `autoresearch-core-skill/references/crash-recovery.md`:
 
 When `.codegraph/` exists in the project:
 - `codegraph_impact` before editing — understand the change radius.
-- `codegraph_callers`/`callees` — verify the change doesn't break downstream consumers.
+- `codegraph_callers`/`callees` — satisfy the Consumer Coverage Gate above.
 - `codegraph_search` — find similar patterns / duplication before refactoring.
 
-If `.codegraph/` does not exist, fall back to grep/glob/read.
+If `.codegraph/` does not exist, use `grep -r`/`glob` per the Consumer Coverage Gate above — the gate still applies, only the tooling changes.
 
 ## Return Contract
 

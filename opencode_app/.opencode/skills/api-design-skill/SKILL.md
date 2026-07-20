@@ -6,7 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: api-design
-  languages: [typescript, python, openapi, graphql]
+  languages: typescript, python, openapi, graphql
   protocol: autoresearch-opt-in
 ---
 

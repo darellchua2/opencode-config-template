@@ -30,6 +30,15 @@ The last stdout line must be exactly `{"pass":bool,"score":N}`.
 {{GUARD_COMMAND}}
 ```
 
+## Consumer Coverage (mandatory — not user-configured)
+Unlike Verify and Guard, this check has no user-configured command. The agent
+traces downstream callers of every symbol touched in each iteration's commit
+and forces revert on any broken reference (see `autoresearch-code-subagent.md`
+§Consumer Coverage Gate). To aid the agent, list any directories that should
+be excluded from the consumer search (generated code, vendored deps):
+
+- **Exclude:** {{EXCLUDE_GLOBS}}
+
 ## Iterations
 {{ITERATIONS}}
 
@@ -49,6 +58,7 @@ Verify:      npm run coverage | tail -1 | python3 -c "import json,sys,re; \
               line=sys.stdin.read(); m=re.search(r'All files[^|]*\|[^|]*\|[^|]*\|[^|]*\|[^|]*\|([0-9.]+)', line); \
               s=float(m.group(1)) if m else 0.0; print(json.dumps({'pass':s>=80.0,'score':s}))"
 Guard:       npm test
+ConsumerCoverage: automatic (agent traces importers in src/**, excludes node_modules)
 Iterations:  25
 ```
 
@@ -64,6 +74,7 @@ Direction:   lower_is_better
 Target:      200.0
 Verify:      npm run build && node -e "const fs=require('fs');const s=fs.statSync('.next/static/chunks/main.js');const kb=s.size/1024;console.log(JSON.stringify({pass:kb<=200,score:kb}))"
 Guard:       npm test
+ConsumerCoverage: automatic (agent traces importers in src/**, excludes .next)
 Iterations:  15
 ```
 
@@ -80,6 +91,7 @@ Direction:   lower_is_better
 Target:      50.0
 Verify:      python3 benchmarks/parse_bench.py
 Guard:       pytest tests/test_parser.py
+ConsumerCoverage: automatic (agent traces importers of parser.* symbols)
 Iterations:  20
 ```
 

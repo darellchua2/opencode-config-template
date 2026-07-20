@@ -6,7 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers, designers
   workflow: review
-  languages: [typescript, javascript, html, css, tsx, jsx]
+  languages: typescript, javascript, html, css, tsx, jsx
 ---
 
 ## What I do

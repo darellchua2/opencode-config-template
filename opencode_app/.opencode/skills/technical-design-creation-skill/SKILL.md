@@ -7,7 +7,7 @@ metadata:
   audience: engineers, architects, tech leads, agents
   workflow: engineering-design
   trigger: explicit-only
-  languages: [markdown]
+  languages: markdown
 ---
 
 ## What I do

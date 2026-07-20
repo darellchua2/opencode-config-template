@@ -102,6 +102,18 @@ Merge findings from screenshot delegation and source review. Deduplicate. Apply 
 | **Major** | Significant UX friction, design-system violation, heuristic 1/3/4/5/6/9 failure | **WARN** — should fix, can defer with TODO |
 | **Minor** | Polish issues, spacing inconsistencies, minor typography tweaks | **NOTE** — good to know |
 
+## Mandatory Consumer Coverage Gate
+
+**Blocking gate, not optional.** Before recommending any structural change (component refactor, design-token rename, layout restructure, CSS class rename), you MUST enumerate the consumers of the affected symbol and verify none are broken. Mirrors the gold standard in `code-review-subagent.md:201-227`.
+
+- **Impact (mandatory)**: Run `codegraph_impact` on files you propose to restructure. If `.codegraph/` is absent, do NOT skip — use `grep -r`/`glob` to find every file that references the changed component, class, or token.
+- **Consumer enumeration (mandatory)**: For every component, layout, theme token, or CSS class you propose to change, enumerate its consumers via `codegraph_callers`. If `.codegraph/` is absent, use these UI-specific grep/glob patterns:
+  - Component name references: `grep -rn '<ComponentName' --include="*.tsx" --include="*.jsx" --include="*.html"`
+  - CSS class usage: `grep -rn 'className="[^"]*\\<className>"' --include="*.tsx" --include="*.jsx" --include="*.html"`
+  - Design-token imports: `grep -rn 'from.*tokens\|from.*theme\|var(--<token>)' --include="*.ts" --include="*.tsx" --include="*.css"`
+  - Layout consumers: `grep -rn '<LayoutName\|import.*LayoutName' --include="*.tsx" --include="*.jsx"`
+- **Gate rule**: If any proposed change has uninspected downstream consumers, report it under Critical/Major issues. **Return `Status: partial` if consumer coverage is incomplete; only return `success` when all consumers of all proposed changes are inspected.** Visual-only findings (no structural change proposed) do not require this gate, but every recommendation that implies a code change does.
+
 ## CodeGraph Integration
 
 When `.codegraph/` exists in the target project:
@@ -109,7 +121,7 @@ When `.codegraph/` exists in the target project:
 - **Component lookup**: use `codegraph_search` to find peer components that should match a design pattern (e.g., all buttons, all CTAs) and check consistency
 - **Symbol dependencies**: use `codegraph_callers`/`callees` when proposing changes to a shared layout or theme component
 
-If `.codegraph/` does not exist, fall back to grep/glob — the review still proceeds.
+If `.codegraph/` does not exist, use the grep/glob patterns in the Mandatory Consumer Coverage Gate above — the gate still applies, only the tooling changes.
 
 ## Mandatory Post-Review Learning Gate
 
