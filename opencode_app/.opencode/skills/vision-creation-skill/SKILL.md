@@ -7,7 +7,7 @@ metadata:
   audience: business analysts, product managers, agents
   workflow: discovery, customer-facing
   trigger: explicit-only
-  languages: [markdown]
+  languages: markdown
 ---
 
 ## What I do

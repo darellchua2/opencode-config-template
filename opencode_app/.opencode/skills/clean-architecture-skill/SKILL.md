@@ -6,7 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: architecture
-  languages: [language-agnostic]
+  languages: language-agnostic
 ---
 
 ## What I do

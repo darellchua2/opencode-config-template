@@ -11,7 +11,7 @@ metadata:
   audience: developers, API engineers, agents
   workflow: contract-management, api-evolution
   trigger: explicit-only
-  languages: [openapi, typescript, python]
+  languages: openapi, typescript, python
 ---
 
 ## What I do

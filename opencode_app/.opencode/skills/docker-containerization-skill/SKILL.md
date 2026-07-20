@@ -6,7 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: containerization
-  languages: [dockerfile, yaml]
+  languages: dockerfile, yaml
 ---
 
 ## What I do

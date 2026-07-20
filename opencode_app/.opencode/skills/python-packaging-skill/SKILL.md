@@ -6,7 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: packaging
-  languages: [python]
+  languages: python
 ---
 
 ## What I do

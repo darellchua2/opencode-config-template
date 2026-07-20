@@ -6,8 +6,8 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: code-quality
-  languages: [typescript, javascript]
-  frameworks: [react, nextjs]
+  languages: typescript, javascript
+  frameworks: react, nextjs
   protocol: autoresearch-opt-in
 ---
 

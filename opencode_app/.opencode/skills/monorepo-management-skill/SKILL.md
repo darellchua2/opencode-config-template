@@ -6,7 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: monorepo
-  languages: [typescript, javascript]
+  languages: typescript, javascript
 ---
 
 ## What I do

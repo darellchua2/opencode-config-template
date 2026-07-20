@@ -7,7 +7,7 @@ metadata:
   audience: developers, agents
   workflow: document-rendering
   trigger: referenced-by-skill
-  languages: [html, markdown]
+  languages: html, markdown
 ---
 
 ## What I do

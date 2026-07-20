@@ -6,7 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: database
-  languages: [sql, typescript, python]
+  languages: sql, typescript, python
 ---
 
 ## What I do

@@ -6,7 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: security
-  languages: [language-agnostic]
+  languages: language-agnostic
   protocol: autoresearch-opt-in
 ---
 
