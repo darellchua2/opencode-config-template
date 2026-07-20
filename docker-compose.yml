@@ -2,6 +2,10 @@ services:
   opencode:
     build:
       context: ./opencode_app
+      args:
+        # OpenCode CLI version — override via .env (OPENCODE_VERSION=1.x.y)
+        # Defaults to Dockerfile ARG if unset
+        OPENCODE_VERSION: ${OPENCODE_VERSION:-1.18.3}
     container_name: opencode
     env_file: .env
     ports:
