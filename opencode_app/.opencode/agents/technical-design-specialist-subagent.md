@@ -1,7 +1,6 @@
 ---
 description: "Technical design specialist — authors engineering Technical Design Documents (TDD) that convert requirements (SRS/feature specs) into architecture, data models, API contracts, and Architecture Decision Records (ADRs). Triggers on: technical design, architecture document, system design, technical design doc, design spec, create technical design. Engineering 'how' stage of the document ladder. Uses CodeGraph for impact/dependency analysis."
 mode: subagent
-model: zai-coding-plan/glm-5.1
 steps: 50
 permission:
   read: allow

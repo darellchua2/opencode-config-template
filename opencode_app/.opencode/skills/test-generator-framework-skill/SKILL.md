@@ -138,7 +138,49 @@ poetry run pytest        # poetry
 - [ ] Tests execute (even if they fail)
 - [ ] No syntax errors
 
-## Best Practices
+## Mock Pitfalls
+
+### `mock-headers-magicmock-truthy`
+
+`MagicMock` auto-creates any attribute on first access, so `resp.headers` is a truthy MagicMock by default. This produces two silent false positives: (1) `if resp.headers:` evaluates truthy even when no headers were set, masking a missing-header bug in production code, and (2) `resp.headers.get('Location')` returns a truthy mock that then crashes with `TypeError` when passed to `int()`, `len()`, or string operations. In every test helper that builds a fake response, explicitly assign a REAL dict: `resp.headers = headers or {}`. This forces the test to confront the empty-headers case the same way production code will.
+
+```python
+from unittest.mock import MagicMock
+
+# WRONG — headers auto-created as truthy MagicMock, .get() returns truthy mock
+def make_response(status: int = 200):
+    resp = MagicMock()
+    resp.status_code = status
+    return resp  # resp.headers is truthy MagicMock, .get('Location') is truthy
+
+def test_redirect():
+    resp = make_response(302)
+    assert resp.headers.get('Location')  # PASSES — but production returns None!
+    int(resp.headers.get('retry-after')) # TypeError: int() argument must be a string, not MagicMock
+
+# CORRECT — headers is always a real dict; empty case behaves like production
+def make_response(status: int = 200, headers: dict | None = None):
+    resp = MagicMock()
+    resp.status_code = status
+    resp.headers = headers or {}  # real dict, .get() returns None on missing
+    return resp
+
+def test_redirect_no_location():
+    resp = make_response(302)  # no headers → empty dict
+    assert resp.headers.get('Location') is None  # PASSES — matches production
+
+def test_redirect_with_location():
+    resp = make_response(302, headers={'Location': '/new'})
+    assert resp.headers.get('Location') == '/new'
+```
+
+**Detection:**
+
+```bash
+rg 'MagicMock\(' --type py | rg -v 'headers\s*=|\.headers\s*='
+```
+
+**Rule:** Never let `MagicMock` auto-create `.headers`. In every fake-response builder, assign a real dict: `resp.headers = headers or {}`. This forces the empty-headers case to behave in tests exactly as it does in production.
 
 - **Organization**: Keep tests in `tests/` or `__tests__/` directory
 - **Fixtures**: Use framework-specific fixtures for common setup

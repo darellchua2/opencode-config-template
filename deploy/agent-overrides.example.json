@@ -1,0 +1,9 @@
+{
+  "$comment": "EXAMPLE per-agent model override. Copy to ~/.config/opencode/agent-overrides.json (global) or <project>/.opencode/agent-overrides.json (project-local). Keyed by agent filename stem (no .md). Per-agent overrides ALWAYS win over tier maps. Remove the $comment key when you copy.",
+  "code-review-subagent": {
+    "model": "anthropic/claude-opus-4-8"
+  },
+  "image-analyzer-subagent": {
+    "model": "anthropic/claude-sonnet-4-6"
+  }
+}

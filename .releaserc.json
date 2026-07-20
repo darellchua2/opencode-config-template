@@ -1,12 +1,114 @@
 {
   "branches": [
-    "main"
+    "main",
+    {
+      "name": "dev",
+      "prerelease": "dev"
+    },
+    {
+      "name": "pre-dev",
+      "prerelease": "pre-dev"
+    },
+    {
+      "name": "uat",
+      "prerelease": "uat"
+    }
   ],
   "tagFormat": "v${version}",
   "plugins": [
-    "@semantic-release/commit-analyzer",
-    "@semantic-release/release-notes-generator",
-    "@semantic-release/changelog",
+    [
+      "@semantic-release/commit-analyzer",
+      {
+        "preset": "conventionalcommits",
+        "releaseRules": [
+          {
+            "type": "feat",
+            "release": "minor"
+          },
+          {
+            "type": "fix",
+            "release": "patch"
+          },
+          {
+            "type": "perf",
+            "release": "patch"
+          },
+          {
+            "type": "refactor",
+            "release": "patch"
+          },
+          {
+            "type": "docs",
+            "release": false
+          },
+          {
+            "type": "style",
+            "release": false
+          },
+          {
+            "type": "chore",
+            "release": false
+          },
+          {
+            "type": "test",
+            "release": false
+          },
+          {
+            "breaking": true,
+            "release": "major"
+          }
+        ]
+      }
+    ],
+    [
+      "@semantic-release/release-notes-generator",
+      {
+        "preset": "conventionalcommits",
+        "presetConfig": {
+          "types": [
+            {
+              "type": "feat",
+              "section": "Features"
+            },
+            {
+              "type": "fix",
+              "section": "Bug Fixes"
+            },
+            {
+              "type": "perf",
+              "section": "Performance Improvements"
+            },
+            {
+              "type": "refactor",
+              "section": "Code Refactoring"
+            },
+            {
+              "type": "docs",
+              "section": "Documentation"
+            },
+            {
+              "type": "chore",
+              "hidden": true
+            },
+            {
+              "type": "style",
+              "hidden": true
+            },
+            {
+              "type": "test",
+              "hidden": true
+            }
+          ]
+        }
+      }
+    ],
+    [
+      "@semantic-release/changelog",
+      {
+        "changelogFile": "CHANGELOG.md",
+        "changelogTitle": "# Changelog\n\nAll notable changes to this project will be documented in this file."
+      }
+    ],
     [
       "@semantic-release/exec",
       {
@@ -17,22 +119,25 @@
       "@semantic-release/git",
       {
         "assets": [
-          "config.json",
-          "setup.sh",
+          "VERSION",
+          "CHANGELOG.md",
           "README.md",
           "AGENTS.md",
           "LICENSE",
-          "VERSION",
-          "CHANGELOG.md",
-          "skills/**/*"
+          "deploy/setup.sh",
+          "deploy/setup.ps1",
+          "opencode_app/opencode.json",
+          "opencode_app/.opencode/agents/**/*",
+          "opencode_app/.opencode/skills/**/*"
         ],
-        "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+        "message": "chore(release): ${nextRelease.version} [skip ci]"
       }
     ],
     [
       "@semantic-release/github",
       {
-        "assignees": []
+        "successComment": false,
+        "failComment": false
       }
     ]
   ]

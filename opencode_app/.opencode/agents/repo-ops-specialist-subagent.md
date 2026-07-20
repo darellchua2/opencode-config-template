@@ -1,7 +1,6 @@
 ---
 description: Specialized subagent for git repository operations — repository setup, release workflows, branch protection, GitHub Actions, labels, semantic versioning, PR workflows, and applying git/gh best practices across repositories. Triggers on "repo setup", "branch protection", "release workflow", "version bump", "repo audit", "repo onboarding", "gh labels", "git best practices".
 mode: subagent
-model: zai-coding-plan/glm-5.1
 permission:
   read: allow
   edit: allow

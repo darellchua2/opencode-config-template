@@ -343,3 +343,99 @@ process.on('SIGINT', () => gracefulShutdown('SIGINT'))
 compose:
   stop_grace_period: 10s
 ```
+
+---
+
+## Deployment Rollback Strategy
+
+### `no-rollback-on-deploy`
+
+A deployment that overwrites the running image and then runs a smoke test has no way back when the smoke test fails — production is already on the broken image. Capture the previous image URI BEFORE the update, then add an explicit rollback step that restores it on smoke-test failure. This is especially critical with dual deployment targets (e.g. EC2 service + Lambda function) where one target may update successfully and the other fail, leaving the system in a split-brain state where rollback is the only safe action.
+
+```bash
+# VULNERABLE — overwrite in place, no previous image captured, no rollback
+aws ecs update-service --cluster prod --service api \
+  --task-definition api:42         # previous task def api:41 is now orphaned
+./smoke_test.sh                    # FAILS — prod is now on api:42 with no way back
+
+# SECURE — capture previous, rollback on smoke test failure
+set -euo pipefail
+PREV_TASK_DEF=$(aws ecs describe-services --cluster prod --services api \
+  --query 'services[0].taskDefinition' --output text)
+aws ecs update-service --cluster prod --service api \
+  --task-definition api:42
+aws ecs wait services-stable --cluster prod --service api
+
+if ! ./smoke_test.sh; then
+  echo "Smoke test failed — rolling back to ${PREV_TASK_DEF}" >&2
+  aws ecs update-service --cluster prod --service api \
+    --task-definition "${PREV_TASK_DEF}"
+  aws ecs wait services-stable --cluster prod --service api
+  exit 1
+fi
+```
+
+```yaml
+# CI/CD step (GitHub Actions) — capture + rollback for dual EC2 + Lambda targets
+- name: Deploy
+  env:
+    PREV_ECS: ${{ steps.prev.outputs.task_def }}
+    PREV_LAMBDA: ${{ steps.prev.outputs.lambda_arn }}
+  run: |
+    ./deploy_ecs.sh "${{ steps.build.outputs.image }}"
+    ./deploy_lambda.sh "${{ steps.build.outputs.image }}"
+    if ! ./smoke_test.sh; then
+      ./rollback_ecs.sh "${PREV_ECS}"
+      ./rollback_lambda.sh "${PREV_LAMBDA}"
+      exit 1
+    fi
+```
+
+**Detection:**
+
+```bash
+rg 'update-service|deploy|aws lambda update-function-code' .github/workflows/ -A 5 | rg -v 'rollback|prev|previous'
+```
+
+**Rule:** Every deployment MUST (1) capture the previous image/task-def/ARN before updating, and (2) include an explicit rollback step that restores it on smoke-test failure. Dual-target deployments (EC2 + Lambda) must rollback BOTH targets atomically on any failure.
+
+---
+
+## Build ARG Centralization
+
+### `hardcoded-sed-version-swap`
+
+SDK or library versions hardcoded as `sed` substitutions across Dockerfiles, CI workflows, and shell scripts are a DRY violation that drifts within a single repo. Bump the version once and three files still ship the old value because nobody grepped for every occurrence. Use a single `ARG` (Dockerfile) or a single variable sourced by all build steps (CI workflow matrix) so there is exactly one place to bump the version.
+
+```dockerfile
+# WRONG — version appears in 3+ places via sed, drifts on bump
+RUN sed -i 's/VERSION=1.2.3/VERSION=1.3.0/g' config.toml
+# .github/workflows/release.yml
+#   run: sed -i 's/sdk-version=1.2.3/sdk-version=1.3.0/' package.json
+# scripts/install.sh
+#   sed -i 's/SERVICE_VERSION=1.2.3/SERVICE_VERSION=1.3.0/' .env
+
+# CORRECT — one ARG, referenced everywhere; bump in a single line
+ARG SERVICE_VERSION=1.3.0
+ENV SERVICE_VERSION=${SERVICE_VERSION}
+RUN echo "{\"version\": \"${SERVICE_VERSION}\"}" > /app/version.json
+```
+
+```yaml
+# .github/workflows/release.yml — single variable, consumed by all steps
+env:
+  SERVICE_VERSION: 1.3.0
+jobs:
+  build:
+    steps:
+      - run: docker build --build-arg SERVICE_VERSION=${{ env.SERVICE_VERSION }} .
+      - run: ./scripts/install.sh "${{ env.SERVICE_VERSION }}"
+```
+
+**Detection:**
+
+```bash
+rg "sed.*version|sed.*VERSION" Dockerfile* .github/ scripts/ -n
+```
+
+**Rule:** Pin SDK/library versions in exactly one place — a Dockerfile `ARG`, a CI workflow-level `env`, or a single `.env` — and have every build step consume that single source. Never `sed` the same version string into multiple files.

@@ -174,6 +174,43 @@ class User:
     pass
 ```
 
+### Learning: `method-name-reuse-different-semantics`
+
+A method name reused across classes with DIFFERENT semantics violates the principle of least surprise — `process()` on `OrderService` mutates state, `process()` on `PaymentGateway` makes a network call, and `process()` on `ReportBuilder` returns a new immutable value. The reader assumes one meaning; the code does another. Before naming a method, grep for the proposed name across the codebase. If it exists elsewhere, either verify the semantic meaning is IDENTICAL, or include the specific condition/context in the name (`process_for_refund`, `build_draft`).
+
+```python
+# BAD — same name, three different contracts
+class OrderService:
+    def process(self, order):           # mutates order.status in DB
+        order.status = "processed"
+        db.commit()
+
+class PaymentGateway:
+    def process(self, amount):          # network call, returns bool
+        return self.client.charge(amount)
+
+class ReportBuilder:
+    def process(self, rows):            # pure, returns new Report
+        return Report(rows)
+
+# GOOD — names encode the distinguishing condition
+class OrderService:
+    def mark_processed(self, order): ...
+class PaymentGateway:
+    def charge_card(self, amount) -> bool: ...
+class ReportBuilder:
+    def build_from_rows(self, rows) -> Report: ...
+```
+
+**Detection:**
+
+```bash
+# find method names defined on more than one class
+rg 'def (\w+)\(self' --type py --type ts -o --no-filename | sort | uniq -c | sort -rn | head -30
+```
+
+**Rule:** Before naming a method, grep the codebase for the proposed name. If it exists elsewhere, confirm the semantic contract is identical, or qualify the name with the specific condition. Never let one name mean two different things.
+
 ---
 
 ## Object Calisthenics (9 Rules)
@@ -395,6 +432,78 @@ class Account {
 const result = account.withdraw(amount);
 ```
 
+### Learning: `two-phase-dataclass-initialization`
+
+A function returns an object with sentinel/placeholder values (`0.0`, `None`, `""`) that the caller must separately patch. If the second call is forgotten, the result is silently wrong — not an error, just incorrect data.
+
+**Rule:** Every function must return a **complete** object. If a field cannot be computed at construction time, make it `Optional[None]` so the type system surfaces the incompleteness.
+
+```python
+# BAD — caller must know to call compute_bounds() separately
+def create_template(name: str) -> Template:
+    return Template(name=name, mean=0.0, stddev=0.0, low=0.0, high=0.0)
+# ... later ...
+tpl = create_template("sensor")
+tpl.compute_bounds(data)  # FORGOTTEN → silent wrong results, 0.0 bounds
+
+# GOOD — split into separate complete-returning functions
+def create_empty_template(name: str) -> Template:
+    """Returns template with None bounds — caller MUST call populate()."""
+    return Template(name=name, mean=None, stddev=None, low=None, high=None)
+
+def populate_template(tpl: Template, data: list[float]) -> Template:
+    """Returns a NEW template with computed bounds."""
+    return Template(name=tpl.name, mean=mean(data), stddev=stdev(data), ...)
+```
+
+**Detection:** Look for functions returning objects with hardcoded `0.0`, `""`, `None`, `[]` defaults that have companion `compute_*` or `populate_*` methods.
+
+### Learning: `parallel-hierarchies-for-report-type-variants`
+
+When two container+hook+component trees are near-identical for different report types (e.g. `FinancialReportContainer` + `useFinancialReport` + `FinancialReportTable` vs `OperationalReportContainer` + `useOperationalReport` + `OperationalReportTable`), and the similarity is >70% (same fetch → transform → render lifecycle, same state machine, only the data shape differs), maintaining them as parallel trees is a duplication smell. Every bug fix must be applied twice and drifts silently on the second pass. Extract the shared container/hook structure and parameterize the report type via a strategy or a config object, so there is exactly one tree driven by a `ReportType` discriminator.
+
+```typescript
+// BAD — two parallel trees, >70% identical, every fix applied twice
+// features/financial-report/_containers/FinancialReport/index.tsx
+// features/financial-report/hooks/useFinancialReport.ts        // identical fetch/transform
+// features/operational-report/_containers/OperationalReport/index.tsx
+// features/operational-report/hooks/useOperationalReport.ts    // identical except URL
+
+// GOOD — one tree, report type drives the differences
+type ReportType = 'financial' | 'operational'
+
+const REPORT_CONFIG: Record<ReportType, {
+  endpoint: string
+  transform: (raw: unknown) => ReportRow[]
+  columns: Column[]
+}> = {
+  financial:   { endpoint: '/api/financial-reports',   transform: toFinancialRows,   columns: FINANCIAL_COLUMNS   },
+  operational: { endpoint: '/api/operational-reports', transform: toOperationalRows, columns: OPERATIONAL_COLUMNS },
+}
+
+function useReport(type: ReportType, id: string) {
+  const { endpoint, transform } = REPORT_CONFIG[type]
+  // single fetch/state/transform implementation
+  return useFetchReport(endpoint, id, transform)
+}
+
+function ReportContainer({ type, id }: { type: ReportType; id: string }) {
+  const { data, isLoading } = useReport(type, id)
+  const { columns } = REPORT_CONFIG[type]
+  return <ReportTable rows={data} columns={columns} loading={isLoading} />
+}
+```
+
+**Detection:**
+
+```bash
+# find pairs of containers/hooks with >70% similarity
+rg -l 'use[A-Z]\w+Report' --type ts --type tsx | xargs -I{} basename {} | sort
+# or run a structural diff: jsdiff / difftastic on sibling feature folders
+```
+
+**Rule:** When two container+hook+component trees for different report types share >70% of their structure, extract a single parameterized tree driven by a `ReportType` discriminator and a config object. Maintaining parallel trees guarantees drift on the second copy.
+
 ---
 
 ## Comments
@@ -428,6 +537,36 @@ if (user.subscriptionLevel >= 2 && !user.isBanned) { }
 if (user.canAccessPremiumFeatures()) { }
 ```
 
+### Learning: `self-documented-duplication`
+
+Comments like `# could be replaced by X, tracked as follow-up` or `# TODO: extract this into a shared helper` are permanent confessions — the follow-up ticket is never filed and the comment ships to production as a badge of known debt. A self-documenting comment that describes duplication without eliminating it is worse than no comment at all: it makes the duplication feel deliberate. Convert every "could be replaced by" or "should extract" comment into a JIRA or GitHub ticket immediately, and either delete the comment or replace it with a reference to the ticket (`# See PROJ-1234 for extraction plan`).
+
+```python
+# BAD — permanent confession, never lands
+# This could be replaced by shared_validation.validate_email,
+# tracked as follow-up (not done yet)
+def validate_email(email: str) -> bool:
+    return "@" in email
+
+# Three other files paste the same comment — duplication now feels intentional
+
+# GOOD — ticket created, comment references it, or just fix it now
+# See PROJ-1234: consolidate email validation
+def validate_email(email: str) -> bool:  # DELETE once PROJ-1234 lands
+    return "@" in email
+
+# BEST — just extract it and delete the comment entirely
+from shared_validation import validate_email  # one source of truth
+```
+
+**Detection:**
+
+```bash
+rg "could be replaced|should be extracted|tracked as follow-up|TODO.*extract|FIXME.*duplicate" --type py --type ts --type tsx
+```
+
+**Rule:** "Could be replaced by" and "should extract" comments are debt that never ships. Either file a ticket and reference it in the comment, or eliminate the duplication now. Never let a confession comment ship as if the duplication were intentional.
+
 ---
 
 ### Learning: `brittle-single-strategy-data-extraction`
@@ -459,6 +598,171 @@ def extract_report_id(response: requests.Response) -> str:
         f"(status={response.status_code}, body={response.text[:200]})"
     )
 ```
+
+### Learning: `inline-imports-in-functions`
+
+Imports inside function bodies (lazy imports) hide the module's true dependencies from static analysis tools (mypy, pylint, IDE go-to-definition) and mask circular-import problems that should be fixed by restructuring the module graph. When `from heavy_sdk import Client` lives inside `process()`, the import graph looks clean in `pydeps` output but is actually broken. Fix the architecture — split the module, extract an interface, or move the import to module level. Lazy imports are acceptable ONLY for optional/heavy imports behind feature flags (e.g. `import torch` only when GPU inference is requested) where the dependency is genuinely conditional.
+
+```python
+# BAD — hides a circular import; mypy can't see Client; IDE autocomplete broken
+def process_payment(order):
+    from services.audit import log_event   # circular: services.audit imports this module
+    from heavy_payment_sdk import Client   # heavy SDK loaded on every cold call
+    client = Client()
+    log_event("payment_started")
+    return client.charge(order.total)
+
+# GOOD — module-level imports expose the dependency graph to static analysis
+from services.audit import log_event
+from heavy_payment_sdk import Client
+
+def process_payment(order):
+    client = Client()
+    log_event("payment_started")
+    return client.charge(order.total)
+
+# ACCEPTABLE — genuinely conditional dependency behind a feature flag
+def run_inference(model_path: str):
+    if not settings.GPU_ENABLED:
+        raise RuntimeError("GPU inference disabled")
+    import torch  # heavy, optional, only loaded when actually needed
+    return torch.load(model_path)
+```
+
+**Detection:**
+
+```bash
+rg "^\s+(import|from)\s" --type py
+```
+
+**Rule:** Module-level imports are the default. Inline imports hide dependencies from static analysis and mask circular-import bugs — fix the architecture instead. Exception: genuinely conditional/heavy dependencies behind feature flags.
+
+---
+
+## Error Handling
+
+### Learning: `broad-except-masks-bugs`
+
+**Suggestion #1 + #8 merged** — same root cause observed across 3 projects (Python async, Python DSP, TypeScript sequential async).
+
+Narrow catches handle expected transport errors; broad `except Exception` masks programming bugs as service outages. Expected errors (`ConnectError`, `TimeoutException`, `HTTPStatusError`) are caught and degraded. Unexpected errors (`AttributeError`, `KeyError`, `TypeError`) must propagate as 500s so monitoring surfaces them — they are never "service unreachable."
+
+```python
+# BAD — programming bugs (KeyError, AttributeError) are silently treated as "service down"
+try:
+    result = await client.call()
+except Exception:
+    logger.warning("Service unreachable, degrading...")
+    return fallback  # Bug is now invisible — circuit breaker trips on a typo
+
+# GOOD — narrow catch for expected transport errors; bugs propagate
+try:
+    result = await client.call()
+except (ConnectError, TimeoutException, HTTPStatusError):
+    logger.warning("Service unreachable, degrading...")
+    return fallback
+# AttributeError, KeyError, TypeError propagate as 500 → surfaces in monitoring
+```
+
+**Detection:**
+
+```bash
+# Find broad excepts in auth/transport/processing paths
+rg 'except Exception\b|except:' --type py -l
+# DSP/ML/processing modules are especially dangerous — wrong results with no error
+rg 'except Exception' --type py -g '*dsp*' -g '*audio*' -g '*process*'
+```
+
+**Rule:** Define a domain exception hierarchy for expected failures. Never catch `Exception` or bare `except:` in code paths that process external data — you will mask genuine bugs as degraded results.
+
+### Learning: `silent-failure-sequential-async`
+
+A critical async operation that catches its own failure and logs only `console.error` (or `logger.error`) prevents the caller from detecting the failure. The caller continues with stale or missing data, entering an inconsistent state with no feedback.
+
+**Rule:** Sequential async operations must either:
+1. **Throw on failure** — let the caller decide whether to degrade, or
+2. **Return a discriminated union** — `Result[T, E]` type so the caller explicitly handles both paths.
+
+```python
+# BAD — caller cannot detect failure; enters inconsistent state
+async def sync_engine_to_cds():
+    try:
+        data = await engine.get_data()
+        await cds.upload(data)
+    except Exception:
+        logger.error("Sync failed")  # Caller gets None, thinks everything is fine
+
+# GOOD — throws; caller catches explicitly
+async def sync_engine_to_cds() -> None:
+    data = await engine.get_data()
+    await cds.upload(data)  # Raises on failure — caller handles
+```
+
+```typescript
+// BAD — fire-and-forget with internal catch; caller has no signal
+toast.promise(apiCall(), {
+  error: "Failed",  // User sees toast, but caller's await never throws
+})
+await apiCall() // Unhandled rejection if no catch — see react-nextjs-antipatterns
+
+// GOOD — single consumer; error propagates
+try {
+  const result = await apiCall()
+  toast.success("Done")
+} catch (e) {
+  toast.error("Failed")
+}
+```
+
+**Detection:**
+
+```bash
+# Functions that catch their own errors and only log
+rg 'except.*:\s*\n\s*(logger|console)\.(error|warning)' --type py --type ts -U
+```
+
+---
+
+## Frontend Patterns
+
+### Learning: `scattered-z-index-magic-numbers`
+
+**Symptom:** Z-index values hardcoded in 10+ CSS/TSX files, making layering impossible to reason about. Two developers adding modals both pick `9999`; the second one wins; the first one's modal is now buried.
+
+```css
+/* SMELL: scattered across 10+ files */
+.modal-overlay { z-index: 9999; }
+.dropdown-menu  { z-index: 1000; }
+.toast          { z-index: 8000; }
+.sidebar        { z-index: 500; }
+```
+
+```css
+/* REFACTORED: single source of truth */
+:root {
+  --z-sidebar:    100;
+  --z-dropdown:   200;
+  --z-sticky:     300;
+  --z-modal-backdrop: 400;
+  --z-modal:      500;
+  --z-popover:    600;
+  --z-toast:      700;
+}
+
+.modal-overlay { z-index: var(--z-modal-backdrop); }
+.dropdown-menu  { z-index: var(--z-dropdown); }
+.toast          { z-index: var(--z-toast); }
+.sidebar        { z-index: var(--z-sidebar); }
+```
+
+**Detection:**
+
+```bash
+# Find hardcoded z-index values across the codebase
+rg 'z-index:\s*\d+' --type css --type tsx -c | rg '[3-9]|[1-9][0-9]+'
+```
+
+**Rule:** Z-index values MUST be centralized as CSS custom properties (or a TypeScript constants file). Hardcoded numeric values drift across files and create layering races that are nearly impossible to debug after the fact.
 
 ---
 

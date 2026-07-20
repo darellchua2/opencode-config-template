@@ -2,7 +2,6 @@
 description: Specialized subagent for spreadsheet operations (.xlsx, .csv). Creates, reads, edits, and converts tabular data files.
 mode: subagent
 hidden: true
-model: zai-coding-plan/glm-5-turbo
 steps: 15
 permission:
   read: allow

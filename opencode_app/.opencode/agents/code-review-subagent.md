@@ -1,7 +1,6 @@
 ---
 description: Comprehensive code review subagent combining SOLID principles, clean code, code smells, design patterns, and object design for thorough quality analysis. Ideal for pre-commit reviews and quality gates.
 mode: subagent
-model: zai-coding-plan/glm-5.1
 steps: 30
 permission:
   read: allow
@@ -165,7 +164,8 @@ For each Critical / Major / Minor issue AND each Positive Observation, classify 
 **Anti-pattern detection is first-class.** Actively scan using:
 - `react-nextjs-antipatterns-skill` — React 19 / Next.js 16 runtime anti-patterns (hydration, RBAC, memory leaks)
 - `code-smells-skill` — long methods, large classes, feature envy, primitive obsession, duplication
-- `security-audit-skill` — OWASP issues, auth/validation flaws, secret exposure
+- `security-audit-skill` — OWASP issues, auth/validation flaws, secret exposure, claim-check pattern for secrets, encryption key length validation, null-account-id privilege escalation
+- `clean-code-skill` — broad `except Exception` masking bugs as outages, silent failure in sequential async (function catches own error), two-phase dataclass initialization (placeholder values requiring separate patch)
 
 ### Step 2 — Dedup check (before writing)
 

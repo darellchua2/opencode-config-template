@@ -1,7 +1,6 @@
 ---
 description: "Customer-facing discovery specialist — runs live discovery sessions with the client, generates wireframes on the fly, captures client feedback verbatim, and synthesizes the Vision Document. Triggers on: create vision, vision document, concept brief, discovery session, start discovery, solution vision."
 mode: subagent
-model: zai-coding-plan/glm-5-turbo
 steps: 60
 permission:
   read: allow

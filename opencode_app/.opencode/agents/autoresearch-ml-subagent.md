@@ -1,7 +1,6 @@
 ---
 description: Autonomous ML training research subagent — runs the karpathy-style modify-train.py → train → parse val_bpb → keep/revert loop on an NVIDIA GPU. Requires GPU preflight. Path-restricted edit permission (train.py + research files only).
 mode: subagent
-model: zai-coding-plan/glm-5.1
 steps: 50
 permission:
   read: allow

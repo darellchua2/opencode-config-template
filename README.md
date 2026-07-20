@@ -21,7 +21,7 @@ opencode-config-template/
 │   ├── .dockerignore
 │   ├── .opencode/
 │   │       ├── agents/              # 39 subagent .md files
-│   │       └── skills/              # 113 skill directories
+│   │       └── skills/              # 116 skill directories
 │   └── README.md                # Docker usage guide
 ├── docker-compose.yml           # Docker Compose service definition
 ├── .env.example                 # Environment variable template
@@ -65,7 +65,36 @@ Two setup scripts are provided for different platforms:
 
 # Update OpenCode CLI only
 ./deploy/setup.sh --update
+
+# v2.0 model resolution
+./deploy/setup.sh --provider anthropic      # swap provider (zai|anthropic|openai|openrouter|lmstudio)
+./deploy/setup.sh --mix                     # mix providers per category (e.g. vision on OpenAI, rest on Z.AI)
+./deploy/setup.sh --models-only             # re-resolve models only
+./deploy/setup.sh --migrate                 # run v1.x -> v2.0 migration
+./deploy/setup.sh --force                   # re-resolve, ignoring preserved hand-edits
 ```
+
+### Model Resolution (v2.0)
+
+Agent models are **tier-based and provider-agnostic**. Source agent files contain
+no hardcoded model — instead each agent is categorized into a tier
+(`reasoning` / `fast` / `docs` / `vision`) in `deploy/agent-tiers.json`, and the
+concrete model is resolved at deploy time. Swap providers without editing agent
+files:
+
+```bash
+./deploy/setup.sh --provider anthropic      # or: openai, openrouter, lmstudio, zai (default)
+```
+
+Override files (precedence highest-first; see `MIGRATION.md`):
+
+| File | Scope |
+|------|-------|
+| `<project>/.opencode/agent-overrides.json` | per-agent pin, project-local |
+| `~/.config/opencode/agent-overrides.json` | per-agent pin, global |
+| `<project>/.opencode/models.json` | tier map, project-local |
+| `~/.config/opencode/models.json` | tier map, global (written by `--provider`) |
+| `deploy/models.default.json` | Z.AI defaults |
 
 ### Windows (PowerShell)
 
@@ -78,6 +107,10 @@ powershell -ExecutionPolicy Bypass -File .\deploy\setup.ps1 -Quick
 
 # Non-interactive
 powershell -ExecutionPolicy Bypass -File .\deploy\setup.ps1 -Quick -Yes
+
+# v2.0 model resolution
+powershell -ExecutionPolicy Bypass -File .\deploy\setup.ps1 -Provider anthropic
+powershell -ExecutionPolicy Bypass -File .\deploy\setup.ps1 -ModelsOnly
 
 # Show help with all options
 powershell -ExecutionPolicy Bypass -File .\deploy\setup.ps1 -Help
@@ -277,7 +310,7 @@ TypeScript, JavaScript, Python, Go, Rust, Java, C#, PHP, Ruby, C, C++, Swift, Ko
 
 ## Skill Modularization
 
-This repository implements **skill modularization** with 113 skills organized across 18 categories. Skills are designed with clear separation of concerns and explicit dependencies.
+This repository implements **skill modularization** with 115 skills organized across 18 categories. Skills are designed with clear separation of concerns and explicit dependencies.
 
 ### Skill Categories
 
@@ -285,7 +318,7 @@ This repository implements **skill modularization** with 113 skills organized ac
 |-----------|---------|---------|
 | **Framework** (20) | test-generator-framework, linting-workflow, pr-creation-workflow, pr-merge-workflow, error-resolver-workflow, tdd-workflow, docx-creation, pptx-specialist, xlsx-specialist, pdf-specialist, frontend-design, uiux-review-skill, api-design-skill, openapi-contract-adherence-skill, performance-optimization-skill, srs-creation-skill, brd-creation-skill, technical-design-creation-skill, vision-creation-skill, interactive-document-rendering-skill | Generic workflows, testing patterns, document creation, UI design + review, API design, contract adherence, performance, and the document ladder (BRD/SRS/vision + technical design documents) |
 | **Language-Specific** (6) | python-pytest-creator, python-ruff-linter, javascript-eslint-linter, changelog-python-cliff, python-backend-skill, python-packaging-skill | Language-specific test, linting, project scaffolding, and packaging |
-| **Framework-Specific** (9) | nextjs-pr-workflow, nextjs-unit-test-creator, nextjs-standard-setup, nextjs-image-usage, nextjs-devtools-mcp, typescript-dry-principle, accessibility-a11y-skill, react-nextjs-antipatterns-skill, deprecated-code-cleanup-skill | Next.js 16, React 19, TypeScript, accessibility, and @deprecated code cleanup workflows |
+| **Framework-Specific** (11) | nextjs-pr-workflow, nextjs-unit-test-creator, nextjs-standard-setup, nextjs-image-usage, nextjs-devtools-mcp, amplify-nextjs-deployment, typescript-dry-principle, accessibility-a11y-skill, react-nextjs-antipatterns-skill, threejs-nextjs-skill, deprecated-code-cleanup-skill | Next.js 16, React 19, TypeScript, accessibility, Three.js integration, AWS Amplify deployment, and @deprecated code cleanup workflows |
 | **OpenCode Meta** (4) | opencode-agent-creation, opencode-skill-creation, opencode-skills-maintainer, documentation-consistency-skill | Agent and skill creation/maintenance, documentation consistency auditing |
 | **OpenTofu** (7) | opentofu-aws-explorer, opentofu-keycloak-explorer, opentofu-kubernetes-explorer, opentofu-neon-explorer, opentofu-provider-setup, opentofu-provisioning-workflow, opentofu-ecr-provision | Infrastructure as Code |
 | **Git/Workflow** (12) | ascii-diagram-creator, mermaid-diagram-creator, ticket-plan-workflow-skill, plan-execution-skill, git-issue-labeler, git-issue-updater, git-semantic-commits, semantic-release-convention, git-compact-commits, plan-updater, version-bump-standard, git-branch-workflow-setup-skill | Diagrams, git operations, release conventions, version bumping, compact commits, and branch workflow orchestration |
@@ -336,7 +369,7 @@ This repository implements **skill modularization** with 113 skills organized ac
 | **code-review-subagent** | Comprehensive code review | All 7 Code Quality skills + continuous-learning, complexity-management | `explore`, `general` |
 | **repo-ops-specialist-subagent** | Git repository operations | version-bump-standard, semantic-release-convention, pr-creation-workflow, pr-merge-workflow, git-issue-labeler | `explore`, `general` |
 | **error-resolver-subagent** | Error diagnosis and resolution | error-resolver-workflow | — |
-| **nextjs-specialist-subagent** | Next.js scaffolding + runtime MCP diagnosis + project audit | nextjs-standard-setup, nextjs-devtools-mcp, docstring-generator, nextjs-image-usage, react-nextjs-antipatterns | — |
+| **nextjs-specialist-subagent** | Next.js scaffolding + runtime MCP diagnosis + project audit | nextjs-standard-setup, nextjs-devtools-mcp, docstring-generator, nextjs-image-usage, react-nextjs-antipatterns, amplify-nextjs-deployment | — |
 | **opencode-tooling-subagent** | Skills, agents, and rules creation + doc sync | opencode-skill-creation, opencode-agent-creation, opencode-skills-maintainer, documentation-sync-workflow | — |
 | **docx-creation-subagent** | Word document creation | docx-creation | — |
 | **image-analyzer-subagent** | Image analysis and conversion | (built-in capabilities) | — |
@@ -360,6 +393,18 @@ This repository implements **skill modularization** with 113 skills organized ac
 | **uiux-reviewer-subagent** | UI/UX design review (13-axis rubric: 6 AslanMazhidov + 5 RNT56 + Nielsen's 10 + anti-default AI cluster detection) | uiux-review-skill, frontend-design-skill, accessibility-a11y-skill, wireframer-skill | `explore`, `general`, `image-analyzer-subagent` |
 
 > **Built-in Delegation**: Subagents with `explore` can delegate codebase scanning to the built-in `explore` subagent. Subagents with `general` can delegate parallelizable multi-step work to the built-in `general` subagent. Access is controlled via `task` permissions in each agent's frontmatter (`"*": deny` by default, explicit allowlist).
+
+##### Subagent Nesting Depth
+
+`opencode_app/opencode.json` sets `subagent_depth: 3` (opencode's default is `1`). This is required for nested delegation chains used by the autoresearch subagents and other deep workflows:
+
+| Depth | Chain | Example |
+|-------|-------|---------|
+| `1` (opencode default) | primary → subagent | Blocks nesting entirely — autoresearch loops fail with "Subagent depth limit reached" |
+| `2` | primary → subagent → 1 nested | Minimum for autoresearch to delegate research/exploration |
+| `3` (set here) | primary → subagent → nested → one more | Comfortable headroom for autoresearch-code/ml/research loops |
+
+Each extra level multiplies token cost (every nested subagent runs its own full context). Lower it to `2` for tighter runs; raise it only if a deeper chain hits the wall again. See the [Subagent depth docs](https://opencode.ai/docs/config#subagent-depth).
 
 #### Trigger Phrases
 
@@ -418,7 +463,7 @@ Skills follow a modular architecture:
 The setup scripts automatically:
 - Copies `deploy/.AGENTS.md` to `~/.config/opencode/AGENTS.md` (renaming it)
 - Copies `opencode_app/.opencode/skills/` folder to `~/.config/opencode/skills/`
-- Copies `deploy/config.json` to `~/.config/opencode/config.json`
+- Copies `opencode_app/opencode.json` to `~/.config/opencode/config.json` (single source of truth — model resolver patches primary/explore/general in-place during deploy)
 - Backs up existing files before overwriting
 
 ### Environment Variable Persistence

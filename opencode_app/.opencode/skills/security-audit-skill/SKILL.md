@@ -149,6 +149,148 @@ function requireAdmin(req, res, next) {
 }
 ```
 
+#### auth-early-return-null-account-id
+
+Skipping the ownership check when `account_id` is `None` (or missing from headers) allows any header-less user full access to resources. This is **horizontal privilege escalation** — one missing header bypasses all authorization.
+
+```bash
+# Detection: find auth checks that early-return on None/missing input
+rg 'account_id is None|account_id == None|if not account_id' --type py -A 3 | \
+  rg 'return (True|None|next|$)'
+```
+
+```python
+# VULNERABLE — None account_id skips ownership check entirely
+async def get_run(run_id: str, account_id: str | None):
+    run = await db.get_run(run_id)
+    if account_id is None:
+        return run  # ANY authenticated user gets ANY run
+    if run.account_id != account_id:
+        raise Forbidden()
+    return run
+
+# SECURE — separate legacy access from ownership verification
+async def get_run(run_id: str, account_id: str | None):
+    run = await db.get_run(run_id)
+
+    # Legacy: NULL-account runs are publicly readable (migration period only)
+    if run.account_id is None:
+        return run
+
+    # Non-NULL runs REQUIRE header match — no exception
+    if not account_id or run.account_id != account_id:
+        raise Forbidden("Ownership verification required")
+    return run
+```
+
+**Rule:** Never skip authorization on missing optional input. Separate "this resource is legacy/public" from "the caller didn't send a header" — they are different conditions with different security implications.
+
+#### fail-closed-open-config-toggle
+
+A single `STRICT_VALIDATION` boolean must not be the only control governing the entire fail branch of an auth/identity flow. If the default is `False` (fail-open) or the toggle is flipped by mistake, every downstream check is bypassed. In production the toggle MUST default to deny (fail-closed); only dev/local environments may open it. Reinforce the toggle with a circuit breaker (stop calling the identity provider after N failures) and a short positive cache (60s TTL) keyed by `account_id` so that a successful verification is replayed without re-hitting the provider.
+
+```bash
+# Detection: find a single boolean gating the whole fail-closed vs fail-open path
+rg 'STRICT_VALIDATION|strict_validation|FAIL_OPEN|fail_open' --type py -A 5 | rg 'return|raise|if '
+```
+
+```python
+# VULNERABLE — one flag, fail-open default, no breaker, no cache
+import os
+STRICT = os.getenv("STRICT_VALIDATION", "false").lower() == "true"
+
+async def resolve_account(token: str):
+    try:
+        return await idp.verify(token)
+    except IDPError:
+        if STRICT:
+            raise
+        return None  # prod default is False → access granted with None account_id
+
+# SECURE — fail-closed in prod, circuit breaker, positive cache, monotonic expiry
+import time
+from asyncio import Lock
+
+_breaker = {"failures": 0, "open_until": 0.0}
+_cache: dict[str, tuple[object, float]] = {}
+_lock = Lock()
+
+async def resolve_account(token: str, env: str, strict: bool):
+    now = time.monotonic()
+    if _breaker["open_until"] > now:
+        if env == "production" or strict:
+            raise ServiceUnavailable("Identity provider circuit open")
+        return None  # dev-only fail-open
+
+    cached = _cache.get(token)
+    if cached and cached[1] > now:
+        return cached[0]
+
+    try:
+        account = await idp.verify(token)
+    except IDPError:
+        _breaker["failures"] += 1
+        if _breaker["failures"] >= 5:
+            _breaker["open_until"] = now + 30  # trip for 30s
+        if env == "production" or strict:
+            raise  # fail-closed
+        return None
+    _breaker["failures"] = 0
+    _cache[token] = (account, now + 60)  # positive cache, 60s TTL
+    return account
+```
+
+**Rule:** Never let a single config boolean be the only thing standing between fail-closed and fail-open. Default to deny in production, add a circuit breaker to stop hammering the identity provider, and use a short positive cache (`time.monotonic()` for expiry) to absorb verification load.
+
+#### missing-tenant-isolation-definitions
+
+In a multi-tenant system, "we check `account_id` at the API boundary" is NOT sufficient. Every multi-tenant table MUST have a `tenant_id` column and every query MUST filter by it. Global or seed data uses a reserved `tenant_id` (e.g. `"system"`, `0`) that is documented and never user-writable. Metadata leakage — workflow structure, node configs, template names — is a breach even if runtime auth would eventually catch execution: an attacker who can read another tenant's workflow definition has already learned their intellectual property.
+
+```bash
+# Detection: tables missing tenant_id, or queries that forget the filter
+rg -i 'create table' --type py --type sql | rg -v 'tenant_id'
+rg 'select\(|\.execute\(' --type py | rg -v 'tenant_id|where'
+```
+
+```python
+# VULNERABLE — tenant_id column exists but the query forgets the filter
+async def list_workflows(db: AsyncSession, tenant_id: str):
+    result = await db.execute(select(Workflow))  # returns ALL tenants' workflows
+    return result.scalars().all()
+
+# Also vulnerable: metadata endpoint that returns workflow graph without ownership check
+async def get_workflow_graph(db: AsyncSession, workflow_id: str):
+    wf = await db.get(Workflow, workflow_id)  # no tenant_id filter → cross-tenant leak
+    return {"nodes": wf.nodes, "edges": wf.edges}
+
+# SECURE — tenant_id filter on every query, reserved tenant for global data
+RESERVED_TENANTS = frozenset({"system", "seed"})
+
+async def list_workflows(db: AsyncSession, tenant_id: str):
+    result = await db.execute(
+        select(Workflow).where(
+            (Workflow.tenant_id == tenant_id)
+            | (Workflow.tenant_id.in_(RESERVED_TENANTS))
+        )
+    )
+    return result.scalars().all()
+
+async def get_workflow_graph(db: AsyncSession, workflow_id: str, tenant_id: str):
+    wf = await db.execute(
+        select(Workflow).where(
+            Workflow.id == workflow_id,
+            (Workflow.tenant_id == tenant_id)
+            | (Workflow.tenant_id.in_(RESERVED_TENANTS)),
+        )
+    )
+    row = wf.scalar_one_or_none()
+    if row is None:
+        raise NotFound()
+    return {"nodes": row.nodes, "edges": row.edges}
+```
+
+**Rule:** Treat metadata (workflow structure, node configs, template definitions) as sensitive as runtime data. Every multi-tenant query filters by `tenant_id`; global/seed data lives under a documented reserved `tenant_id`. An attacker learning another tenant's workflow shape is a breach even if they cannot execute it.
+
 ### A02: Cryptographic Failures
 
 - [ ] Verify TLS 1.2+ enforced everywhere
@@ -156,6 +298,96 @@ function requireAdmin(req, res, next) {
 - [ ] Confirm sensitive data encrypted at rest
 - [ ] Verify proper hashing algorithms (bcrypt, argon2 — not MD5/SHA1)
 - [ ] Check PII handling and data classification
+
+#### claim-check-ephemeral-secret-cache
+
+Store decrypted secrets in a short-lived in-memory TTL cache keyed by an opaque UUID. Pass only the **claim ID** through durable workflow history — never the plaintext credential.
+
+```bash
+# Detection: find plaintext secrets passed to workflow/activity arguments
+rg 'decrypt|get_secret|plaintext.*secret' --type py -A 5 | \
+  rg 'workflow\.(execute|start)|activity|yield|await.*\('
+```
+
+```python
+# VULNERABLE — plaintext secret persisted to orchestrator execution history
+@activity
+async def process_payment(run_id: str, api_key: str):  # api_key in durable history!
+    client = PaymentClient(api_key)
+
+# SECURE — claim-check pattern; only opaque UUID in history
+import asyncio, time, uuid
+from collections import OrderedDict
+
+class SecretCache:
+    def __init__(self, ttl: int = 300, max_size: int = 100):
+        self._cache: OrderedDict[str, tuple[str, float]] = OrderedDict()
+        self._ttl = ttl
+        self._max_size = max_size
+        self._lock = asyncio.Lock()
+
+    async def deposit(self, plaintext: str) -> str:
+        claim_id = str(uuid.uuid4())
+        async with self._lock:
+            self._cache[claim_id] = (plaintext, time.monotonic() + self._ttl)
+            if len(self._cache) > self._max_size:
+                self._cache.popitem(last=False)  # LRU eviction
+        return claim_id
+
+    async def redeem(self, claim_id: str) -> str | None:
+        async with self._lock:
+            entry = self._cache.pop(claim_id, None)  # Single-read (pop)
+            if entry and entry[1] > time.monotonic():
+                return entry[0]
+        return None  # Expired or already consumed
+
+@activity
+async def process_payment(run_id: str, claim_id: str):  # Only UUID in history
+    api_key = await secret_cache.redeem(claim_id)
+    if api_key is None:
+        raise ActivityError("Secret expired")
+```
+
+**Rule:** Plaintext credentials must never touch durable storage (workflow history, message queues, logs). Use opaque claim IDs as references; `pop()` (single-read) at execution time; TTL-based expiry.
+
+#### encryption-key-length-not-validated
+
+`base64-valid` does **not** mean crypto-valid. A key that decodes from base64 successfully may still be the wrong length for the cipher. Validate decoded byte length at **config-load time**, not at the first `encrypt()` call.
+
+```bash
+# Detection: find base64 decode without length validation
+rg 'b64decode|base64\.decode' --type py -B 2 -A 5 | grep -v 'len('
+```
+
+```python
+# VULNERABLE — broken config reaches production, fails at first customer-facing encrypt()
+import base64
+import os
+
+key_b64 = os.getenv("ENCRYPTION_KEY")  # "YWFhYQ==" decodes fine (4 bytes)
+key = base64.b64decode(key_b64)  # No error!
+# ... hours later, first customer request ...
+cipher = AESGCM(key)  # ValueError: "Invalid key length" — too late
+
+# SECURE — fail-fast at startup with clear error message
+import sys
+
+def validate_encryption_key(key_b64: str, expected_len: int = 32) -> bytes:
+    try:
+        key = base64.b64decode(key_b64)
+    except Exception as e:
+        sys.exit(f"FATAL: ENCRYPTION_KEY is not valid base64: {e}")
+    if len(key) != expected_len:
+        sys.exit(
+            f"FATAL: ENCRYPTION_KEY must be {expected_len} bytes "
+            f"for AES-256-GCM, got {len(key)}"
+        )
+    return key
+
+key = validate_encryption_key(os.getenv("ENCRYPTION_KEY"))  # Called at import time
+```
+
+**Rule:** Validate cryptographic key length, algorithm compatibility, and encoding at application startup. A clear error at boot is infinitely better than a cryptic `ValueError` on the first customer request.
 
 ### A03: Injection
 
@@ -289,6 +521,46 @@ aws lambda list-functions --query 'Functions[*].FunctionName' --output text | \
 ```
 
 **Audit rule**: On every Lambda migration from API Gateway to Function URL, verify `authorization_type` is `AWS_IAM` (or the authorizer is attached). Never use `NONE` unless the function is intentionally public and rate-limited at the VPC/WAF level.
+
+#### local-terraform-state-production
+
+Local backend for production Terraform/OpenTofu state creates four compounding risks: (1) no state locking — concurrent `apply` runs corrupt state silently, (2) no backup — a deleted `terraform.tfstate` is an unrecoverable production outage, (3) machine dependency — only the developer who last ran `apply` has the state, blocking incident response, (4) no collaboration — no audit trail of who changed what. Production state MUST live in a remote backend (S3 + DynamoDB locking table, or Terraform Cloud, or equivalent). Local state is acceptable only for ephemeral local stacks.
+
+```bash
+# Detection: local backend configured for non-local environments
+rg -i 'backend\s+"local"' --type hcl -B 2 -A 3
+rg 'path\s*=\s*".*terraform.tfstate"' --type hcl
+```
+
+```hcl
+# VULNERABLE — local state in production, no locking, no backup
+terraform {
+  # no backend block → defaults to local "terraform.tfstate"
+}
+
+# SECURE — remote S3 backend with DynamoDB locking for non-local environments
+terraform {
+  backend "s3" {
+    bucket         = "myorg-tfstate-prod"
+    key            = "services/api/terraform.tfstate"
+    region         = "us-east-1"
+    dynamodb_table = "tfstate-locks"  # concurrent apply protection
+    encrypt        = true             # state contains sensitive outputs
+  }
+}
+
+resource "aws_dynamodb_table" "tfstate_locks" {
+  name         = "tfstate-locks"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key      = "LockID"
+  attribute {
+    name = "LockID"
+    type = "S"
+  }
+}
+```
+
+**Rule:** Production Terraform/OpenTofu state MUST use a remote backend with locking (S3 + DynamoDB, Terraform Cloud, etc.). Local backends are acceptable only for ephemeral local stacks — never for any environment shared by more than one operator.
 
 ## Step 4: Security Headers Review
 

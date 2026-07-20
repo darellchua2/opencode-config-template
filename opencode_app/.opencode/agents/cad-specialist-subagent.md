@@ -7,7 +7,6 @@ description: >-
   Services API integration, Civil 3D workflows, and Open3D 3D data processing.
   Routes to the appropriate skill based on task type.
 mode: subagent
-model: zai-coding-plan/glm-5-turbo
 permission:
   read: allow
   edit: allow

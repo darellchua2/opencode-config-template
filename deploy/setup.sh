@@ -85,6 +85,27 @@ BACKUP_DIR="${HOME}/.opencode-backup-$(date +%Y%m%d_%H%M%S)"
 LAST_UPDATE_CHECK="${CONFIG_DIR}/.last-update-check"
 UPDATE_LOG="${CONFIG_DIR}/update.log"
 
+# v2.0 model resolution (tier-based, provider-agnostic)
+DEPLOY_DIR="${REPO_DIR}/deploy"
+RESOLVER_SCRIPT="${DEPLOY_DIR}/resolve-models.mjs"
+TUI_SCRIPT="${DEPLOY_DIR}/tui.mjs"
+AGENT_TIERS="${DEPLOY_DIR}/agent-tiers.json"
+MODELS_DEFAULT_MAP="${DEPLOY_DIR}/models.default.json"
+PROVIDER_PRESETS="${DEPLOY_DIR}/provider-presets.json"
+# Global user overrides (~/.config/opencode/)
+USER_MODELS_MAP="${CONFIG_DIR}/models.json"
+USER_OVERRIDES="${CONFIG_DIR}/agent-overrides.json"
+# Project-local overrides (repo root .opencode/)
+PROJECT_MODELS_MAP="${REPO_DIR}/.opencode/models.json"
+PROJECT_OVERRIDES="${REPO_DIR}/.opencode/agent-overrides.json"
+# Resolver state + migration marker
+RESOLVED_SIDECAR="${CONFIG_DIR}/.resolved-models.json"
+CONFIG_VERSION_FILE="${CONFIG_DIR}/.config-version"
+SCHEMA_VERSION="2.0"
+SOURCE_CONFIG="${REPO_DIR}/opencode_app/opencode.json"
+# Where dry-run stages complete resolved files (mirrors what would land in ~/.config)
+DRY_RUN_PREVIEW_DIR="${CONFIG_DIR}/.dry-run-preview"
+
 ################################################################################
 # PLATFORM AND SHELL DETECTION
 ################################################################################
@@ -112,7 +133,8 @@ detect_platform() {
             ;;
         *)
             # Check for Windows environment variables
-            if [ -n "$OS" ] && [[ "$OS" == "Windows_NT" ]]; then
+            # ${OS:-} guards against nounset abort when $OS is not exported
+            if [ -n "${OS:-}" ] && [[ "$OS" == "Windows_NT" ]]; then
                 echo "Windows"
             else
                 echo "Unknown"
@@ -207,13 +229,7 @@ PACKAGE_MANAGER=$(detect_package_manager "$DETECTED_OS")
 get_distribution_name() {
     local pkg_manager="$1"
     case "$pkg_manager" in
-        apt:*|apt:*)
-            echo "${pkg_manager#*:}"
-            ;;
-        dnf:*|dnf:*)
-            echo "${pkg_manager#*:}"
-            ;;
-        pacman:*|pacman:*)
+        apt:*|dnf:*|pacman:*)
             echo "${pkg_manager#*:}"
             ;;
         zypper:*)
@@ -303,6 +319,13 @@ UPDATE_SCHEDULE="manual"
 CHECK_UPDATE_ONLY=false
 KEEP_BACKUPS=5
 
+# v2.0 model-resolution flags
+PROVIDER=""              # --provider <preset>
+MODELS_ONLY=false        # --models-only (provider + resolve only)
+FORCE_RESOLVE=false      # --force (ignore preserve-edits)
+MIGRATE_ONLY=false       # --migrate (migration + resolve only)
+MIX_MODE=false           # --mix (per-category provider/model editor)
+
 # API Keys (initialize to empty to avoid unbound variable errors)
 # Capture from environment if they exist
 GITHUB_PAT=""
@@ -374,6 +397,18 @@ error_handler() {
     local line_number=$1
     local error_code=$2
     log_error "Script failed at line ${line_number} with exit code ${error_code}"
+
+    # Print the call stack so the user can see WHERE the failure happened.
+    # FUNCNAME / BASH_LINENO / BASH_SOURCE are parallel arrays — same length,
+    # indexed from the innermost (current) function outward.
+    if [ "${#FUNCNAME[@]}" -gt 1 ]; then
+        log_error "Call stack:"
+        local i
+        for ((i = 1; i < ${#FUNCNAME[@]}; i++)); do
+            log_error "  ${BASH_SOURCE[$i]:-setup.sh}:${BASH_LINENO[$((i-1))]:-?}  ${FUNCNAME[$i]}"
+        done
+    fi
+
     log_error "Check ${LOG_FILE} for details"
 
     # Suggest recovery actions
@@ -399,8 +434,9 @@ cleanup_on_error() {
     fi
 }
 
-# Trap errors
-trap 'error_handler ${LINENO} $?' ERR
+# Trap errors — capture the actual failing line via BASH_LINENO, not the trap
+# definition site. Without this, every error reports the trap's own line number.
+trap 'error_handler "${BASH_LINENO[0]}" "$?"' ERR
 
 # Trap interruption
 trap 'echo ""; log_warn "Setup interrupted by user"; exit 130' INT
@@ -471,6 +507,15 @@ USAGE:
     -v, --verbose         Enable detailed debug logging
     -k, --keep-backups <N>  Keep only N most recent backups (default: 5)
                             0 = delete all old backups, negative = keep all
+
+  MODEL RESOLUTION (v2.0):
+    --provider <name>     Non-interactive provider preset: zai|anthropic|openai|
+                          openrouter|lmstudio (writes ~/.config/opencode/models.json)
+    --models-only         Provider selection + model resolution only (no other setup)
+    --migrate             Run v1.x -> v2.0 migration + model resolution only
+    --force               Re-resolve all agents (ignore preserved hand-edits)
+    --mix                 Per-category provider/model editor (mix providers across
+                          primary/reasoning/fast/docs/vision, e.g. vision on OpenAI)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
                             EXAMPLES
@@ -583,8 +628,8 @@ USAGE:
       google-gce         Google Compute Engine management
       google-gke         Google Kubernetes Engine management
 
-   SKILLS (113):
-             Framework (20):       test-generator-framework, linting-workflow,
+    SKILLS (116):
+              Framework (20):       test-generator-framework, linting-workflow,
                                       pr-creation-workflow, pr-merge-workflow,
                                       error-resolver-workflow, tdd-workflow,
                                       docx-creation, pptx-specialist,
@@ -599,11 +644,12 @@ USAGE:
                                   javascript-eslint-linter, changelog-python-cliff,
                                   python-backend-skill, python-packaging-skill
 
-           Framework-Specific (8): nextjs-pr-workflow, nextjs-unit-test-creator,
-                                  nextjs-standard-setup, nextjs-image-usage,
-                                  nextjs-devtools-mcp,
+          Framework-Specific (10): nextjs-pr-workflow, nextjs-unit-test-creator,
+                                 nextjs-standard-setup, nextjs-image-usage,
+                                 nextjs-devtools-mcp, amplify-nextjs-deployment,
                                   typescript-dry-principle, accessibility-a11y-skill,
-                                  react-nextjs-antipatterns-skill
+                                  react-nextjs-antipatterns-skill,
+                                  threejs-nextjs-skill
 
            OpenCode Meta (4):    opencode-agent-creation, opencode-skill-creation,
                                  opencode-skills-maintainer,
@@ -626,14 +672,17 @@ USAGE:
 
           JIRA (3):             jira-status-updater, jira-git-integration, jira-ticket-labeler
 
-         Code Quality (7):     solid-principles-skill, clean-code-skill, clean-architecture-skill,
+         Code Quality (8):     solid-principles-skill, clean-code-skill, clean-architecture-skill,
                                design-patterns-skill, object-design-skill, code-smells-skill,
-                               complexity-management-skill
+                               complexity-management-skill, deprecated-code-cleanup-skill
 
-      Agent Optimization (7):  continuous-learning-skill, eval-harness-skill,
+       Agent Optimization (7):  continuous-learning-skill, eval-harness-skill,
                                 strategic-compact-skill, verification-loop-skill,
                                 search-first-skill, context-budget-skill,
                                 agent-introspection-debugging-skill
+
+            Autoresearch (4):  autoresearch-core-skill, autoresearch-ml-skill,
+                                autoresearch-code-skill, autoresearch-research-skill
 
             Startup/Business (3): startup-pitch-deck-skill, startup-business-docs-skill,
                                   construction-bd-skill
@@ -749,12 +798,19 @@ parse_arguments() {
                 shift
                 ;;
             -S|--schedule-update)
-                if [ -n "$2" ]; then
-                    UPDATE_SCHEDULE="$2"
-                else
-                    log_error "--schedule-update requires an argument (daily, weekly, monthly)"
+                if [ -z "$2" ]; then
+                    log_error "--schedule-update requires an argument (daily, weekly, monthly, manual)"
                     exit 1
                 fi
+                case "$2" in
+                    daily|weekly|monthly|manual)
+                        UPDATE_SCHEDULE="$2"
+                        ;;
+                    *)
+                        log_error "Invalid --schedule-update value: '$2' (allowed: daily, weekly, monthly, manual)"
+                        exit 1
+                        ;;
+                esac
                 shift 2
                 ;;
             -C|--check-update)
@@ -770,6 +826,31 @@ parse_arguments() {
                 fi
                 shift 2
                 ;;
+            --provider)
+                if [ -n "$2" ]; then
+                    PROVIDER="$2"
+                else
+                    log_error "--provider requires an argument (zai|anthropic|openai|openrouter|lmstudio)"
+                    exit 1
+                fi
+                shift 2
+                ;;
+            --models-only)
+                MODELS_ONLY=true
+                shift
+                ;;
+            --force)
+                FORCE_RESOLVE=true
+                shift
+                ;;
+            --migrate)
+                MIGRATE_ONLY=true
+                shift
+                ;;
+            --mix)
+                MIX_MODE=true
+                shift
+                ;;
             *)
                 log_error "Unknown option: $1"
                 echo "Use -h or --help for usage information"
@@ -779,17 +860,27 @@ parse_arguments() {
     done
 }
 
-# Safe execution with dry-run support
+# Safe execution with dry-run support.
+# Supports two calling conventions:
+#   - Multi-arg (preferred):  run_cmd cp "$src" "$dest"      # preserves spaces
+#   - Single-string (legacy): run_cmd "cp $src $dest"        # eval'd for back-comat
+# Prefer the multi-arg form in new code — it survives paths with spaces, quotes,
+# and glob chars without an eval injection risk.
 run_cmd() {
-    local cmd="$*"
-    log_debug "Executing: ${cmd}"
+    log_debug "Executing: $*"
 
     if [ "$DRY_RUN" = true ]; then
-        echo "[DRY-RUN] Would execute: ${cmd}"
+        echo "[DRY-RUN] Would execute: $*"
         return 0
     fi
 
-    eval "$cmd"
+    if [ $# -gt 1 ]; then
+        # Multi-arg: execute directly so each arg is its own word.
+        "$@"
+    else
+        # Single-string legacy form: requires eval for word-splitting.
+        eval "$1"
+    fi
 }
 
 # Prompt user with default
@@ -838,7 +929,7 @@ prompt_yes_no() {
 # Create backup of existing files
 create_backup() {
     local file_to_backup="$1"
-    local backup_path="${BACKUP_DIR}/$(basename ${file_to_backup})"
+    local backup_path="${BACKUP_DIR}/$(basename "$file_to_backup")"
 
     if [ ! -d "$BACKUP_DIR" ]; then
         mkdir -p "$BACKUP_DIR"
@@ -846,7 +937,7 @@ create_backup() {
     fi
 
     if [ -f "$file_to_backup" ]; then
-        run_cmd "cp ${file_to_backup} ${backup_path}"
+        run_cmd cp "$file_to_backup" "$backup_path"
         log_info "Backed up: ${file_to_backup} -> ${backup_path}"
     fi
 }
@@ -1614,7 +1705,7 @@ setup_config() {
     echo ""
 
     # Create config directory
-    run_cmd "mkdir -p ${CONFIG_DIR}"
+    run_cmd mkdir -p "$CONFIG_DIR"
     log_info "Created ${CONFIG_DIR} directory"
 
     # Copy AGENTS.md from project to global config
@@ -1623,11 +1714,11 @@ setup_config() {
             log_warn "AGENTS.md already exists at ${CONFIG_DIR}/AGENTS.md"
             if prompt_yes_no "Do you want to overwrite it?" "n"; then
                 create_backup "${CONFIG_DIR}/AGENTS.md"
-                run_cmd "cp ${SCRIPT_DIR}/.AGENTS.md ${CONFIG_DIR}/AGENTS.md"
+                run_cmd cp "${SCRIPT_DIR}/.AGENTS.md" "${CONFIG_DIR}/AGENTS.md"
                 log_success "AGENTS.md copied successfully (renamed from .AGENTS.md)"
             fi
         else
-            run_cmd "cp ${SCRIPT_DIR}/.AGENTS.md ${CONFIG_DIR}/AGENTS.md"
+            run_cmd cp "${SCRIPT_DIR}/.AGENTS.md" "${CONFIG_DIR}/AGENTS.md"
             log_success "AGENTS.md copied successfully (renamed from .AGENTS.md)"
         fi
     else
@@ -1656,11 +1747,14 @@ setup_config() {
         fi
     fi
 
-    # Copy config.json
+    # Copy config.json from the single source of truth (opencode_app/opencode.json).
+    # Historically this copied deploy/config.json, but maintaining a duplicate
+    # caused drift (see PLAN-BT-74 Phase 12.2). The resolver (run later in
+    # deploy_agents) patches this file in-place for primary/explore/general models.
     if [ "$SKIP_CONFIG_COPY" != true ]; then
-        if [ -f "${SCRIPT_DIR}/config.json" ]; then
-            run_cmd "cp ${SCRIPT_DIR}/config.json ${CONFIG_FILE}"
-            log_success "config.json copied successfully"
+        if [ -f "$SOURCE_CONFIG" ]; then
+            run_cmd cp "$SOURCE_CONFIG" "$CONFIG_FILE"
+            log_success "config.json copied successfully (from ${SOURCE_CONFIG})"
 
             echo ""
         echo "✓ Configured 39 agents:"
@@ -1669,14 +1763,14 @@ setup_config() {
         echo "    - explore - Codebase exploration and analysis"
         echo "    - image-analyzer-subagent - Image/screenshot analysis"
         echo "    - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
-        echo "    - ... and 31 more agents"
+        echo "    - ... and 34 more agents"
             echo ""
              echo "✓ Configured MCP servers:"
              echo "    Local (auto-start): atlassian, zai-vision-mcp-server, codegraph, mermaid"
              echo "    Remote (needs key): web-reader, web-search-prime, zread"
             echo ""
         else
-            log_error "config.json not found in ${SCRIPT_DIR}"
+            log_error "config.json source not found: ${SOURCE_CONFIG}"
             return 1
         fi
     fi
@@ -1686,19 +1780,19 @@ setup_config() {
     log_info "Setting up skills directory..."
 
     # Create skills directory
-    run_cmd "mkdir -p ${SKILLS_DIR}"
+    run_cmd mkdir -p "$SKILLS_DIR"
     log_info "Created ${SKILLS_DIR} directory"
 
     # Check if skills folder exists in script directory
     if [ -d "${REPO_DIR}/opencode_app/.opencode/skills" ]; then
         # Check if skills directory already has content
-        if [ -d "${SKILLS_DIR}" ] && [ "$(ls -A ${SKILLS_DIR} 2>/dev/null)" ]; then
+        if [ -d "${SKILLS_DIR}" ] && [ "$(ls -A "${SKILLS_DIR}" 2>/dev/null)" ]; then
             log_warn "Skills directory already contains files"
 
             if prompt_yes_no "Do you want to overwrite existing skills?" "n"; then
                 # Backup existing skills
                 if [ -d "${BACKUP_DIR}" ]; then
-                    run_cmd "cp -r ${SKILLS_DIR} ${BACKUP_DIR}/skills-backup"
+                    run_cmd cp -r "$SKILLS_DIR" "${BACKUP_DIR}/skills-backup"
                     log_info "Backed up existing skills to ${BACKUP_DIR}/skills-backup"
                 fi
             else
@@ -1709,7 +1803,7 @@ setup_config() {
 
         # Copy skills folder (excluding _archived)
         if command -v rsync &> /dev/null; then
-            run_cmd "rsync -av --exclude='_archived' ${REPO_DIR}/opencode_app/.opencode/skills/ ${SKILLS_DIR}/"
+            run_cmd rsync -av --exclude='_archived' "${REPO_DIR}/opencode_app/.opencode/skills/" "${SKILLS_DIR}/"
         else
             # Fallback: copy all except _archived
             mkdir -p "${SKILLS_DIR}"
@@ -1728,96 +1822,229 @@ setup_config() {
     return 0
 }
 
+# ─────────────────────────────────────────────────────────────────────────────
+# v2.0 MODEL RESOLUTION HELPERS
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Run the model resolver: injects concrete models into deployed agent .md files
+# and patches config.json (primary + explore + general). Honors global/project
+# overrides + provider preset. Preserve-edits via sidecar unless --force.
+run_resolver() {
+    if [ ! -f "$RESOLVER_SCRIPT" ]; then
+        log_error "Resolver not found: $RESOLVER_SCRIPT"
+        return 1
+    fi
+
+    local extra_args=""
+    if [ "$FORCE_RESOLVE" = true ]; then
+        extra_args="$extra_args --force"
+    fi
+    if [ -n "$PROVIDER" ]; then
+        extra_args="$extra_args --provider ${PROVIDER} --presets ${PROVIDER_PRESETS}"
+    fi
+
+    local project_map_arg=""
+    [ -f "$PROJECT_MODELS_MAP" ] && project_map_arg="--project-map ${PROJECT_MODELS_MAP}"
+    local project_overrides_arg=""
+    [ -f "$PROJECT_OVERRIDES" ] && project_overrides_arg="--project-overrides ${PROJECT_OVERRIDES}"
+
+    local dry_arg=""
+    if [ "$DRY_RUN" = true ]; then
+        rm -rf "$DRY_RUN_PREVIEW_DIR"
+        dry_arg="--dry-run --preview-dir ${DRY_RUN_PREVIEW_DIR}"
+    fi
+
+    node "$RESOLVER_SCRIPT" \
+        --agents-src "$AGENTS_SRC_DIR" \
+        --agents-dest "$AGENTS_DEST_DIR" \
+        --tiers "$AGENT_TIERS" \
+        --default-map "$MODELS_DEFAULT_MAP" \
+        --user-map "$USER_MODELS_MAP" \
+        $project_map_arg \
+        --overrides "$USER_OVERRIDES" \
+        $project_overrides_arg \
+        --config-src "$SOURCE_CONFIG" \
+        --config-dest "$CONFIG_FILE" \
+        --state "$RESOLVED_SIDECAR" \
+        $dry_arg \
+        $extra_args
+}
+
+# Choose a model provider (interactive TUI or --provider flag) and write the
+# global ~/.config/opencode/models.json tier map. Skipped silently in
+# non-interactive mode unless --provider is set (defaults apply).
+setup_model_provider() {
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "                  🧠 Model Provider (v2.0)"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+
+    if [ -n "$PROVIDER" ] && [ "$MIX_MODE" = false ]; then
+        log_info "Provider preset: ${PROVIDER} (writing ${USER_MODELS_MAP})"
+        node "$TUI_SCRIPT" provider-picker \
+            --presets "$PROVIDER_PRESETS" --provider "$PROVIDER" \
+            --out "$USER_MODELS_MAP"
+        return $?
+    fi
+
+    # --mix: per-category provider/model editor (interactive). Base = $PROVIDER or zai.
+    if [ "$MIX_MODE" = true ]; then
+        local base="${PROVIDER:-zai}"
+        log_info "Mix mode: choose a provider/model per category (base: ${base})"
+        node "$TUI_SCRIPT" tier-editor \
+            --presets "$PROVIDER_PRESETS" --provider "$base" \
+            --out "$USER_MODELS_MAP" \
+            || log_warn "Mix editor cancelled (using default models)"
+        return $?
+    fi
+
+    if [ -t 0 ] && [ "$AUTO_ACCEPT" = false ]; then
+        echo "  1) Single provider (recommended)"
+        echo "  2) Mix providers per category (e.g. vision on OpenAI, rest on Z.AI)"
+        local provider_choice
+        provider_choice=$(prompt_user "Select option [1]" "1")
+        case "$provider_choice" in
+            2)
+                node "$TUI_SCRIPT" tier-editor \
+                    --presets "$PROVIDER_PRESETS" --provider "${PROVIDER:-zai}" \
+                    --out "$USER_MODELS_MAP" \
+                    || log_warn "Mix editor cancelled (using default models)"
+                ;;
+            *)
+                if prompt_yes_no "Choose a model provider? (default: Z.AI)" "n"; then
+                    node "$TUI_SCRIPT" provider-picker \
+                        --presets "$PROVIDER_PRESETS" \
+                        --out "$USER_MODELS_MAP" \
+                        || log_warn "Provider selection skipped (using default models)"
+                else
+                    log_info "Using default Z.AI models"
+                fi
+                ;;
+        esac
+    else
+        log_info "Non-interactive: using default models (use --provider <name> or --mix to choose)"
+    fi
+}
+
+# Lift unknown (non-z.ai-default) model customizations from an existing deployed
+# agent set into ~/.config/opencode/agent-overrides.json so they survive the
+# re-resolve as first-class managed overrides rather than being clobbered.
+lift_customizations() {
+    [ -d "$AGENTS_DEST_DIR" ] || return 0
+    local dry_arg=""
+    [ "$DRY_RUN" = true ] && dry_arg="--dry-run"
+    node "$RESOLVER_SCRIPT" --lift-only \
+        --agents-dest "$AGENTS_DEST_DIR" \
+        --default-map "$MODELS_DEFAULT_MAP" \
+        --overrides "$USER_OVERRIDES" \
+        $dry_arg
+}
+
+# Detect a pre-v2 install and run the one-time migration: backup, lift
+# customizations, mark the config version. Idempotent (no-op once at v2.0).
+run_migration() {
+    local current_version="0"
+    [ -f "$CONFIG_VERSION_FILE" ] && current_version=$(tr -d '[:space:]' < "$CONFIG_VERSION_FILE")
+
+    # current_version >= SCHEMA_VERSION  ->  skip (input is ascending iff SCHEMA <= current)
+    if printf '%s\n%s\n' "$SCHEMA_VERSION" "$current_version" | sort -V -C 2>/dev/null; then
+        log_debug "Config already at v${SCHEMA_VERSION}, no migration needed"
+        return 0
+    fi
+
+    echo ""
+    log_warn "v2.0 major upgrade detected (current config: v${current_version:-unknown})"
+    log_warn "Agent models are now resolved from tiers (see MIGRATION.md). Existing"
+    log_warn "agents will be backed up and re-resolved. Custom models are preserved."
+
+    if [ "$AUTO_ACCEPT" = false ]; then
+        if ! prompt_yes_no "Run migration now?" "y"; then
+            log_warn "Migration skipped. Agents re-resolved from tiers (custom models NOT lifted)."
+            return 0
+        fi
+    fi
+
+    # Backup existing agents + config (skip actual copy in dry-run)
+    if [ "$DRY_RUN" = true ]; then
+        if [ -d "$AGENTS_DEST_DIR" ] && [ "$(ls -A "$AGENTS_DEST_DIR" 2>/dev/null)" ]; then
+            log_info "[DRY-RUN] Would back up agents -> ${BACKUP_DIR}/agents-backup"
+        fi
+        [ -f "$CONFIG_FILE" ] && log_info "[DRY-RUN] Would back up config.json"
+    else
+        if [ -d "$AGENTS_DEST_DIR" ] && [ "$(ls -A "$AGENTS_DEST_DIR" 2>/dev/null)" ]; then
+            mkdir -p "$BACKUP_DIR"
+            if [ ! -d "$BACKUP_DIR/agents-backup" ]; then
+                cp -r "$AGENTS_DEST_DIR" "$BACKUP_DIR/agents-backup"
+                log_info "Backed up agents to ${BACKUP_DIR}/agents-backup"
+            fi
+        fi
+        [ -f "$CONFIG_FILE" ] && create_backup "$CONFIG_FILE"
+    fi
+
+    # Lift customizations into agent-overrides.json BEFORE re-resolve
+    lift_customizations
+
+    # Mark migrated (skip write in dry-run)
+    if [ "$DRY_RUN" = true ]; then
+        log_success "[DRY-RUN] Would mark config as v${SCHEMA_VERSION}"
+    else
+        echo "$SCHEMA_VERSION" > "$CONFIG_VERSION_FILE"
+        log_success "Migration to v${SCHEMA_VERSION} complete"
+    fi
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# AGENT DEPLOYMENT (v2.0 — resolver-driven)
+# ─────────────────────────────────────────────────────────────────────────────
 deploy_agents() {
     echo ""
-    log_info "Setting up agents directory..."
+    log_info "Setting up agents (v2.0 model resolution)..."
 
-    if [ -d "${AGENTS_DEST_DIR}" ]; then
-        if [ "$(ls -A ${AGENTS_DEST_DIR} 2>/dev/null)" ]; then
-            log_warn "Agents directory already contains files"
+    # Node is required for the resolver (opencode-ai needs it anyway)
+    if ! command_exists node; then
+        log_error "Node.js is required to resolve agent models."
+        log_error "Install Node.js first, then re-run this setup."
+        log_warn "Skipping agent deployment."
+        return 1
+    fi
 
-            if ! prompt_yes_no "Do you want to overwrite existing agents?" "n"; then
-                log_info "Skipping agents deployment. Existing agents preserved."
-                return 0
-            fi
-
-            if [ ! -d "${BACKUP_DIR}" ]; then
-                mkdir -p "${BACKUP_DIR}"
-            fi
-            run_cmd "cp -r ${AGENTS_DEST_DIR} ${BACKUP_DIR}/agents-backup"
-            log_info "Backed up existing agents to ${BACKUP_DIR}/agents-backup"
-        fi
+    if [ ! -d "$AGENTS_SRC_DIR" ]; then
+        log_warn "agents/ source folder not found: ${AGENTS_SRC_DIR}"
+        return 1
     fi
 
     run_cmd "mkdir -p ${AGENTS_DEST_DIR}"
-    log_info "Created ${AGENTS_DEST_DIR} directory"
 
-    if [ -d "${AGENTS_SRC_DIR}" ]; then
-        local primary_count=0
-        local subagent_count=0
-        local agent_count=0
-        
-        # Detect layout: flat files or subdirectories?
-        local flat_layout=true
-        if [ -d "${AGENTS_SRC_DIR}/primary" ] || [ -d "${AGENTS_SRC_DIR}/subagents" ]; then
-            flat_layout=false
-        fi
-        
-        # Copy all agent markdown files from flat agents/ directory (or count them)
-        for agent_file in "${AGENTS_SRC_DIR}"/*.md; do
-            if [ -f "$agent_file" ]; then
-                local filename=$(basename "$agent_file")
-                run_cmd "cp ${agent_file} ${AGENTS_DEST_DIR}/${filename}"
-                agent_count=$((agent_count + 1))
-                
-                # Count by mode (check frontmatter for mode: primary vs subagent)
-                if grep -q "^mode: primary" "$agent_file" 2>/dev/null; then
-                    primary_count=$((primary_count + 1))
-                elif grep -q "^mode: subagent" "$agent_file" 2>/dev/null; then
-                    subagent_count=$((subagent_count + 1))
-                fi
-            fi
-        done
-        
-        # Also support subdirectory layout (agents/primary/ and agents/subagents/)
-        if [ -d "${AGENTS_SRC_DIR}/primary" ]; then
-            for agent_file in "${AGENTS_SRC_DIR}"/primary/*.md; do
-                if [ -f "$agent_file" ]; then
-                    local filename=$(basename "$agent_file")
-                    run_cmd "cp ${agent_file} ${AGENTS_DEST_DIR}/${filename}"
-                    primary_count=$((primary_count + 1))
-                    agent_count=$((agent_count + 1))
-                fi
-            done
-        fi
-        
-        if [ -d "${AGENTS_SRC_DIR}/subagents" ]; then
-            for agent_file in "${AGENTS_SRC_DIR}"/subagents/*.md; do
-                if [ -f "$agent_file" ]; then
-                    local filename=$(basename "$agent_file")
-                    run_cmd "cp ${agent_file} ${AGENTS_DEST_DIR}/${filename}"
-                    subagent_count=$((subagent_count + 1))
-                    agent_count=$((agent_count + 1))
-                fi
-            done
-        fi
+    # Migration (detect pre-v2, backup, lift customizations) before resolve
+    run_migration
 
-        if [ "$agent_count" -eq 0 ]; then
-            log_warn "No agent markdown files found in ${AGENTS_SRC_DIR}"
-        else
-            log_success "Agents copied successfully to ${AGENTS_DEST_DIR}"
-
-            echo ""
-            echo "✓ Deployed ${agent_count} agent files:"
-            echo "    - ${primary_count} primary agents"
-            echo "    - ${subagent_count} subagents"
-            echo ""
-            echo "  Run 'opencode --list-agents' for details"
-            echo ""
-        fi
-    else
-        log_warn "agents/ folder not found in ${AGENTS_SRC_DIR}"
+    # Resolve + inject concrete models from tiers/overrides/presets
+    log_info "Resolving agent models..."
+    run_resolver
+    local rc=$?
+    if [ "$rc" -ne 0 ]; then
+        log_error "Model resolution failed (exit ${rc})"
+        return 1
     fi
+
+    # Count deployed agents by mode
+    local agent_count=0 primary_count=0 subagent_count=0
+    for agent_file in "${AGENTS_DEST_DIR}"/*.md; do
+        [ -f "$agent_file" ] || continue
+        agent_count=$((agent_count + 1))
+        if grep -q "^mode: primary" "$agent_file" 2>/dev/null; then
+            primary_count=$((primary_count + 1))
+        elif grep -q "^mode: subagent" "$agent_file" 2>/dev/null; then
+            subagent_count=$((subagent_count + 1))
+        fi
+    done
+
+    log_success "Deployed ${agent_count} agents (${subagent_count} subagents) to ${AGENTS_DEST_DIR}"
+    echo "  Models resolved via tier registry."
+    echo "  Change provider: ./setup.sh --provider <zai|anthropic|openai|openrouter|lmstudio>"
+    echo "  Pin per-agent:   ~/.config/opencode/agent-overrides.json"
+    return 0
 }
 
 setup_learnings_dir() {
@@ -1827,14 +2054,15 @@ setup_learnings_dir() {
     local learnings_categories=("patterns" "decisions" "anti-patterns" "solutions" "conventions")
 
     if [ ! -d "${LEARNINGS_DIR}" ]; then
-        run_cmd "mkdir -p ${LEARNINGS_DIR}"
+        run_cmd mkdir -p "$LEARNINGS_DIR"
         log_info "Created ${LEARNINGS_DIR}"
     fi
 
     for category in "${learnings_categories[@]}"; do
         local category_dir="${LEARNINGS_DIR}/${category}"
         if [ ! -d "${category_dir}" ]; then
-            run_cmd "mkdir -p ${category_dir} && touch ${category_dir}/.gitkeep"
+            run_cmd mkdir -p "$category_dir"
+            run_cmd touch "${category_dir}/.gitkeep"
         fi
     done
 
@@ -1924,12 +2152,45 @@ setup_shell_vars() {
             if grep -q "ZAI_API_KEY" "$SHELL_CONFIG_FILE" 2>/dev/null; then
                 log_info "ZAI_API_KEY already exists in ${SHELL_CONFIG_FILE}"
             else
-                if prompt_yes_no "Add ZAI_API_KEY to $(basename ${SHELL_CONFIG_FILE}) for persistent access?" "y"; then
+                if prompt_yes_no "Add ZAI_API_KEY to $(basename "${SHELL_CONFIG_FILE}") for persistent access?" "y"; then
                     create_backup "$SHELL_CONFIG_FILE"
-                    run_cmd "echo 'export ZAI_API_KEY=\"${ZAI_API_KEY}\"' >> ${SHELL_CONFIG_FILE}"
+                    run_cmd "printf '%s\\n' 'export ZAI_API_KEY=\"${ZAI_API_KEY}\"' >> \"${SHELL_CONFIG_FILE}\""
                     log_success "ZAI_API_KEY added to ${SHELL_CONFIG_FILE}"
                 else
                     log_info "Skipping shell config update for ZAI_API_KEY"
+                fi
+            fi
+        fi
+    fi
+
+    # Offer to install autoresearch protocol helpers (ar-enable / ar-disable)
+    # into existing bashrc / zshrc. Prompted — never silent.
+    if ! is_windows; then
+        local rc_files=()
+        [ -f "$HOME/.bashrc" ] && rc_files+=("$HOME/.bashrc")
+        [ -f "$HOME/.zshrc" ] && rc_files+=("$HOME/.zshrc")
+        if [ ${#rc_files[@]} -gt 0 ]; then
+            local already_present=true
+            for rc in "${rc_files[@]}"; do
+                grep -q 'ar-enable()' "$rc" 2>/dev/null || already_present=false
+            done
+            if [ "$already_present" = false ]; then
+                if prompt_yes_no "Install 'ar-enable' / 'ar-disable' helpers in your shell rc?" "n"; then
+                    for rc in "${rc_files[@]}"; do
+                        if ! grep -q 'ar-enable()' "$rc" 2>/dev/null; then
+                            create_backup "$rc"
+                            {
+                                echo ''
+                                echo '# autoresearch protocol helpers (added by opencode setup)'
+                                echo 'ar-enable()  { export AUTORESEARCH_PROTOCOL=1; echo "autoresearch protocol: ON"; }'
+                                echo 'ar-disable() { unset AUTORESEARCH_PROTOCOL;   echo "autoresearch protocol: OFF"; }'
+                            } >> "$rc"
+                            log_info "Added ar-enable/ar-disable to ${rc}"
+                        fi
+                    done
+                    log_success "autoresearch protocol helpers installed"
+                else
+                    log_info "Skipping autoresearch protocol helpers"
                 fi
             fi
         fi
@@ -1946,7 +2207,12 @@ setup_shell_vars() {
 update_last_check_time() {
     local timestamp=$(date +%s)
     echo "$timestamp" > "$LAST_UPDATE_CHECK"
-    log_debug "Updated last check time: $(date -d @$timestamp)"
+    # date -d @<ts> is GNU-only (Linux). BSD date (macOS) uses -r <ts>.
+    if [ "$DETECTED_OS" = "macOS" ]; then
+        log_debug "Updated last check time: $(date -r "$timestamp" 2>/dev/null || echo "$timestamp")"
+    else
+        log_debug "Updated last check time: $(date -d "@$timestamp" 2>/dev/null || echo "$timestamp")"
+    fi
 }
 
 # Check if enough time has passed since last check
@@ -2222,7 +2488,7 @@ print_summary() {
         echo "    - plan - Planning agent (read-only)"
         echo "    - explore - Codebase exploration and analysis"
         echo "    - image-analyzer-subagent - Image/screenshot analysis"
-        echo "    - ... and 32 more agents"
+        echo "    - ... and 35 more agents"
     fi
 
     # MCP servers configured
@@ -2238,8 +2504,8 @@ print_summary() {
     fi
 
     # skills directory status
-    if [ -d "$SKILLS_DIR" ] && [ "$(ls -A ${SKILLS_DIR} 2>/dev/null)" ]; then
-        local skill_count=$(find ${SKILLS_DIR} -name "SKILL.md" 2>/dev/null | wc -l)
+    if [ -d "$SKILLS_DIR" ] && [ "$(ls -A "${SKILLS_DIR}" 2>/dev/null)" ]; then
+        local skill_count=$(find "${SKILLS_DIR}" -type f -name "SKILL.md" 2>/dev/null | wc -l)
         echo "✓ skills: ${skill_count} skills deployed to ${SKILLS_DIR}/"
         echo "    - Framework (20):"
         echo "      - test-generator-framework"
@@ -2269,15 +2535,17 @@ print_summary() {
         echo "      - changelog-python-cliff"
         echo "      - python-backend-skill"
         echo "      - python-packaging-skill"
-        echo "    - Framework-Specific (8):"
+        echo "    - Framework-Specific (10):"
         echo "      - nextjs-pr-workflow"
         echo "      - nextjs-unit-test-creator"
         echo "      - nextjs-standard-setup"
         echo "      - nextjs-image-usage"
         echo "      - nextjs-devtools-mcp"
+        echo "      - amplify-nextjs-deployment"
         echo "      - typescript-dry-principle"
         echo "      - accessibility-a11y-skill"
         echo "      - react-nextjs-antipatterns-skill"
+        echo "      - threejs-nextjs-skill"
         echo "    - OpenCode Meta (4):"
         echo "      - opencode-agent-creation"
         echo "      - opencode-skill-creation"
@@ -2312,7 +2580,7 @@ print_summary() {
          echo "      - jira-status-updater"
          echo "      - jira-git-integration"
          echo "      - jira-ticket-labeler"
-        echo "    - Code Quality (7):"
+        echo "    - Code Quality (8):"
         echo "      - solid-principles"
         echo "      - clean-code"
         echo "      - clean-architecture"
@@ -2320,6 +2588,7 @@ print_summary() {
         echo "      - object-design"
         echo "      - code-smells"
         echo "      - complexity-management"
+        echo "      - deprecated-code-cleanup-skill"
          echo "    - Planning & Alignment (4):"
          echo "      - grilling-skill"
          echo "      - domain-modeling-skill"
@@ -2374,20 +2643,6 @@ print_summary() {
         echo "○ GitHub CLI: Not installed (https://cli.github.com/)"
     fi
 
-    # Install autoresearch protocol helpers (only into rc files that already exist)
-    if [ -f "$HOME/.bashrc" ]; then
-        grep -q 'ar-enable()' "$HOME/.bashrc" || cat <<'EOF' >> "$HOME/.bashrc"
-ar-enable()  { export AUTORESEARCH_PROTOCOL=1; echo "autoresearch protocol: ON"; }
-ar-disable() { unset AUTORESEARCH_PROTOCOL;   echo "autoresearch protocol: OFF"; }
-EOF
-    fi
-    if [ -f "$HOME/.zshrc" ]; then
-        grep -q 'ar-enable()' "$HOME/.zshrc" || cat <<'EOF' >> "$HOME/.zshrc"
-ar-enable()  { export AUTORESEARCH_PROTOCOL=1; echo "autoresearch protocol: ON"; }
-ar-disable() { unset AUTORESEARCH_PROTOCOL;   echo "autoresearch protocol: OFF"; }
-EOF
-    fi
-
     echo ""
 }
 
@@ -2410,24 +2665,24 @@ print_next_steps() {
     echo "                        🚀 Quick Start"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "🤖 Agents (36):"
+    echo "🤖 Agents (39):"
     echo "  - build (default) - Full-featured coding agent"
     echo "  - plan - Planning agent (read-only)"
     echo "  - explore - Fast codebase exploration and analysis"
     echo "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
     echo "  - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
-    echo "  - ... and 31 more agents"
+    echo "  - ... and 34 more agents"
     echo ""
     echo "  Usage: opencode --agent <name> \"prompt\""
     echo "         opencode \"prompt\" (uses build)"
      echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-     echo "                     📦 113 Skills Available"
+      echo "                     📦 116 Skills Available"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "  Framework (20) • Language-Specific (6) • Framework-Specific (8)"
+     echo "  Framework (20) • Language-Specific (6) • Framework-Specific (10)"
     echo "  OpenCode Meta (4) • OpenTofu (7) • Git/Workflow (12)"
-    echo "  Documentation (3) • JIRA (3) • Code Quality (7)"
+     echo "  Documentation (3) • JIRA (3) • Code Quality (8)"
     echo "  Agent Optimization (7) • Planning & Alignment (4)"
     echo "  Responsive & Visual Testing (2)"
     echo "  CAD & Hardware Design (14)"
@@ -2489,6 +2744,35 @@ main() {
         exit 0
     fi
 
+    # Handle models-only mode (v2.0): provider selection + model resolution only
+    if [ "$MODELS_ONLY" = true ]; then
+        log_info "Models-only mode (v2.0)"
+        if ! command_exists node; then
+            log_error "Node.js is required for model resolution."
+            exit 1
+        fi
+        setup_model_provider || true
+        run_resolver
+        echo ""
+        echo "Model resolution complete!"
+        exit 0
+    fi
+
+    # Handle migrate-only mode (v2.0): v1.x -> v2.0 migration + resolution only
+    if [ "$MIGRATE_ONLY" = true ]; then
+        log_info "Migrate mode (v2.0)"
+        if ! command_exists node; then
+            log_error "Node.js is required for model resolution."
+            exit 1
+        fi
+        run_cmd "mkdir -p ${AGENTS_DEST_DIR}"
+        run_migration
+        run_resolver
+        echo ""
+        echo "Migration + model resolution complete!"
+        exit 0
+    fi
+
     # Handle skills-only mode
     if [ "$SKILLS_ONLY" = true ]; then
         log_info "Validating OpenCode installation..."
@@ -2506,6 +2790,8 @@ main() {
         fi
 
         setup_config || true
+        deploy_agents || true
+        setup_learnings_dir || true
         print_summary
         echo ""
         echo "Skills deployment complete!"
@@ -2534,12 +2820,13 @@ main() {
         fi
     fi
 
-    # Auto-update check (run before main menu)
-    if [ "$AUTO_ACCEPT" = true ] || [ "$CHECK_UPDATE_ONLY" = false ]; then
-        if [ "$ENABLE_AUTO_UPDATE" = true ]; then
-            log_info "Auto-update is enabled (schedule: ${UPDATE_SCHEDULE})"
-            auto_update_opencode
-        fi
+    # Auto-update check (run before main menu).
+    # Note: $CHECK_UPDATE_ONLY is guaranteed false here — we exit at the block
+    # above when it's true. The previous `|| [ "$CHECK_UPDATE_ONLY" = false ]`
+    # was always-true and therefore a no-op.
+    if [ "$ENABLE_AUTO_UPDATE" = true ]; then
+        log_info "Auto-update is enabled (schedule: ${UPDATE_SCHEDULE})"
+        auto_update_opencode
     fi
 
     # Main menu (if not quick setup or skills-only)
@@ -2579,6 +2866,8 @@ main() {
                 fi
 
                 setup_config || true
+                deploy_agents || true
+                setup_learnings_dir || true
                 print_summary
                 echo ""
                 echo "Skills deployment complete!"
@@ -2624,6 +2913,7 @@ main() {
     fi
 
     setup_config || true
+    setup_model_provider || true
     deploy_agents || true
     setup_learnings_dir || true
     setup_shell_vars || true
@@ -2649,94 +2939,4 @@ main() {
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     main "$@"
 fi
-
-
-# Generate skills section from skills folder
-generate_and_inject_skills() {
-    echo ""
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "                  📋 Generating Skills Section"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo ""
-    
-    local config_file="${SCRIPT_DIR}/config.json"
-    local temp_config="${SCRIPT_DIR}/config.json.tmp"
-    
-    # Check if Python script exists
-    local gen_script="${REPO_DIR}/scripts/generate-skills.py"
-    if [ ! -f "$gen_script" ]; then
-        log_warn "Skills generator script not found: ${gen_script}"
-        log_info "Skipping skills section generation"
-        return 0
-    fi
-    
-    # Generate skills markdown
-    log_info "Generating skills section from skills/ folder..."
-    local skills_md=$("$gen_script" 2>&1)
-    
-    if [ $? -ne 0 ]; then
-        log_warn "Skills generation failed"
-        return 1
-    fi
-    
-    # Read config.json
-    if ! command_exists python3; then
-        log_error "Python 3 is required for skills generation"
-        return 1
-    fi
-    
-    # Inject skills section into config.json
-    log_info "Injecting skills section into config.json..."
-    
-    # Use Python to replace placeholder with skills
-    python3 << EOF
-import json
-import sys
-
-# Read config
-try:
-    with open('${config_file}', 'r') as f:
-        config = json.load(f)
-except:
-    print(f"Error: Cannot read {config_file}", file=sys.stderr)
-    sys.exit(1)
-
-# Skills markdown (passed as argument)
-skills_md = """${skills_md}"""
-
-# Update standard agents if they exist in config
-for agent in ['build', 'plan']:
-    if agent in config.get('agent', {}):
-        old_prompt = config['agent'][agent].get('prompt', '')
-        placeholder = '{{SKILLS_SECTION_PLACEHOLDER}}'
-        
-        if placeholder in old_prompt:
-            new_prompt = old_prompt.replace(placeholder, skills_md)
-            config['agent'][agent]['prompt'] = new_prompt
-            print(f"Updated {agent}")
-
-# Write back
-try:
-    with open('${temp_config}', 'w') as f:
-        json.dump(config, f, indent=2)
-    print("Temporary config written")
-except Exception as e:
-    print(f"Error: {e}", file=sys.stderr)
-    sys.exit(1)
-EOF
-    
-    if [ $? -eq 0 ] && [ -f "$temp_config" ]; then
-        # Replace original with temp
-        run_cmd "mv ${temp_config} ${config_file}"
-        log_success "Skills section generated and injected"
-        
-        # Show summary
-        echo ""
-        local skill_count=$(echo "$skills_md" | grep -c "^- \*\*")
-        echo "✓ Generated skills section with ${skill_count} skills"
-        echo "✓ Skills will be auto-discovered at runtime"
-    else
-        log_warn "Skills injection failed, using original config"
-    fi
-}
 

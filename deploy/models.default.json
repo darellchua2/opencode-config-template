@@ -1,0 +1,10 @@
+{
+  "$comment": "Canonical default tier->model map (z.ai). Used when no user override (models.json) or per-agent override (agent-overrides.json) applies. `primary` is the orchestrator model patched into opencode.json top-level `model` plus the explore/general built-in agents. Shipped with the repo; do not edit to personalize - create ~/.config/opencode/models.json instead.",
+  "primary": "zai-coding-plan/glm-5.2",
+  "tiers": {
+    "reasoning": "zai-coding-plan/glm-5.1",
+    "fast": "zai-coding-plan/glm-5-turbo",
+    "docs": "zai-coding-plan/glm-4.7",
+    "vision": "zai-coding-plan/glm-5v-turbo"
+  }
+}

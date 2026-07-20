@@ -1,7 +1,6 @@
 ---
 description: "Autonomous code optimization subagent — runs the modify → verify (benchmark) → keep/revert loop against any code metric (coverage, bundle size, runtime, error count). Full repo edit. TDD-flavored: test-pass maps to pass, pass-count maps to score."
 mode: subagent
-model: zai-coding-plan/glm-5.1
 steps: 50
 permission:
   read: allow

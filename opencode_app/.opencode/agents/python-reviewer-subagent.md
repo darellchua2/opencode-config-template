@@ -1,7 +1,6 @@
 ---
 description: Python-specific code review subagent combining PEP 8, type hints, Pythonic patterns, security best practices, and async/concurrency review for thorough Python quality analysis
 mode: subagent
-model: zai-coding-plan/glm-5.1
 steps: 25
 permission:
   read: allow
@@ -91,7 +90,7 @@ You are a Python code review specialist. Perform thorough quality analysis with 
 | **Flask** | Blueprint organization, proper app factory, request context |
 | **SQLAlchemy** | Session management, relationship loading, migration compatibility |
 
-**Backend Patterns**: Use `python-backend` to check for SQLAlchemy detached-instance bugs, Pydantic-on-JSONB pitfalls, async SSE durability issues, and enum strategy resolution patterns.
+**Backend Patterns**: Use `python-backend` to check for SQLAlchemy detached-instance bugs, Pydantic-on-JSONB pitfalls, async SSE durability issues, enum strategy resolution patterns, two-phase dataclass initialization (placeholder values requiring separate patch), and `global _service` singletons (prefer FastAPI `Depends()` with `app.state` lifecycle). Also use `clean-code-skill` for broad `except Exception` masking bugs in auth/transport/processing paths.
 
 ## Severity Scoring
 

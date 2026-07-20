@@ -1,7 +1,6 @@
 ---
 description: "Review-only UI/UX design review subagent. Applies a 13-axis rubric (6 AslanMazhidov + 5 RNT56 + Nielsen's 10 + anti-default AI cluster detection) to screenshots, source code, and live URLs. Delegates screenshot analysis to image-analyzer-subagent."
 mode: subagent
-model: zai-coding-plan/glm-5.1
 steps: 30
 permission:
   read: allow

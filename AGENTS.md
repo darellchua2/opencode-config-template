@@ -23,19 +23,41 @@ This repo-level `AGENTS.md` defines repo-specific conventions. User-level routin
 
 Project-level agents must NOT be counted in setup scripts or README.
 
-## Subagent Model Tiering
+## Subagent Model Tiering (v2.0)
 
-Subagents are right-sized by purpose; only the primary session uses the 1M-context model. All IDs are `zai-coding-plan/<id>` (verified against [models.dev](https://models.dev/providers/zai-coding-plan/)).
+Subagents are right-sized by purpose into **4 tiers**. The tier for each agent
+lives in `deploy/agent-tiers.json`; concrete models are **resolved at deploy
+time** from `deploy/models.default.json` (Z.AI defaults) and are **provider-
+agnostic** — swap to Anthropic/OpenAI/OpenRouter/LM Studio via
+`deploy/provider-presets.json` without editing agent files. See `MIGRATION.md`.
 
-| Model | Context | Use for |
-|-------|---------|---------|
-| `glm-5.2` | 1,000,000 | **Primary session only** — holds the long orchestrator context. No subagent uses this. |
-| `glm-5.1` | 200,000 | Sound-reasoning: reviewers (code/architecture/language), repo-ops-specialist, tdd, opentofu-explorer, loop-operator, opencode-tooling, technical-design-specialist, autoresearch-ml, autoresearch-code |
-| `glm-5-turbo` | 200,000 | Exploratory / low-impact / coordination: explorer, testing, setup, specialists, document creators, pr-workflow, ticket-creation, discovery-specialist, requirements-specialist, autoresearch-research |
-| `glm-5v-turbo` | 200,000 | **Vision required**: image-analyzer, error-resolver. No structured output. |
-| `glm-4.7` | 204,800 | Docs/lint/reporting: documentation, linting, coverage |
+| Tier | Default model (Z.AI) | Use for |
+|------|----------------------|---------|
+| `primary` | `glm-5.2` (1M ctx) | **Primary session only** — holds the long orchestrator context. No subagent uses this. |
+| `reasoning` | `glm-5.1` (200k) | Correctness-critical: reviewers (code/architecture/language incl. java/uiux), repo-ops-specialist, tdd, opentofu-explorer, loop-operator, opencode-tooling, technical-design-specialist, discovery-specialist, requirements-specialist, autoresearch-ml, autoresearch-code |
+| `fast` | `glm-5-turbo` (200k) | Exploratory / low-impact / coordination: explorer, testing, specialists (nextjs/cad/m365/google/office-docs), document creators, pr-workflow, ticket-creation, autoresearch-research |
+| `docs` | `glm-4.7` (204k) | Docs/lint/reporting: documentation, linting, coverage |
+| `vision` | `glm-5v-turbo` (200k) | **Multimodal required**: image-analyzer, error-resolver. No structured output. |
 
-Pick the tier by what the agent *does*: correctness-critical → 5.1; exploratory/low-impact → 5-turbo; vision → 5v-turbo; docs/lint → 4.7. **Never default a subagent to `glm-5.2`.**
+Pick the tier by what the agent *does*: correctness-critical → `reasoning`;
+exploratory/low-impact → `fast`; docs/lint → `docs`; vision → `vision`.
+**Never default a subagent to the `primary` tier.**
+
+### Resolution precedence (highest wins)
+1. `<project>/.opencode/agent-overrides.json` (per-agent, project-local)
+2. `~/.config/opencode/agent-overrides.json` (per-agent, global)
+3. `<project>/.opencode/models.json` (tier map, project-local)
+4. `~/.config/opencode/models.json` (tier map, global)
+5. `deploy/models.default.json` (Z.AI defaults)
+
+Swap provider: `./deploy/setup.sh --provider anthropic` (or interactive).
+**Mix providers per category**: `./deploy/setup.sh --mix` — each of
+`primary`/`reasoning`/`fast`/`docs`/`vision` can use a different provider's model
+(e.g. Z.AI everywhere except `vision` on OpenAI); stored in `models.json`, so
+resolve without `--provider`. Each referenced provider must be authenticated in
+OpenCode. Re-resolve: `./deploy/setup.sh --models-only`. Per-agent pin: edit
+`~/.config/opencode/agent-overrides.json`. Built-in agents `explore`→`fast` and
+`general`→`reasoning` are patched in `opencode.json`, not via the tier registry.
 
 ## Adding Skills or Subagents — Sync Rules
 

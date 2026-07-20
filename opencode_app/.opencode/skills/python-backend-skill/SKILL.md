@@ -162,6 +162,58 @@ class Settings(BaseSettings):
 settings = Settings()
 ```
 
+### Centralize Config in a Single Settings Class
+
+**Learning**: `centralized-single-source-config`
+
+ALL environment variables MUST be read in exactly one `pydantic-settings` `Settings` class. Derived values (a full URL assembled from host/port/scheme, a Redis URL from host/port/db) are computed by `@field_validator` or `@model_validator` on that class, never re-derived in feature code via `os.getenv()`. When the same derived value is recomputed in 3+ files, the next environment override leaves one of them stale and silently routes to the wrong service.
+
+```python
+# WRONG — each module rebuilds the same derived URL from raw env vars
+# services/cache.py
+import os
+REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+REDIS_PORT = os.getenv("REDIS_PORT", "6379")
+REDIS_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"   # drifts from config.py
+
+# services/queue.py
+REDIS_URL = f"redis://{os.getenv('REDIS_HOST')}:{os.getenv('REDIS_PORT')}/1"  # different db!
+
+# CORRECT — one Settings class, validators derive values, one import surface
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import field_validator
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env")
+
+    REDIS_HOST: str = "localhost"
+    REDIS_PORT: int = 6379
+    REDIS_DB: int = 0
+
+    @field_validator("REDIS_PORT", mode="after")
+    @classmethod
+    def _port_range(cls, v: int) -> int:
+        if not 1 <= v <= 65535:
+            raise ValueError("REDIS_PORT out of range")
+        return v
+
+    @property
+    def REDIS_URL(self) -> str:
+        return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"
+
+settings = Settings()
+# services/cache.py and services/queue.py both import settings.REDIS_URL
+```
+
+**Detection:**
+
+```bash
+# find env reads OUTSIDE the Settings module
+rg "os\.getenv|os\.environ" --type py
+```
+
+**Rule:** The `Settings` class is the single source of truth for every environment-derived value. Derived values are properties or validators on that class — never recomputed via `os.getenv()` in feature code.
+
 ### Repository Pattern
 
 ```python
@@ -210,6 +262,39 @@ async def get_user_service(repo: Annotated[UserRepository, Depends(get_user_repo
 
 UserServiceDep = Annotated[UserService, Depends(get_user_service)]
 ```
+
+### Prefer DI Over Global Singletons
+
+**Learning**: `module-singleton-global-mutation`
+
+Module-level singletons via `global _service` hide coupling, resist testing, and have no lifecycle management. The `httpx.AsyncClient` inside never gets closed, connections leak, and tests must null globals between runs.
+
+```python
+# WRONG — hidden coupling, no lifecycle, tests must mutate global state
+_service: Optional[MyService] = None
+
+def get_service() -> MyService:
+    global _service
+    if _service is None:
+        _service = MyService(client=httpx.AsyncClient())  # Never closed!
+    return _service
+
+# CORRECT — FastAPI Depends() with app.state lifecycle
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    app.state.client = httpx.AsyncClient()
+    yield
+    await app.state.client.aclose()  # Clean shutdown
+
+app = FastAPI(lifespan=lifespan)
+
+async def get_service(client: httpx.AsyncClient = Depends(lambda r: r.app.state.client)):
+    return MyService(client=client)
+```
+
+**Rule:** Use `FastAPI Depends()` with `app.state` for lifecycle-managed singletons. Never use `global _x` patterns — they hide dependencies from type checkers and prevent test overrides.
 
 ---
 
@@ -474,6 +559,48 @@ if isinstance(value, BaseModel):
     value = value.model_dump()
 ```
 
+### json.dumps default=str Masks Numpy Types
+
+**Learning**: `json-default-str-numpy-masking`
+
+`json.dump(..., default=str)` is a silent type-masking trap. It converts any object the JSON encoder cannot serialize — including numpy scalars (`np.int64`, `np.float64`), datetimes, and sets — into their string representation. The JSON type contract is silently broken: a downstream consumer expecting `{"count": 42}` receives `{"count": "42"}`. Cast every numpy value to a Python native type BEFORE building the output dict, so the JSON encoder never needs the `default` fallback.
+
+```python
+# WRONG — default=str turns np.int64 into "42" silently
+import json
+import numpy as np
+
+def serialize_bad(row):
+    return json.dumps({"count": np.int64(42)}, default=str)
+    # → '{"count": "42"}' — type contract broken, downstream parse fails
+
+# CORRECT — cast at the source so default=str never fires
+def _to_native(value):
+    if isinstance(value, np.integer):
+        return int(value)
+    if isinstance(value, np.floating):
+        return float(value)
+    if isinstance(value, np.ndarray):
+        return value.tolist()
+    raise TypeError(f"Unsupported type: {type(value)}")
+
+def serialize_good(row):
+    payload = {
+        "count": _to_native(row["count"]),
+        "mean": _to_native(row["mean"]),
+    }
+    return json.dumps(payload)
+    # → '{"count": 42, "mean": 3.14}' — contract preserved
+```
+
+**Detection:**
+
+```bash
+rg "default=str" --type py
+```
+
+**Rule:** `default=str` is a debugging escape hatch, never a production strategy. Convert numpy/scientific types to Python natives at the source so the JSON encoder never reaches the fallback.
+
 ---
 
 ## Step 8: Database Migration Gotchas
@@ -644,3 +771,170 @@ process({"k": "v"})                            # default
 process({"k": "v"}, "fast")                   # string
 process({"k": "v"}, ProcessingStrategy.THOROUGH)  # enum member
 ```
+
+### Defensive Enum Mapping From DB Strings
+
+**Learning**: `defensive-enum-mapping-from-db-strings`
+
+Database columns that store enum keys as strings usually lack `CHECK` constraints — the DB will happily accept `"PENDINGG"`, `"pending_v2"`, or `""`. When such a value is read back and passed to `ProcessingStrategy(row.status)`, the resulting `ValueError` crashes the request or kills the stream. Wrap every enum-from-DB lookup in a private helper that catches `ValueError`/`KeyError` and returns `None`, then filter `None` out of the stream. This gives graceful degradation for stale, corrupt, or forward-incompatible values rather than a hard crash.
+
+```python
+# WRONG — one corrupt row kills the whole list endpoint
+from enum import Enum
+
+class ProcessingStrategy(str, Enum):
+    FAST = "fast"
+    THOROUGH = "thorough"
+
+async def list_workflows_bad(db: AsyncSession):
+    rows = await db.execute(select(Workflow))
+    return [
+        {"id": r.id, "strategy": ProcessingStrategy(r.strategy)}  # ValueError on stale row
+        for r in rows.scalars()
+    ]
+
+# CORRECT — private helper degrades gracefully; corrupt rows are skipped
+def _safe_strategy(raw: str | None) -> ProcessingStrategy | None:
+    if not raw:
+        return None
+    try:
+        return ProcessingStrategy(raw)
+    except (ValueError, KeyError):
+        logger.warning("Unknown strategy value in DB", extra={"raw": raw})
+        return None
+
+async def list_workflows(db: AsyncSession):
+    rows = await db.execute(select(Workflow))
+    mapped = [
+        {"id": r.id, "strategy": strategy}
+        for r in rows.scalars()
+        if (strategy := _safe_strategy(r.strategy)) is not None
+    ]
+    return mapped
+```
+
+**Detection:**
+
+```bash
+rg 'SomeEnum\(' --type py -A 1 | rg -v 'except|try|return None'
+```
+
+**Rule:** Never call an enum constructor directly on a DB-sourced string. Always wrap it in a helper that catches `ValueError`/`KeyError` and returns `None`, so stale or corrupt rows degrade instead of crashing.
+
+### Learning: `inline-http-header-parsing-in-handlers`
+
+**Symptom:** Parsing `Location` response headers inline across 5+ handler methods — the same 3-line extraction repeated everywhere, drifting over time.
+
+```python
+# SMELL: repeated in every handler
+def create_report(self, data):
+    response = self.client.post("/reports", json=data)
+    location = response.headers.get("Location", "")
+    report_id = location.split("/")[-1] if location else None
+    return report_id
+
+def create_schedule(self, data):
+    response = self.client.post("/schedules", json=data)
+    location = response.headers.get("Location", "")
+    schedule_id = location.split("/")[-1] if location else None
+    return schedule_id
+```
+
+```python
+# REFACTORED: shared helper
+def extract_resource_id(headers: dict) -> str | None:
+    location = headers.get("Location", "")
+    return location.rstrip("/").split("/")[-1] if location else None
+
+def create_report(self, data):
+    response = self.client.post("/reports", json=data)
+    return extract_resource_id(response.headers)
+```
+
+**Detection:**
+
+```bash
+rg 'headers\.get\(["\']Location' --type py -c | rg '[2-9]|[1-9][0-9]+'
+```
+
+**Rule:** When the same header-parsing logic appears in 2+ handlers, extract a module-level helper. Resource-ID extraction from `Location` headers is particularly drift-prone because each handler handles missing/malformed headers slightly differently.
+
+### Learning: `duplicated-response-parsing-in-llm-nodes`
+
+**Symptom:** Identical 25-line response-parsing logic copied into multiple LangChain/LangGraph node functions. A bug fix applied to one node misses the others.
+
+```python
+# SMELL: same 25 lines in parse_agent_output, parse_tool_result, etc.
+def parse_agent_output(result):
+    if not result:
+        return None
+    try:
+        data = json.loads(result)
+        if "error" in data:
+            raise ValueError(data["error"])
+        return data.get("output", {}).get("text")
+    except json.JSONDecodeError:
+        match = re.search(r'"text":\s*"([^"]*)"', result)
+        return match.group(1) if match else None
+```
+
+```python
+# REFACTORED: mixin method
+class OutputParserMixin:
+    def parse_response(self, result: str | dict) -> str | None:
+        if not result:
+            return None
+        data = result if isinstance(result, dict) else self._try_parse_json(result)
+        if isinstance(data, dict) and "error" in data:
+            raise ValueError(data["error"])
+        return data.get("output", {}).get("text") if isinstance(data, dict) else self._fallback_extract(result)
+
+    def _try_parse_json(self, raw: str) -> dict | str:
+        try:
+            return json.loads(raw)
+        except json.JSONDecodeError:
+            return raw
+
+    def _fallback_extract(self, raw: str) -> str | None:
+        match = re.search(r'"text":\s*"([^"]*)"', raw)
+        return match.group(1) if match else None
+```
+
+**Detection:**
+
+```bash
+rg 'json\.loads.*result|re\.search.*text' --type py -c | rg '[2-9]|[1-9][0-9]+'
+```
+
+**Rule:** LLM response parsing is inherently fragile (JSON-in-text, fallback regex, error wrappers). When 2+ nodes need it, extract a mixin or base class — a single fix propagates to all consumers.
+
+### Learning: `duplicate-service-account-check`
+
+**Symptom:** Same expensive method (network call, DB query, file I/O) called twice in a single function body — once for a check, once for use.
+
+```python
+# SMELL: two calls, two network round-trips
+def process_payment(self, order):
+    if self.auth_service.get_service_account() is None:
+        raise NoServiceAccount()
+    account = self.auth_service.get_service_account()
+    self.charge(account, order.total)
+```
+
+```python
+# REFACTORED: single call, local variable
+def process_payment(self, order):
+    account = self.auth_service.get_service_account()
+    if account is None:
+        raise NoServiceAccount()
+    self.charge(account, order.total)
+```
+
+**Detection:**
+
+```bash
+# Find methods called twice in the same function body
+rg '(\w+\.\w+\([^)]*\))' --type py | sort | uniq -c | sort -rn | head -20
+```
+
+**Rule:** Any method that crosses a process boundary (network, DB, file, subprocess) must be called at most once per function. Bind to a local variable on first call, reuse thereafter.
