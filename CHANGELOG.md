@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.3.0](https://github.com/darellchua2/opencode-config-template/compare/v2.2.1...v2.3.0) (2026-07-20)
+
 ## [2.2.1](https://github.com/darellchua2/opencode-config-template/compare/v2.2.0...v2.2.1) (2026-07-20)
 
 ## [2.2.0](https://github.com/darellchua2/opencode-config-template/compare/v2.1.0...v2.2.0) (2026-07-19)
