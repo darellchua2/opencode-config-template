@@ -923,9 +923,10 @@ USAGE:
 
             Office Utilities (2):   ooxml-editing-skill, office-thumbnail-skill
 
-            Language-Specific (6): python-pytest-creator, python-ruff-linter,
+            Language-Specific (8): python-pytest-creator, python-ruff-linter,
                                   javascript-eslint-linter, changelog-python-cliff,
-                                  python-backend-skill, python-packaging-skill
+                                  python-backend-skill, python-packaging-skill,
+                                  csharp-linter-skill, java-linter-skill
 
            Framework-Specific (10): nextjs-pr-workflow, nextjs-unit-test-creator,
                                   nextjs-standard-setup, nextjs-image-usage,
@@ -1794,10 +1795,11 @@ function Deploy-Skills {
         Write-Host "      - technical-design-creation-skill"
         Write-Host "      - vision-creation-skill"
         Write-Host "      - interactive-document-rendering-skill"
-        Write-Host "    Language-Specific (6):"
+        Write-Host "    Language-Specific (8):"
         Write-Host "      - python-pytest-creator, python-ruff-linter"
         Write-Host "      - javascript-eslint-linter, changelog-python-cliff"
         Write-Host "      - python-backend-skill, python-packaging-skill"
+        Write-Host "      - csharp-linter-skill, java-linter-skill"
         Write-Host "    Presentation (3):"
         Write-Host "      - pptx-generate-slide-skill, pptx-generate-template-skill"
         Write-Host "      - pptx-template-modifier-skill"
@@ -2464,7 +2466,7 @@ function Show-NextSteps {
       Write-Host "                     123 Skills Available" -ForegroundColor White
      Write-Host "=====================================================================" -ForegroundColor White
      Write-Host ""
-     Write-Host "  Framework (19) • Language-Specific (6) • Presentation (3)"
+     Write-Host "  Framework (19) • Language-Specific (8) • Presentation (3)"
       Write-Host "  Office Utilities (2) • Framework-Specific (10) • OpenCode Meta (4)"
       Write-Host "  OpenTofu (7) • Git/Workflow (12) • Documentation (3) • JIRA (3) • Code Quality (8)"
       Write-Host "  Agent Optimization (7) • Planning & Alignment (4) • Academic & Research Writing (2)"

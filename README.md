@@ -23,7 +23,7 @@ opencode-config-template/
 │   ├── .dockerignore
 │   ├── .opencode/
 │   │       ├── agents/              # 39 subagent .md files
-│   │       └── skills/              # 122 skill directories
+│   │       └── skills/              # 123 skill directories
 │   └── README.md                # Docker usage guide
 ├── docker-compose.yml           # Docker Compose service definition
 ├── .env.example                 # Environment variable template
@@ -334,16 +334,18 @@ This repository implements **skill modularization** with 123 skills organized ac
 
 | Category | Skills | Purpose |
 |-----------|---------|---------|
-| **Framework** (20) | test-generator-framework, linting-workflow, pr-creation-workflow, pr-merge-workflow, error-resolver-workflow, tdd-workflow, docx-creation, pptx-specialist, xlsx-specialist, pdf-specialist, frontend-design, uiux-review-skill, api-design-skill, openapi-contract-adherence-skill, performance-optimization-skill, srs-creation-skill, brd-creation-skill, technical-design-creation-skill, vision-creation-skill, interactive-document-rendering-skill | Generic workflows, testing patterns, document creation, UI design + review, API design, contract adherence, performance, and the document ladder (BRD/SRS/vision + technical design documents) |
+| **Framework** (19) | test-generator-framework, linting-workflow, pr-creation-workflow, pr-merge-workflow, error-resolver-workflow, tdd-workflow, docx-creation, xlsx-specialist, pdf-specialist, frontend-design, uiux-review-skill, api-design-skill, openapi-contract-adherence-skill, performance-optimization-skill, srs-creation-skill, brd-creation-skill, technical-design-creation-skill, vision-creation-skill, interactive-document-rendering-skill | Generic workflows, testing patterns, document creation, UI design + review, API design, contract adherence, performance, and the document ladder (BRD/SRS/vision + technical design documents) |
+| **Presentation** (3) | pptx-generate-slide-skill, pptx-generate-template-skill, pptx-template-modifier-skill | Template-driven PowerPoint generation — extract, fill, extend |
+| **Office Utilities** (2) | ooxml-editing-skill, office-thumbnail-skill | Generic Office OOXML surgical edits and visual thumbnail/conversion |
 | **Language-Specific** (8) | python-pytest-creator, python-ruff-linter, javascript-eslint-linter, changelog-python-cliff, python-backend-skill, python-packaging-skill, csharp-linter-skill, java-linter-skill | Language-specific test, linting, project scaffolding, and packaging |
-| **Framework-Specific** (11) | nextjs-pr-workflow, nextjs-unit-test-creator, nextjs-standard-setup, nextjs-image-usage, nextjs-devtools-mcp, amplify-nextjs-deployment, typescript-dry-principle, accessibility-a11y-skill, react-nextjs-antipatterns-skill, threejs-nextjs-skill, deprecated-code-cleanup-skill | Next.js 16, React 19, TypeScript, accessibility, Three.js integration, AWS Amplify deployment, and @deprecated code cleanup workflows |
+| **Framework-Specific** (10) | nextjs-pr-workflow, nextjs-unit-test-creator, nextjs-standard-setup, nextjs-image-usage, nextjs-devtools-mcp, amplify-nextjs-deployment, typescript-dry-principle, accessibility-a11y-skill, react-nextjs-antipatterns-skill, threejs-nextjs-skill | Next.js 16, React 19, TypeScript, accessibility, Three.js integration, and AWS Amplify deployment |
 | **OpenCode Meta** (4) | opencode-agent-creation, opencode-skill-creation, opencode-skills-maintainer, documentation-consistency-skill | Agent and skill creation/maintenance, documentation consistency auditing |
 | **OpenTofu** (7) | opentofu-aws-explorer, opentofu-keycloak-explorer, opentofu-kubernetes-explorer, opentofu-neon-explorer, opentofu-provider-setup, opentofu-provisioning-workflow, opentofu-ecr-provision | Infrastructure as Code |
 | **Git/Workflow** (12) | ascii-diagram-creator, mermaid-diagram-creator, ticket-plan-workflow-skill, plan-execution-skill, git-issue-labeler, git-issue-updater, git-semantic-commits, semantic-release-convention, git-compact-commits, plan-updater, version-bump-standard, git-branch-workflow-setup-skill | Diagrams, git operations, release conventions, version bumping, compact commits, and branch workflow orchestration |
 | **Documentation** (3) | coverage-readme-workflow, docstring-generator, documentation-sync-workflow | Documentation generation |
 | **Academic & Research Writing** (2) | horseshoe-paper-writing-skill, research-paper-generation-skill | Academic & research paper writing (Horseshoe Diagram Method, journal-submission formats; codebase→paper generation) |
 | **JIRA** (3) | jira-status-updater, jira-git-integration, jira-ticket-labeler | JIRA integration via MCP server |
-| **Code Quality** (7) | solid-principles, clean-code, clean-architecture, design-patterns, object-design, code-smells, complexity-management | Code quality analysis and patterns |
+| **Code Quality** (8) | solid-principles, clean-code, clean-architecture, design-patterns, object-design, code-smells, complexity-management, deprecated-code-cleanup-skill | Code quality analysis, patterns, and @deprecated code cleanup |
 | **Agent Optimization** (7) | continuous-learning, eval-harness, strategic-compact, verification-loop, search-first, context-budget, agent-introspection-debugging | AI agent session optimization, research-first workflow, context auditing, and agent debugging |
 | **Autoresearch** (4) | autoresearch-core-skill, autoresearch-ml-skill, autoresearch-code-skill, autoresearch-research-skill | Autonomous research loops: 5-stage Understand→Hypothesize→Experiment→Evaluate→Log methodology. ML training (GPU), code optimization, literature review. Evaluated by mechanical `{"pass":bool,"score":N}` — no LLM self-judgment. Ported from uditgoenka/autoresearch + karpathy/autoresearch (MIT). |
 | **Startup/Business** (3) | startup-pitch-deck-skill, startup-business-docs-skill, construction-bd-skill | Startup pitch decks, business documentation, construction proposals |
@@ -397,9 +399,9 @@ This repository implements **skill modularization** with 123 skills organized ac
 | **cad-specialist-subagent** | CAD, robotics, hardware design — orchestrates 14 CAD/engineering skills | cad-generation, cad-viewer, cad-step-parts, cad-dxf, cad-urdf, cad-srdf, cad-sdf, cad-sendcutsend, cad-gcode, cad-bambu-labs, cad-implicit, autodesk-aps-skill, civil-3d-skill, open3d-skill | — |
 | **microsoft-m365-specialist-subagent** | Microsoft 365 MCP setup and usage | microsoft-teams, microsoft-mail, microsoft-calendar, microsoft-sharepoint | — |
 | **explorer-subagent** | Fast codebase exploration and analysis | (built-in search capabilities) | — |
-| **pptx-specialist-subagent** | PowerPoint presentations (read, create, edit, analyze) | pptx-specialist | — |
+| **pptx-specialist-subagent** | PowerPoint presentations (read, create, edit, analyze) | pptx-generate-slide, pptx-generate-template, pptx-template-modifier | — |
 | **xlsx-specialist-subagent** | Spreadsheets (read, create, edit, analyze) | xlsx-specialist | — |
-| **startup-ceo-subagent** | Startup presentations (pitch decks, investor slides, board updates) | pptx-specialist | — |
+| **startup-ceo-subagent** | Startup presentations (pitch decks, investor slides, board updates) | pptx-specialist-subagent | — |
 | **loop-operator-subagent** | Autonomous loop execution with self-correction | verification-loop, continuous-learning, strategic-compact | `explore`, `general` |
 | **autoresearch-ml-subagent** | Autonomous ML training loop (Karpathy-style). Requires NVIDIA GPU. | autoresearch-core, autoresearch-ml, strategic-compact | `explore`, `general` |
 | **autoresearch-code-subagent** | Autonomous code optimization (test coverage, bundle size, runtime) | autoresearch-core, autoresearch-code, continuous-learning, strategic-compact | `explore`, `general` |

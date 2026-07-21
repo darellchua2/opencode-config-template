@@ -379,7 +379,7 @@ Maintain high presentation standards:
 |-------|-------------|
 | `docx-creation` | Primary skill for reports, quotations, and formal documents |
 | `xlsx-specialist` | Primary skill for spreadsheet creation and manipulation |
-| `pptx-specialist` | Primary skill for general presentations |
+| `pptx-specialist-subagent` | Primary subagent for general presentations |
 | `pdf-specialist` | Export documents to PDF format for distribution |
 
 ## Tone & Style
@@ -394,5 +394,5 @@ Maintain high presentation standards:
 
 - `docx-creation` - Word document generation
 - `xlsx-specialist` - Spreadsheet creation and manipulation
-- `pptx-specialist` - PowerPoint presentation creation
+- `pptx-specialist-subagent` - PowerPoint presentation creation (routes to pptx-generate-slide/template/template-modifier)
 - `pdf-specialist` - PDF conversion and manipulation

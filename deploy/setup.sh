@@ -680,9 +680,10 @@ USAGE:
 
             Office Utilities (2):   ooxml-editing-skill, office-thumbnail-skill
 
-            Language-Specific (6): python-pytest-creator, python-ruff-linter,
+            Language-Specific (8): python-pytest-creator, python-ruff-linter,
                                   javascript-eslint-linter, changelog-python-cliff,
-                                  python-backend-skill, python-packaging-skill
+                                  python-backend-skill, python-packaging-skill,
+                                  csharp-linter-skill, java-linter-skill
 
           Framework-Specific (10): nextjs-pr-workflow, nextjs-unit-test-creator,
                                  nextjs-standard-setup, nextjs-image-usage,
@@ -3175,13 +3176,15 @@ print_summary() {
         echo "      - technical-design-creation-skill"
         echo "      - vision-creation-skill"
         echo "      - interactive-document-rendering-skill"
-        echo "    - Language-Specific (6):"
+        echo "    - Language-Specific (8):"
         echo "      - python-pytest-creator"
         echo "      - python-ruff-linter"
         echo "      - javascript-eslint-linter"
         echo "      - changelog-python-cliff"
         echo "      - python-backend-skill"
         echo "      - python-packaging-skill"
+        echo "      - csharp-linter-skill"
+        echo "      - java-linter-skill"
         echo "    - Presentation (3):"
         echo "      - pptx-generate-slide-skill, pptx-generate-template-skill"
         echo "      - pptx-template-modifier-skill"
@@ -3335,7 +3338,7 @@ print_next_steps() {
       echo "                     📦 123 Skills Available"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-     echo "  Framework (19) • Language-Specific (6) • Presentation (3)"
+     echo "  Framework (19) • Language-Specific (8) • Presentation (3)"
      echo "  Office Utilities (2) • Framework-Specific (10) • OpenCode Meta (4)"
      echo "  OpenTofu (7) • Git/Workflow (12) • Documentation (3) • JIRA (3) • Code Quality (8)"
     echo "  Agent Optimization (7) • Planning & Alignment (4) • Academic & Research Writing (2)"
