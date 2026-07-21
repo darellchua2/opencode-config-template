@@ -535,6 +535,113 @@ This phase runs AFTER Phases 1–4 are complete and the chenyu stack is the prim
   — **Done when:** A short html2pptx section in `ooxml-editing-skill/SKILL.md` documents the explicit-request-only path; toolchain installs verified working.
   — **Consumers affected:** Users with explicit HTML→PPTX conversion needs
 
+### Phase 8 — Architecture Review Findings (NEW — BT-142 review session 2026-07-21)
+
+Read-only scenario-based review by `architecture-review-subagent` covering 17 scenarios across 5 skills + 6 new Phase 3.4-3.5 modules. Test suite at review time: 604 passed, 21 skipped.
+
+**Scenario results:** 11 PASS, 5 PARTIAL, 1 GAP. See PLANS/PLAN-BT-142.md scenario matrix in commit `66b576e` for full breakdown.
+
+- [x] **8.1** P0 bugs fixed (commit `66b576e`)
+  — **BUG-1 (Critical):** `container_check._is_text_placeholder` had trailing `or True` defeating the type filter — every placeholder (PICTURE, TABLE, CHART) was treated as a text candidate, causing false-positive container-fit violations. **Fix:** removed `or True`; switched to `getattr(type_, 'value')` (canonical) with string-parse of `"NAME (NN)"` format as fallback for older python-pptx.
+  — **BUG-2 (Critical):** `designer_promoter` `container_critical_blocks=True` / `contrast_critical_blocks=True` raised generic `RuntimeError` that was caught by the per-slide `except Exception` handler — the gate appeared to work but actually just skipped the offending slide and continued, producing a partial template without halting. **Fix:** introduced dedicated `ContainerFitBlocked` + `ContrastBlocked` exception types; the per-slide handler re-raises them via a separate `except (ContainerFitBlocked, ContrastBlocked): raise` clause placed before the generic `Exception` catch.
+  — **BUG-3 (Critical):** `designer_promoter` ImportError fallback for `vision_extractor.fallback_xml_background` had signature `(slide)` but caller at `_resolve_slide_background` passed `(slide, theme=theme)` — `TypeError` whenever the import failed. **Fix:** aligned the fallback signature to `(slide, theme=None)`.
+  — **Done when:** 15 regression tests in `tests/test_p0_regression.py` cover all three bugs + dual behavior (critical_blocks=True halts; =False reports-and-continues). Full suite: 619 passed.
+  — **Consumers affected:** all Capability C consumers.
+
+- [x] **8.2** Deploy drift resolved (user redeployed 2026-07-21)
+  — **HIGH-2:** the deployed `~/.config/opencode/agents/pptx-specialist-subagent.md` was missing Stage -1.5 (vision extraction) because the deploy happened between commits `5b7d185` (orchestrator wiring) and `e6c378d` (master bg + vision stage). User redeployed after commit `66b576e`, picking up all current orchestrator changes.
+  — **Done when:** `diff opencode_app/.opencode/agents/pptx-specialist-subagent.md ~/.config/opencode/agents/pptx-specialist-subagent.md` returns empty (or only the `model:` frontmatter line).
+
+- [ ] **8.3** Write tests for `merge_decks` / `_copy_slide` / `_relink_image_rels` (HIGH-1)
+  — **Why:** the multi-pass merge primitive (used for L1 engine limit: >8 distinct layouts per deck) has ZERO test coverage. It is the riskiest untested code in the new stack. The BETEKK V9.1.1 content migration scenario (Phase 6.12) cannot be considered validated until this is tested.
+  — **Test plan:**
+    1. Build two minimal decks (1 slide each, distinct layouts) → merge → verify 2 slides on correct distinct layouts
+    2. Build two decks with overlapping media (same image part) → merge → verify no relationship corruption
+    3. Build three batches (partition of a 10-layout deck) → merge → verify all 10 slides on correct layouts
+    4. Negative: merge a deck with a layout that doesn't exist on the primary master → verify graceful fallback to blank layout + warning
+  — **Done when:** `pytest opencode_app/.opencode/skills/generate-slide-skill/scripts/tests/test_multipass_render_merge.py` passes with all 4 cases. Use real `ppt_builder.generate_ppt_from_data` to render batch inputs (not fakes) so the relink path is exercised end-to-end.
+  — **Consumers affected:** all >8-layout decks (Phase 3.5a).
+
+- [ ] **8.4** Audit + close `master_cloner` skipped tests (HIGH-3 — pre-existing)
+  — **Why:** 11 of 12 `tests/test_master_cloner.py` tests carry `@pytest.mark.skip` with reason "need multi-layout donor fixture". This is pre-existing chenyu-era debt, not introduced by BT-142, but it leaves Capability B (donor clone) effectively untested.
+  — **Done when:** skipped tests either pass (fixture built) or are rewritten with explicit `tmp_path` fixtures against a synthesized multi-layout donor. Goal: zero `@pytest.mark.skip` in `test_master_cloner.py`.
+  — **Consumers affected:** Capability B (template-modifier donor-clone path).
+
+- [ ] **8.5** Convert medium-severity findings to follow-ups (MED-1 through MED-5)
+  — **MED-1:** `placeholder_backfill._add_picture_into_placeholder` — zero test coverage. Add 2-3 tests: real image into placeholder (fill sizing), real image (fit sizing), missing-file path.
+  — **MED-2:** `vision_extractor.fallback_xml_background` schemeClr aliases (tx1, bg1) — untested. Add tests for both alias paths with theme dict.
+  — **MED-3:** `contrast_check` auto-fix mutation — current tests use `_FakeRun` stubs and don't verify the actual OOXML mutation lands on the placeholder's `<a:defRPr><a:solidFill><a:srgbClr>`. Add a test using a real python-pptx placeholder shape, call `contrast_violations(..., auto_fix=True)`, reload the shape, verify the run color was changed.
+  — **MED-4:** Skill count drift — docs say 122 but filesystem has 127 SKILL.md files (new skills added elsewhere). Re-audit and reconcile. May relate to Phase 9 (PPTX skill rename).
+  — **MED-5:** `generate-slide-skill/SKILL.md:84` says "English only" but orchestrator line 27 says "RELAXED" — pre-existing doc contradiction. Align both to the orchestrator's relaxed policy.
+  — **Done when:** each MED item has a dedicated commit OR is explicitly triaged out with rationale.
+
+### Phase 9 — PPTX Skill Naming Convention (NEW — BT-142 session 2026-07-21)
+
+**Why:** the three PPTX-specific skills created by BT-142 (`generate-slide-skill`, `generate-template-skill`, `template-modifier-skill`) carry generic names that don't communicate they're PPTX-only. A future contributor reading the skill list cannot tell whether `generate-slide-skill` handles Google Slides, Keynote, Reveal.js, or PPTX. Adding a `pptx-` prefix scopes discovery and avoids future name collisions when (if) other slide frameworks are added.
+
+The two Office-wide skills keep their current names because they handle DOCX/PPTX/XLSX uniformly:
+- `ooxml-editing-skill` — generic OOXML unpack/pack/validate (any Office file)
+- `office-thumbnail-skill` — generic visual analysis (any Office file via LibreOffice)
+
+**Rename map (PPTX-specific only):**
+
+| Current name                       | New name                              |
+| ---------------------------------- | ------------------------------------- |
+| `generate-slide-skill`               | `pptx-generate-slide-skill`             |
+| `generate-template-skill`            | `pptx-generate-template-skill`          |
+| `template-modifier-skill`            | `pptx-template-modifier-skill`          |
+
+Skill count stays at 122 — pure rename, no add/remove.
+
+- [ ] **9.1** Rename the three PPTX-specific skill directories
+  — **Why:** namespacing for discoverability; prevent future collisions when other slide frameworks are considered.
+  — **Done when:** `git mv opencode_app/.opencode/skills/generate-slide-skill opencode_app/.opencode/skills/pptx-generate-slide-skill` (and the two parallel moves); old directories no longer exist; new directories retain all scripts + SKILL.md + tests unchanged.
+  — **Consumers affected:** every reference to the old names (see 9.2)
+
+- [ ] **9.2** Update all cross-references
+  — **Files to update (verified via `grep -rn 'generate-slide-skill\|generate-template-skill\|template-modifier-skill' opencode_app/ deploy/ README.md PLANS/`):**
+    - `opencode_app/.opencode/agents/pptx-specialist-subagent.md` — routing matrix, `permission.skill:` block, Stage -1.5 + Stage 4 code samples (sys.path.insert references + skill paths)
+    - `opencode_app/.opencode/agents/office-document-primary-agent.md` — `permission.skill:` if it references any of the three
+    - `opencode_app/.opencode/skills/*/SKILL.md` — any cross-references between the three (e.g. `template-modifier-skill/SKILL.md` mentions `generate-slide-skill` in its scripts table)
+    - `opencode_app/.opencode/skills/_common/scripts/*.py` — only docstring/comments (functional imports use relative paths or sys.path.insert with the directory name)
+    - `deploy/setup.sh` — skill listing (banner + status sections)
+    - `deploy/setup.ps1` — Windows parity mirror
+    - `README.md` — Skill Categories table, any prose references
+    - `opencode_app/README.md` — Docker docs PPTX section
+    - `PLANS/PLAN-BT-142.md` — fix every reference in this file
+  — **Done when:** `grep -rn '\b\(generate-slide-skill\|generate-template-skill\|template-modifier-skill\)\b' opencode_app/ deploy/ README.md PLANS/` returns zero matches (the new `pptx-` prefixed names are not flagged because the regex uses `\b` word boundaries against the old bare names).
+  — **Consumers affected:** every consumer of the three skills.
+
+- [ ] **9.3** Update `sys.path.insert` calls in scripts and tests
+  — **Why:** Python imports use `sys.path.insert(0, '.opencode/skills/generate-slide-skill/scripts')` (string literal containing the directory name). These literals must be updated or the imports break.
+  — **Done when:** `grep -rn 'sys.path.insert.*skills/\(generate-slide-skill\|generate-template-skill\|template-modifier-skill\)' opencode_app/` returns zero matches; the new paths use the `pptx-` prefixed directory names. Verify with `python3 -m pytest opencode_app/.opencode/skills/pptx-*/scripts/tests/` — all tests pass against the new paths.
+  — **Consumers affected:** all callers of the three skills' Python modules (orchestrator scripts, dependent skill scripts, tests).
+
+- [ ] **9.4** Update SKILL.md `name:` frontmatter fields
+  — **Why:** each skill's YAML frontmatter has a `name:` field matching the directory name. The frontmatter name is used by skill-loader logic and must match the directory or the skill fails to load.
+  — **Done when:** `head -5 opencode_app/.opencode/skills/pptx-generate-slide-skill/SKILL.md` shows `name: pptx-generate-slide-skill` (and parallel for the other two).
+  — **Consumers affected:** OpenCode skill loader.
+
+- [ ] **9.5** Update `description:` fields to reflect PPTX-specificity
+  — **Why:** now that the name carries the `pptx-` prefix, the description can be tighter (no need to disambiguate framework). E.g. `generate-slide-skill`'s description "Populate the PowerPoint template..." can become "Populate a PPTX Slide Master template...".
+  — **Done when:** all three renamed skills' `description:` fields explicitly say "PPTX" or "PowerPoint" (already mostly true; verify and tighten).
+  — **Consumers affected:** skill discoverability in agent routing matrices.
+
+- [ ] **9.6** Sync deploy/README counts + listings
+  — **Why:** the deploy scripts hardcode skill listings in category groups. The three renamed skills must appear under their new names; counts stay at 122.
+  — **Done when:** `grep -c 'pptx-generate-slide-skill\|pptx-generate-template-skill\|pptx-template-modifier-skill' deploy/setup.sh deploy/setup.ps1 README.md` returns ≥3 in each file; the old names no longer appear.
+  — **Consumers affected:** deploy pipeline, README readers.
+
+- [ ] **9.7** Validation gate: smoke-test the renamed stack end-to-end
+  — **Why:** a rename touches many files in parallel; a single missed reference breaks routing silently.
+  — **Done when:**
+    1. `./deploy/setup.sh --dry-run` (or equivalent) lists the three new skill names + correct count (122)
+    2. `python3 -m pytest opencode_app/.opencode/skills/pptx-*/scripts/tests/ opencode_app/.opencode/skills/_common/scripts/tests/` — all tests pass
+    3. Smoke test from the architecture review (scenarios 1, 3, 17) re-run with new paths — all PASS
+    4. Live end-to-end: invoke `pptx-specialist-subagent` against BETEKK V9.1.1 — produces the same template as before the rename
+
+**NOTE on backward compatibility:** downstream projects that consume the deployed `~/.config/opencode/skills/{generate-slide,generate-template,template-modifier}-skill/` will break on their next deploy until they update any `sys.path.insert` or `permission.skill:` references. Mitigation: ship as a flagged breaking change in the next release notes; consider leaving symlink shims for one release cycle (deferred — out of BT-142 scope).
+
 ## Conditional Trigger Matrix (embed in orchestrator)
 
 | User provides        | User asks                              | Skill invoked                                                              |
@@ -576,6 +683,10 @@ This phase runs AFTER Phases 1–4 are complete and the chenyu stack is the prim
 18. **Container-fit check false positives (Phase 3.4.2).** The static geometry check may flag placeholders that intentionally extend slightly beyond their container (e.g., a headline that overhangs a card edge by design). **Mitigation:** the 4px default tolerance absorbs minor overhang; severity tiers (critical > 20px, warning 4–20px) let the orchestrator ignore warnings; critical violations trigger a clarifying `question()` to the user ("resize placeholder vs keep as intentional overhang") rather than blocking silently.
 19. **Notes-master repair may alter theme inheritance (Phase 3.5c).** Adding a notes body placeholder to a notes master that lacks one could change how other notes elements render. **Mitigation:** the repair adds only the minimal `<p:ph type="body" idx="1"/>` element; no other notes-master shapes are touched; the original deck is never modified (repair applies only to a derived output).
 20. **Content migration routing ambiguity (Conditional Trigger Matrix row 6).** When the user provides two PPTX paths, the orchestrator must correctly identify which is "content" and which is "template". **Mitigation:** explicit prompt parsing ("apply A to B" / "use A on B's template" → A=content, B=template); if ambiguous, ask the user via `question()` to confirm roles before proceeding (one-shot, before any extraction).
+21. **Merge primitive untested (HIGH-1 from BT-142 review).** `multipass_render.merge_decks` / `_copy_slide` / `_relink_image_rels` have ZERO test coverage — the L1 engine-limit workaround (>8 distinct layouts) rests on an untested primitive. A defect here would silently corrupt multi-batch decks. **Mitigation:** Phase 8.3 adds 4 targeted tests against real `generate_ppt_from_data` batch outputs (not fakes) so the relink path is exercised end-to-end. Until landed, recommend Phase 6.12 (content migration) not be considered validated for >8-layout decks.
+22. **Container-check type filter (BUG-1 fix).** The fix in commit `66b576e` changed container_check's placeholder classification — picture/table/chart placeholders are no longer treated as text candidates. **Mitigation:** re-run Capability C on BETEKK V9.1.1 after the fix to confirm the violation count is accurate (was previously inflated by false positives from non-text placeholders). Adjust orchestrator's `container_overflow: critical` verdict routing if severity distribution shifts.
+23. **Policy-gate propagation (BUG-2 fix).** Pre-fix, `container_critical_blocks=True` was silently swallowed. Post-fix, it halts with `ContainerFitBlocked`. **Mitigation:** orchestrator callers that previously set `container_critical_blocks=True` expecting non-blocking behavior must explicitly switch to `=False`. The BETEKK V9.1.1 generation runs in this session used `=False` (non-blocking), so behavior is unchanged; verify any future callers know about the new blocking semantics.
+24. **PPTX skill rename is a breaking change (Phase 9).** Renaming the three PPTX-specific skills will break downstream projects that reference the old names in `permission.skill:` or `sys.path.insert` calls. **Mitigation:** ship in the next minor release with explicit migration notes; consider one-cycle symlink shims (deferred — out of BT-142 scope).
 
 ## Open Questions (defer to primary agent)
 
