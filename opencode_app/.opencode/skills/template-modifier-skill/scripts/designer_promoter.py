@@ -85,10 +85,30 @@ try:
     )
 except ImportError:
     VisionSlideSchema = None  # type: ignore
-    def fallback_xml_background(slide):  # type: ignore
+    def fallback_xml_background(slide, theme=None):  # type: ignore
+        # Signature MUST match the real vision_extractor.fallback_xml_background
+        # (which takes an optional theme dict). Without the theme kwarg, the
+        # call site at _resolve_slide_background would TypeError on import
+        # failure — BT-142 review caught this P0 bug.
         return None
 
 logger = logging.getLogger(__name__)
+
+
+class ContainerFitBlocked(Exception):
+    """Raised when ``container_critical_blocks=True`` and a layout has critical overflow.
+
+    Propagates out of ``promote_designer_slides`` (NOT caught by the per-slide
+    handler) so the build halts and the user sees a clear failure instead of
+    a silently-partial template. BT-142 review P0 fix.
+    """
+
+
+class ContrastBlocked(Exception):
+    """Raised when ``contrast_critical_blocks=True`` and unfixed critical contrast remains.
+
+    Same propagation rules as :class:`ContainerFitBlocked`.
+    """
 
 
 # python-pptx PP_PLACEHOLDER type enum integer values
@@ -784,6 +804,43 @@ def promote_designer_slides(
     except Exception as exc:
         logger.warning("master background injection failed: %s", exc)
 
+    # Stage A.6: inject the same bg on PRE-EXISTING layouts + notes master.
+    # Source decks typically ship with a "DEFAULT" blank layout whose
+    # <p:bgRef idx="1001"> resolves to white even after the master is darkened
+    # (the layout's own bg wins over inheritance). Without this pass, the
+    # first thumbnail in PowerPoint's layouts gallery shows white. The notes
+    # master has the same default and shows up in Presenter View / Notes
+    # Page view. We only inject on layouts that DON'T already carry a solid
+    # <p:bgPr> (promoted layouts already have one from Stage B below).
+    try:
+        ns_p = "http://schemas.openxmlformats.org/presentationml/2006/main"
+        for layout in prs.slide_layouts:
+            bg = layout._element.find(f"{{{ns_p}}}cSld").find(f"{{{ns_p}}}bg")
+            if bg is None:
+                # No <p:bg> at all → will inherit master, OK
+                continue
+            bg_pr = bg.find(f"{{{ns_p}}}bgPr")
+            if bg_pr is not None:
+                # Already has an explicit solid fill — skip
+                continue
+            # Has <p:bgRef> (default style) → replace with solid master bg
+            _inject_layout_background(layout._element, master_bg)
+            logger.info("replaced <p:bgRef> on layout %r with solid %s",
+                        getattr(layout, "name", "?"), master_bg)
+        # Notes master: same treatment
+        try:
+            nm = prs.notes_master
+            nm_bg = nm._element.find(f"{{{ns_p}}}cSld").find(f"{{{ns_p}}}bg")
+            if nm_bg is not None:
+                nm_bg_pr = nm_bg.find(f"{{{ns_p}}}bgPr")
+                if nm_bg_pr is None:
+                    _inject_layout_background(nm._element, master_bg)
+                    logger.info("replaced <p:bgRef> on notes master with solid %s", master_bg)
+        except Exception as exc:
+            logger.warning("notes master bg injection skipped: %s", exc)
+    except Exception as exc:
+        logger.warning("pre-existing layout bg injection failed: %s", exc)
+
     # Stage B: cluster + promote each slide (with vision-derived bg if available)
     placeholders_total = 0
     skipped: List[int] = []
@@ -818,7 +875,14 @@ def promote_designer_slides(
                     layout_container_violations[layout_name] = [v.to_dict() for v in vs]
                     critical = [v for v in vs if v.severity == "critical"]
                     if critical and container_critical_blocks:
-                        raise RuntimeError(
+                        # Raise OUTSIDE the per-slide try/except below so it
+                        # actually halts the build. Using a dedicated exception
+                        # type so callers can distinguish "fatal policy
+                        # violation" from "ordinary slide failure". The
+                        # per-slide handler catches generic slide-construction
+                        # errors (XML clones, shape iteration); policy-gate
+                        # violations must propagate. BT-142 review P0 fix.
+                        raise ContainerFitBlocked(
                             f"critical container-fit violations on layout '{layout_name}': "
                             f"{[v.detail for v in critical]}"
                         )
@@ -830,10 +894,15 @@ def promote_designer_slides(
                     layout_contrast_violations[layout_name] = [v.to_dict() for v in cvs]
                     critical = [v for v in cvs if v.severity == "critical" and not v.auto_fixed]
                     if critical and contrast_critical_blocks:
-                        raise RuntimeError(
+                        raise ContrastBlocked(
                             f"critical contrast violations on layout '{layout_name}': "
                             f"{[v.detail for v in critical]}"
                         )
+        except (ContainerFitBlocked, ContrastBlocked):
+            # Policy-gate violations propagate up — do NOT swallow them in
+            # the generic per-slide handler. The build must halt so the user
+            # sees the failure instead of getting a partial template.
+            raise
         except Exception as exc:
             errors.append(f"slide {i} ('{layout_name}'): {exc}")
             skipped.append(i)

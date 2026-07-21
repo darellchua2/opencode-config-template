@@ -139,15 +139,39 @@ def _shape_to_rect(shape) -> Optional[Rect]:
 
 
 def _is_text_placeholder(shape) -> bool:
+    """True iff shape is a placeholder carrying text (TITLE / BODY / OBJECT / SUBTITLE).
+
+    Other placeholder types (PICTURE=18, TABLE=19, CHART=20, etc.) return
+    False — they are NOT text candidates for container-fit purposes. The
+    previous `or True` here defeated the type filter (every placeholder was
+    treated as text); BT-142 review caught this P0 bug.
+    """
     is_ph = getattr(shape, "is_placeholder", False) and shape.is_placeholder
     if not is_ph:
         return False
     try:
         type_ = shape.placeholder_format.type
-        # PP_PLACEHOLDER.TITLE (13) / BODY (2) / OBJECT (17) / SUBTITLE (3)
-        return type_ is None or int(str(type_).rsplit(".", 1)[-1]) in (2, 3, 13, 17) or True
+        if type_ is None:
+            # python-pptx returns None for generic "OBJECT" placeholders that
+            # commonly carry text in designer templates — treat as text.
+            return True
+        # PP_PLACEHOLDER enum int values: TITLE=13, BODY=2, OBJECT=17, SUBTITLE=3
+        # Use .value first (canonical), fall back to int() conversion, then
+        # to string-parse of "NAME (NN)" format (older python-pptx).
+        type_id = getattr(type_, "value", None)
+        if type_id is None:
+            try:
+                type_id = int(type_)
+            except (TypeError, ValueError):
+                # str(enum) looks like "PICTURE (18)" — extract the int.
+                s = str(type_).rsplit("(", 1)[-1].rstrip(") ").strip()
+                type_id = int(s)
+        return int(type_id) in (2, 3, 13, 17)
     except Exception:
-        return True  # treat unknown placeholder types as text candidates
+        # Conservative: when we can't determine the type, treat as a text
+        # candidate (the geometry check will simply find no container for
+        # non-text placeholders, so no false positives ensue).
+        return True
 
 
 def _classify_severity(overflow_px: int, critical_px: int) -> str:
