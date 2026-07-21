@@ -92,10 +92,69 @@ If cloning fails, `resolve_and_clone` **safely falls back** to the base template
 
 ## When to use me
 
-- A required `slide_type` has no matching layout in the template (the default `clone_on="missing"` trigger).
-- You explicitly want to clone for over-limit content too — pass `clone_on="any"` (by default over-limit is handled by density downshift in `pptx-subagent`, not here).
+- A required `slide_type` has no matching layout in the template (the default `clone_on="missing"` trigger). → **Capability B** (donor clone).
+- You explicitly want to clone for over-limit content too — pass `clone_on="any"` (by default over-limit is handled by density downshift in `pptx-subagent`, not here). → **Capability B**.
+- The user supplies a **designer deck with an empty master** (one blank layout, zero placeholders, all branding baked per-shape) and asks to "make a reusable template" or "promote slides to master". → **Capability C** (designer promotion).
 
 Do **NOT** use me for normal filling, chart generation, or image embedding — those are `generate-slide-skill`.
+
+## Capability C — Promote Designer Slides to Empty Master (BT-142 Phase 3.4)
+
+**Trigger:** the source PPTX has an empty Slide Master (one blank `DEFAULT` layout, zero placeholders) and N hand-crafted designer slides whose branding (fonts, colors, accent shapes) is applied **per-shape** rather than through the theme. This is the shape of a designer-built deck exported from PowerPoint without a saved Slide Master. End-user intent: mimic PowerPoint's **Slide Master view → Add Layout** (or right-click slide → "Add to Master"), turning the N designed slides into named layouts attached to the master.
+
+Capability C reverse-engineers each slide's structure into a **named layout with real placeholders** (TITLE/BODY/PICTURE/TABLE) on the Slide Master, while preserving decorative brand shapes (cards, accent bars, dividers) as non-placeholder layout shapes.
+
+### When to use C vs B
+
+| Trigger shape | Capability | Source of new layouts |
+| ------------- | ---------- | --------------------- |
+| Template has layouts but missing one for a slide_type | **B** (donor clone) | Donor template (external) |
+| Template's master is empty; the user's own deck has the designed slides | **C** (designer promotion) | The source deck itself (reverse-engineered) |
+
+### Algorithm (per slide)
+
+1. **Cluster shapes by role** — `cluster_shapes_by_role(slide)` walks the slide's shapes and classifies each: largest-font text shape (≥28pt) → `title`, other text shapes → `body`, picture shapes → `picture`, table shapes → `table`, everything else → `decorative`.
+2. **Allocate placeholder indices** — TITLE=0, BODY=1..n (reading order: top-to-bottom, left-to-right), PICTURE=10+, TABLE=20+.
+3. **Promote to layout** — clone the slide as a new `SlideLayout` under the master; convert each clustered shape to its placeholder type via raw OOXML (`<p:ph type="..." idx="..."/>` under `<p:nvSpPr>/<p:nvPr>`). Decorative shapes are kept verbatim.
+4. **Rewrite the theme XML** — `extract_theme_from_shapes(slides)` infers the major/minor font (most-used font across runs, weighted by run length) and 12 OPC color roles (sorted by brightness into dk1/lt1/dk2/lt2, remaining into accent1..4). `apply_theme_xml(prs, theme)` rewrites the master's `theme/theme1.xml` in place.
+5. **Run container-fit check** — for each promoted layout, `container_check.container_violations(layout)` flags any text placeholder that geometrically extends beyond its visual container shape (the BETEKK V9.1.1 slide 4 defect). Critical violations (>20px overflow) block the build by default; warnings (4–20px) are reported but non-blocking.
+6. **Run WCAG 2.1 contrast check** — `contrast_check.contrast_violations(layout, theme, auto_fix=True)` flags any text placeholder whose effective foreground color (resolved from explicit rPr → theme `dk1` default) fails WCAG AA against its background (resolved from container fill → theme `lt1` → white). Required: 4.5:1 (normal text), 3:1 (large text ≥18pt). Severity: <3.0 critical, <4.5 warning. Auto-fix (default ON) overrides the placeholder's default run color to white/black based on background luminance; the violation is still reported with `auto_fixed=True`. On BETEKK V9.1.1, this surfaced 53 critical defects (mostly `#FB923C` orange on `#FB923C` orange = 1.0:1 ratio, and light text on `#2DD4BF` teal); auto-fix resolved 43 (81%).
+7. **Strip source slides** — template ≠ deck; the output has 0 slides + N layouts.
+
+### Usage
+
+```bash
+python -c "
+import sys
+sys.path.insert(0, '.opencode/skills/template-modifier-skill/scripts')
+from designer_promoter import promote_designer_slides
+report = promote_designer_slides(
+    source_pptx='/path/to/designer_deck.pptx',
+    output_path='/path/to/designer_deck_template.pptx',
+    layout_names={0: 'Cover', 1: 'Story', 2: 'Problem Impact', 3: 'Problem',
+                  4: 'Solution', 5: 'Demo', 6: 'Market Validation',
+                  7: 'Business Model', 8: 'Team', 9: 'Ask'},
+    # theme_override={'major_font': 'Century Gothic', 'accent1': '#2DD4BF', ...}
+)
+print(report.to_dict())
+"
+```
+
+**Output:** new `<source>_template.pptx` with: (a) rewritten Slide Master theme (major/minor fonts + 12 OPC color roles from the source's per-shape palette — not stock Office), (b) N named layouts with proper text/picture/table placeholders, (c) decorative brand shapes baked into each layout, (d) zero source slides.
+
+**Container-fit safety:** the build runs `container_check` after each layout promotion. Critical violations raise `RuntimeError` (configurable via `container_critical_blocks=False`); warnings are reported in `PromotionReport.container_violations` for orchestrator follow-up (extend container, shorten text, or move placeholder).
+
+### Scripts (Capability C)
+
+| Script | Purpose |
+|--------|---------|
+| `scripts/designer_promoter.py` | `promote_designer_slides(source, output, ...)` — full pipeline. Also exposes `cluster_shapes_by_role`, `extract_theme_from_shapes`, `apply_theme_xml`. |
+| `scripts/container_check.py` | `container_violations(layout)` / `check_template(prs)` — static geometry check. Raises `ContainerFitError` on critical violations when invoked as a gate. |
+| `scripts/contrast_check.py` | `contrast_violations(layout, theme, auto_fix)` / `contrast_ratio(fg, bg)` — WCAG 2.1 contrast verification with optional auto-fix (flips low-contrast placeholder text to white/black based on background luminance). |
+
+### Cross-link to Capability B
+
+Capability B (`state_machine.resolve_and_clone`) and Capability C (`designer_promoter.promote_designer_slides`) are siblings: B borrows from a donor, C reverse-engineers from the source. The orchestrator (`pptx-specialist-subagent` Stage -1) routes between them based on whether the master is empty.
 
 ## Reference
 

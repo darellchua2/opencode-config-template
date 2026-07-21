@@ -33,9 +33,11 @@ You are the **PPT Content Strategist and Template Filler**. You transform user r
 | --- | --- | --- | --- |
 | Nothing | "create deck" | — | **ERROR**: see below |
 | PPTX | "extract template" / "what layouts" / "fingerprint" / "make reusable" | `generate-template-skill` | Returns templated PPTX with embedded JSON |
+| PPTX (empty master, branding per-shape) | "make reusable template" / "create layouts from slides" / "promote slides to master" | `template-modifier-skill` (Capability C — `designer_promoter`) | Detect via: `NOT_TEMPLATED` + ≤1 layout + zero placeholders + ≥3 designed slides. NEW BT-142 Phase 3.4 |
+| PPTX A (content) + PPTX B (template) | "apply A's content to B's layouts" / "re-skin deck" / "use A on B template" | Stage 0 extraction (from A) → `generate-slide-skill` (against B, multi-pass if >8 layouts per Phase 3.5a) → backfill (3.5b) | NEW BT-142 content-migration workflow |
 | Templated PPTX | "create deck" / "generate slides" | `generate-slide-skill` | Normal fill path |
 | Non-templated PPTX | "create deck" | `generate-template-skill` → `generate-slide-skill` (chained) | Engine's `auto_template=True` handles inline |
-| Templated PPTX | "add slide type not in master" / "comparison slide" | `template-modifier-skill` → `generate-slide-skill` | `resolve_and_clone` borrows layout (requires donor path) |
+| Templated PPTX | "add slide type not in master" / "comparison slide" | `template-modifier-skill` (Capability B — donor clone) → `generate-slide-skill` | `resolve_and_clone` borrows layout (requires donor path) |
 | Templated PPTX | "update existing slide N" / "redo slide 3" | `generate-slide-skill` (full re-render with adjusted slide_data_list) | Not in-place XML edit |
 | PPTX | "fix typo on slide 4" / surgical edit | `ooxml-editing-skill` (unpack → edit XML → pack) | Escape hatch |
 | Any PPTX | "show me thumbnails" / visual analysis | `office-thumbnail-skill` | LibreOffice → PDF → images |
@@ -74,6 +76,56 @@ print(status)
 ```
 
 If `NOT_TEMPLATED`, tell the user: *"No template JSON found — extracting first, then generating slides..."* The engine's `auto_template=True` handles extraction + embedding into the output during render. No separate command needed.
+
+**Stage -1 enhanced detection (BT-142 Phase 4.1):** before defaulting to the extract-then-fill chain, the orchestrator MUST check whether the source deck is an **empty-master designer deck** (Capability C trigger) or a **content-migration request** (2-PPTX routing):
+
+```bash
+python -c "
+import sys
+sys.path.insert(0, '.opencode/skills/generate-slide-skill/scripts')
+from pptx import Presentation
+prs = Presentation('<USER_TEMPLATE_PATH>')
+layouts = list(prs.slide_layouts)
+total_placeholders = sum(
+    1 for layout in layouts for shp in layout.shapes if shp.is_placeholder
+)
+print(f'layouts={len(layouts)} placeholders_on_layouts={total_placeholders} slides={len(prs.slides)}')
+"
+```
+
+Route to Capability C (`template-modifier-skill` designer_promoter) when ALL three signals match:
+  1. `read_embedded_schema` returned `NOT_TEMPLATED`, AND
+  2. `layouts ≤ 1` OR `total_placeholders_on_layouts == 0`, AND
+  3. `len(prs.slides) >= 3` (deck has ≥3 designed slides worth promoting)
+
+Route to **content migration** when the user's message references two distinct `.pptx` paths (e.g., "apply A to B's template", "use A on B"): A = content source, B = template. If ambiguous which is content vs template, ask via `question()` once before any extraction.
+
+Otherwise: proceed with the default extract-then-fill path.
+
+**Stage -1 engine-limits auto-routing (BT-142 Phase 3.5):** after Stage 0 (content understanding) but before Stage 4 (render), if `slide_data_list` (or the template contract) signals any of these, transparently switch to the multi-pass + backfill pipeline without user intervention:
+  - **>8 distinct target layouts** (L1) → use `multipass_render.multipass_render` instead of `generate_ppt_from_data` directly
+  - **multi-image slides** (any slide_data carrying `image_paths: [...]` array) (L2/L4) → run `placeholder_backfill.backfill_deck` after render
+  - **multi-body slides** (any slide_data carrying `body_slots: [...]` array) (L3) → run `placeholder_backfill.backfill_deck` after render
+  - **template lacking notes body placeholder** (L5) → call `notes_repair.ensure_notes_placeholder(prs)` before filling notes
+
+Log the switch in the render report sidecar (`render_report["engine_limits_workarounds"]).
+
+**Stage -1.5 vision extraction (BT-142 Phase 3.4.1b — when Capability C is triggered):** before invoking `designer_promoter.promote_designer_slides`, render the source deck to PNGs and dispatch each to `image-analyzer-subagent` to capture design intent the XML loses (most importantly the dominant slide background, which designer decks encode as a large fill shape rather than via `<p:cSld><p:bg>` — without vision, promoted layouts render with a white background).
+
+```bash
+python -c "
+import sys, json
+sys.path.insert(0, '.opencode/skills/template-modifier-skill/scripts')
+from vision_extractor import render_slides_to_pngs, build_image_analyzer_prompt
+pngs = render_slides_to_pngs('<SOURCE_PPTX>')
+for i, p in enumerate(pngs):
+    print(f'SLIDE {i}|{p}')
+"
+```
+
+Then for each PNG, dispatch via Task tool to `image-analyzer-subagent` with the prompt from `vision_extractor.build_image_analyzer_prompt(i, n, png_path, pptx_name)`. Collect all responses (strings or dicts) and pass them through `vision_extractor.aggregate_vision_results(responses)` to get a list of `VisionSlideSchema`. Pass that list as `vision_results=...` to `promote_designer_slides`.
+
+**Soft-fail:** if soffice is missing (vision_extractor.render_slides_to_pngs raises `RuntimeError`) OR all image-analyzer dispatches fail, proceed with `vision_results=None` — `promote_designer_slides` falls back to XML-only background inference (`fallback_xml_background`). Add to return contract `Issues:`: `"vision extraction unavailable — background inferred from XML only (lower fidelity)"`.
 
 ### Stage 0: Understand the Request
 
@@ -138,12 +190,14 @@ If `OVERFLOW_DETECTED`:
 - **Headless session:** apply Split silently, emit notice in return contract `Issues:`.
 
 Then render (the only allowed way to produce the file):
+
+**Default path** (≤8 distinct target layouts, single-image single-body slides):
 ```bash
 python -c "
 import sys, json
-sys.path.insert(0,'.opencode/skills/template-modifier-skill/scripts')
-sys.path.insert(0,'.opencode/skills/generate-slide-skill/scripts')
-sys.path.insert(0,'.opencode/skills/_common/scripts')
+sys.path.insert(0, '.opencode/skills/template-modifier-skill/scripts')
+sys.path.insert(0, '.opencode/skills/generate-slide-skill/scripts')
+sys.path.insert(0, '.opencode/skills/_common/scripts')
 from state_machine import resolve_and_clone
 from ppt_builder import generate_ppt_from_data, DEFAULT_OUTPUT_DIR
 slide_data = <RESOLVED_JSON_ARRAY>
@@ -161,6 +215,45 @@ if note: print('NOTICE:', note)
 "
 ```
 
+**Engine-limits workaround path** (BT-142 Phase 3.5 — auto-selected when Stage -1 detection triggers):
+
+```bash
+python -c "
+import sys, json
+sys.path.insert(0, '.opencode/skills/generate-slide-skill/scripts')
+sys.path.insert(0, '.opencode/skills/_common/scripts')
+from multipass_render import multipass_render
+from placeholder_backfill import backfill_deck
+from notes_repair import ensure_notes_placeholder
+from pptx import Presentation
+
+slide_data = <RESOLVED_JSON_ARRAY>  # may carry layout_name, image_paths, body_slots
+
+# L1 fix: multi-pass render + merge when >8 distinct layouts
+output_path = multipass_render(
+    slide_data,
+    template_path='<USER_TEMPLATE_PATH>',
+    output_path='output/<name>.pptx',
+)
+print('rendered:', output_path)
+
+# L5 fix: ensure notes-master has a body placeholder before notes are filled
+prs = Presentation(output_path)
+notes_report = ensure_notes_placeholder(prs)
+if notes_report['repaired']:
+    prs.save(output_path)
+    print('notes_repair:', notes_report)
+
+# L2/L3/L4 fix: backfill multi-image + multi-body placeholders
+backfill_reports = backfill_deck(prs, slide_data)
+prs.save(output_path)
+filled = sum(len(r.filled) for r in backfill_reports.values())
+print(f'backfill: {filled} placeholders filled')
+"
+```
+
+The orchestrator selects between the two paths automatically based on Stage -1 detection; the user sees a single output file.
+
 ### Stage 5: Visual Verification (mandatory unless user opts out)
 
 After the `.pptx` is produced, verify each slide visually:
@@ -176,13 +269,17 @@ After the `.pptx` is produced, verify each slide visually:
    Density mode: <concise|standard|text-heavy>
 
    Check for: text_overflow, text_overlap, text_cutoff, chart_overflow,
-   image_overflow, visual_balance.
+   image_overflow, visual_balance, container_overflow.
+
+   container_overflow = text spilling outside its visual container (colored
+   card, accent panel, decorative shape). BETeKK V9.1.1 slide 4 is the
+   canonical example. Phase 3.4.3 (BT-142).
 
    Return JSON: {"sizing_ok": <bool>, "issues": [...], "confidence": <0-1>}
    ```
 3. If any slide returns `sizing_ok=false`:
-   - Interactive session → present Phase 2.4 overflow question with the image-derived issues as context.
-   - Headless session → apply Split silently.
+   - Interactive session → present Phase 2.4 overflow question with the image-derived issues as context. For `container_overflow: critical` verdicts, also offer a placeholder-resize pass (extend container or shrink placeholder).
+   - Headless session → apply Split silently for text overflow; for container overflow, log to `Issues:` (placeholder-resize requires human judgement).
 4. If user said "skip visual check" / "fast mode" / "no vision check" before render → SKIP this stage. Add to return contract `Issues:`: `"visual verification skipped per user request — overflow risk unverified"`.
 5. If `image-analyzer-subagent` dispatch fails (MCP server down, timeout, etc.) → soft-fail. Add to return contract `Issues:`: `"visual verification unavailable — sizing verified by estimator only (lower confidence)"`. Do NOT hard-fail the render.
 
