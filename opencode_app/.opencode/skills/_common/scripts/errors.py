@@ -2,7 +2,7 @@
 
 US-4.8 / PLAN-GIT-78 Rev 2 (MINOR-2): ``TemplateError`` was previously defined
 only in ``ppt_builder.py``. Importing it from there into
-``template-modifier-skill`` would reintroduce the cross-skill production
+``pptx-template-modifier-skill`` would reintroduce the cross-skill production
 coupling that PLAN-GIT-72 eliminated. This module is the neutral home in
 ``_common/scripts/`` — both skills import from here, keeping the dependency
 direction inward (skills → _common, never skill → skill).

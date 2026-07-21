@@ -1,5 +1,5 @@
 ---
-name: generate-slide-skill
+name: pptx-generate-slide-skill
 description: "Populate the PowerPoint template with structured JSON data using a python-pptx based engine. Uses template.pptx Slide Master layouts with proper placeholders. Do NOT use for creating presentations from scratch."
 license: Apache-2.0
 compatibility: opencode
@@ -542,7 +542,7 @@ COACHING: Matter-of-fact tone, don't over-sell. Be ready for: "Does BIM work wit
 **Check which slide types the template can serve:**
 ```bash
 python -c "
-import sys, json; sys.path.insert(0,'.opencode/skills/generate-slide-skill/scripts')
+import sys, json; sys.path.insert(0,'.opencode/skills/pptx-generate-slide-skill/scripts')
 from ppt_builder import servable_slide_types, get_render_contract
 contract = get_render_contract('template/default.pptx')
 print(json.dumps(servable_slide_types(contract), indent=2, ensure_ascii=False))
@@ -556,7 +556,7 @@ in the Speaker Notes Style Guide above):
 ```bash
 python -c "
 import sys, glob, os; sys.stdout.reconfigure(encoding='utf-8')
-sys.path.insert(0,'.opencode/skills/generate-slide-skill/scripts')
+sys.path.insert(0,'.opencode/skills/pptx-generate-slide-skill/scripts')
 from pptx import Presentation
 fs = sorted(glob.glob('output/*.pptx'), key=os.path.getmtime, reverse=True)
 if not fs: print('No output deck yet - see GOOD example in Speaker Notes Style Guide')

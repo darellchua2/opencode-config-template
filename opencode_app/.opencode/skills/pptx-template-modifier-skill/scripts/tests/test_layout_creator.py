@@ -170,7 +170,7 @@ class TestEndToEnd:
         active, overrides, _note = resolve_and_clone(base, _text_heavy_deck(), clone_on="any")
 
         # Capability A renders against the derived template, pinned to the clone.
-        # (generate-slide-skill/scripts is on sys.path via conftest's _FILLER_SCRIPTS.)
+        # (pptx-generate-slide-skill/scripts is on sys.path via conftest's _FILLER_SCRIPTS.)
         from ppt_builder import generate_ppt_from_data, DEFAULT_OUTPUT_DIR
 
         out = generate_ppt_from_data(

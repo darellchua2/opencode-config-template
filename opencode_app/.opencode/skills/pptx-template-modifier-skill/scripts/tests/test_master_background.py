@@ -128,3 +128,82 @@ def test_promote_designer_slides_injects_master_bg(tmp_path):
     srgb = master_bg.find(".//" + qn("a:srgbClr"))
     assert srgb is not None
     assert srgb.get("val") == "09090B"
+
+
+def test_promote_designer_slides_overrides_default_layout_bg_ref(tmp_path):
+    """The pre-existing 'DEFAULT' layout's <p:bgRef idx='1001'> must be replaced.
+
+    Source decks ship with a blank layout whose <p:bgRef idx='1001'>
+    resolves to theme lt1 (white in a dark-mode deck). Without this fix the
+    first thumbnail in PowerPoint's layouts gallery shows white even though
+    every other layout + the master is dark.
+    """
+    from designer_promoter import promote_designer_slides
+    src = Presentation()
+    s = src.slides.add_slide(src.slide_layouts[6])
+    _add_full_slide_dark_shape(s, "09090B")
+    tb = s.shapes.add_textbox(Inches(1), Inches(1), Inches(4), Inches(1))
+    tb.text_frame.text = "Hello"
+    src_path = tmp_path / "src.pptx"
+    src.save(str(src_path))
+    out_path = tmp_path / "out.pptx"
+    promote_designer_slides(
+        source_pptx=str(src_path),
+        output_path=str(out_path),
+        layout_names={0: "L1"},
+        run_container_check=False,
+        run_contrast_check=False,
+    )
+    prs2 = Presentation(str(out_path))
+    # Find the DEFAULT layout (the original one carried over from source)
+    default_layout = None
+    for layout in prs2.slide_layouts:
+        if layout.name == "DEFAULT":
+            default_layout = layout
+            break
+    if default_layout is None:
+        return  # source had no DEFAULT layout; nothing to assert
+    bg = default_layout._element.find(qn("p:cSld")).find(qn("p:bg"))
+    assert bg is not None, "DEFAULT layout lost its <p:bg>"
+    # Must NOT still carry the white <p:bgRef>
+    assert bg.find(qn("p:bgRef")) is None, "DEFAULT layout still has white <p:bgRef>"
+    # Must carry a solid fill matching the master bg
+    bg_pr = bg.find(qn("p:bgPr"))
+    assert bg_pr is not None
+    srgb = bg_pr.find(".//" + qn("a:srgbClr"))
+    assert srgb is not None
+    assert srgb.get("val") == "09090B"
+
+
+def test_promote_designer_slides_overrides_notes_master_bg_ref(tmp_path):
+    """The notes master's default <p:bgRef> must also be replaced.
+
+    Notes master shows up in Presenter View and Notes Page view. Leaving it
+    white makes those views visually inconsistent with a dark deck.
+    """
+    from designer_promoter import promote_designer_slides
+    src = Presentation()
+    s = src.slides.add_slide(src.slide_layouts[6])
+    _add_full_slide_dark_shape(s, "09090B")
+    tb = s.shapes.add_textbox(Inches(1), Inches(1), Inches(4), Inches(1))
+    tb.text_frame.text = "Hello"
+    src_path = tmp_path / "src.pptx"
+    src.save(str(src_path))
+    out_path = tmp_path / "out.pptx"
+    promote_designer_slides(
+        source_pptx=str(src_path),
+        output_path=str(out_path),
+        layout_names={0: "L1"},
+        run_container_check=False,
+        run_contrast_check=False,
+    )
+    prs2 = Presentation(str(out_path))
+    nm = prs2.notes_master
+    bg = nm._element.find(qn("p:cSld")).find(qn("p:bg"))
+    # Notes master should now have a solid fill (replacing the default bgRef)
+    if bg is not None:
+        bg_pr = bg.find(qn("p:bgPr"))
+        if bg_pr is not None:
+            srgb = bg_pr.find(".//" + qn("a:srgbClr"))
+            assert srgb is not None
+            assert srgb.get("val") == "09090B"

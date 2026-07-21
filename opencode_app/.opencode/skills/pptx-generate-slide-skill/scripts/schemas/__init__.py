@@ -1,4 +1,4 @@
-"""Schema definitions package for the generate-slide-skill engine.
+"""Schema definitions package for the pptx-generate-slide-skill engine.
 
 Exposes the per-slide-type schemas and the standalone validator so callers can
 import a single, stable entry point::

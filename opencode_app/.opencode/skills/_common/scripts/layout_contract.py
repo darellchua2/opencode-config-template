@@ -5,7 +5,7 @@ template (embedded-schema-first, sidecar fallback) and matches a slide_type to
 the best layout by placeholder-composition fingerprint. Physically lives in the
 shared ``_common/scripts`` package so all three skills (generate-slide,
 generate-template, template-modifier) import it from one place instead of
-parasitically reaching into ``generate-slide-skill/scripts/ppt_builder.py``.
+parasitically reaching into ``pptx-generate-slide-skill/scripts/ppt_builder.py``.
 
 Extracted from ``ppt_builder.py`` (PLAN-GIT-72 Phase 2 / architecture-review C1
 closure). The 13 symbols here are pure — they operate on the contract dict /
@@ -237,7 +237,7 @@ def _warn_if_embedded_stale(template_path: str, contract: Dict[str, Any]) -> Non
     if live is not None and live != n_embedded:
         logger.warning(
             "Stale embedded schema in %s: describes %d layouts, live template has %d "
-            "(template may have been edited after embed); re-run generate-template-skill",
+            "(template may have been edited after embed); re-run pptx-generate-template-skill",
             template_path, n_embedded, live,
         )
 

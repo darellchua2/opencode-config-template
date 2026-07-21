@@ -4,10 +4,10 @@ When a user supplies a PPTX whose Slide Master is **empty** (zero or one
 blank layout, no placeholders) and all branding is baked per-shape on each
 hand-crafted slide, current routing fails:
 
-  - ``generate-template-skill`` extracts the schema but reports "stock Office
+  - ``pptx-generate-template-skill`` extracts the schema but reports "stock Office
     theme, single blank layout" — useless for fill
-  - ``generate-slide-skill`` cannot fill against a blank layout
-  - ``template-modifier-skill`` Capability B borrows a layout **from a donor**
+  - ``pptx-generate-slide-skill`` cannot fill against a blank layout
+  - ``pptx-template-modifier-skill`` Capability B borrows a layout **from a donor**
     — but here the donor IS the user's deck, whose own layouts are also blank
 
 End-user intent (mimic PowerPoint): open Slide Master view → Add Layout →
@@ -65,7 +65,7 @@ from pptx.parts.slide import SlideLayoutPart
 from lxml import etree as _lxml
 ET = _lxml  # alias so the rest of the module keeps its ET usage but uses lxml
 
-# Local import (template-modifier-skill/scripts/ is on sys.path at call time)
+# Local import (pptx-template-modifier-skill/scripts/ is on sys.path at call time)
 try:
     from container_check import container_violations, Violation as ContainerViolation
 except ImportError:

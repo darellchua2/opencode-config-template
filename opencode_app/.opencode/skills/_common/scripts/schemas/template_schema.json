@@ -32,7 +32,7 @@
         "title_source": {
           "type": "string",
           "enum": ["core_xml", "slide1", "filename", "user"],
-          "description": "Provenance of the title (US-3.1). core_xml/slide1/filename come from inference; 'user' is set by the generate-template-skill after a user override. Runtime-enforced by validate_template_schema (TITLE_SOURCES), unlike the general additionalProperties case."
+          "description": "Provenance of the title (US-3.1). core_xml/slide1/filename come from inference; 'user' is set by the pptx-generate-template-skill after a user override. Runtime-enforced by validate_template_schema (TITLE_SOURCES), unlike the general additionalProperties case."
         },
         "schema_version": {
           "type": "string",

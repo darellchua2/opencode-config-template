@@ -94,7 +94,7 @@ _SCRIPT_DIR = Path(__file__).resolve().parent
 # BT-142 Phase 2.3: the bundled default template is REMOVED. Callers MUST
 # supply a user template path — there is no fallback. This enforces the user's
 # "no bundled default.pptx" invariant (Goal #1 of PLAN-BT-142).
-# scripts → generate-slide-skill → skills → .opencode → repo root
+# scripts → pptx-generate-slide-skill → skills → .opencode → repo root
 _REPO_ROOT = _SCRIPT_DIR.parents[3]
 DEFAULT_OUTPUT_DIR = Path.cwd() / "output"
 
@@ -1333,7 +1333,7 @@ def generate_ppt_from_data(
     # #46 (P3): state machine ① — discard any derived template_new.pptx left
     # from a prior run so the base template.pptx is re-evaluated fresh each
     # request. Inline (no cross-skill import); the full lifecycle lives in the
-    # template-modifier-skill and is wired by P4 when cloning is implemented.
+    # pptx-template-modifier-skill and is wired by P4 when cloning is implemented.
     _derived = template.with_name(template.stem + "_new" + template.suffix)
     if _derived.exists():
         try:
@@ -1348,7 +1348,7 @@ def generate_ppt_from_data(
 
     config = _load_config(str(template))
     # #47 (P4): merge caller-supplied layout overrides (e.g. cloned-layout pins
-    # from template-modifier-skill's resolve_and_clone). Caller overrides win.
+    # from pptx-template-modifier-skill's resolve_and_clone). Caller overrides win.
     if config_overrides:
         config = {**config, **config_overrides}
 

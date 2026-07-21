@@ -1,13 +1,13 @@
-"""Shared fixtures for template-modifier-skill tests."""
+"""Shared fixtures for pptx-template-modifier-skill tests."""
 import sys
 from pathlib import Path
 
 import pytest
 
-_HERE = Path(__file__).resolve().parent            # .../template-modifier-skill/scripts/tests
-_MODIFIER_SCRIPTS = _HERE.parent                   # .../template-modifier-skill/scripts
+_HERE = Path(__file__).resolve().parent            # .../pptx-template-modifier-skill/scripts/tests
+_MODIFIER_SCRIPTS = _HERE.parent                   # .../pptx-template-modifier-skill/scripts
 _SKILLS = _MODIFIER_SCRIPTS.parent.parent          # .../skills
-_FILLER_SCRIPTS = _SKILLS / "generate-slide-skill" / "scripts"
+_FILLER_SCRIPTS = _SKILLS / "pptx-generate-slide-skill" / "scripts"
 # PLAN-GIT-72: shared contract/extraction infra now in _common.
 _COMMON_SCRIPTS = _SKILLS / "_common" / "scripts"
 

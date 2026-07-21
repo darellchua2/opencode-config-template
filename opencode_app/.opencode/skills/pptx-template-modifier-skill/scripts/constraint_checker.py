@@ -1,4 +1,4 @@
-"""Over-limit constraint checker for Capability B (template-modifier-skill).
+"""Over-limit constraint checker for Capability B (pptx-template-modifier-skill).
 
 Compares a slide's content needs against the template contract's
 ``content_area_in2`` and yields an over-limit verdict (issue #46). Reusable by

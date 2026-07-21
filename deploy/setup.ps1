@@ -918,8 +918,8 @@ USAGE:
                                       brd-creation-skill, technical-design-creation-skill,
                                       vision-creation-skill, interactive-document-rendering-skill
 
-            Presentation (3):       generate-slide-skill, generate-template-skill,
-                                      template-modifier-skill
+            Presentation (3):       pptx-generate-slide-skill, pptx-generate-template-skill,
+                                      pptx-template-modifier-skill
 
             Office Utilities (2):   ooxml-editing-skill, office-thumbnail-skill
 
@@ -1796,8 +1796,8 @@ function Deploy-Skills {
         Write-Host "      - javascript-eslint-linter, changelog-python-cliff"
         Write-Host "      - python-backend-skill, python-packaging-skill"
         Write-Host "    Presentation (3):"
-        Write-Host "      - generate-slide-skill, generate-template-skill"
-        Write-Host "      - template-modifier-skill"
+        Write-Host "      - pptx-generate-slide-skill, pptx-generate-template-skill"
+        Write-Host "      - pptx-template-modifier-skill"
         Write-Host "    Office Utilities (2):"
         Write-Host "      - ooxml-editing-skill, office-thumbnail-skill"
         Write-Host "    Framework-Specific (10):"

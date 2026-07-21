@@ -11,9 +11,9 @@ permission:
     xlsx-specialist-subagent: allow
     microsoft-m365-specialist-subagent: allow
   skill:
-    generate-slide-skill: allow
-    generate-template-skill: allow
-    template-modifier-skill: allow
+    pptx-generate-slide-skill: allow
+    pptx-generate-template-skill: allow
+    pptx-template-modifier-skill: allow
     docx-creation-skill: allow
     xlsx-specialist-skill: allow
 ---

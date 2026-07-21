@@ -112,7 +112,7 @@ Repeat until the client's direction is clear:
 1. Write the source to `docs/vision/VISION-{slug}.md` (create `docs/vision/` if needed)
 2. Render the **living interactive HTML** at `docs/vision/{slug}/VISION-{slug}.interactive.html`
 3. On wrap, render the **Word .docx** at `docs/vision/VISION-{slug}.docx` for client sign-off (per `interactive-document-rendering-skill`)
-4. **Optional**: distill into a customer presentation deck via `pptx-specialist-subagent` (delegate via Task tool — it routes to generate-slide-skill with a user-supplied template) — ask the user if they want this
+4. **Optional**: distill into a customer presentation deck via `pptx-specialist-subagent` (delegate via Task tool — it routes to pptx-generate-slide-skill with a user-supplied template) — ask the user if they want this
 
 ### Image routing
 If a client-shared screenshot/reference image must be interpreted, **delegate to `image-analyzer-subagent`** — do not attempt to interpret images inline.

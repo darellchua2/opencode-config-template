@@ -1,6 +1,6 @@
 ---
-name: template-modifier-skill
-description: "Extend a PowerPoint template when a slide_type's layout is missing. Resolves the render contract, detects missing layouts, and borrows/clones a layout into a derived template_new.pptx. Works alongside the generate-slide-skill engine (Capability B). Default (clone_on='missing') clones only on missing layouts; over-limit content is handled by density downshift, not here. Do NOT use for normal template filling — use generate-slide-skill for that."
+name: pptx-template-modifier-skill
+description: "Extend a PowerPoint template when a slide_type's layout is missing. Resolves the render contract, detects missing layouts, and borrows/clones a layout into a derived template_new.pptx. Works alongside the pptx-generate-slide-skill engine (Capability B). Default (clone_on='missing') clones only on missing layouts; over-limit content is handled by density downshift, not here. Do NOT use for normal template filling — use pptx-generate-slide-skill for that."
 license: Apache-2.0
 compatibility: opencode
 metadata:
@@ -10,9 +10,9 @@ metadata:
 
 ## What I do
 
-I am the **template-modifier-skill** (Capability B). When the base `template.pptx` is **missing a layout** that a slide needs, I extend the template by **borrowing/cloning a layout** into a derived `template_new.pptx`, which the `generate-slide-skill` engine then renders against.
+I am the **pptx-template-modifier-skill** (Capability B). When the base `template.pptx` is **missing a layout** that a slide needs, I extend the template by **borrowing/cloning a layout** into a derived `template_new.pptx`, which the `pptx-generate-slide-skill` engine then renders against.
 
-I do **not** fill templates myself. Normal filling is the `generate-slide-skill` skill's job. I am invoked only when the base template is missing a layout a slide needs.
+I do **not** fill templates myself. Normal filling is the `pptx-generate-slide-skill` skill's job. I am invoked only when the base template is missing a layout a slide needs.
 
 **Clone policy (the default is missing-only).** `resolve_and_clone` / `plan_resolution` take a `clone_on` argument (issue #47, "option A"):
 
@@ -56,13 +56,13 @@ On **every** generation request, the state machine runs:
 
 ## Usage — the full Capability B loop
 
-`resolve_and_clone(base, slides)` runs the whole pipeline: it plans (①②③), and when a slide_type's layout is missing it **clones an extended layout** into `template_new.pptx` (P4), then returns the active template + the layout-name pins + the mandatory notification. Hand the result to the `generate-slide-skill` engine:
+`resolve_and_clone(base, slides)` runs the whole pipeline: it plans (①②③), and when a slide_type's layout is missing it **clones an extended layout** into `template_new.pptx` (P4), then returns the active template + the layout-name pins + the mandatory notification. Hand the result to the `pptx-generate-slide-skill` engine:
 
 ```bash
 python -c "
 import sys
-sys.path.insert(0, '.opencode/skills/template-modifier-skill/scripts')
-sys.path.insert(0, '.opencode/skills/generate-slide-skill/scripts')
+sys.path.insert(0, '.opencode/skills/pptx-template-modifier-skill/scripts')
+sys.path.insert(0, '.opencode/skills/pptx-generate-slide-skill/scripts')
 from state_machine import resolve_and_clone
 from ppt_builder import generate_ppt_from_data, DEFAULT_OUTPUT_DIR
 
@@ -96,7 +96,7 @@ If cloning fails, `resolve_and_clone` **safely falls back** to the base template
 - You explicitly want to clone for over-limit content too — pass `clone_on="any"` (by default over-limit is handled by density downshift in `pptx-subagent`, not here). → **Capability B**.
 - The user supplies a **designer deck with an empty master** (one blank layout, zero placeholders, all branding baked per-shape) and asks to "make a reusable template" or "promote slides to master". → **Capability C** (designer promotion).
 
-Do **NOT** use me for normal filling, chart generation, or image embedding — those are `generate-slide-skill`.
+Do **NOT** use me for normal filling, chart generation, or image embedding — those are `pptx-generate-slide-skill`.
 
 ## Capability C — Promote Designer Slides to Empty Master (BT-142 Phase 3.4)
 
@@ -128,7 +128,7 @@ Capability C reverse-engineers each slide's structure into a **named layout with
 ```bash
 python -c "
 import sys
-sys.path.insert(0, '.opencode/skills/template-modifier-skill/scripts')
+sys.path.insert(0, '.opencode/skills/pptx-template-modifier-skill/scripts')
 from designer_promoter import promote_designer_slides
 report = promote_designer_slides(
     source_pptx='/path/to/designer_deck.pptx',
@@ -161,4 +161,4 @@ Capability B (`state_machine.resolve_and_clone`) and Capability C (`designer_pro
 
 ## Reference
 
-- Design: `.opencode/skills/generate-slide-skill/docs/DESIGN-template-agnostic.md` — §5 (state machine), §7 (Capability B pipeline + 7-step clone).
+- Design: `.opencode/skills/pptx-generate-slide-skill/docs/DESIGN-template-agnostic.md` — §5 (state machine), §7 (Capability B pipeline + 7-step clone).

@@ -1,7 +1,7 @@
-# Design Rationale: Template-Agnostic Engine + `template-modifier-skill`
+# Design Rationale: Template-Agnostic Engine + `pptx-template-modifier-skill`
 
 > **Capability A** (template-agnostic filling) + **Capability B**
-> (`template-modifier-skill`).
+> (`pptx-template-modifier-skill`).
 >
 > This document is the **agreed development plan** for breaking the
 > single-fixed-template assumption. The engine currently binds 8 slide types to
@@ -21,7 +21,7 @@ The stakeholder's requirements, verbatim intent:
    - accept any template;
    - process it and turn it into **JSON**;
    - with that JSON's constraint, create slides.
-3. A separate skill — `template-modifier-skill` — for when the template must be
+3. A separate skill — `pptx-template-modifier-skill` — for when the template must be
    updated/extended:
    - read from the provided `template.pptx`;
    - read the Slide Master;
@@ -68,7 +68,7 @@ is impossible; Approach 3 (cross-template layout import) was considered and
 | Layout match by **name only** | `ppt_builder.py:147-170` `_build_layout_index` / `_resolve_layout` | No placeholder-composition fingerprint |
 | Config overrides only 2 types | `default.config.json` (title / content) | Coverage too narrow |
 | Introspection scattered | `research_layouts.py` / `research_theme.py` | One-off scripts, not productized |
-| `template-modifier-skill` | does not exist | Entirely missing |
+| `pptx-template-modifier-skill` | does not exist | Entirely missing |
 
 **Core pain point:** constraints (layout names, placeholder structure) are
 **hardcoded constants**, not **derived** from the supplied template.
@@ -90,7 +90,7 @@ is impossible; Approach 3 (cross-template layout import) was considered and
           ┌─────────────────┴────────────────────┐
           ▼                                      ▼
   ┌────────────────────┐               ┌─────────────────────────┐
-  │ generate-slide-skill│               │ template-modifier-skill │ ★ new (Capability B)
+  │ pptx-generate-slide-skill│               │ pptx-template-modifier-skill │ ★ new (Capability B)
   │  (Capability A)    │               │  read Slide Master       │
   │  fingerprint match │               │  over-limit → clone new  │
   │  constraint-aware  │               │  layout → template_new   │
@@ -203,10 +203,10 @@ engine follows the original name-based matching, so the existing 120 tests stay 
 
 ---
 
-## 7. Capability B — `template-modifier-skill` (new)
+## 7. Capability B — `pptx-template-modifier-skill` (new)
 
 ```
-.opencode/skills/template-modifier-skill/
+.opencode/skills/pptx-template-modifier-skill/
 ├── SKILL.md
 └── scripts/
     ├── template_reader.py      # read Slide Master (reuses the introspector)
@@ -250,7 +250,7 @@ The 4 stakeholder steps map onto the pipeline:
 | **P0** | `template_introspector.py` + contract schema + tests; mtime cache | introspection engine (shared foundation of A & B) | nothing |
 | **P1** | fingerprint constant table + `_resolve_layout_by_fingerprint()` + degradation; `generate_ppt_from_data` auto-introspects before render; contract ⇒ fingerprint match, else name-match fallback (**backward compatible**) | any-template filling | P0 |
 | **P2** | `pptx-subagent.md` / SKILL: "user supplies template → replace `template.pptx` (same path) → auto-introspect" branch | end-to-end Capability A | P1 |
-| **P3** | `template-modifier-skill`: `template_reader.py` + `constraint_checker.py` (requirement vs `content_area_in2` over-limit verdict); implement the state machine ①③⑤ (delete/create/notify for `template_new.pptx`) | Capability B read + judge + lifecycle | P0 |
+| **P3** | `pptx-template-modifier-skill`: `template_reader.py` + `constraint_checker.py` (requirement vs `content_area_in2` over-limit verdict); implement the state machine ①③⑤ (delete/create/notify for `template_new.pptx`) | Capability B read + judge + lifecycle | P0 |
 | **P4** | `layout_creator.py`: Approach-2 cloning (7 steps); overwrite-write `template_new.pptx`; reload-verify findable by `get_by_name`; rollback on failure | Capability B full loop | P3 |
 
 Every phase ships with pytest. From P1 onward, **backward compatibility** is

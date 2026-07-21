@@ -1,6 +1,6 @@
 ---
 name: ooxml-editing-skill
-description: "Edit Office Open XML (OOXML) files surgically — unpack DOCX/PPTX/XLSX to XML, edit individual elements, validate, and repack. Use for surgical edits like 'fix typo on slide 4', 'change this specific shape's color', or 'update a single cell formula'. Also houses the html2pptx escape hatch for explicit 'convert HTML to PPTX' requests. Do NOT use for template-based slide generation (use generate-slide-skill)."
+description: "Edit Office Open XML (OOXML) files surgically — unpack DOCX/PPTX/XLSX to XML, edit individual elements, validate, and repack. Use for surgical edits like 'fix typo on slide 4', 'change this specific shape's color', or 'update a single cell formula'. Also houses the html2pptx escape hatch for explicit 'convert HTML to PPTX' requests. Do NOT use for template-based slide generation (use pptx-generate-slide-skill)."
 license: Apache-2.0
 compatibility: opencode
 metadata:
@@ -30,9 +30,9 @@ Use this skill when the user wants:
 - "Convert HTML to PPTX" (explicit escape hatch — follows the hidden-JSON approach: html2pptx → generate-template → generate-slide)
 
 Do NOT use me for:
-- Template-based slide generation → `generate-slide-skill`
-- Template extraction/embedding → `generate-template-skill`
-- Template extension (cloning layouts) → `template-modifier-skill`
+- Template-based slide generation → `pptx-generate-slide-skill`
+- Template extraction/embedding → `pptx-generate-template-skill`
+- Template extension (cloning layouts) → `pptx-template-modifier-skill`
 - Visual analysis / thumbnails → `office-thumbnail-skill`
 
 ## Prerequisites
@@ -78,6 +78,6 @@ Do NOT use me for:
 
 ## html2pptx Escape Hatch
 
-For explicit "convert HTML to PPTX" requests only. The Node-based html2pptx toolchain (`pptxgenjs` + `playwright`) produces a basic PPTX from HTML slides. Per BT-142, this output then flows through `generate-template-skill` (extract + embed hidden JSON) → `generate-slide-skill` (final render against Slide Master) to ensure the hidden-JSON-template approach is followed.
+For explicit "convert HTML to PPTX" requests only. The Node-based html2pptx toolchain (`pptxgenjs` + `playwright`) produces a basic PPTX from HTML slides. Per BT-142, this output then flows through `pptx-generate-template-skill` (extract + embed hidden JSON) → `pptx-generate-slide-skill` (final render against Slide Master) to ensure the hidden-JSON-template approach is followed.
 
 This path is intentionally undocumented in the orchestrator's default routing — it's surfaced only when the user explicitly says "convert HTML to PowerPoint" or similar.

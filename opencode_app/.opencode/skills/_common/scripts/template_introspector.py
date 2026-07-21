@@ -2,7 +2,7 @@
 template_introspector.py
 ========================
 Template introspection engine — the shared foundation of Capability A
-(template-agnostic filling) and Capability B (``template-modifier-skill``).
+(template-agnostic filling) and Capability B (``pptx-template-modifier-skill``).
 
 Accepts **any** ``.pptx``, introspects its structure, and emits a JSON
 ``contract`` (per ``DESIGN-template-agnostic.md`` §4) describing the slide

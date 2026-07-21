@@ -90,8 +90,8 @@ def clone_master_and_borrow(
     if not default_template_path:
         raise TemplateError(
             "No donor slide master available — provide a template with a slide "
-            "master, or generate one first via generate-template-skill. The "
-            "template-modifier-skill cannot extend a masterless template "
+            "master, or generate one first via pptx-generate-template-skill. The "
+            "pptx-template-modifier-skill cannot extend a masterless template "
             "without a donor to borrow layouts from."
         )
 

@@ -83,7 +83,7 @@ class EmbeddedSchemaResult(NamedTuple):
 # truth consumed by :func:`_infer_title`, :func:`validate_template_schema`'s enum
 # check, and ``template_schema.json``'s enum — keeping all three in sync
 # (architecture review MINOR-5 / MAJOR-2). ``"user"`` is only ever set by the
-# generate-template-skill layer after a user override, never by inference itself.
+# pptx-generate-template-skill layer after a user override, never by inference itself.
 TITLE_SOURCES: frozenset = frozenset({"core_xml", "slide1", "filename", "user"})
 
 
@@ -1503,7 +1503,7 @@ def build_extraction_summary(schema: Dict[str, Any]) -> str:
     """Render a multi-line, human-readable summary of an extracted schema.
 
     Pure (no I/O, no logging) so it stays unit-testable. Consumed by the
-    generate-template-skill (Stage 4) and the CLI ``--summary`` flag. The exact
+    pptx-generate-template-skill (Stage 4) and the CLI ``--summary`` flag. The exact
     wording is **not** part of any contract; callers may reformat.
     """
     meta = schema.get("template_metadata") or {}
@@ -1563,7 +1563,7 @@ def needs_header_footer_prompt(schema: Dict[str, Any]) -> bool:
     """True when the template has **neither** header nor footer (US-2.1 AC2).
 
     Pure function on the extracted schema dict; consumed by
-    ``generate-template-skill`` (full prompt + inject) and ``pptx-subagent``
+    ``pptx-generate-template-skill`` (full prompt + inject) and ``pptx-subagent``
     (light informational note). Headless/subagent callers skip the prompt.
     """
     hf = (schema.get("template_metadata") or {}).get("header_footer") or {}
@@ -1575,7 +1575,7 @@ def inject_default_header_zone(schema: Dict[str, Any]) -> None:
 
     **Schema-only**; never touches the PPTX. The polygon is a 4-point
     normalised top-strip per the US-1.2 model (TL→TR→BR→BL, ``[0,1]`` range).
-    Called by ``generate-template-skill`` when the user opts to add a header.
+    Called by ``pptx-generate-template-skill`` when the user opts to add a header.
     """
     meta = schema.setdefault("template_metadata", {})
     hf = meta.setdefault("header_footer", {})

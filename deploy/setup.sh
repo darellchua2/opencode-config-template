@@ -675,8 +675,8 @@ USAGE:
                                       brd-creation-skill, technical-design-creation-skill,
                                       vision-creation-skill, interactive-document-rendering-skill
 
-            Presentation (3):       generate-slide-skill, generate-template-skill,
-                                      template-modifier-skill
+            Presentation (3):       pptx-generate-slide-skill, pptx-generate-template-skill,
+                                      pptx-template-modifier-skill
 
             Office Utilities (2):   ooxml-editing-skill, office-thumbnail-skill
 
@@ -3180,8 +3180,8 @@ print_summary() {
         echo "      - python-backend-skill"
         echo "      - python-packaging-skill"
         echo "    - Presentation (3):"
-        echo "      - generate-slide-skill, generate-template-skill"
-        echo "      - template-modifier-skill"
+        echo "      - pptx-generate-slide-skill, pptx-generate-template-skill"
+        echo "      - pptx-template-modifier-skill"
         echo "    - Office Utilities (2):"
         echo "      - ooxml-editing-skill, office-thumbnail-skill"
         echo "    - Framework-Specific (10):"

@@ -20,9 +20,9 @@ Port chenyu's 3-skill + 1-agent PPTX architecture (embedded JSON-in-PPTX schema 
 | Layer            | Chenyu component                                                                                                                   | Our target location                                                                                   |
 | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
 | Shared           | `_common/scripts/{schema_extractor,layout_contract,contract_adapter,geometry,errors,master_repairer,template_introspector}.py` + `schemas/template_schema.json` | `opencode_app/.opencode/skills/_common/scripts/` (NEW shared dir)                                     |
-| Extract          | `generate-template-skill/`                                                                                                         | `opencode_app/.opencode/skills/generate-template-skill/`                                               |
-| Fill             | `generate-slide-skill/` (incl. `ppt_builder.py`)                                                                                   | `opencode_app/.opencode/skills/generate-slide-skill/`                                                  |
-| Extend           | `template-modifier-skill/`                                                                                                         | `opencode_app/.opencode/skills/template-modifier-skill/`                                                |
+| Extract          | `pptx-generate-template-skill/`                                                                                                         | `opencode_app/.opencode/skills/pptx-generate-template-skill/`                                               |
+| Fill             | `pptx-generate-slide-skill/` (incl. `ppt_builder.py`)                                                                                   | `opencode_app/.opencode/skills/pptx-generate-slide-skill/`                                                  |
+| Extend           | `pptx-template-modifier-skill/`                                                                                                         | `opencode_app/.opencode/skills/pptx-template-modifier-skill/`                                                |
 | Orchestrator     | `agents/pptx-subagent.md` (thin rewrite)                                                                                           | `opencode_app/.opencode/agents/pptx-specialist-subagent.md` (REWRITE)                                  |
 
 **New skills created by Phase 7 decomposition** (split out of the misnamed `pptx-specialist-skill`):
@@ -32,7 +32,7 @@ Port chenyu's 3-skill + 1-agent PPTX architecture (embedded JSON-in-PPTX schema 
 | `ooxml-editing-skill`        | `unpack.py`, `pack.py`, `validate.py`, `clean.py`, `validators/base.py`, `validators/pptx.py`                  | Generic Office OOXML unpack/pack/validate — surgical edits, supports all .docx/.pptx/.xlsx |
 | `office-thumbnail-skill`     | `thumbnail.py`, `soffice.py`                                                                                  | Visual analysis — thumbnail grids + PDF/image conversion via LibreOffice              |
 | (merge into `docx-creation-skill`) | `validators/docx.py`, `validators/redlining.py`, `helpers/merge_runs.py`, `helpers/simplify_redlines.py` | DOCX-specific helpers — were misplaced under a PPTX-named skill                       |
-| (merge into `generate-slide-skill`) | `add_slide.py` (PPTX-specific OOXML slide add)                                                                | PPTX surgical-edit escape hatch — lives next to the python-pptx engine                |
+| (merge into `pptx-generate-slide-skill`) | `add_slide.py` (PPTX-specific OOXML slide add)                                                                | PPTX surgical-edit escape hatch — lives next to the python-pptx engine                |
 | **DELETE**                   | `pptx-specialist-skill/SKILL.md` html2pptx workflow section                                                    | Retired by chenyu's stack; 1-paragraph stub retained only for explicit "html→pptx" requests routed by the orchestrator |
 
 ## Engine Hard Limits (gap analysis — discovered BT-142 session 2026-07-21)
@@ -53,13 +53,13 @@ The chenyu engine has **5 hard limits** that surface when filling designer-style
 
 **Scenario:** a user supplies a designer PPTX whose Slide Master is **empty** (one blank `DEFAULT` layout, zero placeholders, all branding baked per-shape on each of the 10 hand-crafted slides). This is the BETEKK V9.1.0 shape. Current routing:
 
-- `generate-template-skill` extracts the schema but reports "stock Office theme, single blank layout" — useless for fill
-- `generate-slide-skill` cannot fill against a blank layout
-- `template-modifier-skill` borrows layouts from a **donor** template — but here the donor *is the user's own deck*, and its layouts are also blank
+- `pptx-generate-template-skill` extracts the schema but reports "stock Office theme, single blank layout" — useless for fill
+- `pptx-generate-slide-skill` cannot fill against a blank layout
+- `pptx-template-modifier-skill` borrows layouts from a **donor** template — but here the donor *is the user's own deck*, and its layouts are also blank
 
 **End-user intent (mimic PowerPoint):** when a designer has 10 beautiful hand-crafted slides and wants reusable layouts, they open **Slide Master view → Add Layout → design the layout (or right-click an existing slide → "Add to Master")**. The slides become **children of the master**, inheriting theme/fonts/colors while exposing editable placeholders.
 
-**Engine gap:** no skill performs this promotion. `template-modifier-skill` clones layouts *from* a donor *into* the target; it does not **reverse-engineer per-shape slide structure into named layouts with real placeholders**. Phase 3.4 adds this as Capability C.
+**Engine gap:** no skill performs this promotion. `pptx-template-modifier-skill` clones layouts *from* a donor *into* the target; it does not **reverse-engineer per-shape slide structure into named layouts with real placeholders**. Phase 3.4 adds this as Capability C.
 
 **Container-fit sub-gap:** when layouts *are* promoted, text placeholders often extend beyond their visual container shapes (orange card, teal panel). End-user designers see this immediately in PowerPoint; the engine has no static check and the image-analyzer prompt (Phase 2.4b) does not currently look for it. Phase 2.4c adds a `container_overflow` check dimension.
 
@@ -101,7 +101,7 @@ The chenyu engine has **5 hard limits** that surface when filling designer-style
 - `deploy/setup.sh` / `deploy/setup.ps1` — skill count 118 → 122; banner + listing updates
 - `README.md` — Skill Categories table; Subagents table
 - `opencode_app/README.md` — Docker-specific docs (Python-only PPTX workflow)
-- `opencode_app/.opencode/agents/pptx-specialist-subagent.md` — REPLACE `pptx-specialist-skill: allow` with `generate-slide-skill/generate-template-skill/template-modifier-skill/ooxml-editing-skill/office-thumbnail-skill: allow`
+- `opencode_app/.opencode/agents/pptx-specialist-subagent.md` — REPLACE `pptx-specialist-skill: allow` with `pptx-generate-slide-skill/pptx-generate-template-skill/pptx-template-modifier-skill/ooxml-editing-skill/office-thumbnail-skill: allow`
 - `opencode_app/.opencode/agents/office-document-primary-agent.md` — REPLACE `pptx-specialist-skill: allow`; route PPTX ops to the orchestrator subagent instead
 - `opencode_app/.opencode/agents/startup-ceo-subagent.md` — REPLACE skill delegation; route to `pptx-specialist-subagent` for deck creation
 - `opencode_app/.opencode/agents/discovery-specialist-subagent.md` — REPLACE skill delegation; route to `pptx-specialist-subagent`
@@ -118,12 +118,12 @@ The chenyu engine has **5 hard limits** that surface when filling designer-style
 - [x] **1.1** Port `_common/scripts/` to `opencode_app/.opencode/skills/_common/scripts/`
   — **Why:** All three new skills depend on shared schema extraction, layout contracts, geometry helpers, error types, and template introspection. Must land first.
   — **Done when:** All `_common/scripts/*.py` files exist in target dir and `python -c "import sys; sys.path.insert(0,'opencode_app/.opencode/skills/_common/scripts'); import schema_extractor, layout_contract, contract_adapter, geometry, errors, master_repairer, template_introspector"` exits 0.
-  — **Consumers affected:** `generate-template-skill`, `generate-slide-skill`, `template-modifier-skill`
+  — **Consumers affected:** `pptx-generate-template-skill`, `pptx-generate-slide-skill`, `pptx-template-modifier-skill`
 
 - [x] **1.2** Port `schemas/template_schema.json` to `opencode_app/.opencode/skills/_common/schemas/`
   — **Why:** The canonical JSON schema that defines what gets embedded in PPTX files. Referenced by schema_extractor and schema_validator.
   — **Done when:** JSON file validates against its own `$schema` key (if present) and `schema_validator.py` can load it.
-  — **Consumers affected:** `generate-template-skill`, `generate-slide-skill`
+  — **Consumers affected:** `pptx-generate-template-skill`, `pptx-generate-slide-skill`
 
 - [x] **1.3** Run ported `_common` tests under pytest; verify green
   — **Why:** Catch import errors, path issues, and Python version mismatches early before downstream skills are built on top.
@@ -138,16 +138,16 @@ The chenyu engine has **5 hard limits** that surface when filling designer-style
 - [x] **1.5** **Blocker fix:** Embed in-code minimal theme XML in `master_repairer.py` (drops default.pptx dependency for L3)
   — **Why:** `master_repairer.py` L2/L3 currently falls back to `default.pptx` to source theme XML. Per user constraint, no `default.pptx` shall exist. Replace with ~30 lines of in-code minimal theme XML (12 OPC color roles + major/minor fonts).
   — **Done when:** `master_repairer.py` has no import or path reference to `default.pptx`; L3 repair uses in-code theme XML; existing tests pass with updated fixtures.
-  — **Consumers affected:** `generate-slide-skill`, `template-modifier-skill`
+  — **Consumers affected:** `pptx-generate-slide-skill`, `pptx-template-modifier-skill`
 
 ### Phase 2 — Extract + Fill Skills (coupled via embedded JSON contract)
 
-- [x] **2.1** Port `generate-template-skill/` (SKILL.md + wraps `schema_extractor`)
+- [x] **2.1** Port `pptx-generate-template-skill/` (SKILL.md + wraps `schema_extractor`)
   — **Why:** First half of the workflow — extracts layout fingerprints from user PPTX and produces `template_schema.json` for embedding. The "Extract" leg of the Extract→Fill pipeline.
-  — **Done when:** Skill file exists with correct trigger phrases; `grep -c "schema_extractor" opencode_app/.opencode/skills/generate-template-skill/SKILL.md` returns ≥1; SKILL.md `_common/scripts/schema_extractor.py` path reference resolves.
+  — **Done when:** Skill file exists with correct trigger phrases; `grep -c "schema_extractor" opencode_app/.opencode/skills/pptx-generate-template-skill/SKILL.md` returns ≥1; SKILL.md `_common/scripts/schema_extractor.py` path reference resolves.
   — **Consumers affected:** `pptx-specialist-subagent.md` (routing)
 
-- [x] **2.2** Port `generate-slide-skill/` (SKILL.md + `ppt_builder.py` + `text_fit.py` + `density_mode.py` + `schema_validator.py` + `outline_store.py` + `coordinate_placer.py` + `resolvers/`)
+- [x] **2.2** Port `pptx-generate-slide-skill/` (SKILL.md + `ppt_builder.py` + `text_fit.py` + `density_mode.py` + `schema_validator.py` + `outline_store.py` + `coordinate_placer.py` + `resolvers/`)
   — **Why:** The core "Fill" skill — takes a templated PPTX + user content spec and produces new slides using Slide Master layouts. This is the primary value-delivery skill.
   — **Done when:** Skill file exists with correct trigger phrases; all Python modules import cleanly; `ppt_builder.py` uses `add_slide(layout)` invariant.
   — **Consumers affected:** `pptx-specialist-subagent.md` (routing), end users generating slides
@@ -155,7 +155,7 @@ The chenyu engine has **5 hard limits** that surface when filling designer-style
 - [x] **2.3** **Blocker fix:** Remove `default.pptx` fallback at `ppt_builder.py:102, 1301` → raise `TemplateError`
   — **Why:** Violates user's "no default.pptx" constraint. The builder must fail loudly if no template path is provided rather than silently falling back.
   — **Done when:** `template_path is None` at lines 102 and 1301 raises `TemplateError("template_path is required — provide a user-supplied PPTX template")`. No import/reference to `default.pptx` in `ppt_builder.py`.
-  — **Consumers affected:** `generate-slide-skill`, `generate-template-skill`
+  — **Consumers affected:** `pptx-generate-slide-skill`, `pptx-generate-template-skill`
 
 - [x] **2.4** **Interactive overflow handling** — replace silent auto-shrink with a `question()`-based decision when a slide's content exceeds its placeholder space
   — **Why:** Per user direction: when the slide's initial content would overflow, the agent should NOT silently shrink text. Instead, it should pause and ask the user via the `question` tool to choose between two explicit paths. This also addresses the underlying `text_fit.py` defect (review §3.3 — estimator returns ~70-85% of real rendered height) by surfacing the overflow rather than under-shrinking it.
@@ -183,12 +183,12 @@ The chenyu engine has **5 hard limits** that surface when filling designer-style
     - User picks **Split** → agent rewrites the overflowing slide into two `slide_data` entries: (a) preserves the user's original speaker message verbatim across both, (b) proposes a content split at a natural breakpoint (paragraph/section boundary), (c) drafts a connecting story (1-line transition on slide N pointing to slide N+1), (d) re-validates with `schema_validator`, (e) renders both. Render report records `overflow_handled: "split"`.
   — **Headless subagent fallback:** when no interactive session is available (no TTY / non-interactive context), the agent applies the **Split** path with safe defaults and emits a notice in the return contract (`Issues:` field). Squeeze is never auto-chosen silently.
   — **Done when:** (a) `overflow_check` function exists and is called by `ppt_builder` before render; (b) interactive sessions present the `question` above; (c) both execution paths are implemented and tested; (d) headless fallback documented and tested; (e) render report sidecar gains an `overflow_handled` field per slide.
-  — **Consumers affected:** `generate-slide-skill`, `pptx-specialist-subagent.md` (must allow this one exception to the "never `question()` before first output" rule — overflow questions fire AFTER the first `.pptx` is attempted, during refinement, never before initial render).
+  — **Consumers affected:** `pptx-generate-slide-skill`, `pptx-specialist-subagent.md` (must allow this one exception to the "never `question()` before first output" rule — overflow questions fire AFTER the first `.pptx` is attempted, during refinement, never before initial render).
 
 - [x] **2.4a** **Supporting recalibration** of `text_fit.py` constants (powers the Squeeze path of 2.4)
   — **Why:** The Squeeze option in 2.4 still needs `text_fit.py` to produce a valid fit. The current estimator underestimates height (~70-85% of real) and must be calibrated so that when the user picks Squeeze, the resulting font reduction actually makes the text fit.
   — **Done when:** (a) `LINE_SPACING_DEFAULT` raised from 1.2→1.3, (b) `DEFAULT_PARA_SPACING_FACTOR` raised from 0.4→0.7, (c) longest-word overflow term added to height calc (prevents a single long word from breaking the wrap estimate), (d) bullet-indent allowance (~0.25-0.5in) subtracted for body role. All `text_fit.py` tests updated to reflect new estimates.
-  — **Consumers affected:** `generate-slide-skill` (Squeeze path only; Split path doesn't depend on text_fit accuracy)
+  — **Consumers affected:** `pptx-generate-slide-skill` (Squeeze path only; Split path doesn't depend on text_fit accuracy)
 
 - [x] **2.4b** **Visual verification via `image-analyzer-subagent`** — use the vision subagent as the "render oracle" chenyu's review §3.3 identified as missing (closes GAP-ANALYSIS Rev 19 deferred AC1: "no overflow guarantee")
   — **Why:** python-pptx has no layout engine, so `text_fit.py`'s estimator is fundamentally best-effort. The only way to truly verify that text fits, sizing is correct, and no overflow/overlap occurs is to **render the slide to an image and have a vision-capable model inspect it**. The user explicitly requested this: "include using image-analyzer-subagent to review screenshots of the pptx to ensure that the sizing all works." This converts the "no overflow" AC from deferred to achievable.
@@ -222,37 +222,37 @@ The chenyu engine has **5 hard limits** that surface when filling designer-style
   — **Headless subagent:** the visual verification pipeline STILL RUNS in headless mode (it does not require user interaction). If `image-analyzer-subagent` returns `sizing_ok=false`, the headless fallback applies the Phase 2.4 Split path silently.
   — **Cost governance:** if the user explicitly says "skip visual check" or "fast mode" or "no vision check", the orchestrator MUST honor the opt-out and skip step 2.4b. The return contract must then carry `Issues: visual verification skipped per user request — overflow risk unverified`.
   — **Done when:** (a) post-render pipeline renders each slide to image via `office-thumbnail-skill`; (b) `pptx-specialist-subagent` has `permission.task: image-analyzer-subagent: allow`; (c) `image-analyzer-subagent` is dispatched with the structured prompt above; (d) verdict JSON is parsed and routed correctly (ok→return, fail→Phase 2.4 question); (e) headless path verified; (f) opt-out path verified.
-  — **Consumers affected:** `generate-slide-skill`, `pptx-specialist-subagent.md` (permission.task update — Phase 4.1), `image-analyzer-subagent` (load remains unchanged — it already accepts arbitrary images)
+  — **Consumers affected:** `pptx-generate-slide-skill`, `pptx-specialist-subagent.md` (permission.task update — Phase 4.1), `image-analyzer-subagent` (load remains unchanged — it already accepts arbitrary images)
 
 - [x] **2.5** Port + run generate-slide tests; verify green
   — **Why:** Validate the ported skill works end-to-end with the interactive overflow handler, recalibrated text_fit, image-analyzer visual verification, and removed default.pptx dependency.
-  — **Done when:** `pytest` for `generate-slide-skill/` passes with zero failures. All tests use `tmp_path` fixtures (no `default.pptx` references). New tests cover: (a) `overflow_check` returns `OVERFLOW` on known-overflowing content; (b) Squeeze path shrinks fonts to fit; (c) Split path produces 2 valid slides with a connecting transition; (d) headless fallback picks Split silently; (e) **post-render image verification pipeline mocked** (real `image-analyzer-subagent` dispatch tested in Phase 6.10, not in unit tests — it requires a live vision model).
+  — **Done when:** `pytest` for `pptx-generate-slide-skill/` passes with zero failures. All tests use `tmp_path` fixtures (no `default.pptx` references). New tests cover: (a) `overflow_check` returns `OVERFLOW` on known-overflowing content; (b) Squeeze path shrinks fonts to fit; (c) Split path produces 2 valid slides with a connecting transition; (d) headless fallback picks Split silently; (e) **post-render image verification pipeline mocked** (real `image-analyzer-subagent` dispatch tested in Phase 6.10, not in unit tests — it requires a live vision model).
   — **Consumers affected:** CI pipeline
 
 ### Phase 3 — Extend Skill
 
-- [x] **3.1** Port `template-modifier-skill/` (`state_machine.py`, `master_cloner.py`, `layout_creator.py`, `constraint_checker.py`)
+- [x] **3.1** Port `pptx-template-modifier-skill/` (`state_machine.py`, `master_cloner.py`, `layout_creator.py`, `constraint_checker.py`)
   — **Why:** The "Extend" skill — adds new layout types to a PPTX's slide master when the user requests a slide type not already present. Powers the "template-modifier → generate-slide" chain.
   — **Done when:** Skill file exists with correct trigger phrases; all Python modules import cleanly (`python -c "import state_machine, master_cloner, layout_creator, constraint_checker"` exits 0 from the skill's scripts dir); `pytest` for state machine transitions passes.
   — **Consumers affected:** `pptx-specialist-subagent.md` (routing)
 
 - [x] **3.2** **Blocker fix:** `master_cloner.py:86` — fail loudly if no donor available (no default.pptx fallback)
   — **Why:** Currently falls back to `default.pptx` when no donor slide master is available. Per user constraint, must raise an actionable error instead.
-  — **Done when:** Line 86 raises `TemplateError("No donor slide master available — provide a template with a slide master or use generate-template-skill first")`. No reference to `default.pptx` in `master_cloner.py`.
-  — **Consumers affected:** `template-modifier-skill`
+  — **Done when:** Line 86 raises `TemplateError("No donor slide master available — provide a template with a slide master or use pptx-generate-template-skill first")`. No reference to `default.pptx` in `master_cloner.py`.
+  — **Consumers affected:** `pptx-template-modifier-skill`
 
 - [x] **3.3** Port + run template-modifier tests; verify green
   — **Why:** Validate the extend skill works without default.pptx dependency.
-  — **Done when:** `pytest` for `template-modifier-skill/` passes with zero failures. All tests use `tmp_path` fixtures.
+  — **Done when:** `pytest` for `pptx-template-modifier-skill/` passes with zero failures. All tests use `tmp_path` fixtures.
   — **Consumers affected:** CI pipeline
 
 ### Phase 3.4 — Capability C: Promote Designer Slides to Empty Master (NEW — BT-142 session 2026-07-21)
 
 **Trigger:** user supplies a PPTX whose Slide Master is empty/blank (zero or one layout, no placeholders, all branding per-shape). End-user intent: turn the 10 designed slides into named layouts **attached to the slide master** (mimics PowerPoint's Slide Master view → Add Layout, or right-click slide → "Add to Master").
 
-**Why:** current `template-modifier-skill` (Capability B) borrows a layout **from a donor template** when the target is missing one. It does not reverse-engineer a slide's per-shape structure into a **named layout with real placeholders** on the target's own master. Without Capability C, every designer deck with bespoke slides is unfillable — `generate-slide-skill` will refuse (no layouts) or produce a generic Office-looking output.
+**Why:** current `pptx-template-modifier-skill` (Capability B) borrows a layout **from a donor template** when the target is missing one. It does not reverse-engineer a slide's per-shape structure into a **named layout with real placeholders** on the target's own master. Without Capability C, every designer deck with bespoke slides is unfillable — `pptx-generate-slide-skill` will refuse (no layouts) or produce a generic Office-looking output.
 
-- [x] **3.4.1** New module `template-modifier-skill/scripts/designer_promoter.py`
+- [x] **3.4.1** New module `pptx-template-modifier-skill/scripts/designer_promoter.py`
   — **Inputs:** source PPTX path, optional layout-name map `{slide_index: "Team"}`, optional theme XML override.
   — **Outputs:** new `<source>_template.pptx` with: (a) rewritten Slide Master theme (major/minor fonts, 12 OPC color roles from the source's per-shape palette — not stock Office), (b) N named layouts (one per source slide), each with proper **text/picture/table placeholders** (not loose shapes), (c) decorative brand shapes (cards, accent bars, dividers) baked into each layout as non-placeholder shapes, (d) the original N slides stripped (template = 0 slides, N layouts).
   — **Algorithm (per source slide):**
@@ -262,37 +262,37 @@ The chenyu engine has **5 hard limits** that surface when filling designer-style
     4. **Inherit theme from master** — placeholders pick up fonts/colors from the rewritten theme; per-shape `rPr` overrides are stripped so the layout is theme-driven (matches the end-user "Add to Master" behavior).
     5. **Strip source slide** — keep only the layouts, not the original slides (template ≠ deck).
   — **Done when:** for the BETEKK V9.1.0 source (10 slides, empty master), the output template has: (a) 10 named layouts (Cover, Story, Problem Impact, Problem, Solution/Brand, Solution/Demo, Market Validation, Business Model, Team, Ask/Closing), (b) ≥95 placeholders total across the 10 layouts, (c) theme XML uses Century Gothic + the BETEKK teal/zinc palette (verified via `grep` of `theme/theme1.xml`), (d) `pptx-specialist-subagent` can generate a deck against this template without per-shape restyling.
-  — **Consumers affected:** `template-modifier-skill/SKILL.md` (new Capability C section), `pptx-specialist-subagent.md` (new routing row), end users with designer decks
+  — **Consumers affected:** `pptx-template-modifier-skill/SKILL.md` (new Capability C section), `pptx-specialist-subagent.md` (new routing row), end users with designer decks
 
 - [x] **3.4.2** Pre-flight: static **container-fit check** for promoted layouts
   — **Why:** when placeholders are reverse-engineered from per-shape branding, a text placeholder's bounding box often extends beyond its visual container shape (orange card, teal panel) — exactly the BETEKK V9.1.1 slide 4 defect. A static geometry check catches this before any render.
-  — **New module:** `template-modifier-skill/scripts/container_check.py`
+  — **New module:** `pptx-template-modifier-skill/scripts/container_check.py`
   — **Function:** `container_violations(layout) -> List[{placeholder_idx, container_shape_id, overflow_px, severity}]`
   — **Algorithm:** for each TITLE/BODY placeholder on a layout, find the nearest decorative shape whose bounding box geometrically contains the placeholder's center point (point-in-rect). If found, verify the placeholder's rect fits inside the container's rect (with optional padding tolerance, default 4px). Report violations grouped by severity (critical > 20px overflow, warning 4–20px).
   — **Integration:** called automatically at the end of `designer_promoter.promote()`; violations emit as warnings in the build report and `Issues:` field of the subagent return contract. Critical violations block the template (raise `ContainerFitError`); warnings allow the build but flag for the orchestrator to address (extend container, shorten text, or move placeholder).
   — **Done when:** running `container_check` on the BETEKK V1 template flags slide 4's known text-vs-orange-box overflow (and any other violations); after the fix is applied, re-running returns zero critical violations.
-  — **Consumers affected:** `template-modifier-skill`, downstream `pptx-specialist-subagent` visual verification
+  — **Consumers affected:** `pptx-template-modifier-skill`, downstream `pptx-specialist-subagent` visual verification
 
 - [x] **3.4.2b** Pre-flight: static **WCAG 2.1 contrast check** for promoted layouts (NEW — BT-142 session 2026-07-21)
   — **Why:** promoted placeholders inherit theme defaults (often dark `dk1`) which can be invisible on dark cards. Even original designer slides often have implicit contrast assumptions that fail WCAG AA — e.g. BETEKK V9.1.1 surfaced 53 critical violations (mostly light text on `#2DD4BF` teal = 1.47:1 ratio, and `#FB923C` orange on orange = 1.0:1 ratio — literally invisible).
-  — **New module:** `template-modifier-skill/scripts/contrast_check.py`
+  — **New module:** `pptx-template-modifier-skill/scripts/contrast_check.py`
   — **Function:** `contrast_violations(layout, theme, auto_fix=False) -> List[ContrastViolation]` + `contrast_ratio(fg, bg) -> float` (WCAG 2.1 math)
   — **Algorithm:** for each TITLE/BODY placeholder, resolve effective foreground (explicit run rPr → theme `dk1` default) and effective background (container fill → theme `lt1` → white). Compute WCAG contrast ratio. Required: 4.5:1 (normal text <18pt), 3:1 (large text ≥18pt). Severity: <3.0 critical, <4.5 warning.
   — **Auto-fix (opt-in, default ON in `promote_designer_slides`):** override the placeholder's default run color (`<a:defRPr><a:solidFill><a:srgbClr>`) to white or black based on background luminance. The violation is still reported with `auto_fixed=True` so the orchestrator knows what changed.
   — **Done when:** running on BETEKK V9.1.1 surfaces the 53 critical violations; auto-fix resolves 43 (81%); the remaining 10 (`#FB923C` orange-on-orange) require human design decisions and are flagged in the report.
-  — **Consumers affected:** `template-modifier-skill`, `designer_promoter`, downstream `pptx-specialist-subagent`
+  — **Consumers affected:** `pptx-template-modifier-skill`, `designer_promoter`, downstream `pptx-specialist-subagent`
 
 - [x] **3.4.3** Extend `image-analyzer-subagent` dispatch prompt (Phase 2.4b) with `container_overflow` dimension
   — **Why:** the static check (3.4.2) catches the geometric mismatch at build time, but rendered text can still spill due to font metrics, wrapping, or dynamic content length. The vision oracle must also look for it — defense in depth.
   — **Done when:** Phase 2.4b's image-analyzer prompt template carries the `container_overflow` bullet (already added in this session, see Phase 2.4b diff); the dispatch routing in `pptx-specialist-subagent.md` Stage 5 routes any `container_overflow: critical` verdict back to the orchestrator for Squeeze/Split re-prompt (Phase 2.4) OR a placeholder-resize pass.
   — **Consumers affected:** `pptx-specialist-subagent.md` Stage 5, `image-analyzer-subagent` (no load change — prompt is per-dispatch)
 
-- [x] **3.4.4** Document Capability C in `template-modifier-skill/SKILL.md`
+- [x] **3.4.4** Document Capability C in `pptx-template-modifier-skill/SKILL.md`
   — **Why:** Capability C is a sibling to Capability B (donor clone). SKILL.md must describe when to use C vs B and the inputs/outputs.
   — **Done when:** SKILL.md has a new "Capability C: Promote Designer Slides" section with: trigger (empty master + designed slides), inputs (source PPTX, optional name map, optional theme), outputs (templated PPTX with N named layouts), the 5-step algorithm summary, and the container-fit pre-flight note. Capability B section gains a one-line cross-link.
   — **Consumers affected:** `pptx-specialist-subagent.md` routing prose, skill discoverability
 
-- [x] **3.4.1b** New module `template-modifier-skill/scripts/vision_extractor.py` (NEW — BT-142 session 2026-07-21)
+- [x] **3.4.1b** New module `pptx-template-modifier-skill/scripts/vision_extractor.py` (NEW — BT-142 session 2026-07-21)
   — **Why:** XML-based extraction is precise on geometry but loses design intent — most notably the slide background color, which designer decks encode as a large fill rectangle rather than via `<p:cSld><p:bg>`. Without vision, promoted layouts render with a white background even though every shape on them is dark.
   — **Pipeline:** `render_slides_to_pngs(pptx)` via `soffice` → PDF → `pdftoppm`; `build_image_analyzer_prompt(i, n, png, pptx_name)` returns the structured prompt; orchestrator dispatches each PNG to `image-analyzer-subagent` via Task tool; `aggregate_vision_results(raw)` coerces JSON strings / prose-wrapped JSON / dicts into typed `VisionSlideSchema`; `fallback_xml_background(slide, theme)` covers the case where soffice or subagent is unavailable — reads raw shape XML for both `srgbClr` (direct RGB) and `schemeClr` (theme reference incl. ECMA-376 aliases `tx1`/`dk1`, `bg1`/`lt1`).
   — **Integration with designer_promoter:** vision-derived `dominant_bg_hex` (confidence ≥ 0.5) overrides XML fallback for layout `<p:cSld><p:bg>` injection; XML continues to provide precise shape geometry.
@@ -304,13 +304,13 @@ The chenyu engine has **5 hard limits** that surface when filling designer-style
   — **Implementation:** `_compute_dominant_master_bg(slides, theme)` tallies each source slide's dominant bg (via XML or vision) and picks the most common. `_inject_master_background(prs, hex)` replaces the master's default `<p:bgRef>` with a solid `<p:bgPr><a:solidFill><a:srgbClr val="..."/></a:solidFill></p:bgPr>`. Reuses `_inject_layout_background` (which works on any `<p:cSld>`-bearing element — Slide Master OR Slide Layout). Idempotent: re-injection replaces (not stacks).
   — **Wiring:** called once in `promote_designer_slides` between theme application and per-layout promotion (Stage A.5).
   — **Done when:** on BETEKK V9.1.1, the Slide Master's `<p:cSld><p:bg>` carries `<a:srgbClr val="09090B"/>` (dark); master thumbnail in PowerPoint Slide Master view appears dark; layouts that don't override `<p:bg>` inherit dark. 7 tests cover replacement of `<p:bgRef>`, idempotency, invalid-hex rejection, layout-element compatibility, dominant-bg tally, theme-dk1 fallback, end-to-end via `promote_designer_slides`.
-  — **Consumers affected:** `designer_promoter`, `template-modifier-skill/SKILL.md` (Capability C algorithm step 0), `pptx-specialist-subagent.md` (Stage -1.5)
+  — **Consumers affected:** `designer_promoter`, `pptx-template-modifier-skill/SKILL.md` (Capability C algorithm step 0), `pptx-specialist-subagent.md` (Stage -1.5)
 
 ### Phase 3.5 — Engine Hard Limits Workaround (multi-pass + merge + backfill)
 
 **Trigger:** a deck requires >8 distinct layouts (L1), multi-image slides (L2/L4), or multi-body slides (L3). Discovered when filling BETEKK V9.1.1 against the BETEKK Template V1.
 
-- [x] **3.5a** Multi-pass render + merge pipeline (`generate-slide-skill/scripts/multipass_render.py`)
+- [x] **3.5a** Multi-pass render + merge pipeline (`pptx-generate-slide-skill/scripts/multipass_render.py`)
   — **Why:** L1 caps distinct layouts at 8 per render. Designer decks routinely have 10+.
   — **Algorithm:**
     1. **Partition** `slide_data_list` into batches of ≤8 distinct `slide_type` values (use a new pseudo-type `custom_layout:<layout_name>` for layouts beyond the 8 built-in types — the orchestrator assigns each BETEKK layout a unique pseudo-type).
@@ -319,7 +319,7 @@ The chenyu engine has **5 hard limits** that surface when filling designer-style
   — **Done when:** a 10-layout deck renders in 2 batches and the merged output has all 10 slides on their correct distinct layouts (verified via `prs.slides[n].slide_layout.name` for each n).
   — **Consumers affected:** `pptx-specialist-subagent.md` Stage 4 (auto-detects >8 distinct layouts → switches to multi-pass)
 
-- [x] **3.5b** Placeholder backfill (`generate-slide-skill/scripts/placeholder_backfill.py`)
+- [x] **3.5b** Placeholder backfill (`pptx-generate-slide-skill/scripts/placeholder_backfill.py`)
   — **Why:** L2 (one image), L3 (two bodies), L4 (first picture only) leave multi-placeholder layouts under-filled.
   — **Algorithm:** after the render (or merge) completes, iterate `slide_data_list` against `prs.slides`. For each slide, look up its layout's placeholders by index; fill any TITLE/BODY/PICTURE placeholder not already filled by the engine, using extended slide_data fields:
     - `image_paths: [...]` — array of `{path, placeholder_idx, sizing: "fill"|"fit"}` for multi-image slides
@@ -328,11 +328,11 @@ The chenyu engine has **5 hard limits** that surface when filling designer-style
   — **Done when:** BETEKK Team slide (4 member bios + 4 photos) fills all 8 placeholders; Market Validation slide fills all 5 logo placeholders.
   — **Consumers affected:** `pptx-specialist-subagent.md` Stage 4 (always runs backfill post-render when the template contract reports multi-placeholder layouts)
 
-- [x] **3.5c** Notes-master repair (`generate-slide-skill/scripts/notes_repair.py`)
+- [x] **3.5c** Notes-master repair (`pptx-generate-slide-skill/scripts/notes_repair.py`)
   — **Why:** L5 — templates promoted via Capability C (or any user template missing a notes body placeholder) silently drop speaker notes.
   — **Algorithm:** before filling notes, probe `slide.notes_slide.notes_text_frame`. If `None`, locate the notes master (`prs.notes_master`), check for an existing notes-text placeholder; if absent, add one via `python-pptx` `notes_master.placeholders.add_textbox()` or raw OOXML `<p:ph type="body" idx="1"/>` under the notes master's `<p:cSld>`. Then retry `_set_notes`.
   — **Done when:** BETEKK Template V1 (no notes body placeholder) produces a deck where every slide's notes are readable in PowerPoint Presenter View.
-  — **Consumers affected:** `generate-slide-skill`, all templates lacking notes body placeholders
+  — **Consumers affected:** `pptx-generate-slide-skill`, all templates lacking notes body placeholders
 
 ### Phase 3.6 — Engine schema extension (DEFERRED post-migration)
 
@@ -343,10 +343,10 @@ The chenyu engine has **5 hard limits** that surface when filling designer-style
 - [x] **4.1** Rewrite `opencode_app/.opencode/agents/pptx-specialist-subagent.md` with:
   - Conditional trigger matrix (from review §6.2) — **including the 2 new rows added BT-142 session 2026-07-21**: empty-master promotion (Capability C) and content-migration (2-PPTX)
   - Relaxed constraints (multilingual OK; preserve original speaker message + suggest transition)
-  - `permission.skill:` block updated to allow the 5 routed skills (`generate-slide-skill`, `generate-template-skill`, `template-modifier-skill`, `ooxml-editing-skill`, `office-thumbnail-skill`); REMOVE the now-deleted `pptx-specialist-skill: allow`
+  - `permission.skill:` block updated to allow the 5 routed skills (`pptx-generate-slide-skill`, `pptx-generate-template-skill`, `pptx-template-modifier-skill`, `ooxml-editing-skill`, `office-thumbnail-skill`); REMOVE the now-deleted `pptx-specialist-skill: allow`
   - **`permission.task:` block MUST include `image-analyzer-subagent: allow`** (powers Phase 2.4b post-render visual verification — without this, the orchestrator cannot dispatch the vision subagent to verify slide screenshots)
   - Surgical-edit and html2pptx escape hatches routed to `ooxml-editing-skill` (NOT to a non-existent `pptx-specialist-skill`)
-  - **Stage -1 enhanced detection (BT-142 session 2026-07-21):** probe `read_embedded_schema` AND introspect the master; if master is empty/blank (≤1 layout, zero placeholders) AND deck has ≥3 designed slides → route to Capability C (not generate-template-skill). If two PPTX paths supplied → route to content-migration workflow (extract from A, fill B). Detection logic documented inline.
+  - **Stage -1 enhanced detection (BT-142 session 2026-07-21):** probe `read_embedded_schema` AND introspect the master; if master is empty/blank (≤1 layout, zero placeholders) AND deck has ≥3 designed slides → route to Capability C (not pptx-generate-template-skill). If two PPTX paths supplied → route to content-migration workflow (extract from A, fill B). Detection logic documented inline.
   - **Engine-limits auto-routing (BT-142 session 2026-07-21):** when the slide_data_list or template contract indicates >8 distinct layouts OR multi-image/multi-body placeholders, Stage 4 transparently switches to the multi-pass + backfill pipeline (Phase 3.5) without user intervention. The switch is logged in the render report sidecar.
   — **Why:** The current orchestrator assumes html2pptx-first and single-skill routing. Must be rewritten for the multi-skill conditional trigger matrix, the user's relaxed constraints, and the post-decomposition skill set (no more `pptx-specialist-skill` reference). The `image-analyzer-subagent` permission is mandatory to enable the post-render sizing verification the user requested. The new Stage -1 detection closes the empty-master + 2-PPTX gaps surfaced by the BETEKK session.
   — **Done when:** Agent file contains the full conditional trigger matrix (all 10 rows); references all five routed skills by name; `permission.task` includes `image-analyzer-subagent: allow`; multilingual and speaker-note policies documented; `pptx-specialist-skill` is NOT referenced anywhere; escape-hatch routing points to `ooxml-editing-skill` + `office-thumbnail-skill`; Stage -1 detection logic for empty-master and 2-PPTX is documented with the three signal conditions (NOT_TEMPLATED + ≤1 layout + ≥3 designed slides).
@@ -360,7 +360,7 @@ The chenyu engine has **5 hard limits** that surface when filling designer-style
 ### Phase 5 — Documentation & Dependent Sync (per AGENTS.md)
 
 - [x] **5.1** `deploy/setup.sh` — add 3 chenyu skills + 2 new decomposition skills to listing + banner; update count → 122
-  — **Why:** AGENTS.md mandates sync: new skills/agents must be reflected in deploy scripts. Count includes the 5 new skills: `generate-slide-skill`, `generate-template-skill`, `template-modifier-skill`, `ooxml-editing-skill`, `office-thumbnail-skill`. Note `_common/` is shared lib, not a skill.
+  — **Why:** AGENTS.md mandates sync: new skills/agents must be reflected in deploy scripts. Count includes the 5 new skills: `pptx-generate-slide-skill`, `pptx-generate-template-skill`, `pptx-template-modifier-skill`, `ooxml-editing-skill`, `office-thumbnail-skill`. Note `_common/` is shared lib, not a skill.
   — **PRE-EXISTING DRIFT (verified):** `setup.sh` line 666 currently shows `SKILLS (116)` — already stale vs actual 118. Must be corrected to 122, not incremented from 116. The skill listing is a **hardcoded** category-grouped text block (not dynamically computed); update both the count and the category listings. Note: `rsync` at line 2446 deploys ALL dirs including `_common/` — that's correct (shared lib needs deploying), but `_common/` must NOT appear in the skill listing or count.
   — **Done when:** `setup.sh` skill listing contains all 5 new skills; banner shows count 122; `pptx-specialist-skill` is removed from listing; `grep -c "SKILLS (122)" deploy/setup.sh` returns 1.
   — **Consumers affected:** Deploy pipeline, `deploy/setup.ps1` parity
@@ -385,7 +385,7 @@ The chenyu engine has **5 hard limits** that surface when filling designer-style
   — **PREREQUISITE:** Phase 4.1 (orchestrator rewrite) must be complete first — dependent routing points to the rewritten `pptx-specialist-subagent` which must already have its new skill set defined.
   — **Why:** The decomposition removes `pptx-specialist-skill` entirely. Every agent that currently references it in `permission.skill:` or in prose must be updated, or it will reference a non-existent skill.
   — **Files to update:**
-    - `opencode_app/.opencode/agents/office-document-primary-agent.md` (line 14: `pptx-specialist-skill: allow` — verified) — REPLACE with `ooxml-editing-skill: allow` + `office-thumbnail-skill: allow` + `generate-slide-skill: allow`; OR route PPTX creation through `pptx-specialist-subagent` via Task tool instead
+    - `opencode_app/.opencode/agents/office-document-primary-agent.md` (line 14: `pptx-specialist-skill: allow` — verified) — REPLACE with `ooxml-editing-skill: allow` + `office-thumbnail-skill: allow` + `pptx-generate-slide-skill: allow`; OR route PPTX creation through `pptx-specialist-subagent` via Task tool instead
     - `opencode_app/.opencode/agents/startup-ceo-subagent.md` (lines 14, 61, 69 — all verified) — REPLACE skill delegation; route PPTX creation through `pptx-specialist-subagent` Task call
     - `opencode_app/.opencode/agents/discovery-specialist-subagent.md` (lines 24, 114 — both verified) — REPLACE skill delegation; route through `pptx-specialist-subagent` Task call
     - `opencode_app/.opencode/skills/docx-creation-skill/SKILL.md` — ADD references to absorbed helpers (`merge_runs.py`, `simplify_redlines.py`, `validators/docx.py`, `validators/redlining.py`) now confirmed at `docx-creation-skill/scripts/{validators,helpers}/` (identical copies already present per Phase 7.3 finding)
@@ -445,7 +445,7 @@ The chenyu engine has **5 hard limits** that surface when filling designer-style
   — **Consumers affected:** End users (clear failure mode)
 
 - [ ] **6.9** html2pptx escape hatch still works when explicitly requested
-  — **Why:** Users who explicitly say "convert HTML to PPTX" still need a working path. After decomposition, this routes through `ooxml-editing-skill` (or a thin html2pptx wrapper inside it) → `generate-template-skill` (extract+embed) → `generate-slide-skill` (final render). The old `pptx-specialist-skill` no longer exists.
+  — **Why:** Users who explicitly say "convert HTML to PPTX" still need a working path. After decomposition, this routes through `ooxml-editing-skill` (or a thin html2pptx wrapper inside it) → `pptx-generate-template-skill` (extract+embed) → `pptx-generate-slide-skill` (final render). The old `pptx-specialist-skill` no longer exists.
   — **Done when:** User says "convert this HTML to PPTX" and the orchestrator produces a valid PPTX via the routing chain above (with hidden JSON embedded after generation).
   — **Consumers affected:** Users with existing HTML content
 
@@ -471,7 +471,7 @@ The chenyu engine has **5 hard limits** that surface when filling designer-style
     3. Verify the Slide Master's theme XML uses Century Gothic + the BETEKK teal/zinc palette (not stock Office)
     4. Verify each of the 10 layouts has ≥3 proper placeholders (TITLE/BODY/PICTURE) — not loose shapes
     5. Run `container_check` (Phase 3.4.2) → report must list zero critical violations after the build-time fix
-    6. Fill the template with sample content via `generate-slide-skill` (no per-shape restyling) → output deck inherits branding from the master/layouts
+    6. Fill the template with sample content via `pptx-generate-slide-skill` (no per-shape restyling) → output deck inherits branding from the master/layouts
     7. Visually compare the filled deck to the original BETEKK V9.1.0 — branding fidelity must be ≥90% (perceptual hash or human review)
   — **Done when:** All 7 sub-steps pass. Output template + filled deck stored under `output/capability-c-samples/` for regression reference.
   — **Consumers affected:** End users with designer decks (primary gap closed)
@@ -518,12 +518,12 @@ This phase runs AFTER Phases 1–4 are complete and the chenyu stack is the prim
   — **Consumers affected:** `docx-creation-skill`
   — **NOTE:** `docx-creation-skill/scripts/` also contains its own copies of `unpack.py`, `pack.py`, `validate.py`, `soffice.py` (overlapping with Phase 7.1's `ooxml-editing-skill` targets) and a full `validators/` directory (`base.py`, `pptx.py`, `__init__.py`). See Risk #9 — this broader DRY duplication is out of scope for BT-142 but should be tracked.
 
-- [x] **7.4** Move `add_slide.py` into `generate-slide-skill/scripts/`
+- [x] **7.4** Move `add_slide.py` into `pptx-generate-slide-skill/scripts/`
   — **Why:** `add_slide.py` is a PPTX-specific OOXML surgical-edit tool that fits naturally next to chenyu's python-pptx engine. Lives as an escape hatch for "add a slide to an unpacked PPTX" workflows.
   — **Source file:** `pptx-specialist-skill/scripts/add_slide.py`
-  — **Target:** `generate-slide-skill/scripts/ooxml_add_slide.py` (renamed to avoid collision with chenyu's python-pptx-based `add_slide` semantics)
-  — **Done when:** File exists at new path with new name; `generate-slide-skill/SKILL.md` mentions it as the surgical-edit alternative.
-  — **Consumers affected:** `generate-slide-skill`
+  — **Target:** `pptx-generate-slide-skill/scripts/ooxml_add_slide.py` (renamed to avoid collision with chenyu's python-pptx-based `add_slide` semantics)
+  — **Done when:** File exists at new path with new name; `pptx-generate-slide-skill/SKILL.md` mentions it as the surgical-edit alternative.
+  — **Consumers affected:** `pptx-generate-slide-skill`
 
 - [x] **7.5** DELETE `pptx-specialist-skill/` entirely
   — **Why:** After all usable files are redistributed (7.1–7.4), the remaining content is the html2pptx workflow in SKILL.md (retired by chenyu) and the directory itself. The skill name is misleading (bundles 3 concerns under a PPTX-misnomer) and conflicts with the surviving `pptx-specialist-subagent` orchestrator. Must be removed to avoid confusion and dual-skill routing ambiguity.
@@ -559,7 +559,7 @@ Read-only scenario-based review by `architecture-review-subagent` covering 17 sc
     2. Build two decks with overlapping media (same image part) → merge → verify no relationship corruption
     3. Build three batches (partition of a 10-layout deck) → merge → verify all 10 slides on correct layouts
     4. Negative: merge a deck with a layout that doesn't exist on the primary master → verify graceful fallback to blank layout + warning
-  — **Done when:** `pytest opencode_app/.opencode/skills/generate-slide-skill/scripts/tests/test_multipass_render_merge.py` passes with all 4 cases. Use real `ppt_builder.generate_ppt_from_data` to render batch inputs (not fakes) so the relink path is exercised end-to-end.
+  — **Done when:** `pytest opencode_app/.opencode/skills/pptx-generate-slide-skill/scripts/tests/test_multipass_render_merge.py` passes with all 4 cases. Use real `ppt_builder.generate_ppt_from_data` to render batch inputs (not fakes) so the relink path is exercised end-to-end.
   — **Consumers affected:** all >8-layout decks (Phase 3.5a).
 
 - [ ] **8.4** Audit + close `master_cloner` skipped tests (HIGH-3 — pre-existing)
@@ -572,12 +572,12 @@ Read-only scenario-based review by `architecture-review-subagent` covering 17 sc
   — **MED-2:** `vision_extractor.fallback_xml_background` schemeClr aliases (tx1, bg1) — untested. Add tests for both alias paths with theme dict.
   — **MED-3:** `contrast_check` auto-fix mutation — current tests use `_FakeRun` stubs and don't verify the actual OOXML mutation lands on the placeholder's `<a:defRPr><a:solidFill><a:srgbClr>`. Add a test using a real python-pptx placeholder shape, call `contrast_violations(..., auto_fix=True)`, reload the shape, verify the run color was changed.
   — **MED-4:** Skill count drift — docs say 122 but filesystem has 127 SKILL.md files (new skills added elsewhere). Re-audit and reconcile. May relate to Phase 9 (PPTX skill rename).
-  — **MED-5:** `generate-slide-skill/SKILL.md:84` says "English only" but orchestrator line 27 says "RELAXED" — pre-existing doc contradiction. Align both to the orchestrator's relaxed policy.
+  — **MED-5:** `pptx-generate-slide-skill/SKILL.md:84` says "English only" but orchestrator line 27 says "RELAXED" — pre-existing doc contradiction. Align both to the orchestrator's relaxed policy.
   — **Done when:** each MED item has a dedicated commit OR is explicitly triaged out with rationale.
 
 ### Phase 9 — PPTX Skill Naming Convention (NEW — BT-142 session 2026-07-21)
 
-**Why:** the three PPTX-specific skills created by BT-142 (`generate-slide-skill`, `generate-template-skill`, `template-modifier-skill`) carry generic names that don't communicate they're PPTX-only. A future contributor reading the skill list cannot tell whether `generate-slide-skill` handles Google Slides, Keynote, Reveal.js, or PPTX. Adding a `pptx-` prefix scopes discovery and avoids future name collisions when (if) other slide frameworks are added.
+**Why:** the three PPTX-specific skills created by BT-142 (`pptx-generate-slide-skill`, `pptx-generate-template-skill`, `pptx-template-modifier-skill`) carry generic names that don't communicate they're PPTX-only. A future contributor reading the skill list cannot tell whether `pptx-generate-slide-skill` handles Google Slides, Keynote, Reveal.js, or PPTX. Adding a `pptx-` prefix scopes discovery and avoids future name collisions when (if) other slide frameworks are added.
 
 The two Office-wide skills keep their current names because they handle DOCX/PPTX/XLSX uniformly:
 - `ooxml-editing-skill` — generic OOXML unpack/pack/validate (any Office file)
@@ -587,49 +587,49 @@ The two Office-wide skills keep their current names because they handle DOCX/PPT
 
 | Current name                       | New name                              |
 | ---------------------------------- | ------------------------------------- |
-| `generate-slide-skill`               | `pptx-generate-slide-skill`             |
-| `generate-template-skill`            | `pptx-generate-template-skill`          |
-| `template-modifier-skill`            | `pptx-template-modifier-skill`          |
+| `pptx-generate-slide-skill`               | ` PROTpptx-generate-slide-skill `             |
+| `pptx-generate-template-skill`            | ` PROTpptx-generate-template-skill `          |
+| `pptx-template-modifier-skill`            | ` PROTpptx-template-modifier-skill `          |
 
 Skill count stays at 122 — pure rename, no add/remove.
 
 - [ ] **9.1** Rename the three PPTX-specific skill directories
   — **Why:** namespacing for discoverability; prevent future collisions when other slide frameworks are considered.
-  — **Done when:** `git mv opencode_app/.opencode/skills/generate-slide-skill opencode_app/.opencode/skills/pptx-generate-slide-skill` (and the two parallel moves); old directories no longer exist; new directories retain all scripts + SKILL.md + tests unchanged.
+  — **Done when:** `git mv opencode_app/.opencode/skills/pptx-generate-slide-skill opencode_app/.opencode/skills/ PROTpptx-generate-slide-skill ` (and the two parallel moves); old directories no longer exist; new directories retain all scripts + SKILL.md + tests unchanged.
   — **Consumers affected:** every reference to the old names (see 9.2)
 
 - [ ] **9.2** Update all cross-references
-  — **Files to update (verified via `grep -rn 'generate-slide-skill\|generate-template-skill\|template-modifier-skill' opencode_app/ deploy/ README.md PLANS/`):**
+  — **Files to update (verified via `grep -rn 'pptx-generate-slide-skill\|pptx-generate-template-skill\|pptx-template-modifier-skill' opencode_app/ deploy/ README.md PLANS/`):**
     - `opencode_app/.opencode/agents/pptx-specialist-subagent.md` — routing matrix, `permission.skill:` block, Stage -1.5 + Stage 4 code samples (sys.path.insert references + skill paths)
     - `opencode_app/.opencode/agents/office-document-primary-agent.md` — `permission.skill:` if it references any of the three
-    - `opencode_app/.opencode/skills/*/SKILL.md` — any cross-references between the three (e.g. `template-modifier-skill/SKILL.md` mentions `generate-slide-skill` in its scripts table)
+    - `opencode_app/.opencode/skills/*/SKILL.md` — any cross-references between the three (e.g. `pptx-template-modifier-skill/SKILL.md` mentions `pptx-generate-slide-skill` in its scripts table)
     - `opencode_app/.opencode/skills/_common/scripts/*.py` — only docstring/comments (functional imports use relative paths or sys.path.insert with the directory name)
     - `deploy/setup.sh` — skill listing (banner + status sections)
     - `deploy/setup.ps1` — Windows parity mirror
     - `README.md` — Skill Categories table, any prose references
     - `opencode_app/README.md` — Docker docs PPTX section
     - `PLANS/PLAN-BT-142.md` — fix every reference in this file
-  — **Done when:** `grep -rn '\b\(generate-slide-skill\|generate-template-skill\|template-modifier-skill\)\b' opencode_app/ deploy/ README.md PLANS/` returns zero matches (the new `pptx-` prefixed names are not flagged because the regex uses `\b` word boundaries against the old bare names).
+  — **Done when:** `grep -rn '\b\(pptx-generate-slide-skill\|pptx-generate-template-skill\|pptx-template-modifier-skill\)\b' opencode_app/ deploy/ README.md PLANS/` returns zero matches (the new `pptx-` prefixed names are not flagged because the regex uses `\b` word boundaries against the old bare names).
   — **Consumers affected:** every consumer of the three skills.
 
 - [ ] **9.3** Update `sys.path.insert` calls in scripts and tests
-  — **Why:** Python imports use `sys.path.insert(0, '.opencode/skills/generate-slide-skill/scripts')` (string literal containing the directory name). These literals must be updated or the imports break.
-  — **Done when:** `grep -rn 'sys.path.insert.*skills/\(generate-slide-skill\|generate-template-skill\|template-modifier-skill\)' opencode_app/` returns zero matches; the new paths use the `pptx-` prefixed directory names. Verify with `python3 -m pytest opencode_app/.opencode/skills/pptx-*/scripts/tests/` — all tests pass against the new paths.
+  — **Why:** Python imports use `sys.path.insert(0, '.opencode/skills/pptx-generate-slide-skill/scripts')` (string literal containing the directory name). These literals must be updated or the imports break.
+  — **Done when:** `grep -rn 'sys.path.insert.*skills/\(pptx-generate-slide-skill\|pptx-generate-template-skill\|pptx-template-modifier-skill\)' opencode_app/` returns zero matches; the new paths use the `pptx-` prefixed directory names. Verify with `python3 -m pytest opencode_app/.opencode/skills/pptx-*/scripts/tests/` — all tests pass against the new paths.
   — **Consumers affected:** all callers of the three skills' Python modules (orchestrator scripts, dependent skill scripts, tests).
 
 - [ ] **9.4** Update SKILL.md `name:` frontmatter fields
   — **Why:** each skill's YAML frontmatter has a `name:` field matching the directory name. The frontmatter name is used by skill-loader logic and must match the directory or the skill fails to load.
-  — **Done when:** `head -5 opencode_app/.opencode/skills/pptx-generate-slide-skill/SKILL.md` shows `name: pptx-generate-slide-skill` (and parallel for the other two).
+  — **Done when:** `head -5 opencode_app/.opencode/skills/ PROTpptx-generate-slide-skill /SKILL.md` shows `name:  PROTpptx-generate-slide-skill ` (and parallel for the other two).
   — **Consumers affected:** OpenCode skill loader.
 
 - [ ] **9.5** Update `description:` fields to reflect PPTX-specificity
-  — **Why:** now that the name carries the `pptx-` prefix, the description can be tighter (no need to disambiguate framework). E.g. `generate-slide-skill`'s description "Populate the PowerPoint template..." can become "Populate a PPTX Slide Master template...".
+  — **Why:** now that the name carries the `pptx-` prefix, the description can be tighter (no need to disambiguate framework). E.g. `pptx-generate-slide-skill`'s description "Populate the PowerPoint template..." can become "Populate a PPTX Slide Master template...".
   — **Done when:** all three renamed skills' `description:` fields explicitly say "PPTX" or "PowerPoint" (already mostly true; verify and tighten).
   — **Consumers affected:** skill discoverability in agent routing matrices.
 
 - [ ] **9.6** Sync deploy/README counts + listings
   — **Why:** the deploy scripts hardcode skill listings in category groups. The three renamed skills must appear under their new names; counts stay at 122.
-  — **Done when:** `grep -c 'pptx-generate-slide-skill\|pptx-generate-template-skill\|pptx-template-modifier-skill' deploy/setup.sh deploy/setup.ps1 README.md` returns ≥3 in each file; the old names no longer appear.
+  — **Done when:** `grep -c ' PROTpptx-generate-slide-skill \| PROTpptx-generate-template-skill \| PROTpptx-template-modifier-skill ' deploy/setup.sh deploy/setup.ps1 README.md` returns ≥3 in each file; the old names no longer appear.
   — **Consumers affected:** deploy pipeline, README readers.
 
 - [ ] **9.7** Validation gate: smoke-test the renamed stack end-to-end
@@ -646,8 +646,8 @@ Skill count stays at 122 — pure rename, no add/remove.
 
 | User provides        | User asks                              | Skill invoked                                                              |
 | -------------------- | -------------------------------------- | -------------------------------------------------------------------------- |
-| PPTX                 | "extract template" / "what layouts"    | `generate-template-skill`                                                    |
-| Templated PPTX       | "create deck"                          | `generate-slide-skill`                                                       |
+| PPTX                 | "extract template" / "what layouts"    | `pptx-generate-template-skill`                                                    |
+| Templated PPTX       | "create deck"                          | `pptx-generate-slide-skill`                                                       |
 | Non-templated PPTX   | "create deck"                          | `generate-template` → `generate-slide` (chained via `auto_template=True`)      |
 | Templated PPTX       | "add slide type not in master"         | `template-modifier` (Capability B) → `generate-slide`                         |
 | PPTX A (content) + PPTX B (template) | "apply A's content to B's layouts" / "re-skin deck" / "use A on B template" | **NEW** Stage 0 content extraction (from A) → `generate-slide` (against B, multi-pass if >8 layouts per Phase 3.5a) → backfill (3.5b) |
@@ -659,7 +659,7 @@ Skill count stays at 122 — pure rename, no add/remove.
 
 > **Matrix gap (non-blocking):** "Non-templated PPTX + add slide type not in master" is not a separate row. The orchestrator should chain: `generate-template` (extract first) → `template-modifier` (add layout) → `generate-slide` (fill). This is implied by combining rows 3 + 4 but should be documented explicitly in the orchestrator prompt (Phase 4.1) to avoid ambiguous routing.
 
-> **Matrix gap 2 (added BT-142 session 2026-07-21):** "PPTX with empty master + branding per-shape" is row 6's trigger. This shape is detected by: (a) `read_embedded_schema` returns `NOT_TEMPLATED`, AND (b) `template_introspector` reports ≤1 layout OR zero placeholders on the master's only layout, AND (c) the deck has ≥3 designed slides. The orchestrator must NOT route this through `generate-template-skill` alone (which would extract a useless schema) — it must route through Capability C. Detection logic lives in `pptx-specialist-subagent.md` Stage -1.
+> **Matrix gap 2 (added BT-142 session 2026-07-21):** "PPTX with empty master + branding per-shape" is row 6's trigger. This shape is detected by: (a) `read_embedded_schema` returns `NOT_TEMPLATED`, AND (b) `template_introspector` reports ≤1 layout OR zero placeholders on the master's only layout, AND (c) the deck has ≥3 designed slides. The orchestrator must NOT route this through `pptx-generate-template-skill` alone (which would extract a useless schema) — it must route through Capability C. Detection logic lives in `pptx-specialist-subagent.md` Stage -1.
 
 ## Risks
 
@@ -697,7 +697,7 @@ Skill count stays at 122 — pure rename, no add/remove.
 5. **NEW:** Should `ooxml-editing-skill` cover DOCX/PPTX/XLSX uniformly, or specialize per format (split into `docx-ooxml-skill`, `pptx-ooxml-skill`, `xlsx-ooxml-skill`)? PLAN assumes uniform (one skill, format-aware validators); specialization would push skill count higher.
 6. **NEW:** Should `office-thumbnail-skill` also absorb the markitdown-based content extraction (currently in `pptx-specialist-skill`'s narrative), or stay narrow (thumbnail + soffice only)? PLAN assumes narrow.
 7. **NEW:** When `pptx-specialist-subagent` is rewritten (Phase 4.1), should it route deck-creation requests from peer agents (startup-ceo, discovery-specialist) via Task tool dispatch, or via direct skill invocation? PLAN currently assumes Task tool dispatch (consistent with our hub-and-spoke pattern).
-8. **NEW (BT-142 session 2026-07-21):** Should Capability C (Phase 3.4) live in `template-modifier-skill` (sibling to Capability B donor-clone) or as a **new fourth skill** `template-promoter-skill`? PLAN currently assumes sibling-within-template-modifier (keeps skill count at 122). A separate skill would push count to 123 and give Capability C its own trigger phrases + permission surface.
+8. **NEW (BT-142 session 2026-07-21):** Should Capability C (Phase 3.4) live in `pptx-template-modifier-skill` (sibling to Capability B donor-clone) or as a **new fourth skill** `template-promoter-skill`? PLAN currently assumes sibling-within-template-modifier (keeps skill count at 122). A separate skill would push count to 123 and give Capability C its own trigger phrases + permission surface.
 9. **NEW (BT-142 session 2026-07-21):** Should the **content-migration workflow** (Conditional Trigger Matrix row 6) be its own skill (`content-migration-skill` wrapping Stage 0 extraction + multi-pass + backfill), or stay as an orchestrator-only workflow that composes existing skills? PLAN currently assumes orchestrator-only (no new skill).
 10. **NEW (BT-142 session 2026-07-21):** For the engine hard limits (L1–L5), is the interim Phase 3.5 workaround acceptable for BT-142 GA, or should Phase 3.6 (open `slide_type` registry + array fields) land in-scope? PLAN currently defers 3.6 to BT-143. Defer risks forcing every real-world pitch deck through the multi-pass pipeline.
 11. **NEW (BT-142 session 2026-07-21):** Should the `container_overflow` image-analyzer check (Phase 2.4c/3.4.3) be a hard gate (blocks render on critical verdict) or a soft warning (passes through to `Issues:`)? PLAN currently assumes soft for headless, hard for interactive (Phase 2.4 question).
