@@ -552,7 +552,7 @@ Read-only scenario-based review by `architecture-review-subagent` covering 17 sc
   — **HIGH-2:** the deployed `~/.config/opencode/agents/pptx-specialist-subagent.md` was missing Stage -1.5 (vision extraction) because the deploy happened between commits `5b7d185` (orchestrator wiring) and `e6c378d` (master bg + vision stage). User redeployed after commit `66b576e`, picking up all current orchestrator changes.
   — **Done when:** `diff opencode_app/.opencode/agents/pptx-specialist-subagent.md ~/.config/opencode/agents/pptx-specialist-subagent.md` returns empty (or only the `model:` frontmatter line).
 
-- [ ] **8.3** Write tests for `merge_decks` / `_copy_slide` / `_relink_image_rels` (HIGH-1)
+- [x] **8.3** Write tests for `merge_decks` / `_copy_slide` / `_relink_image_rels` (HIGH-1)
   — **Why:** the multi-pass merge primitive (used for L1 engine limit: >8 distinct layouts per deck) has ZERO test coverage. It is the riskiest untested code in the new stack. The BETEKK V9.1.1 content migration scenario (Phase 6.12) cannot be considered validated until this is tested.
   — **Test plan:**
     1. Build two minimal decks (1 slide each, distinct layouts) → merge → verify 2 slides on correct distinct layouts
@@ -593,12 +593,12 @@ The two Office-wide skills keep their current names because they handle DOCX/PPT
 
 Skill count stays at 122 — pure rename, no add/remove.
 
-- [ ] **9.1** Rename the three PPTX-specific skill directories
+- [x] **9.1** Rename the three PPTX-specific skill directories
   — **Why:** namespacing for discoverability; prevent future collisions when other slide frameworks are considered.
   — **Done when:** `git mv opencode_app/.opencode/skills/pptx-generate-slide-skill opencode_app/.opencode/skills/ PROTpptx-generate-slide-skill ` (and the two parallel moves); old directories no longer exist; new directories retain all scripts + SKILL.md + tests unchanged.
   — **Consumers affected:** every reference to the old names (see 9.2)
 
-- [ ] **9.2** Update all cross-references
+- [x] **9.2** Update all cross-references
   — **Files to update (verified via `grep -rn 'pptx-generate-slide-skill\|pptx-generate-template-skill\|pptx-template-modifier-skill' opencode_app/ deploy/ README.md PLANS/`):**
     - `opencode_app/.opencode/agents/pptx-specialist-subagent.md` — routing matrix, `permission.skill:` block, Stage -1.5 + Stage 4 code samples (sys.path.insert references + skill paths)
     - `opencode_app/.opencode/agents/office-document-primary-agent.md` — `permission.skill:` if it references any of the three
@@ -612,27 +612,27 @@ Skill count stays at 122 — pure rename, no add/remove.
   — **Done when:** `grep -rn '\b\(pptx-generate-slide-skill\|pptx-generate-template-skill\|pptx-template-modifier-skill\)\b' opencode_app/ deploy/ README.md PLANS/` returns zero matches (the new `pptx-` prefixed names are not flagged because the regex uses `\b` word boundaries against the old bare names).
   — **Consumers affected:** every consumer of the three skills.
 
-- [ ] **9.3** Update `sys.path.insert` calls in scripts and tests
+- [x] **9.3** Update `sys.path.insert` calls in scripts and tests
   — **Why:** Python imports use `sys.path.insert(0, '.opencode/skills/pptx-generate-slide-skill/scripts')` (string literal containing the directory name). These literals must be updated or the imports break.
   — **Done when:** `grep -rn 'sys.path.insert.*skills/\(pptx-generate-slide-skill\|pptx-generate-template-skill\|pptx-template-modifier-skill\)' opencode_app/` returns zero matches; the new paths use the `pptx-` prefixed directory names. Verify with `python3 -m pytest opencode_app/.opencode/skills/pptx-*/scripts/tests/` — all tests pass against the new paths.
   — **Consumers affected:** all callers of the three skills' Python modules (orchestrator scripts, dependent skill scripts, tests).
 
-- [ ] **9.4** Update SKILL.md `name:` frontmatter fields
+- [x] **9.4** Update SKILL.md `name:` frontmatter fields
   — **Why:** each skill's YAML frontmatter has a `name:` field matching the directory name. The frontmatter name is used by skill-loader logic and must match the directory or the skill fails to load.
   — **Done when:** `head -5 opencode_app/.opencode/skills/ PROTpptx-generate-slide-skill /SKILL.md` shows `name:  PROTpptx-generate-slide-skill ` (and parallel for the other two).
   — **Consumers affected:** OpenCode skill loader.
 
-- [ ] **9.5** Update `description:` fields to reflect PPTX-specificity
+- [x] **9.5** Update `description:` fields to reflect PPTX-specificity
   — **Why:** now that the name carries the `pptx-` prefix, the description can be tighter (no need to disambiguate framework). E.g. `pptx-generate-slide-skill`'s description "Populate the PowerPoint template..." can become "Populate a PPTX Slide Master template...".
   — **Done when:** all three renamed skills' `description:` fields explicitly say "PPTX" or "PowerPoint" (already mostly true; verify and tighten).
   — **Consumers affected:** skill discoverability in agent routing matrices.
 
-- [ ] **9.6** Sync deploy/README counts + listings
+- [x] **9.6** Sync deploy/README counts + listings
   — **Why:** the deploy scripts hardcode skill listings in category groups. The three renamed skills must appear under their new names; counts stay at 122.
   — **Done when:** `grep -c ' PROTpptx-generate-slide-skill \| PROTpptx-generate-template-skill \| PROTpptx-template-modifier-skill ' deploy/setup.sh deploy/setup.ps1 README.md` returns ≥3 in each file; the old names no longer appear.
   — **Consumers affected:** deploy pipeline, README readers.
 
-- [ ] **9.7** Validation gate: smoke-test the renamed stack end-to-end
+- [x] **9.7** Validation gate: smoke-test the renamed stack end-to-end
   — **Why:** a rename touches many files in parallel; a single missed reference breaks routing silently.
   — **Done when:**
     1. `./deploy/setup.sh --dry-run` (or equivalent) lists the three new skill names + correct count (122)
