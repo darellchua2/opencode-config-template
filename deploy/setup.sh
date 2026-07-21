@@ -663,7 +663,7 @@ USAGE:
       google-gce         Google Compute Engine management
       google-gke         Google Kubernetes Engine management
 
-    SKILLS (121):
+    SKILLS (123):
               Framework (19):       test-generator-framework, linting-workflow,
                                       pr-creation-workflow, pr-merge-workflow,
                                       error-resolver-workflow, tdd-workflow,
@@ -745,6 +745,9 @@ USAGE:
                                  cad-sendcutsend, cad-gcode, cad-bambu-labs,
                                  cad-implicit, autodesk-aps-skill,
                                  civil-3d-skill, open3d-skill
+
+  Academic & Research Writing (2): horseshoe-paper-writing-skill,
+                                    research-paper-generation-skill
 
     Run 'opencode --list-skills' for detailed descriptions
     Run 'opencode --skill <name> "prompt"' to invoke a skill
@@ -3225,6 +3228,9 @@ print_summary() {
         echo "      - coverage-readme-workflow"
         echo "      - docstring-generator"
         echo "      - documentation-sync-workflow"
+         echo "    - Academic & Research Writing (2):"
+         echo "      - horseshoe-paper-writing-skill"
+         echo "      - research-paper-generation-skill"
          echo "    - JIRA (3):"
          echo "      - jira-status-updater"
          echo "      - jira-git-integration"
@@ -3326,13 +3332,13 @@ print_next_steps() {
     echo "         opencode \"prompt\" (uses build)"
      echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-      echo "                     📦 116 Skills Available"
+      echo "                     📦 123 Skills Available"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
      echo "  Framework (19) • Language-Specific (6) • Presentation (3)"
      echo "  Office Utilities (2) • Framework-Specific (10) • OpenCode Meta (4)"
      echo "  OpenTofu (7) • Git/Workflow (12) • Documentation (3) • JIRA (3) • Code Quality (8)"
-    echo "  Agent Optimization (7) • Planning & Alignment (4)"
+    echo "  Agent Optimization (7) • Planning & Alignment (4) • Academic & Research Writing (2)"
     echo "  Responsive & Visual Testing (2)"
     echo "  CAD & Hardware Design (14)"
     echo ""

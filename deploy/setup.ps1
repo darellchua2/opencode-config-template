@@ -906,7 +906,7 @@ USAGE:
     Usage: opencode --agent build 'implement auth feature'
             opencode --agent explore 'find all API routes'
  
-           SKILLS (121):
+            SKILLS (123):
               Framework (19):       test-generator-framework, linting-workflow,
                                       pr-creation-workflow, pr-merge-workflow,
                                       error-resolver-workflow, tdd-workflow,
@@ -982,7 +982,10 @@ USAGE:
                                  cad-dxf, cad-urdf, cad-srdf, cad-sdf,
                                  cad-sendcutsend, cad-gcode, cad-bambu-labs,
                                  cad-implicit, autodesk-aps-skill,
-                                 civil-3d-skill, open3d-skill
+civil-3d-skill, open3d-skill
+
+  Academic & Research Writing (2): horseshoe-paper-writing-skill,
+                                    research-paper-generation-skill
 
     Run 'opencode --list-skills' for detailed descriptions
     Run 'opencode --skill <name> \"prompt\"' to invoke a skill
@@ -1829,7 +1832,9 @@ function Deploy-Skills {
         Write-Host "    Documentation (3):"
         Write-Host "      - coverage-readme-workflow, docstring-generator"
         Write-Host "      - documentation-sync-workflow"
-        Write-Host "    JIRA (3):"
+         Write-Host "    Academic & Research Writing (2):"
+         Write-Host "      - horseshoe-paper-writing-skill, research-paper-generation-skill"
+         Write-Host "    JIRA (3):"
          Write-Host "      - jira-status-updater, jira-git-integration, jira-ticket-labeler"
         Write-Host "    Code Quality (8):"
         Write-Host "      - solid-principles, clean-code, clean-architecture"
@@ -2456,13 +2461,13 @@ function Show-NextSteps {
     Write-Host "         opencode `"prompt`" (uses build)"
      Write-Host ""
     Write-Host "=====================================================================" -ForegroundColor White
-      Write-Host "                     116 Skills Available" -ForegroundColor White
+      Write-Host "                     123 Skills Available" -ForegroundColor White
      Write-Host "=====================================================================" -ForegroundColor White
      Write-Host ""
      Write-Host "  Framework (19) • Language-Specific (6) • Presentation (3)"
       Write-Host "  Office Utilities (2) • Framework-Specific (10) • OpenCode Meta (4)"
       Write-Host "  OpenTofu (7) • Git/Workflow (12) • Documentation (3) • JIRA (3) • Code Quality (8)"
-      Write-Host "  Agent Optimization (7) • Planning & Alignment (4)"
+      Write-Host "  Agent Optimization (7) • Planning & Alignment (4) • Academic & Research Writing (2)"
      Write-Host "  Responsive & Visual Testing (2)"
      Write-Host "  CAD & Hardware Design (14)"
     Write-Host ""

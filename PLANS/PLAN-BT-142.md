@@ -97,6 +97,8 @@ The chenyu engine has **5 hard limits** that surface when filling designer-style
 
 **Skill count math (verified 2026-07-21):** 118 (current, confirmed via `ls -d opencode_app/.opencode/skills/*/ | wc -l`) + 3 (chenyu) − 1 (pptx-specialist-skill removed) + 2 (new: ooxml-editing-skill, office-thumbnail-skill) = **122**. Note: raw `ls -d */` post-migration yields 123 because `_common/` is a shared library directory (no `SKILL.md`), not a skill. Banner/README must use 122.
 
+▸ **DELTA (2026-07-21, out-of-band):** +2 new skills (`horseshoe-paper-writing-skill`, `research-paper-generation-skill`) were added outside BT-142 scope. Verified SKILL.md count is now **123** (`find opencode_app/.opencode/skills -maxdepth 2 -name SKILL.md | wc -l`). See **§ Out-of-Band Additions (post Phase 9)** below. Supersedes the MED-4 "127" figure.
+
 **Consumers affected (direct — must update `permission.skill` + prose):**
 - `deploy/setup.sh` / `deploy/setup.ps1` — skill count 118 → 122; banner + listing updates
 - `README.md` — Skill Categories table; Subagents table
@@ -571,7 +573,7 @@ Read-only scenario-based review by `architecture-review-subagent` covering 17 sc
   — **MED-1:** `placeholder_backfill._add_picture_into_placeholder` — zero test coverage. Add 2-3 tests: real image into placeholder (fill sizing), real image (fit sizing), missing-file path.
   — **MED-2:** `vision_extractor.fallback_xml_background` schemeClr aliases (tx1, bg1) — untested. Add tests for both alias paths with theme dict.
   — **MED-3:** `contrast_check` auto-fix mutation — current tests use `_FakeRun` stubs and don't verify the actual OOXML mutation lands on the placeholder's `<a:defRPr><a:solidFill><a:srgbClr>`. Add a test using a real python-pptx placeholder shape, call `contrast_violations(..., auto_fix=True)`, reload the shape, verify the run color was changed.
-  — **MED-4:** Skill count drift — docs say 122 but filesystem has 127 SKILL.md files (new skills added elsewhere). Re-audit and reconcile. May relate to Phase 9 (PPTX skill rename).
+  — **MED-4:** Skill count drift — docs say 122 but filesystem has 127 SKILL.md files (new skills added elsewhere). Re-audit and reconcile. May relate to Phase 9 (PPTX skill rename). **— RESOLVED 2026-07-21:** re-audit shows the actual SKILL.md count is **123** (not 127; the earlier 127 over-counted). The +2 over the 122 baseline are `horseshoe-paper-writing-skill` + `research-paper-generation-skill` (added out-of-band — see § Out-of-Band Additions). Canonical count reconciled to 123.
   — **MED-5:** `pptx-generate-slide-skill/SKILL.md:84` says "English only" but orchestrator line 27 says "RELAXED" — pre-existing doc contradiction. Align both to the orchestrator's relaxed policy.
   — **Done when:** each MED item has a dedicated commit OR is explicitly triaged out with rationale.
 
@@ -661,6 +663,22 @@ Skill count stays at 122 — pure rename, no add/remove.
 
 > **Matrix gap 2 (added BT-142 session 2026-07-21):** "PPTX with empty master + branding per-shape" is row 6's trigger. This shape is detected by: (a) `read_embedded_schema` returns `NOT_TEMPLATED`, AND (b) `template_introspector` reports ≤1 layout OR zero placeholders on the master's only layout, AND (c) the deck has ≥3 designed slides. The orchestrator must NOT route this through `pptx-generate-template-skill` alone (which would extract a useless schema) — it must route through Capability C. Detection logic lives in `pptx-specialist-subagent.md` Stage -1.
 
+## Out-of-Band Additions (post Phase 9)
+
+Two skills were added to `opencode_app/.opencode/skills/` outside the PPTX-migration scope of BT-142. They are recorded here so the skill-count math and the downstream doc-sync (deploy scripts + README) stay accurate.
+
+| Skill | Purpose | Suggested README category |
+|-------|---------|---------------------------|
+| `horseshoe-paper-writing-skill` | Write submission-ready engineering research papers via the Horseshoe Diagram Method (mirror-image Intro/Conclusion arms, Methods/Results bridge); standardized journal-submission format (ASCE / Elsevier / IEEE / Springer / MDPI), B&W academic diagrams, tables, formulas. | Academic & Research Writing |
+| `research-paper-generation-skill` | Generate submission-ready research papers from a codebase + verified experimental data; orchestrates `autoresearch-research-subagent`, B&W diagram generation, DOCX conversion, folder organization; three framing strategies (ML methodology / built-environment framework / application-system). | Academic & Research Writing |
+
+**Count reconciliation (verified 2026-07-21):** `find opencode_app/.opencode/skills -maxdepth 2 -name SKILL.md | wc -l` → **123**. From the BT-142 baseline of 122, +2 (the skills above) would yield 124; actual is 123, indicating a −1 net change elsewhere in the tree since the 122 baseline was locked (out of BT-142 scope — not investigated here). The MED-4 "127 SKILL.md" figure is superseded (it over-counted). Canonical skill count is now **123**.
+
+**Follow-up (NOT done in this update — defer to the `documentation-sync-workflow` skill / `opencode-tooling-subagent`):**
+- [ ] `deploy/setup.sh` / `deploy/setup.ps1` — add both skills to the category-grouped listing (new "Academic & Research Writing" category); bump banner count 122 → 123.
+- [ ] `README.md` — add a new "Academic & Research Writing" row to the Skill Categories table (or fold into Documentation); update the total-skills count to 123.
+- [ ] `opencode_app/README.md` — update the Docker-docs skill count if it carries one.
+
 ## Risks
 
 1. `text_fit.py` recalibration (Phase 2.4a) may shift visual output for existing chenyu tests — snapshot update may be needed. Mitigated by the fact that the new primary path is **Split** (user choice), not silent Squeeze.
@@ -670,7 +688,7 @@ Skill count stays at 122 — pure rename, no add/remove.
 5. **3 dependent agents + 3 dependent skills (Phase 5.5/5.6) + `pptx-specialist-subagent.md` itself (Phase 4.1 rewrite) need their `pptx-specialist-skill` references updated.** Verified: `grep -rln "pptx-specialist-skill" opencode_app/.opencode/` returns 8 files. A single missed reference breaks routing silently. (Original draft incorrectly stated "5 dependent agents + 3 dependent skills" — corrected after repo audit.)
 6. **Interactive overflow question (Phase 2.4) is a one-off exception to chenyu's "never `question()` before first output" rule.** The exception is scoped: the question fires only AFTER the first render attempt detects overflow, never during initial generation. Must be documented prominently in the rewritten orchestrator prompt (Phase 4.1) to prevent the agent from over-using `question()`.
 7. **Headless fallback choice (Split) may surprise users** who expected Squeeze in CI/batch contexts. Mitigation: the return contract's `Issues:` field always reports which path was taken.
-8. **Skill count math:** 118 (current, verified via `ls -d opencode_app/.opencode/skills/*/ | wc -l`) + 3 (chenyu) + 2 (ooxml-editing + office-thumbnail) − 1 (pptx-specialist-skill removed) = **122**. **IMPORTANT — pre-existing count drift:** `deploy/setup.sh` banner (line 666) currently shows `SKILLS (116)` and `README.md` (line 329) shows `117` — both are ALREADY stale vs the actual 118. Phase 5.1/5.3 must correct these to 122, not just bump from the stale numbers. **Directory count divergence:** post-migration `ls -d */` yields 123 (includes `_common/`), but the skill count is 122 because `_common/` has no `SKILL.md`. Banner and README must use 122 (skill count), not 123 (raw directory count).
+8. **Skill count math:** 118 (current, verified via `ls -d opencode_app/.opencode/skills/*/ | wc -l`) + 3 (chenyu) + 2 (ooxml-editing + office-thumbnail) − 1 (pptx-specialist-skill removed) = **122**. **IMPORTANT — pre-existing count drift:** `deploy/setup.sh` banner (line 666) currently shows `SKILLS (116)` and `README.md` (line 329) shows `117` — both are ALREADY stale vs the actual 118. Phase 5.1/5.3 must correct these to 122, not just bump from the stale numbers. **Directory count divergence:** post-migration `ls -d */` yields 123 (includes `_common/`), but the skill count is 122 because `_common/` has no `SKILL.md`. Banner and README must use 122 (skill count), not 123 (raw directory count). ▸ **DELTA (2026-07-21, out-of-band):** superseded — verified SKILL.md count is now **123** after adding `horseshoe-paper-writing-skill` + `research-paper-generation-skill` (see § Out-of-Band Additions). Banner/README/setup.sh must move from 122 → 123.
 9. **Pre-existing DRY duplication between `pptx-specialist-skill` and `docx-creation-skill`.** Verified (2026-07-21): `docx-creation-skill/scripts/` already contains byte-identical copies of ALL validators (`base.py`, `docx.py`, `pptx.py`, `redlining.py`, `__init__.py`) and helpers (`merge_runs.py`, `simplify_redlines.py`), PLUS its own `unpack.py`, `pack.py`, `validate.py`, `soffice.py`. Phase 7.1 creates `ooxml-editing-skill` from `pptx-specialist-skill`'s copies, but `docx-creation-skill` will still retain its own duplicate set. This is a **third copy** of the same OOXML tooling. Out of scope for BT-142, but must be tracked for a future deduplication pass.
 10. **`python-pptx` version drift** may break ported chenyu code if the deploy target has a different version than chenyu's development environment. Mitigation: pin `python-pptx` in requirements and test against the pinned version in Phase 1.3/2.5/3.3.
 11. **Corrupt or malformed user-supplied PPTX** may crash `schema_extractor` or `ppt_builder` before the overflow check or template validation runs. Mitigation: wrap `schema_extractor` entry point in a try/except that returns a structured `SchemaExtractionError` with the underlying exception message, rather than an unhandled crash.
