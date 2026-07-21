@@ -562,12 +562,12 @@ Read-only scenario-based review by `architecture-review-subagent` covering 17 sc
   — **Done when:** `pytest opencode_app/.opencode/skills/pptx-generate-slide-skill/scripts/tests/test_multipass_render_merge.py` passes with all 4 cases. Use real `ppt_builder.generate_ppt_from_data` to render batch inputs (not fakes) so the relink path is exercised end-to-end.
   — **Consumers affected:** all >8-layout decks (Phase 3.5a).
 
-- [ ] **8.4** Audit + close `master_cloner` skipped tests (HIGH-3 — pre-existing)
+- [x] **8.4** Audit + close `master_cloner` skipped tests (HIGH-3 — pre-existing)
   — **Why:** 11 of 12 `tests/test_master_cloner.py` tests carry `@pytest.mark.skip` with reason "need multi-layout donor fixture". This is pre-existing chenyu-era debt, not introduced by BT-142, but it leaves Capability B (donor clone) effectively untested.
   — **Done when:** skipped tests either pass (fixture built) or are rewritten with explicit `tmp_path` fixtures against a synthesized multi-layout donor. Goal: zero `@pytest.mark.skip` in `test_master_cloner.py`.
   — **Consumers affected:** Capability B (template-modifier donor-clone path).
 
-- [ ] **8.5** Convert medium-severity findings to follow-ups (MED-1 through MED-5)
+- [x] **8.5** Convert medium-severity findings to follow-ups (MED-1 through MED-5)
   — **MED-1:** `placeholder_backfill._add_picture_into_placeholder` — zero test coverage. Add 2-3 tests: real image into placeholder (fill sizing), real image (fit sizing), missing-file path.
   — **MED-2:** `vision_extractor.fallback_xml_background` schemeClr aliases (tx1, bg1) — untested. Add tests for both alias paths with theme dict.
   — **MED-3:** `contrast_check` auto-fix mutation — current tests use `_FakeRun` stubs and don't verify the actual OOXML mutation lands on the placeholder's `<a:defRPr><a:solidFill><a:srgbClr>`. Add a test using a real python-pptx placeholder shape, call `contrast_violations(..., auto_fix=True)`, reload the shape, verify the run color was changed.
