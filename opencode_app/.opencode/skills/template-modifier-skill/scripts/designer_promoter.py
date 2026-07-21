@@ -466,7 +466,10 @@ def _make_placeholder_xml(shape_element, ph_type: str, idx: int) -> None:
 def _inject_layout_background(layout_element, hex_color: str) -> bool:
     """Inject ``<p:cSld><p:bg><p:bgPr><a:solidFill><a:srgbClr val='HEX'/>``.
 
-    Replaces any existing ``<p:bg>`` on the layout. Returns True on success.
+    Works on any ``<p:cSld>``-bearing element — Slide Master OR Slide Layout.
+    Replaces any existing ``<p:bg>`` (including ``<p:bgRef>`` style references
+    like ``idx="1001"`` which PowerPoint uses for the master default).
+    Returns True on success.
     """
     if not hex_color:
         return False
@@ -478,7 +481,7 @@ def _inject_layout_background(layout_element, hex_color: str) -> bool:
     cSld = layout_element.find(f"{{{ns_p}}}cSld")
     if cSld is None:
         return False
-    # Drop existing <p:bg>
+    # Drop existing <p:bg> (covers both <p:bgPr> and <p:bgRef> forms)
     existing_bg = cSld.find(f"{{{ns_p}}}bg")
     if existing_bg is not None:
         cSld.remove(existing_bg)
@@ -495,6 +498,44 @@ def _inject_layout_background(layout_element, hex_color: str) -> bool:
     except Exception as exc:
         logger.warning("_inject_layout_background failed: %s", exc)
         return False
+
+
+def _inject_master_background(prs, hex_color: str) -> bool:
+    """Inject ``<p:bg>`` on the Slide Master element (the layouts' parent).
+
+    Without this, the master's default ``<p:bgRef idx="1001"><a:schemeClr
+    val="bg1"/></p:bgRef>`` resolves to the theme's ``lt1`` (white in a
+    dark-mode deck) — so the master thumbnail in PowerPoint's Slide Master
+    view shows white, and any layout that doesn't override ``<p:bg>``
+    inherits white. Setting the master bg to the deck's dominant color
+    makes the 'base' feel consistent with the brand.
+
+    Returns True on success.
+    """
+    if not prs.slide_masters:
+        return False
+    master_element = prs.slide_masters[0]._element
+    return _inject_layout_background(master_element, hex_color)
+
+
+def _compute_dominant_master_bg(
+    slides: List[Any],
+    theme: Dict[str, str],
+) -> str:
+    """Pick the most common slide background color across ``slides``.
+
+    Used as the Slide Master background. Falls back to theme dk1 (designer
+    decks are typically dark-mode) when no slide yields a resolvable bg.
+    """
+    from collections import Counter
+    counts: Counter = Counter()
+    for slide in slides:
+        bg_hex, _ = _resolve_slide_background(slide, None, theme)
+        if bg_hex:
+            counts[bg_hex] += 1
+    if counts:
+        return counts.most_common(1)[0][0]
+    return theme.get("dk1", "#FFFFFF")
 
 
 def _resolve_slide_background(
@@ -728,6 +769,20 @@ def promote_designer_slides(
         apply_theme_xml(prs, theme)
     except Exception as exc:
         logger.error("theme rewrite failed: %s", exc)
+
+    # Stage A.5: inject Slide Master background
+    # The master's default <p:bgRef idx="1001"><a:schemeClr val="bg1"/></p:bgRef>
+    # resolves to theme lt1 (white in a dark-mode deck) — making the master
+    # thumbnail in PowerPoint look off-brand. Override with the dominant
+    # slide bg so the 'base' matches the deck. Vision takes precedence here
+    # too: if vision_results were provided, we already have authoritative bg
+    # hex per slide; we just tally them.
+    try:
+        master_bg = _compute_dominant_master_bg(list(prs.slides), theme)
+        _inject_master_background(prs, master_bg)
+        logger.info("master background injected: %s", master_bg)
+    except Exception as exc:
+        logger.warning("master background injection failed: %s", exc)
 
     # Stage B: cluster + promote each slide (with vision-derived bg if available)
     placeholders_total = 0

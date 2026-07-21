@@ -113,13 +113,15 @@ Capability C reverse-engineers each slide's structure into a **named layout with
 
 ### Algorithm (per slide)
 
+0. **Inject Slide Master background** (once, before per-slide promotion) — `_compute_dominant_master_bg(slides, theme)` tallies each source slide's dominant bg (via XML or vision) and picks the most common. `_inject_master_background(prs, hex)` replaces the master's default `<p:bgRef idx="1001"><a:schemeClr val="bg1"/></p:bgRef>` (which resolves to theme `lt1` — white in a dark-mode deck) with a solid `<p:bgPr><a:solidFill><a:srgbClr val="..."/></a:solidFill></p:bgPr>`. This makes the master thumbnail in PowerPoint's Slide Master view match the brand, and any layout that doesn't override `<p:bg>` inherits the correct dark color. Without this step, the "base" master slide stays white even though all promoted layouts are dark — visually inconsistent and confusing in Slide Master view.
 1. **Cluster shapes by role** — `cluster_shapes_by_role(slide)` walks the slide's shapes and classifies each: largest-font text shape (≥28pt) → `title`, other text shapes → `body`, picture shapes → `picture`, table shapes → `table`, everything else → `decorative`.
 2. **Allocate placeholder indices** — TITLE=0, BODY=1..n (reading order: top-to-bottom, left-to-right), PICTURE=10+, TABLE=20+.
 3. **Promote to layout** — clone the slide as a new `SlideLayout` under the master; convert each clustered shape to its placeholder type via raw OOXML (`<p:ph type="..." idx="..."/>` under `<p:nvSpPr>/<p:nvPr>`). Decorative shapes are kept verbatim.
 4. **Rewrite the theme XML** — `extract_theme_from_shapes(slides)` infers the major/minor font (most-used font across runs, weighted by run length) and 12 OPC color roles (sorted by brightness into dk1/lt1/dk2/lt2, remaining into accent1..4). `apply_theme_xml(prs, theme)` rewrites the master's `theme/theme1.xml` in place.
-5. **Run container-fit check** — for each promoted layout, `container_check.container_violations(layout)` flags any text placeholder that geometrically extends beyond its visual container shape (the BETEKK V9.1.1 slide 4 defect). Critical violations (>20px overflow) block the build by default; warnings (4–20px) are reported but non-blocking.
-6. **Run WCAG 2.1 contrast check** — `contrast_check.contrast_violations(layout, theme, auto_fix=True)` flags any text placeholder whose effective foreground color (resolved from explicit rPr → theme `dk1` default) fails WCAG AA against its background (resolved from container fill → theme `lt1` → white). Required: 4.5:1 (normal text), 3:1 (large text ≥18pt). Severity: <3.0 critical, <4.5 warning. Auto-fix (default ON) overrides the placeholder's default run color to white/black based on background luminance; the violation is still reported with `auto_fixed=True`. On BETEKK V9.1.1, this surfaced 53 critical defects (mostly `#FB923C` orange on `#FB923C` orange = 1.0:1 ratio, and light text on `#2DD4BF` teal); auto-fix resolved 43 (81%).
-7. **Strip source slides** — template ≠ deck; the output has 0 slides + N layouts.
+5. **Inject layout background** — `_inject_layout_background(new_element, bg_hex)` sets `<p:cSld><p:bg>` on each promoted layout. Background is resolved per-slide via `_resolve_slide_background(slide, vision_schema, theme)`: vision-derived `dominant_bg_hex` (confidence ≥ 0.5) takes precedence; otherwise `fallback_xml_background(slide, theme)` reads the largest covering shape's fill (handles both `<a:srgbClr>` direct RGB and `<a:schemeClr val="tx1|dk1|..."/>` theme references including ECMA-376 aliases); last resort is `theme["dk1"]`.
+6. **Run container-fit check** — for each promoted layout, `container_check.container_violations(layout)` flags any text placeholder that geometrically extends beyond its visual container shape (the BETEKK V9.1.1 slide 4 defect). Critical violations (>20px overflow) block the build by default; warnings (4–20px) are reported but non-blocking.
+7. **Run WCAG 2.1 contrast check** — `contrast_check.contrast_violations(layout, theme, auto_fix=True)` flags any text placeholder whose effective foreground color (resolved from explicit rPr → theme `dk1` default) fails WCAG AA against its background (resolved from container fill → theme `lt1` → white). Required: 4.5:1 (normal text), 3:0:1 (large text ≥18pt). Severity: <3.0 critical, <4.5 warning. Auto-fix (default ON) overrides the placeholder's default run color to white/black based on background luminance; the violation is still reported with `auto_fixed=True`. On BETEKK V9.1.1, this surfaced 53 critical defects (mostly `#FB923C` orange on `#FB923C` orange = 1.0:1 ratio, and light text on `#2DD4BF` teal); auto-fix resolved 43 (81%).
+8. **Strip source slides** — template ≠ deck; the output has 0 slides + N layouts.
 
 ### Usage
 
@@ -148,9 +150,10 @@ print(report.to_dict())
 
 | Script | Purpose |
 |--------|---------|
-| `scripts/designer_promoter.py` | `promote_designer_slides(source, output, ...)` — full pipeline. Also exposes `cluster_shapes_by_role`, `extract_theme_from_shapes`, `apply_theme_xml`. |
+| `scripts/designer_promoter.py` | `promote_designer_slides(source, output, ...)` — full pipeline. Also exposes `cluster_shapes_by_role`, `extract_theme_from_shapes`, `apply_theme_xml`, `_inject_master_background`, `_inject_layout_background`, `_compute_dominant_master_bg`. |
 | `scripts/container_check.py` | `container_violations(layout)` / `check_template(prs)` — static geometry check. Raises `ContainerFitError` on critical violations when invoked as a gate. |
 | `scripts/contrast_check.py` | `contrast_violations(layout, theme, auto_fix)` / `contrast_ratio(fg, bg)` — WCAG 2.1 contrast verification with optional auto-fix (flips low-contrast placeholder text to white/black based on background luminance). |
+| `scripts/vision_extractor.py` | `render_slides_to_pngs(pptx)` / `build_image_analyzer_prompt(...)` / `aggregate_vision_results(...)` / `fallback_xml_background(slide, theme)` — vision-assisted schema extraction. Composes with the XML path: vision provides `dominant_bg_hex` for master + layout bg injection; XML provides precise shape geometry. |
 
 ### Cross-link to Capability B
 
