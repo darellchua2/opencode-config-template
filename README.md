@@ -326,7 +326,7 @@ TypeScript, JavaScript, Python, Go, Rust, Java, C#, PHP, Ruby, C, C++, Swift, Ko
 
 ## Skill Modularization
 
-This repository implements **skill modularization** with 122 skills organized across 20 categories. Skills are designed with clear separation of concerns and explicit dependencies.
+This repository implements **skill modularization** with 121 skills organized across 20 categories. Skills are designed with clear separation of concerns and explicit dependencies.
 
 > **Migration Complete (BT-142):** The `pptx-specialist-*` stack has been migrated to chenyu's JSON-in-PPTX architecture. Final skill count is **122** (−1 `pptx-specialist-skill` decomposed, +3 chenyu skills, +2 new decomposition skills). See `PLANS/PLAN-BT-142.md` for the full plan. The legacy `pptx-specialist-skill` has been removed; all PPTX operations now route through `pptx-specialist-subagent` → `pptx-generate-slide-skill` / `pptx-generate-template-skill` / `pptx-template-modifier-skill`.
 

@@ -18,7 +18,7 @@ I fill the PowerPoint template (`template.pptx`) with structured content using `
 - Embed **native charts** (editable, not images) and **native pictures**
 - Resolve resource placeholders (`data_query`) into real assets before rendering
 - **Validate** every deck against a JSON schema (with two-layer retry) before it reaches the engine
-- Write English speaker notes to each slide's Notes pane (Presenter View only)
+- Write speaker notes (in the user's prompt language) to each slide's Notes pane (Presenter View only)
 - Handle missing placeholders gracefully with warnings (never crash)
 
 ## When to use me
@@ -81,7 +81,7 @@ Among composition-compatible layouts, ranking is: name affinity → fewest surpl
 
 ## Input Data Format
 
-**Language: English only.** All slide content AND speaker notes MUST be in English. Do not translate into any other language, even if the request is in Chinese or explicitly asks for a non-English deck.
+**Language: Multilingual (RELAXED).** Slide content (titles, body) and speaker notes MAY be in any language — match the user's prompt language. The orchestrator (`pptx-specialist-subagent`) enforces this relaxed policy: multilingual content is acceptable; do NOT force-translate non-English requests into English. Speaker notes MUST preserve the original user message verbatim and append a suggested transition.
 
 ```json
 [
@@ -118,7 +118,7 @@ Among composition-compatible layouts, ranking is: name affinity → fewest surpl
 | `image_size` | No | any slide with `image_path` | `{"width": inches, "height": inches}` override of the preset box. |
 | `data_query` | No | `chart_slide` | Resource placeholder — asks for real chart statistics; the resolver fills `categories`/`series` with sourced numbers. |
 | `data_hint` | No | `chart_slide` | Optional expected shape for `data_query` (e.g. category/series names). |
-| `notes` | Yes | All | Full English presenter script (**~120–180 words**). Written to the slide's Notes pane (Presenter View only). `\n` = new paragraph. Must be **spoken dialogue** (quoted, speakable sentences tied to the slide's content), **interspersed stage directions**, a `TRANSITION` line, and `COACHING` with delivery + an anticipated Q&A — NOT bullet summaries. Cover/closing use `[Name]` / `[morning/afternoon]` placeholders. |
+| `notes` | Yes | All | Full presenter script (**~120–180 words**). Written to the slide's Notes pane (Presenter View only). `\n` = new paragraph. Must be **spoken dialogue** (quoted, speakable sentences tied to the slide's content), **interspersed stage directions**, a `TRANSITION` line, and `COACHING` with delivery + an anticipated Q&A — NOT bullet summaries. Cover/closing use `[Name]` / `[morning/afternoon]` placeholders. |
 | `presenter_name` | No | `closing_slide` | Sign-off name. Omit on first generation — engine removes the placeholder. Set only when user picks "Add presenter sign-off" in Stage 5 refinement. |
 | `presenter_email` | No | `closing_slide` | Sign-off email. Same lifecycle as `presenter_name`. |
 
@@ -509,7 +509,7 @@ COACHING: Matter-of-fact tone, don't over-sell. Be ready for: "Does BIM work wit
 ## Example Interaction
 
 **User**: "Create a 3-page PPT about how AI empowers accounting"
-**Action**: English only → outline (3 slides = 1 cover + 1 content + 1 closing; **shown as info, not confirmed**) → autonomous `standard` density + self-critique (**no pre-gen question**) → JSON → validate → resolve → render → return path → **one multi-select refinement question**.
+**Action**: Multilingual (match user prompt) → outline (3 slides = 1 cover + 1 content + 1 closing; **shown as info, not confirmed**) → autonomous `standard` density + self-critique (**no pre-gen question**) → JSON → validate → resolve → render → return path → **one multi-select refinement question**.
 
 1. Outline (3 total per the slide-count convention: N=3 → 1 cover + 1 content + 1 closing). Display it with *"Here's the outline I'll generate — proceeding with defaults; you can adjust in the next step"* and continue (no wait):
    ```
