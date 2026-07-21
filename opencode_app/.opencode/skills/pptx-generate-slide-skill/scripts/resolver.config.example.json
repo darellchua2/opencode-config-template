@@ -1,0 +1,8 @@
+{
+  "_comment": "Copy to resolver.config.json and fill in. Gitignore keeps secrets out. Any unconfigured provider makes its resolver skip gracefully.",
+  "chart_data": {
+    "search": "webfetch",
+    "max_results": 5,
+    "cite_in_notes": true
+  }
+}

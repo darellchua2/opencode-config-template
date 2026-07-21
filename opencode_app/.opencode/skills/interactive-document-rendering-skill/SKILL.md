@@ -22,7 +22,7 @@ Consumers (`vision-creation-skill`, `srs-creation-skill`, and later `brd-creatio
 ## SCOPE — what I do NOT do
 
 - **No `.xlsx`.** Tabular artifacts (RTM, data dictionaries, requirement registers) are produced by `xlsx-specialist-skill`/`xlsx-specialist-subagent` as **peer deliverables**, linked from the doc — never embedded in HTML/DOCX.
-- **No `.pptx`.** Customer presentation decks are produced by `pptx-specialist-skill`/`pptx-specialist-subagent` as peer deliverables.
+- **No `.pptx`.** Customer presentation decks are produced by `pptx-specialist-subagent` as peer deliverables.
 - **No image interpretation.** If image content must be understood (screenshots, reference images, diagrams), **delegate to `image-analyzer-subagent`** — do not attempt to interpret images inline.
 
 This keeps each format's tooling owned by its specialist and the rendering skill focused on HTML + DOCX.
@@ -198,6 +198,6 @@ If rendering requires **understanding** image content (e.g. a client attached a 
 - `srs-creation-skill` — IEEE 830 SRS; uses **snapshot** HTML at wrap
 - `brd-creation-skill` (Phase 2) — BABOK BRD; snapshot HTML
 - `xlsx-specialist-skill` / `xlsx-specialist-subagent` — peer tabular deliverables
-- `pptx-specialist-skill` / `pptx-specialist-subagent` — peer presentation deliverables
+- `pptx-specialist-subagent` — peer presentation deliverables (requires user-supplied Slide Master template)
 - `image-analyzer-subagent` — image interpretation (delegate, don't inline)
 - `docx-creation-skill` / `docx-creation-subagent` — the actual Word file generation (this skill defines the standard they follow)
