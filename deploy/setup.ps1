@@ -884,7 +884,7 @@ USAGE:
     coverage             Test coverage reporting and badges
     documentation        Docstring generation (PEP 257, JSDoc, Javadoc)
     loop-operator        Autonomous loop execution with self-correction
-    pptx-specialist      PowerPoint presentation creation and editing
+    pptx-specialist      PowerPoint orchestration (routes to generate-slide/template-modifier)
     docx-creation        Word document creation and manipulation
     xlsx-specialist      Spreadsheet creation and analysis
     image-analyzer       Images/screenshots to code, OCR, error diagnosis
@@ -906,17 +906,22 @@ USAGE:
     Usage: opencode --agent build 'implement auth feature'
             opencode --agent explore 'find all API routes'
  
-           SKILLS (116):
-              Framework (20):       test-generator-framework, linting-workflow,
+           SKILLS (121):
+              Framework (19):       test-generator-framework, linting-workflow,
                                       pr-creation-workflow, pr-merge-workflow,
                                       error-resolver-workflow, tdd-workflow,
-                                      docx-creation, pptx-specialist,
+                                      docx-creation,
                                       xlsx-specialist, pdf-specialist, frontend-design,
                                       uiux-review-skill,
                                       api-design-skill, openapi-contract-adherence-skill,
                                       performance-optimization-skill, srs-creation-skill,
                                       brd-creation-skill, technical-design-creation-skill,
                                       vision-creation-skill, interactive-document-rendering-skill
+
+            Presentation (3):       generate-slide-skill, generate-template-skill,
+                                      template-modifier-skill
+
+            Office Utilities (2):   ooxml-editing-skill, office-thumbnail-skill
 
             Language-Specific (6): python-pytest-creator, python-ruff-linter,
                                   javascript-eslint-linter, changelog-python-cliff,
@@ -1772,11 +1777,11 @@ function Deploy-Skills {
         Write-Host "Deployed $skillCount skills to $SkillsDir" -ForegroundColor Green
         Write-Host ""
         Write-Host "  Skill Categories:" -ForegroundColor Cyan
-          Write-Host "    Framework (20):"
+          Write-Host "    Framework (19):"
         Write-Host "      - test-generator-framework, linting-workflow"
         Write-Host "      - pr-creation-workflow, pr-merge-workflow"
         Write-Host "      - error-resolver-workflow, tdd-workflow"
-        Write-Host "      - docx-creation, pptx-specialist, xlsx-specialist, pdf-specialist"
+        Write-Host "      - docx-creation, xlsx-specialist, pdf-specialist"
         Write-Host "      - frontend-design"
         Write-Host "      - uiux-review-skill"
         Write-Host "      - api-design-skill, openapi-contract-adherence-skill"
@@ -1790,6 +1795,11 @@ function Deploy-Skills {
         Write-Host "      - python-pytest-creator, python-ruff-linter"
         Write-Host "      - javascript-eslint-linter, changelog-python-cliff"
         Write-Host "      - python-backend-skill, python-packaging-skill"
+        Write-Host "    Presentation (3):"
+        Write-Host "      - generate-slide-skill, generate-template-skill"
+        Write-Host "      - template-modifier-skill"
+        Write-Host "    Office Utilities (2):"
+        Write-Host "      - ooxml-editing-skill, office-thumbnail-skill"
         Write-Host "    Framework-Specific (10):"
         Write-Host "      - nextjs-pr-workflow, nextjs-unit-test-creator"
         Write-Host "      - nextjs-standard-setup, nextjs-image-usage"
@@ -2449,9 +2459,9 @@ function Show-NextSteps {
       Write-Host "                     116 Skills Available" -ForegroundColor White
      Write-Host "=====================================================================" -ForegroundColor White
      Write-Host ""
-     Write-Host "  Framework (20) • Language-Specific (6) • Framework-Specific (10)"
-      Write-Host "  OpenCode Meta (4) • OpenTofu (7) • Git/Workflow (12)"
-     Write-Host "  Documentation (3) • JIRA (3) • Code Quality (8)"
+     Write-Host "  Framework (19) • Language-Specific (6) • Presentation (3)"
+      Write-Host "  Office Utilities (2) • Framework-Specific (10) • OpenCode Meta (4)"
+      Write-Host "  OpenTofu (7) • Git/Workflow (12) • Documentation (3) • JIRA (3) • Code Quality (8)"
       Write-Host "  Agent Optimization (7) • Planning & Alignment (4)"
      Write-Host "  Responsive & Visual Testing (2)"
      Write-Host "  CAD & Hardware Design (14)"

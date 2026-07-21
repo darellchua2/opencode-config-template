@@ -602,7 +602,7 @@ USAGE:
     coverage             Test coverage reporting and badges
     documentation        Docstring generation (PEP 257, JSDoc, Javadoc)
     loop-operator        Autonomous loop execution with self-correction
-    pptx-specialist      PowerPoint presentation creation and editing
+    pptx-specialist      PowerPoint orchestration (routes to generate-slide/template-modifier)
     docx-creation        Word document creation and manipulation
     xlsx-specialist      Spreadsheet creation and analysis
     image-analyzer       Images/screenshots to code, OCR, error diagnosis
@@ -663,17 +663,22 @@ USAGE:
       google-gce         Google Compute Engine management
       google-gke         Google Kubernetes Engine management
 
-    SKILLS (116):
-              Framework (20):       test-generator-framework, linting-workflow,
+    SKILLS (121):
+              Framework (19):       test-generator-framework, linting-workflow,
                                       pr-creation-workflow, pr-merge-workflow,
                                       error-resolver-workflow, tdd-workflow,
-                                      docx-creation, pptx-specialist,
+                                      docx-creation,
                                       xlsx-specialist, pdf-specialist, frontend-design,
                                       uiux-review-skill,
                                       api-design-skill, openapi-contract-adherence-skill,
                                       performance-optimization-skill, srs-creation-skill,
                                       brd-creation-skill, technical-design-creation-skill,
                                       vision-creation-skill, interactive-document-rendering-skill
+
+            Presentation (3):       generate-slide-skill, generate-template-skill,
+                                      template-modifier-skill
+
+            Office Utilities (2):   ooxml-editing-skill, office-thumbnail-skill
 
             Language-Specific (6): python-pytest-creator, python-ruff-linter,
                                   javascript-eslint-linter, changelog-python-cliff,
@@ -3147,7 +3152,7 @@ print_summary() {
     if [ -d "$SKILLS_DIR" ] && [ "$(ls -A "${SKILLS_DIR}" 2>/dev/null)" ]; then
         local skill_count=$(find "${SKILLS_DIR}" -type f -name "SKILL.md" 2>/dev/null | wc -l)
         echo "✓ skills: ${skill_count} skills deployed to ${SKILLS_DIR}/"
-        echo "    - Framework (20):"
+        echo "    - Framework (19):"
         echo "      - test-generator-framework"
         echo "      - linting-workflow"
         echo "      - pr-creation-workflow"
@@ -3155,7 +3160,6 @@ print_summary() {
         echo "      - error-resolver-workflow"
         echo "      - tdd-workflow"
         echo "      - docx-creation"
-        echo "      - pptx-specialist"
         echo "      - xlsx-specialist"
         echo "      - pdf-specialist"
         echo "      - frontend-design"
@@ -3175,6 +3179,11 @@ print_summary() {
         echo "      - changelog-python-cliff"
         echo "      - python-backend-skill"
         echo "      - python-packaging-skill"
+        echo "    - Presentation (3):"
+        echo "      - generate-slide-skill, generate-template-skill"
+        echo "      - template-modifier-skill"
+        echo "    - Office Utilities (2):"
+        echo "      - ooxml-editing-skill, office-thumbnail-skill"
         echo "    - Framework-Specific (10):"
         echo "      - nextjs-pr-workflow"
         echo "      - nextjs-unit-test-creator"
@@ -3320,9 +3329,9 @@ print_next_steps() {
       echo "                     📦 116 Skills Available"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-     echo "  Framework (20) • Language-Specific (6) • Framework-Specific (10)"
-    echo "  OpenCode Meta (4) • OpenTofu (7) • Git/Workflow (12)"
-     echo "  Documentation (3) • JIRA (3) • Code Quality (8)"
+     echo "  Framework (19) • Language-Specific (6) • Presentation (3)"
+     echo "  Office Utilities (2) • Framework-Specific (10) • OpenCode Meta (4)"
+     echo "  OpenTofu (7) • Git/Workflow (12) • Documentation (3) • JIRA (3) • Code Quality (8)"
     echo "  Agent Optimization (7) • Planning & Alignment (4)"
     echo "  Responsive & Visual Testing (2)"
     echo "  CAD & Hardware Design (14)"

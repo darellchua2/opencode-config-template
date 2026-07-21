@@ -23,7 +23,7 @@ opencode_app/
 ├── .dockerignore          # Excludes _archived, .env, node_modules
 └── .opencode/
     ├── agents/            # 39 agent .md files (single source of truth)
-    └── skills/            # 116 skill directories + scripts/ support + _archived/ legacy
+    └── skills/            # 121 skill directories + scripts/ support + _common/ shared + _archived/ legacy
 ```
 
 ## How It Works
@@ -100,6 +100,23 @@ CodeGraph is a pre-indexed code knowledge graph MCP server enabled by default. I
 - **Per-project setup** required: `codegraph init -i` in each project directory
 
 See the main `README.md` for full details on MCP tools, supported languages, and subagent integration.
+
+## PPTX Workflow (BT-142)
+
+The PPTX stack is **pure Python** (`python-pptx` + `lxml`) — no Node.js, Playwright, or Sharp required in the container for slide generation. The `pptx-specialist-subagent` orchestrates 3 skills:
+
+- `generate-template-skill` — extracts a Slide Master template into a normalized JSON schema embedded at `ppt/template_schema.json` inside the PPTX zip
+- `generate-slide-skill` — fills the template using `add_slide(layout)` (never builds from scratch); includes interactive overflow detection + `image-analyzer-subagent` visual verification
+- `template-modifier-skill` — extends a template's slide master with borrowed layouts when a slide type is missing
+
+**No bundled default template.** Users must supply a `.pptx` path; the engine does not ship or fall back to a `default.pptx`. When a masterless template is supplied, the engine synthesizes a minimal valid PPTX in-memory via `master_repairer._build_minimal_pptx_bytes()`.
+
+**LibreOffice** (`soffice`) is required only for:
+- `office-thumbnail-skill` (slide → PDF → PNG for visual analysis)
+- OOXML validators in `ooxml-editing-skill` (post-decomposition, Phase 7)
+
+The Dockerfile already installs LibreOffice; no additional setup needed.
+
 
 ## Subagent Chaining
 

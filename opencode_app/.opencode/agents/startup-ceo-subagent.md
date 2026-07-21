@@ -11,7 +11,8 @@ permission:
     "pptx-specialist-subagent": allow
   skill:
     startup-pitch-deck-skill: allow
-    pptx-specialist-skill: allow
+  task:
+    "pptx-specialist-subagent": allow
 ---
 
 ## Prompt Defense Baseline
@@ -58,7 +59,7 @@ Load `startup-pitch-deck-skill` to access:
 - Stage-specific guidance (pre-seed through Series C+)
 - Common mistakes to avoid
 
-Then delegate to `pptx-specialist-skill` for actual PPTX creation with:
+Then delegate to `pptx-specialist-subagent` (via Task tool) for actual PPTX creation with:
 - Presentation type and structure from domain knowledge
 - Color palette selection
 - Content for each slide
@@ -66,7 +67,7 @@ Then delegate to `pptx-specialist-skill` for actual PPTX creation with:
 
 ## What NOT to Handle
 
-- General-purpose PowerPoint creation (use pptx-specialist-skill directly)
+- General-purpose PowerPoint creation (delegate to `pptx-specialist-subagent` via Task tool — it routes to the appropriate skill)
 - Corporate presentations (not startup-specific)
 - Non-business presentations
 - Design-only tasks without startup domain context

@@ -303,7 +303,7 @@ For accelerator or conference presentations (5-7 slides, 3-5 minutes):
 
 | Skill | Integration |
 |-------|-------------|
-| `pptx-specialist-skill` | Actual PPTX creation using domain knowledge structures |
+| `pptx-specialist-subagent` | Actual PPTX creation (delegates to `generate-slide-skill`; requires user-supplied Slide Master template) |
 | `continuous-learning` | Extract presentation patterns for future reference |
 | `verification-loop` | Verify presentation meets investor-readiness criteria |
 

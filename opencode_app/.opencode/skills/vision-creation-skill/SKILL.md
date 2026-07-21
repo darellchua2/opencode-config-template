@@ -37,7 +37,7 @@ The Vision is **customer-facing**. Keep tone non-technical where possible, avoid
 - **`discovery-specialist-subagent`** — the agent that runs the live discovery session and produces the Vision (this skill is its template)
 - **`interactive-document-rendering-skill`** — the shared HTML + DOCX rendering standard (living HTML for Vision)
 - **`wireframer-skill`** — generates the wireframes co-located at `docs/vision/{slug}/`
-- **`pptx-specialist-skill` / `pptx-specialist-subagent`** — optional customer presentation deck distilled from the Vision
+- **`pptx-specialist-subagent`** — optional customer presentation deck distilled from the Vision (routes internally to `generate-slide-skill` + `generate-template-skill`)
 - **`srs-creation-skill`** — the DOWNSTREAM internal doc; the signed Vision feeds into the SRS (different audience, different skill)
 
 ---
@@ -167,7 +167,7 @@ docs/vision/
 - **Interactive HTML** — *living*: regenerate after each discovery round (sidebar nav, dark-mode-aware, color-aware selection)
 - **Word .docx** — render once on wrap for client sign-off (auto-TOC, hyperlinked headers, section page-breaks)
 
-**Optional customer presentation deck:** after the Vision is approved, distill it into a slide deck via `pptx-specialist-skill` / `pptx-specialist-subagent` for steering-committee or client meetings. This is a peer deliverable, linked from the Vision.
+**Optional customer presentation deck:** after the Vision is approved, distill it into a slide deck via `pptx-specialist-subagent` (delegate via Task tool — it requires a user-supplied Slide Master template and routes to `generate-slide-skill`) for steering-committee or client meetings. This is a peer deliverable, linked from the Vision.
 
 **Image routing:** if client-shared screenshots/reference images must be described, delegate to `image-analyzer-subagent` (do not interpret inline).
 

@@ -29,7 +29,7 @@
     "microsoft-m365-specialist-subagent": "fast",
     "nextjs-specialist-subagent": "fast",
     "office-document-primary-agent": "fast",
-    "pptx-specialist-subagent": "fast",
+    "pptx-specialist-subagent": "reasoning",
     "pr-workflow-subagent": "fast",
     "startup-ceo-subagent": "fast",
     "startup-founder-primary-agent": "fast",
