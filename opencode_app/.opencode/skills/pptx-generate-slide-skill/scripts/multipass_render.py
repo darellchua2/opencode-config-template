@@ -78,21 +78,12 @@ def _copy_slide(src_slide, dst_prs) -> None:
     embedded media (images) so the destination deck is self-contained.
     """
     from copy import deepcopy
-
-    src_prs = src_slide.part.package
-    src_part = src_slide.part
-    # New slide part in the destination, initially a deep copy of the source
-    # XML.
-    new_slide_part = deepcopy(src_part._element)
-    # Use python-pptx's Slide addObject pattern: clone via XML, then patch
-    # relationships for any media (image / chart) referenced.
-    # python-pptx exposes SlidePart via Slide.add_part — but the simplest
-    # robust path is the _SlidePart cloneshape approach via slide clone.
     from pptx.oxml.ns import qn
 
-    dst_slidelayout = src_slide.slide_layout
-    # Add a blank slide on the destination using the same layout if present.
-    layout_name = dst_slidelayout.name
+    src_prs = src_slide.part.package
+
+    # Resolve the target layout by name on the destination master.
+    layout_name = src_slide.slide_layout.name
     target_layout = None
     for layout in dst_prs.slide_layouts:
         if layout.name == layout_name:
@@ -100,63 +91,97 @@ def _copy_slide(src_slide, dst_prs) -> None:
             break
     if target_layout is None:
         target_layout = dst_prs.slide_layouts[6]  # blank fallback
+        logger.warning(
+            "_copy_slide: layout %r not on dst master; using blank layout",
+            layout_name,
+        )
+
+    # Add a new slide on the destination using the resolved layout.
     new_slide = dst_prs.slides.add_slide(target_layout)
-    # Wipe the auto-created shape tree and copy each shape from the source.
+
+    # Wipe the auto-created shape tree (except nvGrpSpPr + grpSpPr wrappers)
+    # and copy each shape from the source slide.
     spTree = new_slide.shapes._spTree
-    # remove existing children except nvGrpSpPr and grpSpPr (first two)
     for child in list(spTree):
         tag = child.tag
         if tag.endswith("}nvGrpSpPr") or tag.endswith("}grpSpPr"):
             continue
         spTree.remove(child)
-    # Copy each shape from the source slide
     for shp in src_slide.shapes:
         spTree.append(deepcopy(shp._element))
-    # Re-resolve media (image) relationships: for each blip in the source,
-    # copy the image part into the destination package and remap rId.
-    _relink_image_rels(src_slide, new_slide, src_prs, dst_prs)
+
+    # Re-resolve media (image) relationships: for each blip in the cloned
+    # slide, look up the source's image part, copy its blob into the dst
+    # package via get_or_add_image_part, and remap the rId.
+    _relink_image_rels(src_slide, new_slide)
 
 
-def _relink_image_rels(src_slide, dst_slide, src_prs, dst_prs) -> None:
-    """Copy image parts referenced by ``src_slide`` into ``dst_prs`` and remap rIds."""
+def _relink_image_rels(src_slide, dst_slide) -> None:
+    """Copy image parts referenced by ``src_slide`` into ``dst_slide``'s package; remap rIds.
+
+    python-pptx 1.0+ exposes ``SlidePart.get_or_add_image_part(file_like)`` which
+    handles dedup (returns existing part if blob matches). We use it to add
+    each source image to the destination, then update the cloned blip's
+    ``r:embed`` attribute to point at the new rId.
+
+    Robust against python-pptx's lazy target-part resolution: when a freshly-
+    loaded PPTX has rels whose ``_target`` isn't yet a Part instance, we fall
+    back to resolving via the rel's ``target_ref`` path + basename lookup in
+    the source package's iter_parts().
+    """
+    from io import BytesIO
     from pptx.oxml.ns import qn
-    from pptx.image import Image
-    from copy import deepcopy
 
-    # Walk the new slide XML for <a:blip r:embed="rIdX"> elements
     ns_r = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+    embed_attr_name = f"{{{ns_r}}}embed"
+    src_part = src_slide.part
+    src_package = src_part.package
+
+    # Cache source image parts by basename for fast lookup.
+    src_image_parts_by_basename = {}
+    for part in src_package.iter_parts():
+        pname = str(part.partname)
+        if "/image" in pname or "image" in pname.split("/")[-1].lower():
+            src_image_parts_by_basename[pname.split("/")[-1]] = part
+
     for blip in dst_slide._element.iter(qn("a:blip")):
-        embed_attr = blip.get(f"{{{ns_r}}}embed")
-        if not embed_attr:
+        old_rId = blip.get(embed_attr_name)
+        if not old_rId:
             continue
+        # Resolve the source image part. ``target_part`` can raise
+        # AssertionError on freshly-loaded packages (python-pptx lazily
+        # loads parts). Fall back to ``target_ref`` (always a string) +
+        # basename lookup.
+        src_image_part = None
         try:
-            src_part = src_slide.part.related_part(embed_attr)
-        except KeyError:
+            if old_rId in src_part.rels:
+                src_rel = src_part.rels[old_rId]
+                try:
+                    if not src_rel.is_external:
+                        src_image_part = src_rel.target_part
+                except (AssertionError, Exception):
+                    pass
+                if src_image_part is None and not src_rel.is_external:
+                    target_ref = src_rel.target_ref
+                    basename = target_ref.split("/")[-1]
+                    src_image_part = src_image_parts_by_basename.get(basename)
+        except (KeyError, Exception):
+            pass
+        if src_image_part is None:
+            logger.debug("_relink_image_rels: no source image for rId=%s; skipping", old_rId)
             continue
-        # Image parts expose .blob and .image (python-pptx Image)
+        # Copy the image bytes into the destination package
         try:
-            image = src_part.image
-        except Exception:
-            continue
-        # Add the image to the destination slide — this allocates a fresh rId
-        # and writes the part. Then patch the blip to point at the new rId.
-        # Use a no-op placeholder position (0,0,1,1); the blip's parent shape
-        # already defines geometry.
-        new_pic = dst_slide.shapes.add_picture_from_blob(
-            image.blob, 0, 0
-        ) if hasattr(dst_slide.shapes, "add_picture_from_blob") else None
-        if new_pic is None:
-            # Fall back to writing the image part directly via the slide part.
-            image_part = dst_slide.part.get_or_add_image(image.blob)
-            new_rId = dst_slide.part.relate_to(image_part, "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image")
-            blip.set(f"{{{ns_r}}}embed", new_rId)
-            # Remove the placeholder picture we just added (only the rel is needed)
-            if new_pic is not None:
-                new_pic._element.getparent().remove(new_pic._element)
-        else:
-            new_rId = new_pic._element.xpath(".//a:blip", namespaces={"a": "http://schemas.openxmlformats.org/drawingml/2006/main"})[0].get(f"{{{ns_r}}}embed")
-            blip.set(f"{{{ns_r}}}embed", new_rId)
-            new_pic._element.getparent().remove(new_pic._element)
+            blob = src_image_part.blob
+            new_image_part = dst_slide.part.get_or_add_image_part(BytesIO(blob))
+            new_rId = dst_slide.part.relate_to(
+                new_image_part,
+                "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image",
+            )
+            blip.set(embed_attr_name, new_rId)
+        except Exception as exc:
+            logger.warning("_relink_image_rels: failed to copy image (rId=%s): %s",
+                           old_rId, exc)
 
 
 def merge_decks(
@@ -178,6 +203,11 @@ def merge_decks(
     prs = Presentation(primary_path)
     for other in other_paths:
         other_prs = Presentation(other)
+        # Force-load all parts in the source package so their relationship
+        # targets resolve to Part instances (python-pptx 1.0+ loads targets
+        # lazily; without this, accessing ``target_part`` during save raises
+        # AssertionError).
+        _ = list(other_prs.part.package.iter_parts())
         for slide in other_prs.slides:
             try:
                 _copy_slide(slide, prs)
@@ -195,22 +225,28 @@ def _batch_to_engine_slides(
     Returns ``(engine_slides, config_overrides)`` where ``config_overrides``
     maps pseudo-types to layout names (the engine pins via
     ``<slide_type>_layout`` keys).
+
+    Slides WITHOUT ``layout_name`` pass through unchanged (their original
+    ``slide_type`` is preserved — pseudo-typing only kicks in when the caller
+    explicitly targets a layout by name, which is the >8-layout case).
     """
     config_overrides: Dict[str, str] = {}
     layout_to_pseudo: Dict[str, str] = {}
     engine_slides: List[dict] = []
     next_idx = 1
     for slide in batch:
-        layout = slide.get("layout_name") or slide.get("slide_type")
-        if layout is None:
+        # Only pseudo-type when layout_name is explicitly set; otherwise pass
+        # the original slide_type through unchanged (the engine handles it).
+        layout_name = slide.get("layout_name")
+        if not layout_name:
             engine_slides.append(slide)
             continue
-        if layout not in layout_to_pseudo:
+        if layout_name not in layout_to_pseudo:
             pseudo = f"_custom_{next_idx}"
             next_idx += 1
-            layout_to_pseudo[layout] = pseudo
-            config_overrides[f"{pseudo}_layout"] = layout
-        pseudo = layout_to_pseudo[layout]
+            layout_to_pseudo[layout_name] = pseudo
+            config_overrides[f"{pseudo}_layout"] = layout_name
+        pseudo = layout_to_pseudo[layout_name]
         # Copy and remap slide_type to the pseudo-type. The engine treats
         # unknown types as ``content_slide`` (per ppt_builder error handling),
         # and the config pin routes to the correct layout.
