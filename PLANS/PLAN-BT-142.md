@@ -253,7 +253,6 @@ The chenyu engine has **5 hard limits** that surface when filling designer-style
 **Why:** current `template-modifier-skill` (Capability B) borrows a layout **from a donor template** when the target is missing one. It does not reverse-engineer a slide's per-shape structure into a **named layout with real placeholders** on the target's own master. Without Capability C, every designer deck with bespoke slides is unfillable — `generate-slide-skill` will refuse (no layouts) or produce a generic Office-looking output.
 
 - [x] **3.4.1** New module `template-modifier-skill/scripts/designer_promoter.py`
-  — **Why:** the promotion pipeline (analyze each designer slide → emit a named layout on the master → wire placeholders → strip the original slide).
   — **Inputs:** source PPTX path, optional layout-name map `{slide_index: "Team"}`, optional theme XML override.
   — **Outputs:** new `<source>_template.pptx` with: (a) rewritten Slide Master theme (major/minor fonts, 12 OPC color roles from the source's per-shape palette — not stock Office), (b) N named layouts (one per source slide), each with proper **text/picture/table placeholders** (not loose shapes), (c) decorative brand shapes (cards, accent bars, dividers) baked into each layout as non-placeholder shapes, (d) the original N slides stripped (template = 0 slides, N layouts).
   — **Algorithm (per source slide):**
@@ -292,6 +291,20 @@ The chenyu engine has **5 hard limits** that surface when filling designer-style
   — **Why:** Capability C is a sibling to Capability B (donor clone). SKILL.md must describe when to use C vs B and the inputs/outputs.
   — **Done when:** SKILL.md has a new "Capability C: Promote Designer Slides" section with: trigger (empty master + designed slides), inputs (source PPTX, optional name map, optional theme), outputs (templated PPTX with N named layouts), the 5-step algorithm summary, and the container-fit pre-flight note. Capability B section gains a one-line cross-link.
   — **Consumers affected:** `pptx-specialist-subagent.md` routing prose, skill discoverability
+
+- [x] **3.4.1b** New module `template-modifier-skill/scripts/vision_extractor.py` (NEW — BT-142 session 2026-07-21)
+  — **Why:** XML-based extraction is precise on geometry but loses design intent — most notably the slide background color, which designer decks encode as a large fill rectangle rather than via `<p:cSld><p:bg>`. Without vision, promoted layouts render with a white background even though every shape on them is dark.
+  — **Pipeline:** `render_slides_to_pngs(pptx)` via `soffice` → PDF → `pdftoppm`; `build_image_analyzer_prompt(i, n, png, pptx_name)` returns the structured prompt; orchestrator dispatches each PNG to `image-analyzer-subagent` via Task tool; `aggregate_vision_results(raw)` coerces JSON strings / prose-wrapped JSON / dicts into typed `VisionSlideSchema`; `fallback_xml_background(slide, theme)` covers the case where soffice or subagent is unavailable — reads raw shape XML for both `srgbClr` (direct RGB) and `schemeClr` (theme reference incl. ECMA-376 aliases `tx1`/`dk1`, `bg1`/`lt1`).
+  — **Integration with designer_promoter:** vision-derived `dominant_bg_hex` (confidence ≥ 0.5) overrides XML fallback for layout `<p:cSld><p:bg>` injection; XML continues to provide precise shape geometry.
+  — **Done when:** `vision_extractor.py` module + 14 tests pass; orchestrator Stage -1.5 dispatches to `image-analyzer-subagent`; soft-falls to XML when subagent unavailable.
+  — **Consumers affected:** `designer_promoter`, `pptx-specialist-subagent.md`
+
+- [x] **3.4.1c** Inject Slide Master background (not just per-layout) (NEW — BT-142 session 2026-07-21)
+  — **Why:** even with `<p:bg>` set on every promoted layout, the Slide Master itself (parent of all layouts) retains PowerPoint's default `<p:bgRef idx="1001"><a:schemeClr val="bg1"/></p:bgRef>` which resolves to theme `lt1` — white in a dark-mode deck. Result: the master thumbnail in PowerPoint's Slide Master view looks off-brand (white base), and any layout that doesn't override `<p:bg>` inherits white. Setting the master bg makes the 'base' consistent with the deck's brand identity.
+  — **Implementation:** `_compute_dominant_master_bg(slides, theme)` tallies each source slide's dominant bg (via XML or vision) and picks the most common. `_inject_master_background(prs, hex)` replaces the master's default `<p:bgRef>` with a solid `<p:bgPr><a:solidFill><a:srgbClr val="..."/></a:solidFill></p:bgPr>`. Reuses `_inject_layout_background` (which works on any `<p:cSld>`-bearing element — Slide Master OR Slide Layout). Idempotent: re-injection replaces (not stacks).
+  — **Wiring:** called once in `promote_designer_slides` between theme application and per-layout promotion (Stage A.5).
+  — **Done when:** on BETEKK V9.1.1, the Slide Master's `<p:cSld><p:bg>` carries `<a:srgbClr val="09090B"/>` (dark); master thumbnail in PowerPoint Slide Master view appears dark; layouts that don't override `<p:bg>` inherit dark. 7 tests cover replacement of `<p:bgRef>`, idempotency, invalid-hex rejection, layout-element compatibility, dominant-bg tally, theme-dk1 fallback, end-to-end via `promote_designer_slides`.
+  — **Consumers affected:** `designer_promoter`, `template-modifier-skill/SKILL.md` (Capability C algorithm step 0), `pptx-specialist-subagent.md` (Stage -1.5)
 
 ### Phase 3.5 — Engine Hard Limits Workaround (multi-pass + merge + backfill)
 

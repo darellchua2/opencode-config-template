@@ -112,6 +112,8 @@ Log the switch in the render report sidecar (`render_report["engine_limits_worka
 
 **Stage -1.5 vision extraction (BT-142 Phase 3.4.1b — when Capability C is triggered):** before invoking `designer_promoter.promote_designer_slides`, render the source deck to PNGs and dispatch each to `image-analyzer-subagent` to capture design intent the XML loses (most importantly the dominant slide background, which designer decks encode as a large fill shape rather than via `<p:cSld><p:bg>` — without vision, promoted layouts render with a white background).
 
+The orchestrator's responsibility ends with rendering + dispatching + aggregating. The `promote_designer_slides` function uses the aggregated vision schemas to inject **both** the Slide Master background (the most-common slide bg replaces PowerPoint's default `<p:bgRef idx="1001"><a:schemeClr val="bg1"/></p:bgRef>` which resolves to white in dark-mode decks) **and** each per-layout background. When vision is unavailable, `_compute_dominant_master_bg` falls back to `vision_extractor.fallback_xml_background(slide, theme)` which reads the largest covering shape's fill (handles both `<a:srgbClr>` direct RGB and `<a:schemeClr val="tx1|dk1|..."/>` theme references including ECMA-376 aliases), then to `theme["dk1"]` as last resort.
+
 ```bash
 python -c "
 import sys, json
