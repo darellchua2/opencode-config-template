@@ -237,3 +237,73 @@ def test_invert_hex_picks_high_contrast_partner():
     assert _invert_hex("#09090B") == "#FFFFFF"  # very dark
     assert _invert_hex("#FFFFFF") == "#000000"
     assert _invert_hex("#2DD4BF") == "#000000"  # teal is fairly bright
+
+
+def test_auto_fix_mutates_real_placeholder_oxxml(tmp_path):
+    """MED-3: auto_fix=True lands the color override on a real placeholder's
+    <a:defRPr><a:solidFill><a:srgbClr>. This test uses a real python-pptx
+    layout/placeholder, not a _FakeRun stub.
+
+    Steps:
+    1. Build a real presentation, take layout 1 (Title and Content) which
+       has a TITLE(1) and OBJECT(7) placeholder.
+    2. Wrap it in the _RealLayout adapter that contrast_violations expects.
+    3. Inject a dark background container shape behind the body placeholder
+       so the effective bg is dark (needs white text).
+    4. Call contrast_violations(layout, theme={...}, auto_fix=True).
+    5. Reload the placeholder's XML and verify <a:srgbClr val="FFFFFF"> is
+       now present in the defRPr path.
+    """
+    from contrast_check import contrast_violations
+    from pptx import Presentation
+    from pptx.util import Inches
+    from pptx.dml.color import RGBColor
+    from pptx.oxml.ns import qn
+
+    prs = Presentation()
+    # Use a SLIDE (not layout) so we can add the dark-bg rectangle via
+    # python-pptx's API (layout.shapes has no add_shape). The slide inherits
+    # TITLE + OBJECT placeholders from layout 1 ("Title and Content").
+    slide = prs.slides.add_slide(prs.slide_layouts[1])
+    # Add a full-coverage dark rectangle to force white-text requirement.
+    bg = slide.shapes.add_shape(
+        1, Inches(0), Inches(0), prs.slide_width, prs.slide_height
+    )
+    bg.fill.solid()
+    bg.fill.fore_color.rgb = RGBColor.from_string("09090B")  # near-black
+
+    theme = {"dk1": "#09090B", "lt1": "#FFFFFF"}
+    violations = contrast_violations(slide, theme=theme, auto_fix=True)
+
+    # At least one violation should have been auto-fixed.
+    fixed = [v for v in violations if v.auto_fixed]
+    assert len(fixed) >= 1, "Expected ≥1 auto-fixed violation on dark bg layout"
+
+    # Verify the OOXML mutation landed: inspect the TITLE placeholder's
+    # first paragraph defRPr for a white srgbClr.
+    title_ph = None
+    for ph in slide.placeholders:
+        if "TITLE" in str(ph.placeholder_format.type):
+            title_ph = ph
+            break
+    assert title_ph is not None, "Slide from layout 1 must have a TITLE placeholder"
+    ns_a = "http://schemas.openxmlformats.org/drawingml/2006/main"
+    mutated = False
+    for para in title_ph.text_frame.paragraphs:
+        pPr = para._pPr
+        if pPr is None:
+            continue
+        defRPr = pPr.find(qn("a:defRPr"))
+        if defRPr is None:
+            continue
+        solidFill = defRPr.find(qn("a:solidFill"))
+        if solidFill is None:
+            continue
+        srgb = solidFill.find(f"{{{ns_a}}}srgbClr")
+        if srgb is not None and srgb.get("val", "").upper() == "FFFFFF":
+            mutated = True
+            break
+    assert mutated, (
+        "auto_fix=True must write <a:srgbClr val='FFFFFF'> into the TITLE "
+        "placeholder's defRPr when bg is dark — OOXML mutation not found"
+    )

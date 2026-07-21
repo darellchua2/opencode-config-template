@@ -152,3 +152,78 @@ def test_backfill_report_to_dict_round_trip():
     assert d["filled"] == ["body[1]"]
     assert d["skipped"] == ["body[2]"]
     assert d["errors"] == ["err"]
+
+
+# ---------------------------------------------------------------------------
+# MED-1 (BT-142 Phase 8.5): _add_picture_into_placeholder coverage
+# Uses real python-pptx slides + a real PNG image so the add_picture code
+# path (fill AND fit sizing) is exercised end-to-end, not just the fake
+# _FakeShapes.add_picture stub.
+# ---------------------------------------------------------------------------
+def _build_real_picture_slide():
+    """Build a real slide with a PICTURE placeholder from python-pptx defaults."""
+    from pptx import Presentation
+    prs = Presentation()
+    # Layout 8 = "Picture with Caption" — has TITLE(1) + PICTURE(18) + BODY(2)
+    slide = prs.slides.add_slide(prs.slide_layouts[8])
+    return prs, slide
+
+
+def _make_test_png(tmp_path, w=200, h=150):
+    """Create a small test PNG using PIL."""
+    from PIL import Image
+    p = tmp_path / "test_img.png"
+    Image.new("RGB", (w, h), (100, 150, 200)).save(str(p))
+    return str(p)
+
+
+def test_add_picture_fill_sizing_adds_picture_to_placeholder(tmp_path):
+    """MED-1: 'fill' sizing adds a picture filling the placeholder rect."""
+    from placeholder_backfill import _add_picture_into_placeholder
+    prs, slide = _build_real_picture_slide()
+    # Find the PICTURE placeholder (type 18).
+    pic_ph = None
+    for ph in slide.placeholders:
+        if "PICTURE" in str(ph.placeholder_format.type):
+            pic_ph = ph
+            break
+    assert pic_ph is not None, "Layout 8 must have a PICTURE placeholder"
+    img = _make_test_png(tmp_path)
+    shapes_before = len(slide.shapes)
+    _add_picture_into_placeholder(slide, pic_ph, img, sizing="fill")
+    shapes_after = len(slide.shapes)
+    assert shapes_after == shapes_before + 1, "add_picture should add exactly 1 shape"
+
+
+def test_add_picture_fit_sizing_adds_picture_preserving_aspect(tmp_path):
+    """MED-1: 'fit' sizing adds a picture letterboxed within the placeholder."""
+    from placeholder_backfill import _add_picture_into_placeholder
+    prs, slide = _build_real_picture_slide()
+    pic_ph = None
+    for ph in slide.placeholders:
+        if "PICTURE" in str(ph.placeholder_format.type):
+            pic_ph = ph
+            break
+    assert pic_ph is not None
+    # Use a distinctly non-square image so fit math is exercised.
+    img = _make_test_png(tmp_path, w=400, h=100)
+    shapes_before = len(slide.shapes)
+    _add_picture_into_placeholder(slide, pic_ph, img, sizing="fit")
+    shapes_after = len(slide.shapes)
+    assert shapes_after == shapes_before + 1
+
+
+def test_add_picture_raises_on_missing_file(tmp_path):
+    """MED-1: missing image file raises FileNotFoundError (not silent skip)."""
+    from placeholder_backfill import _add_picture_into_placeholder
+    import pytest
+    prs, slide = _build_real_picture_slide()
+    pic_ph = None
+    for ph in slide.placeholders:
+        if "PICTURE" in str(ph.placeholder_format.type):
+            pic_ph = ph
+            break
+    assert pic_ph is not None
+    bogus = str(tmp_path / "nonexistent.png")
+    with pytest.raises(FileNotFoundError, match="image not found"):
+        _add_picture_into_placeholder(slide, pic_ph, bogus, sizing="fill")

@@ -187,6 +187,71 @@ def test_fallback_xml_background_handles_empty_slide():
     assert fallback_xml_background(slide) is None
 
 
+def test_fallback_xml_background_resolves_schemeClr_tx1_alias(tmp_path):
+    """MED-2: <a:schemeClr val='tx1'> resolves to theme['dk1'] (ECMA-376 alias)."""
+    from pptx.dml.color import RGBColor
+    from pptx.oxml.ns import qn
+    prs = Presentation()
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    bg = slide.shapes.add_shape(1, Inches(0), Inches(0), Inches(10), Inches(5.625))
+    bg.fill.solid()
+    bg.fill.fore_color.rgb = RGBColor.from_string("000000")
+    # Overwrite the srgbClr with schemeClr val="tx1" (alias for dk1)
+    spPr = bg._element.find(qn("p:spPr"))
+    ns_a = "http://schemas.openxmlformats.org/drawingml/2006/main"
+    solid = spPr.find(f"{{{ns_a}}}solidFill")
+    for child in list(solid):
+        solid.remove(child)
+    scheme = solid.makeelement(f"{{{ns_a}}}schemeClr", {"val": "tx1"})
+    solid.append(scheme)
+    theme = {"dk1": "1A1A1A", "lt1": "FFFFFF"}
+    result = fallback_xml_background(slide, theme=theme)
+    assert result is not None
+    assert "1A1A1A" in result.upper()
+
+
+def test_fallback_xml_background_resolves_schemeClr_bg1_alias(tmp_path):
+    """MED-2: <a:schemeClr val='bg1'> resolves to theme['lt1'] (ECMA-376 alias)."""
+    from pptx.dml.color import RGBColor
+    from pptx.oxml.ns import qn
+    prs = Presentation()
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    bg = slide.shapes.add_shape(1, Inches(0), Inches(0), Inches(10), Inches(5.625))
+    bg.fill.solid()
+    bg.fill.fore_color.rgb = RGBColor.from_string("000000")
+    spPr = bg._element.find(qn("p:spPr"))
+    ns_a = "http://schemas.openxmlformats.org/drawingml/2006/main"
+    solid = spPr.find(f"{{{ns_a}}}solidFill")
+    for child in list(solid):
+        solid.remove(child)
+    scheme = solid.makeelement(f"{{{ns_a}}}schemeClr", {"val": "bg1"})
+    solid.append(scheme)
+    theme = {"dk1": "000000", "lt1": "FAFAFA"}
+    result = fallback_xml_background(slide, theme=theme)
+    assert result is not None
+    assert "FAFAFA" in result.upper()
+
+
+def test_fallback_xml_background_schemeClr_without_theme_returns_none(tmp_path):
+    """MED-2: schemeClr without theme dict → can't resolve → None."""
+    from pptx.dml.color import RGBColor
+    from pptx.oxml.ns import qn
+    prs = Presentation()
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    bg = slide.shapes.add_shape(1, Inches(0), Inches(0), Inches(10), Inches(5.625))
+    bg.fill.solid()
+    bg.fill.fore_color.rgb = RGBColor.from_string("000000")
+    spPr = bg._element.find(qn("p:spPr"))
+    ns_a = "http://schemas.openxmlformats.org/drawingml/2006/main"
+    solid = spPr.find(f"{{{ns_a}}}solidFill")
+    for child in list(solid):
+        solid.remove(child)
+    scheme = solid.makeelement(f"{{{ns_a}}}schemeClr", {"val": "dk1"})
+    solid.append(scheme)
+    result = fallback_xml_background(slide, theme=None)
+    assert result is None
+
+
 # ---------------------------------------------------------------------------
 # VisionSlideSchema serialization
 # ---------------------------------------------------------------------------
