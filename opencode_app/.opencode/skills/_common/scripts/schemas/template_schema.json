@@ -116,6 +116,16 @@
         "components": {
           "type": "array",
           "items": { "$ref": "#/$defs/component" }
+        },
+        "text_defaults": {
+          "type": "object",
+          "description": "US-3.5: default text styling inherited from the master's <p:txStyles> (title/body/other). These govern the 'default font' users see when typing into placeholders or plain text boxes with no run-level font set. Empty object when the master has no txStyles or is absent.",
+          "additionalProperties": false,
+          "properties": {
+            "title": { "$ref": "#/$defs/text_default_role" },
+            "body": { "$ref": "#/$defs/text_default_role" },
+            "other": { "$ref": "#/$defs/text_default_role" }
+          }
         }
       }
     },
@@ -295,6 +305,17 @@
             }
           }
         }
+      }
+    },
+    "text_default_role": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "US-3.5: per-role master text default (font resolved from +mj-lt/+mn-lt theme references).",
+      "properties": {
+        "font": { "type": "string", "description": "Resolved typeface name (e.g. 'Century Gothic'); empty when unset." },
+        "size_pt": { "type": ["number", "null"], "description": "Default point size (sz/100); null when unset." },
+        "color": { "type": "string", "description": "Hex color e.g. '#18181B'; empty when unset." },
+        "bold": { "type": "boolean" }
       }
     }
   }
