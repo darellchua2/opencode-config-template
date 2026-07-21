@@ -20,7 +20,7 @@ Verify that every place skills and subagents are listed, counted, or cross-refer
 | Agent .md files | **39** | `ls opencode_app/.opencode/agents/*.md \| wc -l` |
 | Categories (setup.sh) | **21** | Counted from SKILLS banner listing |
 
-**No functional `pptx-specialist-skill` references remain** in active config (`opencode_app/.opencode/agents/`, `opencode_app/.opencode/skills/`, `opencode.json`). The 25 grep matches are all historical (PLAN docs, README migration note) — acceptable.
+**No `pptx-specialist-skill` (with `-skill` suffix) references remain** in active config (`opencode_app/.opencode/agents/`, `opencode_app/.opencode/skills/`, `opencode.json`). However, review found **bare `pptx-specialist` references (no suffix)** in 3 functional locations — see D8/D9/D10 below. The `pptx-specialist-skill` matches (with suffix) are all historical (PLAN docs, README migration note) — acceptable.
 
 **Agent counts are consistent everywhere** at 39 — no drift.
 
@@ -39,11 +39,13 @@ Verify that every place skills and subagents are listed, counted, or cross-refer
   README.md:337         ← remove stale pptx-specialist from Framework
   README.md:333-355     ← add missing Presentation + Office Utilities rows
   README.md:339,346     ← reconcile deprecated-code-cleanup-skill placement
+  README.md:400,402     ← fix stale pptx-specialist in Subagents table (D9/D10)
+  startup-business-docs-skill/SKILL.md:382,397  ← fix functional pptx-specialist ref (D8)
   deploy/setup.sh       ← add csharp-linter-skill, java-linter-skill to Language-Specific
   deploy/setup.ps1      ← mirror setup.sh Language-Specific fix
 ```
 
-## Drift Items Found (7 concrete items)
+## Drift Items Found (10 concrete items)
 
 | # | File | Line(s) | Issue | Severity |
 |---|------|---------|-------|----------|
@@ -54,6 +56,9 @@ Verify that every place skills and subagents are listed, counted, or cross-refer
 | D5 | `README.md` | 329 | States "21 categories" but only 19 rows listed (D4 causes 2 missing) | medium |
 | D6 | `README.md` | 339, 346 | `deprecated-code-cleanup-skill` in Framework-Specific (11) vs setup.sh Code Quality (8) — categorization mismatch | low |
 | D7 | `deploy/setup.sh` + `deploy/setup.ps1` | Lang-Specific section | Language-Specific shows "(6)" — missing `csharp-linter-skill` and `java-linter-skill` (should be "(8)") | high |
+| D8 | `startup-business-docs-skill/SKILL.md` | 382, 397 | **Functional** bare `pptx-specialist` reference in Integration table + References list — tells agents to use a deleted skill | high |
+| D9 | `README.md` | 400 | Subagents table: `pptx-specialist-subagent` Skills column says `pptx-specialist` (stale — should reference the 3 chenyu skills or routing) | medium |
+| D10 | `README.md` | 402 | Subagents table: `startup-ceo-subagent` Skills column says `pptx-specialist` (same staleness as D9) | medium |
 
 ## Phases
 
@@ -69,11 +74,11 @@ Verify that every place skills and subagents are listed, counted, or cross-refer
   — **Done when:** `grep '# 123 skill directories' opencode_app/README.md` returns 1 match.
   — **Consumers affected:** Docker/deploy users reading the opencode_app README
 
-### Phase 2 — Fix README.md Skill Categories table (D3, D4, D5, D6)
+### Phase 2 — Fix README.md tables + stale `pptx-specialist` references (D3, D4, D5, D6, D8, D9, D10)
 
 - [ ] **2.1** Remove stale `pptx-specialist` from Framework (20) row in `README.md:337`
   — **Why:** `pptx-specialist-skill` was deleted in BT-142. It must not appear in any active skill listing. Replace with the correct categorization.
-  — **Done when:** `grep 'pptx-specialist' README.md` only returns the migration note at line 331 (historical reference — acceptable).
+  — **Done when:** `grep 'pptx-specialist' README.md` returns only: (a) migration note at line 331 (historical — acceptable), and (b) Subagents table entries at lines 400/402 (fixed by D9/D10 in Phase 2.7/2.8).
   — **Consumers affected:** Users scanning the Skill Categories table for PPTX-related skills
 
 - [ ] **2.2** Add "Presentation (3)" category row to `README.md` Skill Categories table (after Framework, before Language-Specific)
@@ -95,6 +100,21 @@ Verify that every place skills and subagents are listed, counted, or cross-refer
   — **Why:** README has this skill under Framework-Specific (11) while setup.sh has it under Code Quality (8). Must pick one canonical placement and align both files. Recommendation: **Code Quality (8)** (matches setup.sh/setup.ps1 — the skill is about detecting and removing @deprecated code, which is fundamentally code quality).
   — **Done when:** Either (a) README moves `deprecated-code-cleanup-skill` to Code Quality and adjusts Framework-Specific (11→10) + Code Quality (7→8), OR (b) setup.sh/setup.ps1 moves it to Framework-Specific. Document the decision in a comment.
   — **Consumers affected:** setup.sh, setup.ps1, README.md category tables
+
+- [ ] **2.6** Fix functional `pptx-specialist` reference in `startup-business-docs-skill/SKILL.md` (D8)
+  — **Why:** Lines 382 (`| pptx-specialist | Primary skill for general presentations |`) and 397 (`- pptx-specialist - PowerPoint presentation creation`) tell agents to use a deleted skill. These are in an active Integration table and References list — functional routing, not historical docs. The correct reference is `pptx-specialist-subagent` (the surviving orchestrator).
+  — **Done when:** `grep 'pptx-specialist' opencode_app/.opencode/skills/startup-business-docs-skill/SKILL.md` returns zero matches (or only `pptx-specialist-subagent` references).
+  — **Consumers affected:** `startup-business-docs-skill` execution (any startup/business doc workflow that routes to PPTX)
+
+- [ ] **2.7** Fix stale `pptx-specialist` in `README.md` Subagents table for `pptx-specialist-subagent` (D9)
+  — **Why:** Line 400 (`| **pptx-specialist-subagent** | ... | pptx-specialist | — |`) lists `pptx-specialist` as the subagent's skill. That skill no longer exists — the subagent now routes to `pptx-generate-slide-skill` / `pptx-generate-template-skill` / `pptx-template-modifier-skill`.
+  — **Done when:** README.md line ~400 Skills column reads `pptx-generate-slide, pptx-generate-template, pptx-template-modifier` (or equivalent).
+  — **Consumers affected:** Users reading the Subagents table for PPTX routing
+
+- [ ] **2.8** Fix stale `pptx-specialist` in `README.md` Subagents table for `startup-ceo-subagent` (D10)
+  — **Why:** Line 402 (`| **startup-ceo-subagent** | ... | pptx-specialist | — |`) has the same staleness as D9. The subagent delegates to `pptx-specialist-subagent` (which routes to the chenyu skills).
+  — **Done when:** README.md line ~402 Skills column reads `pptx-specialist-subagent` (or `pptx-generate-slide, pptx-generate-template, pptx-template-modifier`).
+  — **Consumers affected:** Users reading the Subagents table for startup presentation routing
 
 ### Phase 3 — Fix setup.sh and setup.ps1 listing (D7)
 
@@ -121,16 +141,19 @@ Verify that every place skills and subagents are listed, counted, or cross-refer
     - `find opencode_app/.opencode/skills -maxdepth 2 -name SKILL.md | wc -l` = 123
     - `ls opencode_app/.opencode/agents/*.md | wc -l` = 39
     - `grep '# 123 skill directories' README.md opencode_app/README.md` = 2 matches
-    - `grep -c 'pptx-specialist' README.md` returns only the migration note (line 331)
+    - `grep 'pptx-specialist' README.md` returns only the migration note (line 331) — lines 400/402 fixed by D9/D10
+    - `grep -rn 'pptx-specialist' opencode_app/.opencode/skills/startup-business-docs-skill/SKILL.md` returns zero matches (D8 fixed)
     - `grep 'Language-Specific (8)' deploy/setup.sh deploy/setup.ps1` = 2 matches
     - README.md Skill Categories table has 21 rows
     - Every category's stated count matches the number of items in that row
     - Category counts sum to 123
   — **Consumers affected:** CI verification, future audits
 
-- [ ] **4.2** Grep for stale `pptx-specialist-skill` repo-wide (excluding PLAN/historical docs)
-  — **Why:** Belt-and-suspenders check that the removed skill has no functional references.
-  — **Done when:** `grep -rn 'pptx-specialist-skill' opencode_app/.opencode/ deploy/setup.sh deploy/setup.ps1 README.md opencode_app/README.md AGENTS.md deploy/.AGENTS.md` returns zero matches.
+- [ ] **4.2** Grep for stale `pptx-specialist` references repo-wide (both `-skill` suffix and bare)
+  — **Why:** Belt-and-suspenders check that the removed skill has no functional references. Must check BOTH `pptx-specialist-skill` (old name with suffix) AND bare `pptx-specialist` (D8/D9/D10 use the bare form).
+  — **Done when:**
+    - `grep -rn 'pptx-specialist-skill' opencode_app/.opencode/ deploy/setup.sh deploy/setup.ps1 README.md opencode_app/README.md AGENTS.md deploy/.AGENTS.md` returns zero matches.
+    - `grep -rn 'pptx-specialist[^-]' opencode_app/.opencode/skills/ opencode_app/.opencode/agents/ deploy/setup.sh deploy/setup.ps1 README.md` returns zero matches (bare `pptx-specialist` not followed by `-subagent` or `-skill` — historical PLAN docs and README migration note excluded from scope).
   — **Consumers affected:** All consumers of PPTX skill routing
 
 ## Acceptance Criteria
@@ -139,7 +162,7 @@ Verify that every place skills and subagents are listed, counted, or cross-refer
 - [ ] Count of `*.md` files under `opencode_app/.opencode/agents/` matches every stated subagent count in the same files.
 - [ ] Every skill name appearing in setup.sh / setup.ps1 listing sections exists as a real `SKILL.md` directory (no orphans, no missing).
 - [ ] Every subagent name in README/AGENTS routing tables exists as a real `agents/*.md` file.
-- [ ] No references to the removed `pptx-specialist-skill` remain anywhere (grep the whole repo).
+- [ ] No **functional** references to the removed `pptx-specialist-skill` (or bare `pptx-specialist` used as a skill name) remain in active config files (`opencode_app/.opencode/`, `deploy/`, `README.md`, `opencode_app/README.md`, `AGENTS.md`, `deploy/.AGENTS.md`). Historical references in `PLANS/` docs and the README migration note (line 331) are explicitly acceptable.
 - [ ] Category groupings in setup.sh/setup.ps1/README all agree and sum to the total skill count.
 - [ ] `opencode.json` has no stale skill/MCP/agent references tied to the BT-142 rename.
 - [ ] If any inconsistency is found and fixed, the fixes are committed on a dedicated branch and a PLAN file is created. If everything is already consistent, close the ticket with a comment documenting the verification.
