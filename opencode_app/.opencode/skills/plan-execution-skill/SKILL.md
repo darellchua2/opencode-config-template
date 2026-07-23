@@ -102,7 +102,7 @@ echo "Completed: $(echo "$COMPLETED" | wc -l)"
 
 Parse out, per step: `action`, `why`, `done_when`, `consumers`.
 
-**Read the Dependency & Consumer Map first.** Before executing any step, load the PLAN's `## Dependency & Consumer Map` section so execution order and blast radius are known up front. A step whose `consumers` are non-trivial requires its consumers to be surfaced to the executor (and, where applicable, verified post-change) before the step's target is mutated.
+**Read the Dependency & Consumer Map first.** Use the built-in `Read` tool to open the PLAN file and review its `## Dependency & Consumer Map` section so execution order and blast radius are known up front. A step whose `consumers` are non-trivial requires its consumers to be surfaced to the executor (and, where applicable, verified post-change) before the step's target is mutated.
 
 ### Step 3: Analyze Current State
 
@@ -125,7 +125,7 @@ echo "Next step: $NEXT_STEP"
 Work through steps systematically:
 
 **Strategy**:
-1. **Surface consumers first** — before touching a step's target, read its `Consumers affected` line and the Dependency & Consumer Map. Do not mutate a target whose consumers have not been surfaced.
+1. **Surface consumers first** — before touching a step's target, use the `Read` tool to review its `Consumers affected` line and the Dependency & Consumer Map. Do not mutate a target whose consumers have not been surfaced.
 2. Group related steps (e.g., all tests together)
 3. Delegate to specialized subagents when appropriate:
    - Testing steps → `testing-subagent`

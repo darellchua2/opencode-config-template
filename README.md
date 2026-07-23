@@ -251,9 +251,9 @@ The configuration ships 26 MCP server entries. **6 are enabled by default:**
 | `zai-web-reader` | remote | Web page content extraction |
 | `zai-zread` | remote | GitHub repository search/reading |
 
-The remaining 20 (Microsoft 365, Autodesk, Google Cloud, `filesystem`, `next-devtools`, `web-search-prime`, etc.) are `enabled: false` and opt-in. To enable one, set `"enabled": true` (and grant its tools in the `tools` block) in `config.json`.
+The remaining 19 (Microsoft 365, Autodesk, Google Cloud, `next-devtools`, `web-search-prime`, etc.) are `enabled: false` and opt-in. To enable one, set `"enabled": true` (and grant its tools in the `tools` block) in `config.json`.
 
-> **Note — `filesystem` MCP is intentionally disabled.** OpenCode's built-in `read`/`write`/`edit`/`glob`/`grep`/`bash` tools already provide full file I/O, so `@modelcontextprotocol/server-filesystem` is redundant. Enable it per-project **only** if a specific tool requires MCP filesystem access — and note the server command requires allowed-directory path arguments (e.g. append your project root), so it would start broken without them.
+> **Note — `filesystem` MCP server has been permanently removed.** OpenCode's built-in `read`/`write`/`edit`/`glob`/`grep`/`bash` tools already provide full file I/O, so `@modelcontextprotocol/server-filesystem` was redundant and caused tool-selection ambiguity (the model would call `read_mcp_resource` instead of the built-in `Read` tool). Do not re-add it to project `opencode.json` files.
 
 ## Knowledge Persistence
 
