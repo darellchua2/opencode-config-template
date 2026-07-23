@@ -181,11 +181,6 @@
       "command": ["npx", "-y", "next-devtools-mcp@latest"],
       "enabled": false
     },
-    "filesystem": {
-      "type": "local",
-      "command": ["npx", "-y", "@modelcontextprotocol/server-filesystem@latest"],
-      "enabled": false
-    },
     "microsoft-teams": {
       "type": "local",
       "command": ["npx", "-y", "mcp-remote", "https://mcp.cloud.microsoft/teams/v1/sse"],
@@ -259,7 +254,6 @@
     "autodesk-fusion*": false,
     "autodesk-help*": false,
     "next-devtools*": false,
-    "filesystem*": false,
     "microsoft-teams*": false,
     "microsoft-mail*": false,
     "microsoft-calendar*": false,

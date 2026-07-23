@@ -632,7 +632,6 @@ USAGE:
       mermaid            Mermaid diagram rendering (SVG/PNG)
 
     Available but disabled (opt-in — set enabled: true in config.json):
-      filesystem         Local filesystem read/write (redundant with built-in file tools)
       next-devtools      Next.js DevTools integration
 
     Remote (requires ZAI_API_KEY):
