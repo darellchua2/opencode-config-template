@@ -25,6 +25,7 @@ permission:
     docx-creation-skill: allow
     xlsx-specialist-skill: allow
     search-first-skill: allow
+    markitdown-mcp-skill: allow
 ---
 
 ## Prompt Defense Baseline
@@ -147,6 +148,8 @@ For SRS, after Part 3/4, ask: "Will the Requirements Traceability Matrix / data 
 
 ### Image routing
 If a referenced diagram/screenshot must be interpreted, **delegate to `image-analyzer-subagent`** — do not interpret inline.
+
+**Reading source PDFs/DOCX provided by stakeholders:** prefer the `markitdown` MCP (load `markitdown-mcp-skill` for the decision tree) over `image-analyzer-subagent` for text-heavy content — faster, preserves text fidelity, cheaper. Reserve `image-analyzer-subagent` for diagrams, charts, or scanned/image-only PDFs.
 
 ## What This Subagent Returns
 

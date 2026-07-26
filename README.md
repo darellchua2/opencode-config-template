@@ -23,7 +23,7 @@ opencode-config-template/
 │   ├── .dockerignore
 │   ├── .opencode/
 │   │       ├── agents/              # 39 subagent .md files
-│   │       └── skills/              # 123 skill directories
+│   │       └── skills/              # 124 skill directories
 │   └── README.md                # Docker usage guide
 ├── docker-compose.yml           # Docker Compose service definition
 ├── .env.example                 # Environment variable template
@@ -257,6 +257,52 @@ The remaining 20 (Microsoft 365, Autodesk, Google Cloud, `next-devtools`, `web-s
 
 > **Note — `filesystem` MCP server has been permanently removed.** OpenCode's built-in `read`/`write`/`edit`/`glob`/`grep`/`bash` tools already provide full file I/O, so `@modelcontextprotocol/server-filesystem` was redundant and caused tool-selection ambiguity (the model would call `read_mcp_resource` instead of the built-in `Read` tool). Do not re-add it to project `opencode.json` files.
 
+## Language Server Protocol (LSP)
+
+OpenCode ships **native LSP support** (~30 built-in language servers) that feeds real-time diagnostics back into the agent loop so the agent can fix type/lint errors as it edits. See the [official LSP docs](https://opencode.ai/docs/lsp/).
+
+**LSP is deliberately NOT enabled in the distributed config.** This repository is a configuration distributor (Markdown + JSON + shell + one vendored Python MCP server) — there is no application code here for an LSP to diagnose. Forcing LSP on every downstream project would hurt more than help (memory cost, version drift, slower agent workflows). The [official guidance](https://opencode.ai/docs/lsp/#best-practices) is to enable it only when a project benefits from language-server feedback.
+
+### Enabling LSP in a target project
+
+In the target project's `opencode.json`, add an `"lsp"` field:
+
+```jsonc
+{
+  // Enable all built-in servers (auto-installs the matching server per file extension)
+  "lsp": true
+}
+```
+
+Or enable selectively with overrides:
+
+```jsonc
+{
+  "lsp": {
+    "typescript": { "disabled": false },              // tsserver
+    "python":    { "disabled": false },               // pyright
+    "rust":      { "command": ["rust-analyzer"] }     // custom command
+  }
+}
+```
+
+### Built-in servers (subset)
+
+| Language | Server | Language | Server |
+|----------|--------|----------|--------|
+| TypeScript/JS | tsserver | Python | pyright |
+| Rust | rust-analyzer | Go | gopls |
+| C/C++ | clangd | Java | jdtls |
+| Ruby | ruby-lsp | Lua | lua-ls |
+| Svelte/Vue/Astro | respective LS | Elixir | elixir-ls |
+| Terraform | terraform-ls | Prisma | prisma |
+
+Set `OPENCODE_DISABLE_LSP_DOWNLOAD=true` to prevent auto-downloads. See the [full list and config schema](https://opencode.ai/docs/lsp/#configure).
+
+### When to prefer a CLI check instead
+
+For one-off validation the docs recommend running the compiler/linter directly (e.g. `tsc --noEmit`, `pyright`, `ruff`) — no persistent server, lower overhead. This repo's existing `*-linter-skill` skills already take that approach. Use LSP when you want **continuous** feedback during agent editing sessions.
+
 ## Knowledge Persistence
 
 Skills like `continuous-learning` persist knowledge across sessions using a dual strategy:
@@ -351,7 +397,7 @@ This repository implements **skill modularization** with 123 skills organized ac
 | **Agent Optimization** (7) | continuous-learning, eval-harness, strategic-compact, verification-loop, search-first, context-budget, agent-introspection-debugging | AI agent session optimization, research-first workflow, context auditing, and agent debugging |
 | **Autoresearch** (4) | autoresearch-core-skill, autoresearch-ml-skill, autoresearch-code-skill, autoresearch-research-skill | Autonomous research loops: 5-stage Understand→Hypothesize→Experiment→Evaluate→Log methodology. ML training (GPU), code optimization, literature review. Evaluated by mechanical `{"pass":bool,"score":N}` — no LLM self-judgment. Ported from uditgoenka/autoresearch + karpathy/autoresearch (MIT). |
 | **Startup/Business** (3) | startup-pitch-deck-skill, startup-business-docs-skill, construction-bd-skill | Startup pitch decks, business documentation, construction proposals |
-| **Configuration** (2) | microsoft-m365-config-skill, codegraph-setup-skill | Microsoft 365 MCP and CodeGraph setup |
+| **Configuration** (3) | microsoft-m365-config-skill, codegraph-setup-skill, markitdown-mcp-skill | Microsoft 365 MCP, CodeGraph, and markitdown MCP setup |
 | **Security** (2) | security-audit-skill, authentication-authorization-skill | Security auditing, vulnerability scanning, and auth implementation |
 | **DevOps** (4) | docker-containerization-skill, monorepo-management-skill, database-migration-skill, logging-observability-skill | Containerization, monorepos, database migrations, and observability |
 | **Planning & Alignment** (4) | grilling-skill, domain-modeling-skill, grill-with-docs-skill, grill-me-skill | Relentless interview/grilling sessions and domain model (CONTEXT.md glossary + ADR) capture |

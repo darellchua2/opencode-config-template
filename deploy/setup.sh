@@ -85,6 +85,10 @@ CONFIG_FILE="${CONFIG_DIR}/config.json"
 SKILLS_DIR="${CONFIG_DIR}/skills"
 AGENTS_SRC_DIR="${REPO_DIR}/opencode_app/.opencode/agents"
 AGENTS_DEST_DIR="${CONFIG_DIR}/agents"
+# Repo-owned plugins (auto-loaded by opencode from this dir). Mirrors the
+# agents/skills deploy pattern. Currently: opencode-skill-counter-sync.
+PLUGINS_SRC_DIR="${REPO_DIR}/opencode_app/.opencode/plugins"
+PLUGINS_DEST_DIR="${CONFIG_DIR}/plugins"
 BACKUP_DIR="${HOME}/.opencode-backup-$(date +%Y%m%d_%H%M%S)"
 LAST_UPDATE_CHECK="${CONFIG_DIR}/.last-update-check"
 UPDATE_LOG="${CONFIG_DIR}/update.log"
@@ -663,7 +667,7 @@ USAGE:
       google-gce         Google Compute Engine management
       google-gke         Google Kubernetes Engine management
 
-    SKILLS (123):
+    SKILLS (124):
               Framework (19):       test-generator-framework, linting-workflow,
                                       pr-creation-workflow, pr-merge-workflow,
                                       error-resolver-workflow, tdd-workflow,
@@ -728,7 +732,8 @@ USAGE:
             Startup/Business (3): startup-pitch-deck-skill, startup-business-docs-skill,
                                   construction-bd-skill
 
-            Configuration (2):    microsoft-m365-config-skill, codegraph-setup-skill
+            Configuration (3):    microsoft-m365-config-skill, codegraph-setup-skill,
+                                  markitdown-mcp-skill
 
               Security (2):     security-audit-skill, authentication-authorization-skill
 
@@ -2707,6 +2712,46 @@ run_migration() {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
+# PLUGIN DEPLOYMENT
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Copy repo-owned plugins (opencode_app/.opencode/plugins/*) into the global
+# plugins dir so opencode auto-loads them. Mirrors the skills deploy pattern.
+# These are NOT npm packages (those live in opencode.json `plugin[]`); they are
+# local TS plugins auto-discovered from ~/.config/opencode/plugins/.
+deploy_plugins() {
+    echo ""
+    log_info "Setting up plugins..."
+
+    if [ ! -d "$PLUGINS_SRC_DIR" ]; then
+        log_info "No repo plugins to deploy (${PLUGINS_SRC_DIR} not found). Skipping."
+        return 0
+    fi
+
+    run_cmd mkdir -p "$PLUGINS_DEST_DIR"
+
+    # Copy each plugin subdirectory (skip dotfiles, _archived, node_modules).
+    local count=0
+    for item in "${PLUGINS_SRC_DIR}"/*; do
+        [ -e "$item" ] || continue  # robust against empty glob
+        local name
+        name=$(basename "$item")
+        case "$name" in
+            .*|_archived|node_modules) continue ;;
+        esac
+        run_cmd cp -r "$item" "${PLUGINS_DEST_DIR}/"
+        count=$((count + 1))
+    done
+
+    if [ "$count" -gt 0 ]; then
+        log_success "Plugins copied successfully to ${PLUGINS_DEST_DIR} (${count} plugin$([ "$count" -ne 1 ] && echo s))"
+    else
+        log_info "No repo plugins found to deploy."
+    fi
+    return 0
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
 # AGENT DEPLOYMENT (v2.0 — resolver-driven)
 # ─────────────────────────────────────────────────────────────────────────────
 deploy_agents() {
@@ -3643,6 +3688,7 @@ main() {
     setup_config || true
     setup_model_provider || true
     deploy_agents || true
+    deploy_plugins || true
     setup_learnings_dir || true
     setup_shell_vars || true
 

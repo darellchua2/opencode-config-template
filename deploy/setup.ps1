@@ -85,6 +85,10 @@ $ConfigFile = Join-Path $ConfigDir "config.json"
 $SkillsDir = Join-Path $ConfigDir "skills"
 $AgentsSrcDir = Join-Path $RepoDir "opencode_app\.opencode\agents"
 $AgentsDestDir = Join-Path $ConfigDir "agents"
+# Repo-owned plugins (auto-loaded by opencode from this dir). Mirrors the
+# agents/skills deploy pattern. Currently: opencode-skill-counter-sync.
+$PluginsSrcDir = Join-Path $RepoDir "opencode_app\.opencode\plugins"
+$PluginsDestDir = Join-Path $ConfigDir "plugins"
 $BackupDir = Join-Path $HOME ".opencode-backup-$(Get-Date -Format 'yyyyMMdd_HHmmss')"
 $LogFile = Join-Path $HOME ".opencode-setup.log"
 $LastUpdateCheck = Join-Path $ConfigDir ".last-update-check"
@@ -906,7 +910,7 @@ USAGE:
     Usage: opencode --agent build 'implement auth feature'
             opencode --agent explore 'find all API routes'
  
-            SKILLS (123):
+            SKILLS (124):
               Framework (19):       test-generator-framework, linting-workflow,
                                       pr-creation-workflow, pr-merge-workflow,
                                       error-resolver-workflow, tdd-workflow,
@@ -966,7 +970,8 @@ USAGE:
             Startup/Business (3): startup-pitch-deck-skill, startup-business-docs-skill,
                                   construction-bd-skill
 
-           Configuration (2):    microsoft-m365-config-skill, codegraph-setup-skill
+            Configuration (3):    microsoft-m365-config-skill, codegraph-setup-skill,
+                                  markitdown-mcp-skill
 
               Security (2):     security-audit-skill, authentication-authorization-skill
 
@@ -1854,8 +1859,8 @@ function Deploy-Skills {
         Write-Host "    Startup/Business (3):"
         Write-Host "      - startup-pitch-deck-skill, startup-business-docs-skill"
         Write-Host "      - construction-bd-skill"
-        Write-Host "    Configuration (2):"
-        Write-Host "      - microsoft-m365-config-skill, codegraph-setup-skill"
+        Write-Host "    Configuration (3):"
+        Write-Host "      - microsoft-m365-config-skill, codegraph-setup-skill, markitdown-mcp-skill"
         Write-Host "    Planning & Alignment (4):"
         Write-Host "      - grilling-skill, domain-modeling-skill"
         Write-Host "      - grill-with-docs-skill, grill-me-skill"
@@ -1874,6 +1879,7 @@ function Deploy-Skills {
     }
 
     Deploy-Agents
+    Deploy-Plugins
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -2054,6 +2060,43 @@ function Install-LocalMcpLaunchers {
         }
     } else {
         Write-LogWarn "pip install failed for markitdown-local-mcp (offline?). The launcher is opt-in (enabled: false) - OpenCode will work without it. Re-run setup when online to enable."
+    }
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PLUGIN DEPLOYMENT
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Copy repo-owned plugins (opencode_app/.opencode/plugins/*) into the global
+# plugins dir so opencode auto-loads them. Mirrors the skills deploy pattern.
+# These are NOT npm packages (those live in opencode.json plugin[]); they are
+# local TS plugins auto-discovered from ~/.config/opencode/plugins/.
+function Deploy-Plugins {
+    Write-Host ""
+    Write-LogInfo "Setting up plugins..."
+
+    if (-not (Test-Path $PluginsSrcDir)) {
+        Write-LogInfo "No repo plugins to deploy ($PluginsSrcDir not found). Skipping."
+        return
+    }
+
+    if (-not (Test-Path $PluginsDestDir)) {
+        New-Item -ItemType Directory -Path $PluginsDestDir -Force | Out-Null
+    }
+
+    # Copy each plugin subdirectory (skip dotfiles, _archived, node_modules).
+    $count = 0
+    Get-ChildItem -Path $PluginsSrcDir -Directory -ErrorAction SilentlyContinue | ForEach-Object {
+        if ($_.Name -match '^\.|_archived|^node_modules$') { return }
+        Copy-Item $_.FullName $PluginsDestDir -Recurse -Force
+        $count++
+    }
+
+    if ($count -gt 0) {
+        $plural = if ($count -ne 1) { "s" } else { "" }
+        Write-LogSuccess "Plugins copied successfully to $PluginsDestDir ($count plugin$plural)"
+    } else {
+        Write-LogInfo "No repo plugins found to deploy."
     }
 }
 
