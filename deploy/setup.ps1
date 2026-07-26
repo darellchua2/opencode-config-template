@@ -1711,6 +1711,10 @@ function Set-Configuration {
             if (-not $DryRun) { Copy-Item $configSrc $ConfigFile -Force }
             Write-LogSuccess "config.json copied successfully (from $SourceConfig)"
 
+            # Install local Python MCP launchers (PLAN-GIT-262: markitdown-local-mcp).
+            # Best-effort — non-fatal on offline/pip-missing.
+            Install-LocalMcpLaunchers
+
             Write-Host ""
              Write-Host "Configured 39 agents:" -ForegroundColor Green
             Write-Host "    - build (default) - Full-featured coding agent"
@@ -2009,6 +2013,47 @@ function Invoke-Migration {
     } else {
         Set-Content -Path $ConfigVersionFile -Value $SchemaVersion -NoNewline
         Write-LogSuccess "Migration to v$SchemaVersion complete"
+    }
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# LOCAL MCP LAUNCHER INSTALL (PLAN-GIT-262)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Install in-repo Python-based MCP launchers (currently: markitdown-local-mcp)
+# onto the user's PATH so OpenCode can spawn them via the `command` field in
+# opencode.json. Uses pip (already a soft dep). Mirrors install_local_mcp_launchers()
+# in setup.sh.
+function Install-LocalMcpLaunchers {
+    $launcherDir = Join-Path $AppDir "mcp-servers\markitdown-local-mcp"
+
+    if (-not (Test-Path $launcherDir)) {
+        Write-LogWarn "markitdown-local-mcp launcher source not found at $launcherDir - skipping"
+        return
+    }
+
+    # Prerequisite: python + pip
+    $pythonCmd = Get-Command python -ErrorAction SilentlyContinue
+    if (-not $pythonCmd) { $pythonCmd = Get-Command python3 -ErrorAction SilentlyContinue }
+    if (-not $pythonCmd) {
+        Write-LogWarn "python not found - cannot install markitdown-local-mcp. Install Python 3.10+ and re-run."
+        return
+    }
+    $python = if ($pythonCmd.Name -eq 'python') { 'python' } else { 'python3' }
+
+    # Install (network required; non-fatal if offline)
+    Write-LogInfo "$python -m pip install --user --force-reinstall $launcherDir"
+    & $python -m pip install --user --force-reinstall --no-warn-script-location $launcherDir 2>&1 | Out-Null
+    if ($LASTEXITCODE -eq 0) {
+        Write-LogSuccess "markitdown-local-mcp installed"
+        # Windows console-script lands in %APPDATA%\Python\Scripts - warn if not on PATH
+        $userScripts = Join-Path $env:APPDATA "Python\Scripts"
+        if (-not ($env:PATH -like "*$userScripts*")) {
+            Write-LogWarn "$userScripts is not on your PATH. Add it to use markitdown-local-mcp:"
+            Write-Host "    setx PATH `"$userScripts;%PATH%`"" -ForegroundColor Yellow
+        }
+    } else {
+        Write-LogWarn "pip install failed for markitdown-local-mcp (offline?). The launcher is opt-in (enabled: false) - OpenCode will work without it. Re-run setup when online to enable."
     }
 }
 
