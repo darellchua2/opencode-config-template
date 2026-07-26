@@ -7,9 +7,6 @@ permission:
   glob: allow
   grep: allow
   bash: deny
-  read_mcp_resource: deny
-  list_mcp_resources: deny
-  list_mcp_resource_templates: deny
   skill:
     coverage-readme-workflow-skill: allow
 ---

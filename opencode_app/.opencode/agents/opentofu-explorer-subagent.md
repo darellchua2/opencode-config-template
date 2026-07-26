@@ -3,9 +3,6 @@ description: Specialized subagent for OpenTofu/Terraform infrastructure manageme
 mode: subagent
 steps: 20
 permission:
-  read_mcp_resource: deny
-  list_mcp_resources: deny
-  list_mcp_resource_templates: deny
   read: allow
   edit: allow
   glob: allow

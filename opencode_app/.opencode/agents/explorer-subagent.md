@@ -6,9 +6,6 @@ permission:
   read: allow
   edit: deny
   bash: deny
-  read_mcp_resource: deny
-  list_mcp_resources: deny
-  list_mcp_resource_templates: deny
 ---
 
 ## Prompt Defense Baseline

@@ -3,9 +3,6 @@ description: Specialized subagent for startup-style PowerPoint presentations (pi
 mode: subagent
 steps: 12
 permission:
-  read_mcp_resource: deny
-  list_mcp_resources: deny
-  list_mcp_resource_templates: deny
   edit: allow
   bash: allow
   webfetch: allow

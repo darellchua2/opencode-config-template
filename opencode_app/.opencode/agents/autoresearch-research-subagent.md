@@ -14,9 +14,6 @@ permission:
   bash: deny
   webfetch: allow
   websearch: allow
-  read_mcp_resource: deny
-  list_mcp_resources: deny
-  list_mcp_resource_templates: deny
   task:
     "*": deny
     explore: allow

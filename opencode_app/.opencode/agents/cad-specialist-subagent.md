@@ -8,9 +8,6 @@ description: >-
   Routes to the appropriate skill based on task type.
 mode: subagent
 permission:
-  read_mcp_resource: deny
-  list_mcp_resources: deny
-  list_mcp_resource_templates: deny
   read: allow
   edit: allow
   glob: allow
