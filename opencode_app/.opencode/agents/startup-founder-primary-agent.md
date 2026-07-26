@@ -4,6 +4,9 @@ mode: subagent
 temperature: 0.7
 steps: 30
 permission:
+  read_mcp_resource: deny
+  list_mcp_resources: deny
+  list_mcp_resource_templates: deny
   read: allow
   edit: allow
   bash: allow

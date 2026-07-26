@@ -2,6 +2,9 @@
 description: Specialized subagent for Word document creation and manipulation. Creates, reads, edits, and converts .docx files with professional formatting, tracked changes, comments, and images.
 mode: subagent
 permission:
+  read_mcp_resource: deny
+  list_mcp_resources: deny
+  list_mcp_resource_templates: deny
   read: allow
   edit: allow
   glob: allow

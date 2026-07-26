@@ -3,6 +3,9 @@ description: Unified primary agent for office document operations (docx, pptx, x
 mode: subagent
 steps: 25
 permission:
+  read_mcp_resource: deny
+  list_mcp_resources: deny
+  list_mcp_resource_templates: deny
   task:
     "*": deny
     pptx-specialist-subagent: allow

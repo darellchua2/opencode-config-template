@@ -3,6 +3,9 @@ description: Specialized agent for PowerPoint presentation tasks. Orchestrates a
 mode: subagent
 steps: 30
 permission:
+  read_mcp_resource: deny
+  list_mcp_resources: deny
+  list_mcp_resource_templates: deny
   edit: allow
   bash: allow
   question: deny
