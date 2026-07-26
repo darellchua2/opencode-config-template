@@ -23,7 +23,6 @@
     "skill": {
       "*": "deny",
 
-      // --- Explicitly primary-loaded (8) ---
       "openapi-contract-adherence-skill": "allow",
       "markitdown-mcp-skill": "allow",
       "git-branch-workflow-setup-skill": "allow",
@@ -33,7 +32,6 @@
       "grilling-skill": "allow",
       "linting-workflow-skill": "allow",
 
-      // --- User-invoked orchestrators (10) ---
       "grill-me-skill": "allow",
       "grill-with-docs-skill": "allow",
       "wireframer-skill": "allow",
@@ -45,7 +43,6 @@
       "research-paper-generation-skill": "allow",
       "horseshoe-paper-writing-skill": "allow",
 
-      // --- Process / workflow (13) ---
       "git-compact-commits-skill": "allow",
       "git-issue-labeler-skill": "allow",
       "git-issue-updater-skill": "allow",
@@ -60,21 +57,18 @@
       "semantic-release-convention-skill": "allow",
       "version-bump-standard-skill": "allow",
 
-      // --- OpenCode tooling (5) ---
       "opencode-agent-creation-skill": "allow",
       "opencode-skill-creation-skill": "allow",
       "opencode-skills-maintainer-skill": "allow",
       "agent-introspection-debugging-skill": "allow",
       "documentation-consistency-skill": "allow",
 
-      // --- Context / session management (5) ---
       "context-budget-skill": "allow",
       "strategic-compact-skill": "allow",
       "continuous-learning-skill": "allow",
       "verification-loop-skill": "allow",
       "eval-harness-skill": "allow",
 
-      // --- Broad knowledge (10) ---
       "clean-code-skill": "allow",
       "clean-architecture-skill": "allow",
       "solid-principles-skill": "allow",
@@ -86,14 +80,12 @@
       "security-audit-skill": "allow",
       "performance-optimization-skill": "allow",
 
-      // --- MCP reference / utility (5) ---
       "microsoft-m365-config-skill": "allow",
       "nextjs-devtools-mcp-skill": "allow",
       "codegraph-setup-skill": "allow",
       "ascii-diagram-creator-skill": "allow",
       "mermaid-diagram-creator-skill": "allow",
 
-      // --- API / data / infra knowledge (8) ---
       "api-design-skill": "allow",
       "authentication-authorization-skill": "allow",
       "database-migration-skill": "allow",
@@ -103,12 +95,10 @@
       "deprecated-code-cleanup-skill": "allow",
       "error-resolver-workflow-skill": "allow",
 
-      // --- Document creation — user-facing (3) ---
       "docx-creation-skill": "allow",
       "pdf-specialist-skill": "allow",
       "xlsx-specialist-skill": "allow",
 
-      // --- No consumer override — must stay visible (13) ---
       "construction-bd-skill": "allow",
       "startup-business-docs-skill": "allow",
       "startup-pitch-deck-skill": "allow",
