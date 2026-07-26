@@ -17,7 +17,32 @@
 
 <!-- Entries are appended here automatically when new learnings are saved -->
 
-<!-- No entries yet -->
+### opencode.json // comments break CI
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/jsonc-comments-in-opencode-json.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: Never add // comments to opencode_app/opencode.json — CI bats tests use Python json.load() which can't parse JSONC
+- **Date**: 2026-07-26
+
+### Skill permission allowlist — "*":"deny" + 80 allows
+
+- **Category**: decision
+- **File**: `decisions/skill-permission-allowlist.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: Allowlist strategy hides 44 subagent-only skills from primary's available_skills, cutting ~44 descriptions per session
+- **Date**: 2026-07-26
+
+### Plugins need both plugin array + command block
+
+- **Category**: solution
+- **File**: `solutions/plugin-needs-command-block.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: opencode-goal-plugin requires BOTH plugin array entry AND command.goal config block — removing either breaks /goal
+- **Date**: 2026-07-26
 
 ---
 
