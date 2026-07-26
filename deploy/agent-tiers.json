@@ -36,8 +36,8 @@
     "startup-founder-primary-agent": "fast",
     "testing-subagent": "fast",
     "xlsx-specialist-subagent": "fast",
+    "ticket-creation-subagent": "fast",
 
-    "ticket-creation-subagent": "docs",
     "coverage-subagent": "docs",
     "documentation-subagent": "docs",
     "linting-subagent": "docs",
