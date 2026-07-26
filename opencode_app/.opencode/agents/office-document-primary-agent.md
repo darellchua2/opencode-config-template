@@ -16,6 +16,7 @@ permission:
     pptx-template-modifier-skill: allow
     docx-creation-skill: allow
     xlsx-specialist-skill: allow
+    markitdown-mcp-skill: allow
 ---
 
 ## Prompt Defense Baseline
@@ -35,7 +36,10 @@ Activate when user mentions:
 - "Word document", "PowerPoint", "presentation", "spreadsheet"
 - "create report", "edit slides", "update spreadsheet"
 - "convert to PDF", "read document", "analyze presentation"
+- "extract text from .docx", "summarize PowerPoint", "read PPTX content", "find in spreadsheet"
 - File paths ending in .docx, .pptx, .xlsx
+
+> **PDF routing note:** This agent does NOT claim `.pdf` — that's owned by `pdf-specialist-skill` for structured extraction / forms / OCR-as-purpose / editing. For fast text dumps of born-digital PDFs, `markitdown-mcp-skill` is acceptable after enabling.
 
 ## Routing Matrix
 
@@ -46,6 +50,9 @@ Activate when user mentions:
 | `.docx` creation/edit | `docx-creation-subagent` + `docx-creation-skill` |
 | `.xlsx` / `.csv` | `xlsx-specialist-subagent` |
 | M365 cloud operations | `microsoft-m365-specialist-subagent` |
+| READ/EXTRACT text from `.docx`/`.pptx`/`.xlsx` (born-digital) | Load `markitdown-mcp-skill` → call `markitdown` MCP |
+
+> **MCP tool access is session-inherited** from `opencode.json` `tools["markitdown*"]` — do NOT add `markitdown*` to this agent's `permission` block (no precedent; decided in #262). To enable markitdown calls, the user must flip both `mcp.markitdown.enabled` and `tools["markitdown*"]` to `true` in their deployed `opencode.json`.
 
 ## Workflow
 
@@ -58,7 +65,9 @@ Activate when user mentions:
 ## What NOT to Handle
 
 - Code generation tasks → use build agent
-- PDF operations (unless converting from office files) → use PDF tools
+- PDF creation/editing → use `pdf-specialist-skill`
+- PDF structured extraction (forms, tables as data, OCR-as-purpose) → use `pdf-specialist-skill`
+- PDF fast text dump of born-digital content → load `markitdown-mcp-skill` (this agent, when enabled)
 - General questions unrelated to office documents
 
 ## Return Contract

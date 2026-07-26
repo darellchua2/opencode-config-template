@@ -25,6 +25,7 @@ permission:
     codegraph-setup-skill: allow
     api-design-skill: allow
     openapi-contract-adherence-skill: allow
+    markitdown-mcp-skill: allow
 ---
 
 ## Prompt Defense Baseline
@@ -130,6 +131,8 @@ Iterate through the TDD template (System Context → Architecture → Data Model
 
 ### Image routing
 If a referenced diagram/screenshot must be interpreted, **delegate to `image-analyzer-subagent`** — do not interpret inline.
+
+**Reading source specs provided as binary office docs:** prefer the `markitdown` MCP (load `markitdown-mcp-skill` for the decision tree) over `image-analyzer-subagent` for text-heavy content — faster, preserves text fidelity, cheaper. Reserve `image-analyzer-subagent` for diagrams, charts, or scanned/image-only PDFs.
 
 ## What This Subagent Returns
 
