@@ -506,6 +506,22 @@ When enabled, retrofitted skills emit mechanical evaluator output `{"pass":bool,
 
 **Maintenance:** `opencode-skills-maintainer-skill` includes a Citation drift audit rule that flags skills with iteration-keyword mentions lacking proper `autoresearch-core-skill/references/` citations.
 
+### Ponytail (scoped wrapper plugin)
+
+[Ponytail](https://github.com/DietrichGebert/ponytail) (MIT, vendored at v4.8.4) makes coding agents write minimal necessary code via a 7-rung "lazy senior dev" ladder (YAGNI → reuse → stdlib → native → installed dep → one-liner → minimum-that-works). This repo ships a **scoped wrapper plugin** (`opencode_app/.opencode/plugins/ponytail-scoped.mjs`) instead of the stock npm adapter — it adds agent-type-aware scoping the upstream OpenCode adapter lacks:
+
+- **Read-only/research agents skip injection** (`explore`, `general`, `autoresearch-research-subagent`, `explorer-subagent`, `requirements-specialist-subagent`, `discovery-specialist-subagent`, `technical-design-specialist-subagent`) — they aren't pushed toward minimal code.
+- **Per-agent mode overrides** via `PONYTAIL_AGENT_MODE_MAP` (JSON).
+- **Zero runtime npm dependency** — vendored, works air-gapped. The stock `@dietrichgebert/ponytail` is deliberately NOT in the `plugin` array (double-injection guard).
+
+| Env var | Default | Purpose |
+|---------|---------|---------|
+| `PONYTAIL_DEFAULT_MODE` | `full` | Global intensity: `lite` \| `full` \| `ultra` \| `off` |
+| `PONYTAIL_SUBAGENT_OFF` | (7 read-only agents) | Regex of agent names to exclude from injection |
+| `PONYTAIL_AGENT_MODE_MAP` | unset | JSON per-agent overrides, e.g. `{"build":"full","code-review-subagent":"lite"}` |
+
+Switch mode per session: `/ponytail lite|full|ultra|off`, `/ponytail-help`. See `opencode_app/README.md` § Ponytail Plugin and `opencode_app/.opencode/plugins/ATTRIBUTION.md` for the MIT attribution.
+
 ### Skill Architecture
 
 Skills follow a modular architecture:
