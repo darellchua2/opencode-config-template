@@ -70,6 +70,21 @@ if [ -n "${GIT_USER_EMAIL}" ]; then
     echo "Set git user.email: ${GIT_USER_EMAIL}"
 fi
 
+# ── Ponytail (scoped wrapper plugin) ──────────────────────────────────────────
+# Default lazy-code intensity: lite | full | ultra | off (default: full).
+# Read by the ponytail-scoped.mjs plugin at load time.
+export PONYTAIL_DEFAULT_MODE="${PONYTAIL_DEFAULT_MODE:-full}"
+
+# Regex of agent names that SKIP ruleset injection (read-only/research agents).
+# Default excludes the 7 read-only/research agents. Override to add/remove.
+export PONYTAIL_SUBAGENT_OFF="${PONYTAIL_SUBAGENT_OFF:-}"
+
+# Optional per-agent mode overrides as JSON, e.g. {"build":"full","code-review-subagent":"lite"}
+# Unset by default — PONYTAIL_DEFAULT_MODE governs all non-off-set agents.
+export PONYTAIL_AGENT_MODE_MAP="${PONYTAIL_AGENT_MODE_MAP:-}"
+
+echo "Ponytail: mode=${PONYTAIL_DEFAULT_MODE} off-set=$([ -n \"${PONYTAIL_SUBAGENT_OFF}\" ] && echo 'custom' || echo 'default')"
+
 # ── Workspace ───────────────────────────────────────────────────────────────
 mkdir -p /workspace
 mkdir -p /workspace-extra 2>/dev/null || true
