@@ -19,7 +19,117 @@
   "permission": {
     "read_mcp_resource": "deny",
     "list_mcp_resources": "deny",
-    "list_mcp_resource_templates": "deny"
+    "list_mcp_resource_templates": "deny",
+    "skill": {
+      "*": "deny",
+
+      // --- Explicitly primary-loaded (8) ---
+      "openapi-contract-adherence-skill": "allow",
+      "markitdown-mcp-skill": "allow",
+      "git-branch-workflow-setup-skill": "allow",
+      "git-semantic-commits-skill": "allow",
+      "documentation-sync-workflow-skill": "allow",
+      "ticket-plan-workflow-skill": "allow",
+      "grilling-skill": "allow",
+      "linting-workflow-skill": "allow",
+
+      // --- User-invoked orchestrators (10) ---
+      "grill-me-skill": "allow",
+      "grill-with-docs-skill": "allow",
+      "wireframer-skill": "allow",
+      "vision-creation-skill": "allow",
+      "srs-creation-skill": "allow",
+      "brd-creation-skill": "allow",
+      "technical-design-creation-skill": "allow",
+      "domain-modeling-skill": "allow",
+      "research-paper-generation-skill": "allow",
+      "horseshoe-paper-writing-skill": "allow",
+
+      // --- Process / workflow (13) ---
+      "git-compact-commits-skill": "allow",
+      "git-issue-labeler-skill": "allow",
+      "git-issue-updater-skill": "allow",
+      "jira-git-integration-skill": "allow",
+      "jira-status-updater-skill": "allow",
+      "jira-ticket-labeler-skill": "allow",
+      "plan-execution-skill": "allow",
+      "plan-updater-skill": "allow",
+      "pr-creation-workflow-skill": "allow",
+      "pr-merge-workflow-skill": "allow",
+      "nextjs-pr-workflow-skill": "allow",
+      "semantic-release-convention-skill": "allow",
+      "version-bump-standard-skill": "allow",
+
+      // --- OpenCode tooling (5) ---
+      "opencode-agent-creation-skill": "allow",
+      "opencode-skill-creation-skill": "allow",
+      "opencode-skills-maintainer-skill": "allow",
+      "agent-introspection-debugging-skill": "allow",
+      "documentation-consistency-skill": "allow",
+
+      // --- Context / session management (5) ---
+      "context-budget-skill": "allow",
+      "strategic-compact-skill": "allow",
+      "continuous-learning-skill": "allow",
+      "verification-loop-skill": "allow",
+      "eval-harness-skill": "allow",
+
+      // --- Broad knowledge (10) ---
+      "clean-code-skill": "allow",
+      "clean-architecture-skill": "allow",
+      "solid-principles-skill": "allow",
+      "design-patterns-skill": "allow",
+      "code-smells-skill": "allow",
+      "complexity-management-skill": "allow",
+      "object-design-skill": "allow",
+      "search-first-skill": "allow",
+      "security-audit-skill": "allow",
+      "performance-optimization-skill": "allow",
+
+      // --- MCP reference / utility (5) ---
+      "microsoft-m365-config-skill": "allow",
+      "nextjs-devtools-mcp-skill": "allow",
+      "codegraph-setup-skill": "allow",
+      "ascii-diagram-creator-skill": "allow",
+      "mermaid-diagram-creator-skill": "allow",
+
+      // --- API / data / infra knowledge (8) ---
+      "api-design-skill": "allow",
+      "authentication-authorization-skill": "allow",
+      "database-migration-skill": "allow",
+      "docker-containerization-skill": "allow",
+      "logging-observability-skill": "allow",
+      "tdd-workflow-skill": "allow",
+      "deprecated-code-cleanup-skill": "allow",
+      "error-resolver-workflow-skill": "allow",
+
+      // --- Document creation — user-facing (3) ---
+      "docx-creation-skill": "allow",
+      "pdf-specialist-skill": "allow",
+      "xlsx-specialist-skill": "allow",
+
+      // --- No consumer override — must stay visible (13) ---
+      "construction-bd-skill": "allow",
+      "startup-business-docs-skill": "allow",
+      "startup-pitch-deck-skill": "allow",
+      "python-packaging-skill": "allow",
+      "python-backend-skill": "allow",
+      "csharp-linter-skill": "allow",
+      "java-linter-skill": "allow",
+      "typescript-dry-principle-skill": "allow",
+      "monorepo-management-skill": "allow",
+      "threejs-nextjs-skill": "allow",
+      "frontend-design-skill": "allow",
+      "accessibility-a11y-skill": "allow",
+      "changelog-python-cliff-skill": "allow"
+    }
+  },
+  "command": {
+    "goal": {
+      "description": "Set a session-scoped goal and auto-continue until complete.",
+      "template": "$ARGUMENTS",
+      "agent": "build"
+    }
   },
   "provider": {
     "lmstudio": {
