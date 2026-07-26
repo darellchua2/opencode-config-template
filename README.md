@@ -251,7 +251,9 @@ The configuration ships 26 MCP server entries. **6 are enabled by default:**
 | `zai-web-reader` | remote | Web page content extraction |
 | `zai-zread` | remote | GitHub repository search/reading |
 
-The remaining 19 (Microsoft 365, Autodesk, Google Cloud, `next-devtools`, `web-search-prime`, etc.) are `enabled: false` and opt-in. To enable one, set `"enabled": true` (and grant its tools in the `tools` block) in `config.json`.
+The remaining 20 (Microsoft 365, Autodesk, Google Cloud, `next-devtools`, `web-search-prime`, `markitdown`, etc.) are `enabled: false` and opt-in. To enable one, set `"enabled": true` (and grant its tools in the `tools` block) in `config.json`.
+
+> **Note — `markitdown` MCP server (PLAN-GIT-262).** Privacy-hardened document-to-Markdown converter (PDF/DOCX/PPTX/XLSX/XLS/Outlook MSG + image EXIF). Vendored launcher at `opencode_app/mcp-servers/markitdown-local-mcp/` depends **only** on local converter extras — no `markitdown[all]`, no Azure SDKs, no Google Speech, no YouTube API. `enable_plugins=False` is hard-coded. User-supplied `http:`/`https:` URIs are fetched via a single `requests.get()` (no telemetry headers, no Microsoft endpoints — equivalent to built-in `webfetch`). See [`opencode_app/mcp-servers/markitdown-local-mcp/README.md`](opencode_app/mcp-servers/markitdown-local-mcp/README.md) for the full trust-boundary analysis.
 
 > **Note — `filesystem` MCP server has been permanently removed.** OpenCode's built-in `read`/`write`/`edit`/`glob`/`grep`/`bash` tools already provide full file I/O, so `@modelcontextprotocol/server-filesystem` was redundant and caused tool-selection ambiguity (the model would call `read_mcp_resource` instead of the built-in `Read` tool). Do not re-add it to project `opencode.json` files.
 

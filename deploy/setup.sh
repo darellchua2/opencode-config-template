@@ -624,7 +624,7 @@ USAGE:
     Usage: opencode --agent build "implement auth feature"
            opencode --agent explore "find all API routes"
 
-  MCP SERVERS (25):
+  MCP SERVERS (26):
     Auto-start (local npx servers):
       codegraph           Pre-indexed code knowledge graph (100% local)
       atlassian          JIRA and Confluence integration
@@ -633,6 +633,7 @@ USAGE:
 
     Available but disabled (opt-in — set enabled: true in config.json):
       next-devtools      Next.js DevTools integration
+      markitdown         Document-to-Markdown (local-only, privacy-hardened)
 
     Remote (requires ZAI_API_KEY):
       web-reader         Web page content extraction
@@ -2420,6 +2421,7 @@ setup_config() {
              echo "✓ Configured MCP servers:"
              echo "    Local (auto-start): atlassian, zai-vision-mcp-server, codegraph, mermaid"
              echo "    Remote (needs key): web-reader, web-search-prime, zread"
+             echo "    Available but disabled (opt-in): next-devtools, markitdown"
             echo ""
         else
             log_error "config.json source not found: ${SOURCE_CONFIG}"
@@ -3211,6 +3213,7 @@ print_summary() {
          echo "    - zread - GitHub repo search (needs ZAI_API_KEY)"
          echo "    - codegraph - Code knowledge graph (auto-start)"
          echo "    - mermaid - Diagram rendering SVG/PNG (auto-start)"
+         echo "    - markitdown - Document-to-Markdown, local-only, opt-in"
     fi
 
     # skills directory status
