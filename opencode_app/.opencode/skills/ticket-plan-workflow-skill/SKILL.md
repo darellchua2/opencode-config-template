@@ -17,6 +17,7 @@ I implement a unified ticket/issue creation and planning workflow supporting bot
 3. **Determine Ticket Scope**: Ask if work should be broken into sub-issues/subtasks
 4. **Create Ticket**: Use GitHub CLI or Atlassian MCP tools to create the ticket with appropriate labels/type
 5. **Create Git Branch**: Generate branch from ticket identifier (e.g., `GIT-123` or `PROJ-456`)
+5.5. **Adopt/Rename PLAN**: If an existing draft plan in `PLANS/` matches this ticket, adopt it (rename to the canonical ticket-scoped filename via `git mv`) instead of regenerating from scratch
 6. **Generate PLAN file**: Create comprehensive plan with **atomic steps + rationale** (Why / Done when / Consumers affected) and a **Dependency & Consumer Map** in `PLANS/` directory
 7. **Commit and Push**: Commit PLAN file with semantic formatting and push to remote
 8. **Update Ticket**: Post progress comment to GitHub issue or JIRA ticket
@@ -246,6 +247,54 @@ for subtask in "${SUBTASKS[@]}"; do
     --parent "$STORY_KEY"
 done
 ```
+
+### Step 5.5: Adopt or Rename Existing PLAN File
+
+Before generating a PLAN from scratch (Step 6), check whether an existing draft should be adopted and renamed to the canonical ticket-scoped filename. This avoids duplicate plans and preserves git history.
+
+**Canonical filenames**:
+- GitHub: `PLANS/PLAN-GIT-<issue-number>.md`
+- JIRA: `PLANS/PLAN-<TICKET_KEY>.md`
+
+**Logic** (run all cases against the current ticket `$TICKET_ID`):
+
+1. **Search candidates** in `PLANS/` only — do NOT search the repo root, where a `PLAN.md` may belong to unrelated active work (e.g. a separate initiative). Candidate patterns:
+   - `PLANS/PLAN.md`
+   - `PLANS/PLAN-DRAFT-*.md`
+   - `PLANS/PLAN-GIT-*.md` / `PLANS/PLAN-<KEY>.md` (a prior iteration)
+   - `PLANS/TODO-*.md`
+
+   ```bash
+   ls PLANS/PLAN.md PLANS/PLAN-DRAFT-*.md PLANS/TODO-*.md 2>/dev/null
+   ```
+
+2. **Already adopted?** If the canonical name (`PLAN-GIT-<n>.md` or `PLAN-<KEY>.md`) already exists → skip this step (already adopted) and proceed to **Step 7**.
+
+3. **Single candidate → auto-adopt** via `git mv` (preserves history):
+   ```bash
+   git mv "PLANS/PLAN-DRAFT-<slug>.md" "PLANS/PLAN-GIT-${ISSUE_NUMBER}.md"
+   ```
+   - 3a. Before auto-adopting a generic `PLANS/PLAN.md` (no issue number in the filename), verify its `**Issue:**` header matches the current ticket. If it mismatches → treat it as a non-candidate and warn.
+
+4. **Multiple candidates → prompt the user** (safer than guessing the right draft):
+   ```
+   Found N existing plan files in PLANS/. Which should we adopt for <TICKET_ID>?
+   - PLANS/PLAN-DRAFT-foo.md
+   - PLANS/PLAN-DRAFT-bar.md
+   ```
+
+5. **Non-adopted candidates → left in place with a warning** (non-destructive; the user cleans them up manually).
+
+6. **No candidate → proceed to Step 6** (generate the PLAN from scratch using the template below).
+
+7. **`PLANS/` directory doesn't exist → create it and proceed to Step 6** (generate from scratch):
+   ```bash
+   mkdir -p PLANS
+   ```
+
+After adopting, update the renamed file's `**Issue:**` / **Ticket Reference** header with the ticket URL, then proceed directly to **Step 7** (Commit and Push) — skip Step 6 generation.
+
+> **History preservation**: always use `git mv`, never a plain `mv`, so the rename is tracked across commits.
 
 **Formatted Body/Description Template**:
 ```markdown

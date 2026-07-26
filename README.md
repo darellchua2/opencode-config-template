@@ -253,6 +253,35 @@ The configuration ships 26 MCP server entries. **6 are enabled by default:**
 
 The remaining 20 (Microsoft 365, Autodesk, Google Cloud, `next-devtools`, `web-search-prime`, `markitdown`, etc.) are `enabled: false` and opt-in. To enable one, set `"enabled": true` (and grant its tools in the `tools` block) in `config.json`.
 
+#### Provider Packs — deploy-time MCP toggle (#268)
+
+Instead of editing 4–9 JSON entries to enable a logical group of MCP servers, use a **provider pack** — a single flag that flips all servers in the group ON at deploy time. Packs are JSON partials in `deploy/packs/`; `deploy/merge-packs.mjs` deep-merges the selected ones into your config.
+
+| Pack | Servers enabled | Requires |
+|------|----------------|----------|
+| `autodesk` | autodesk-revit, autodesk-model-data, autodesk-fusion, autodesk-help | `AUTODESK_API_KEY` |
+| `microsoft` | microsoft-teams, -mail, -calendar, -sharepoint, -onedrive, -user, -word, -copilot, -dataverse (9) | M365 Copilot license |
+| `google` | google-bigquery, google-maps, google-gce, google-gke | `GOOGLE_APPLICATION_CREDENTIALS` |
+| `markitdown` | markitdown | Python launcher (auto-installed by `setup.sh`; baked into Docker image) |
+| `nextjs` | next-devtools | A running Next.js dev server |
+| `zai` | zai-web-search-prime | `ZAI_API_KEY` |
+
+```bash
+# User-space deploy (setup.sh)
+./deploy/setup.sh --enable-pack autodesk              # one pack
+./deploy/setup.sh --enable-pack autodesk,microsoft    # multiple
+./deploy/setup.sh --enable-pack google --dry-run      # preview without writing
+./deploy/setup.sh --quick --enable-pack markitdown    # combine with other modes
+
+# Windows (setup.ps1)
+./deploy/setup.ps1 -EnablePack autodesk,microsoft
+
+# Docker (build-time)
+docker compose build --build-arg OPENCODE_PACKS=autodesk,microsoft
+```
+
+Default state of every pack is **OFF** — existing deployments are unaffected unless a pack is explicitly requested. Empty/omitted `--enable-pack` is a no-op. Unknown pack names exit non-zero with a clear error. See [`PLAN.md`](PLAN.md) (issue #268) for the full design and the opencode-tooling review that shaped it.
+
 > **Note — `markitdown` MCP server (PLAN-GIT-262).** Privacy-hardened document-to-Markdown converter (PDF/DOCX/PPTX/XLSX/XLS/Outlook MSG + image EXIF). Vendored launcher at `opencode_app/mcp-servers/markitdown-local-mcp/` depends **only** on local converter extras — no `markitdown[all]`, no Azure SDKs, no Google Speech, no YouTube API. `enable_plugins=False` is hard-coded. User-supplied `http:`/`https:` URIs are fetched via a single `requests.get()` (no telemetry headers, no Microsoft endpoints — equivalent to built-in `webfetch`). See [`opencode_app/mcp-servers/markitdown-local-mcp/README.md`](opencode_app/mcp-servers/markitdown-local-mcp/README.md) for the full trust-boundary analysis.
 
 > **Note — `filesystem` MCP server has been permanently removed.** OpenCode's built-in `read`/`write`/`edit`/`glob`/`grep`/`bash` tools already provide full file I/O, so `@modelcontextprotocol/server-filesystem` was redundant and caused tool-selection ambiguity (the model would call `read_mcp_resource` instead of the built-in `Read` tool). Do not re-add it to project `opencode.json` files.

@@ -21,6 +21,7 @@ I create a standardized Next.js 16 application with:
 7. **React Compiler**: Enable React Compiler for optimized reactivity
 8. **Documentation Standards**: Generate components with proper JSDoc docstrings
 9. **Best Practices**: Ensure Next.js best practices (next/image, proper imports, etc.)
+10. **OpenCode LSP Integration**: Generate project-level `opencode.json` enabling typescript + eslint LSP servers for real-time diagnostics fed to the agent
 
 ## When to use me
 
@@ -347,7 +348,33 @@ NEXT_PUBLIC_FEATURE_Y=false
 EOF
 ```
 
-### Step 9: Generate Tekk-Prefixed Components
+### Step 9: Configure OpenCode LSP Integration
+
+Create a project-level `opencode.json` in the project root to feed real-time TypeScript and ESLint diagnostics to the agent during edits. This gives ambient error awareness across the cross-file type graph without the agent needing to remember to run `tsc`/`eslint` manually.
+
+```jsonc
+{
+  "$schema": "https://opencode.ai/config.json",
+  "lsp": {
+    "typescript": {},
+    "eslint": {}
+  }
+}
+```
+
+**Why these two servers (auto-detected from `create-next-app` deps):**
+- `typescript` — `.ts .tsx .js .jsx .mjs .cjs .mts .cts`; cross-file type errors (highest-value signal during refactors).
+- `eslint` — same extensions; lint violations surfaced as the agent edits.
+
+**Why project-level:** config merges with the user's global `~/.config/opencode/opencode.json`, so only the `lsp` key needs declaring here. Scoped to code projects; non-code repos stay LSP-free. Check into git so teammates inherit it.
+
+**Why selective over `"lsp": true`:** only Next.js-relevant servers activate; avoids accidental startup of unrelated servers if other language deps ever appear.
+
+**Token cost:** diagnostics are injected into model context. Worth it for Next.js (cross-file types are common); monitor usage and set `"lsp": false` to temporarily disable.
+
+Refs: [LSP](https://opencode.ai/docs/lsp/) · [Config](https://opencode.ai/docs/config/)
+
+### Step 10: Generate Tekk-Prefixed Components
 
 Set up proper Next.js configurations:
 - Use `next/image` for all images
@@ -631,6 +658,11 @@ grep -r "export const" src/custom-components/ | wc -l
 # Check for index.ts files in component directories
 ls -la src/custom-components/index.ts
 ls -la src/custom-components/sections/index.ts
+
+# Verify project-level opencode config exists with LSP enabled
+test -f opencode.json && jq -e '.lsp.typescript and .lsp.eslint' opencode.json >/dev/null \
+  && echo "OK opencode.json LSP configured" \
+  || echo "MISSING opencode.json or LSP keys"
 ```
 
 **Verification Checklist**:
@@ -641,3 +673,4 @@ ls -la src/custom-components/sections/index.ts
 - [ ] Library imports (shadcn) use their original export pattern
 - [ ] TypeScript compilation passes without errors
 - [ ] Build completes successfully
+- [ ] `opencode.json` exists in project root with `lsp.typescript` and `lsp.eslint` enabled

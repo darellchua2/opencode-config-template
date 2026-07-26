@@ -1,0 +1,9 @@
+{
+  "$comment": "Provider pack: markitdown privacy-hardened local MCP (PDF/DOCX/PPTX/XLSX -> Markdown). Deep-merged by deploy/merge-packs.mjs when the user passes --enable-pack markitdown. NOTE: the Python launcher must be installed first (setup.sh does this via install_local_mcp_launchers; the Docker image bakes it via pip install in the Dockerfile).",
+  "mcp": {
+    "markitdown": { "enabled": true }
+  },
+  "tools": {
+    "markitdown*": true
+  }
+}

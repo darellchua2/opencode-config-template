@@ -1,0 +1,15 @@
+{
+  "$comment": "Provider pack: Autodesk Platform Services (APS) MCP servers. Deep-merged into the target opencode.json by deploy/merge-packs.mjs when the user passes --enable-pack autodesk. Only flips enabled flags ON; never alters type/command/url/headers/environment.",
+  "mcp": {
+    "autodesk-revit":      { "enabled": true },
+    "autodesk-model-data": { "enabled": true },
+    "autodesk-fusion":     { "enabled": true },
+    "autodesk-help":       { "enabled": true }
+  },
+  "tools": {
+    "autodesk-revit*":      true,
+    "autodesk-model-data*": true,
+    "autodesk-fusion*":     true,
+    "autodesk-help*":       true
+  }
+}

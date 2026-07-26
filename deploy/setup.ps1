@@ -57,7 +57,10 @@ param(
     [switch]$ModelsOnly,
     [switch]$Force,
     [switch]$Migrate,
-    [switch]$Mix
+    [switch]$Mix,
+    # Provider packs (#268): deploy-time MCP toggle. CSV of pack names
+    # (autodesk,microsoft,google,markitdown,nextjs,zai). Empty = no-op.
+    [string]$EnablePack = ""
 )
 
 $ErrorActionPreference = "Continue"
@@ -97,6 +100,8 @@ $UpdateLog = Join-Path $ConfigDir "update.log"
 # v2.0 model resolution (tier-based, provider-agnostic)
 $DeployDir = Join-Path $RepoDir "deploy"
 $ResolverScript = Join-Path $DeployDir "resolve-models.mjs"
+$MergePacksScript = Join-Path $DeployDir "merge-packs.mjs"
+$PacksDir = Join-Path $DeployDir "packs"
 $TuiScript = Join-Path $DeployDir "tui.mjs"
 $AgentTiers = Join-Path $DeployDir "agent-tiers.json"
 $ModelsDefaultMap = Join-Path $DeployDir "models.default.json"
@@ -861,6 +866,13 @@ USAGE:
     -Force               Re-resolve all agents (ignore preserved hand-edits)
     -Mix                 Per-category provider/model editor (mix providers across
                          primary/reasoning/fast/docs/vision, e.g. vision on OpenAI)
+
+  PROVIDER PACKS (deploy-time MCP toggle):
+    -EnablePack <csv>    Enable provider pack(s) — flips mcp.<server>.enabled
+                         and tools.<ns>* flags ON. Available packs:
+                         autodesk, microsoft, google, markitdown, nextjs, zai
+                         (comma-separated). No-op if omitted; default OFF.
+                         Example: -EnablePack autodesk,microsoft
 
 =======================================================================
                          CONFIGURED FEATURES
@@ -1912,6 +1924,60 @@ function Invoke-Resolver {
     & node $ResolverScript @resolverArgs
 }
 
+# Provider-pack merger (#268): deep-merges selected pack partials into the
+# resolved config. Mirrors Invoke-Resolver's dry-run path handling (B1): in
+# DryRun mode the resolver stages to $DryRunPreviewDir/opencode.json, so the
+# merger must target that; otherwise $ConfigFile. No-op if $EnablePack is empty.
+function Invoke-PackMerger {
+    if (-not $EnablePack) { return }
+    if (-not (Test-Path $MergePacksScript)) {
+        Write-LogError "Pack merger not found: $MergePacksScript"
+        return
+    }
+    if (-not (Test-Path $PacksDir)) {
+        Write-LogError "Packs directory not found: $PacksDir"
+        return
+    }
+
+    $targetConfig = $ConfigFile
+    if ($DryRun) {
+        $targetConfig = Join-Path $DryRunPreviewDir "opencode.json"
+        if (-not (Test-Path $targetConfig)) {
+            Write-LogError "Dry-run preview config not found: $targetConfig"
+            Write-LogError "The resolver must run first to stage the preview. Aborting pack merge."
+            return
+        }
+    }
+
+    Write-LogInfo "Applying provider packs: $EnablePack"
+    & node $MergePacksScript --config $targetConfig --packs-dir $PacksDir --packs $EnablePack
+}
+
+# Validate -EnablePack names early (fail fast). Mirrors setup.sh's
+# validate_enable_pack so a bogus pack aborts before any config work.
+function Test-EnablePack {
+    if (-not $EnablePack) { return }
+    if (-not (Test-Path $PacksDir)) {
+        Write-LogError "-EnablePack: packs directory not found: $PacksDir"
+        exit 1
+    }
+    $requested = $EnablePack.Split(',') | ForEach-Object { $_.Trim() } | Where-Object { $_ }
+    if (-not $requested) { return }
+    $unknown = @()
+    foreach ($name in $requested) {
+        if (-not (Test-Path (Join-Path $PacksDir "pack-$name.json"))) {
+            $unknown += $name
+        }
+    }
+    if ($unknown.Count -gt 0) {
+        $available = (Get-ChildItem $PacksDir -Filter "pack-*.json" | ForEach-Object { $_.Name -replace '^pack-','' -replace '\.json$','' }) -join ', '
+        Write-LogError "-EnablePack: unknown pack(s): $($unknown -join ', ')"
+        Write-Host "  Available packs: $available" -ForegroundColor Yellow
+        exit 1
+    }
+    Write-LogInfo "Provider packs requested: $($requested -join ',')"
+}
+
 # Choose a model provider (interactive TUI or -Provider flag) and write the
 # global ~/.config/opencode/models.json tier map.
 function Set-ModelProvider {
@@ -2134,6 +2200,17 @@ function Deploy-Agents {
     if ($LASTEXITCODE -ne 0) {
         Write-LogError "Model resolution failed"
         return
+    }
+
+    # Apply provider packs (-EnablePack) if requested. Runs AFTER the resolver
+    # so it merges into the resolved config. Mirrors Invoke-Resolver's dry-run
+    # path (B1). No-op if $EnablePack is empty.
+    if ($EnablePack) {
+        Invoke-PackMerger
+        if ($LASTEXITCODE -ne 0) {
+            Write-LogError "Provider-pack application failed"
+            return
+        }
     }
 
     # Count deployed agents by mode
@@ -2589,6 +2666,10 @@ function Main {
         Show-Help
         return
     }
+
+    # Validate -EnablePack early (fail fast, non-zero exit) before any config
+    # work. Mirrors setup.sh's validate_enable_pack.
+    Test-EnablePack
 
     if ($Update) {
         Write-Host "=== OpenCode CLI Updater v$ScriptVersion ===" -ForegroundColor White

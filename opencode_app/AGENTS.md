@@ -48,6 +48,10 @@ When any subagent returns `NEEDS_GIT_BRANCH_SETUP: true` in its Return Contract,
 
 [CodeGraph](https://github.com/colbymchenry/codegraph) is a pre-indexed code knowledge graph MCP server. It builds a local SQLite database of symbol relationships and call graphs for instant codebase queries.
 
+> **CodeGraph is a TOOLS-ONLY MCP server.** It exposes tools (`codegraph_explore`, `codegraph_search`, `codegraph_files`, `codegraph_callers`, `codegraph_callees`, `codegraph_impact`, `codegraph_node`, `codegraph_context`, `codegraph_status`) — **not** MCP resources. To "find" anything in the indexed codebase, call these tools directly.
+>
+> **NEVER call `read_mcp_resource`, `list_mcp_resources`, or `list_mcp_resource_templates` against codegraph.** CodeGraph publishes no resources, so any `codegraph://...` URI is a hallucination and will fail with a parse error. (All agents have `read_mcp_resource: deny` in their frontmatter to make this failure impossible — if you need to explore code, use the `codegraph_*` tools or the built-in `Read`/`glob`/`grep`.)
+
 ### Per-Project Setup
 
 ```bash
