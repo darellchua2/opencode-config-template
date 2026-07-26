@@ -1,6 +1,6 @@
 ---
 name: jira-ticket-labeler-skill
-description: Assess and classify JIRA tickets with appropriate issue types, priorities, and labels using Atlassian MCP tools. Handles JIRA-specific taxonomy that differs from GitHub labels.
+description: Assess and classify JIRA tickets with appropriate issue types (Bug, Story, Task, Epic), priorities, and components using Atlassian MCP tools
 license: Apache-2.0
 compatibility: opencode
 metadata:
@@ -69,41 +69,33 @@ Epic
 
 ### Type Detection
 
-**Bug**:
-```
-Keywords: fix, error, broken, crash, fail, doesn't work, incorrect, wrong, problem, bug, defect, regression
+> **Sync Contract**: The priority keyword tables below are mirrored in `git-issue-labeler-skill`. When updating one, update both.
+
+> These keywords are intent signals, not literal substring matches. Apply semantic judgment — "add" in "address" does not indicate a Story.
+
+**Bug** — Keywords: fix, error, broken, crash, fail, doesn't work, incorrect, wrong, problem, bug, defect, regression
 Examples:
 - "Login fails when user enters invalid credentials"
 - "App crashes when uploading large files"
 - "Regression: export button stopped working after v2.1"
-```
 
-**Story**:
-```
-Keywords: add, implement, create, new, feature, support, introduce, build, develop, as a user I want
+**Story** — Keywords: add, implement, create, new, feature, support, introduce, build, develop, as a user I want
 Examples:
 - "Add dark mode support to the dashboard"
 - "Implement export to PDF functionality"
 - "As a user I want to filter search results by date"
-```
 
-**Task**:
-```
-Keywords: update, refactor, configure, migrate, document, upgrade, cleanup, improve, optimize
+**Task** — Keywords: update, refactor, configure, migrate, document, upgrade, cleanup, improve, optimize
 Examples:
 - "Refactor authentication module for better testability"
 - "Upgrade React to v18"
 - "Update API documentation for v2 endpoints"
-```
 
-**Epic**:
-```
-Keywords: initiative, project, overhaul, migration, platform, infrastructure
+**Epic** — Keywords: initiative, project, overhaul, migration, platform, infrastructure
 Examples:
 - "User Authentication Overhaul"
 - "Cloud Migration Initiative"
 - "Design System Implementation"
-```
 
 ## JIRA Priority Reference
 
@@ -117,30 +109,30 @@ Examples:
 
 ### Priority Detection
 
-**Highest**:
-```
-Keywords: critical, urgent, system down, data loss, security, vulnerability, outage, production down
-```
+**Highest** — Keywords: critical, urgent, system down, data loss, security, vulnerability, outage, production down
+Examples:
+- "Production outage — all users affected"
+- "Data loss reported during backup"
 
-**High**:
-```
-Keywords: high priority, important, blocking, unusable, regression, broken
-```
+**High** — Keywords: high priority, important, blocking, unusable, regression, broken
+Examples:
+- "Core feature unusable after v3.0"
+- "Regression blocking the release"
 
-**Medium** (default):
-```
-Keywords: medium, moderate, workaround, intermittent
-```
+**Medium** (default) — Keywords: medium, moderate, workaround, intermittent
+Examples:
+- "Intermittent error with a known workaround"
+- "Moderate: feature works but slowly"
 
-**Low**:
-```
-Keywords: low priority, minor, cosmetic, nice to have, nit, typo
-```
+**Low** — Keywords: low priority, minor, cosmetic, nice to have, nit, typo
+Examples:
+- "Minor cosmetic glitch in dark mode"
+- "Typo in an error message"
 
-**Lowest**:
-```
-Keywords: trivial, whenever, backlog, far future
-```
+**Lowest** — Keywords: trivial, whenever, backlog, far future
+Examples:
+- "Trivial: rename an internal flag"
+- "Backlog — no timeline"
 
 ## GitHub → JIRA Mapping
 
@@ -177,32 +169,26 @@ content="${ticket_title} ${ticket_description}"
 
 ### Step 2: Determine Issue Type
 
+Resolve the issue type by matching ticket content against the **Type Detection** keyword lists above (§ Type Detection), applying semantic judgment:
+
+- Bug / Story / Task / Epic keyword match → that issue type
+- No keyword matches → default to `Task`
+
 ```bash
-if [[ "$content" =~ (fix|error|broken|crash|fail|bug|defect|regression) ]]; then
-  issue_type="Bug"
-elif [[ "$content" =~ (add|implement|new|feature|introduce|as a user) ]]; then
-  issue_type="Story"
-elif [[ "$content" =~ (update|refactor|configure|migrate|document|upgrade|cleanup) ]]; then
-  issue_type="Task"
-else
-  issue_type="Task"
-fi
+# issue_type is resolved from the Type Detection table above (not a literal regex match)
+issue_type="<Bug|Story|Task|Epic>"
 ```
 
 ### Step 3: Determine Priority
 
+Resolve the priority by matching ticket content against the **Priority Detection** keyword lists above (§ Priority Detection), applying semantic judgment:
+
+- Highest / High / Low / Lowest keyword match → that priority
+- No keyword matches → default to `Medium`
+
 ```bash
-if [[ "$content" =~ (critical|urgent|system down|data loss|security|outage) ]]; then
-  priority="Highest"
-elif [[ "$content" =~ (high priority|important|blocking|unusable|regression) ]]; then
-  priority="High"
-elif [[ "$content" =~ (low priority|minor|cosmetic|nice to have|typo) ]]; then
-  priority="Low"
-elif [[ "$content" =~ (trivial|whenever|backlog) ]]; then
-  priority="Lowest"
-else
-  priority="Medium"
-fi
+# priority is resolved from the Priority Detection table above (not a literal regex match)
+priority="<Highest|High|Medium|Low|Lowest>"
 ```
 
 ### Step 4: Create or Update JIRA Ticket
