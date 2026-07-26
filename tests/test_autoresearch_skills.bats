@@ -53,12 +53,12 @@ d=open('$agent_md').read()
 fm=yaml.safe_load(d.split('---')[1])
 assert 'model' not in fm, f'frontmatter must not contain model (v2.0), got: {fm.get(\"model\")}'
 "
-  # Verify it IS in agent-tiers.json under 'reasoning' tier
+  # Verify it IS in agent-tiers.json under 'long-context' tier
   python3 -c "
 import json
 data=json.load(open('deploy/agent-tiers.json'))
 tiers=data['tiers']
-assert tiers.get('autoresearch-ml-subagent') == 'reasoning', f'must be in reasoning tier, got: {tiers.get(\"autoresearch-ml-subagent\")}'
+assert tiers.get('autoresearch-ml-subagent') == 'long-context', f'must be in long-context tier, got: {tiers.get(\"autoresearch-ml-subagent\")}'
 "
 }
 
@@ -75,7 +75,7 @@ assert 'model' not in fm, f'frontmatter must not contain model (v2.0), got: {fm.
 import json
 data=json.load(open('deploy/agent-tiers.json'))
 tiers=data['tiers']
-assert tiers.get('autoresearch-code-subagent') == 'reasoning', f'must be in reasoning tier, got: {tiers.get(\"autoresearch-code-subagent\")}'
+assert tiers.get('autoresearch-code-subagent') == 'long-context', f'must be in long-context tier, got: {tiers.get(\"autoresearch-code-subagent\")}'
 "
 }
 
@@ -92,7 +92,7 @@ assert 'model' not in fm, f'frontmatter must not contain model (v2.0), got: {fm.
 import json
 data=json.load(open('deploy/agent-tiers.json'))
 tiers=data['tiers']
-assert tiers.get('autoresearch-research-subagent') == 'fast', f'must be in fast tier, got: {tiers.get(\"autoresearch-research-subagent\")}'
+assert tiers.get('autoresearch-research-subagent') == 'long-context', f'must be in long-context tier, got: {tiers.get(\"autoresearch-research-subagent\")}'
 "
 }
 
