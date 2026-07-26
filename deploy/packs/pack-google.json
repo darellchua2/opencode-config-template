@@ -1,0 +1,15 @@
+{
+  "$comment": "Provider pack: Google Cloud MCP servers (BigQuery, Maps, GCE, GKE). Deep-merged by deploy/merge-packs.mjs when the user passes --enable-pack google.",
+  "mcp": {
+    "google-bigquery": { "enabled": true },
+    "google-maps":     { "enabled": true },
+    "google-gce":      { "enabled": true },
+    "google-gke":      { "enabled": true }
+  },
+  "tools": {
+    "google-bigquery*": true,
+    "google-maps*":     true,
+    "google-gce*":      true,
+    "google-gke*":      true
+  }
+}

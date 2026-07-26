@@ -96,6 +96,8 @@ UPDATE_LOG="${CONFIG_DIR}/update.log"
 # v2.0 model resolution (tier-based, provider-agnostic)
 DEPLOY_DIR="${REPO_DIR}/deploy"
 RESOLVER_SCRIPT="${DEPLOY_DIR}/resolve-models.mjs"
+MERGE_PACKS_SCRIPT="${DEPLOY_DIR}/merge-packs.mjs"
+PACKS_DIR="${DEPLOY_DIR}/packs"
 TUI_SCRIPT="${DEPLOY_DIR}/tui.mjs"
 AGENT_TIERS="${DEPLOY_DIR}/agent-tiers.json"
 MODELS_DEFAULT_MAP="${DEPLOY_DIR}/models.default.json"
@@ -338,6 +340,7 @@ MODELS_ONLY=false        # --models-only (provider + resolve only)
 FORCE_RESOLVE=false      # --force (ignore preserve-edits)
 MIGRATE_ONLY=false       # --migrate (migration + resolve only)
 MIX_MODE=false           # --mix (per-category provider/model editor)
+ENABLE_PACK=""           # --enable-pack <csv> (provider packs: autodesk,microsoft,google,markitdown,nextjs,zai)
 
 # API Keys (initialize to empty to avoid unbound variable errors)
 # Capture from environment if they exist
@@ -543,6 +546,13 @@ USAGE:
     --mix                 Per-category provider/model editor (mix providers across
                           primary/reasoning/fast/docs/vision, e.g. vision on OpenAI)
 
+  PROVIDER PACKS (deploy-time MCP toggle):
+    --enable-pack <csv>   Enable provider pack(s) — flips mcp.<server>.enabled
+                          and tools.<ns>* flags ON for the named packs. Available
+                          packs: autodesk, microsoft, google, markitdown, nextjs, zai
+                          (comma-separated, e.g. --enable-pack autodesk,microsoft).
+                          No-op if omitted; default state of every pack is OFF.
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
                             EXAMPLES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -555,6 +565,12 @@ USAGE:
     ./setup.sh --quick              # Copy config and skills (no deps)
     ./setup.sh --skills-only        # Deploy skills only
     ./setup.sh -y -q                # Quick setup, non-interactive
+
+  Provider packs (deploy-time MCP toggle):
+    ./setup.sh --enable-pack autodesk             # Enable all 4 Autodesk MCP servers
+    ./setup.sh --enable-pack autodesk,microsoft   # Enable multiple packs
+    ./setup.sh --enable-pack google --dry-run     # Preview without writing
+    ./setup.sh --quick --enable-pack markitdown   # Combine with other modes
 
   Preview and update:
     ./setup.sh --dry-run            # Preview what would be done
@@ -916,6 +932,16 @@ parse_arguments() {
                 MIX_MODE=true
                 shift
                 ;;
+            --enable-pack)
+                # Accept any value including "" (empty = no-op, handled by
+                # merge-packs.mjs). Only error if no following token at all.
+                if [ $# -lt 2 ]; then
+                    log_error "--enable-pack requires an argument (csv: autodesk,microsoft,google,markitdown,nextjs,zai)"
+                    exit 1
+                fi
+                ENABLE_PACK="$2"
+                shift 2
+                ;;
             *)
                 log_error "Unknown option: $1"
                 echo "Use -h or --help for usage information"
@@ -923,6 +949,39 @@ parse_arguments() {
                 ;;
         esac
     done
+}
+
+# Validate --enable-pack <csv> against deploy/packs/pack-<name>.json.
+# Fail fast (exit 1) on any unknown pack before any config work begins, so the
+# non-zero exit isn't swallowed by the `deploy_agents || true` calls in main.
+validate_enable_pack() {
+    local packs_dir="${PACKS_DIR:-${DEPLOY_DIR}/packs}"
+    if [ ! -d "$packs_dir" ]; then
+        log_error "--enable-pack: packs directory not found: ${packs_dir}"
+        exit 1
+    fi
+    # Empty/whitespace → no-op (handled gracefully downstream), don't error.
+    local requested
+    requested=$(echo "$ENABLE_PACK" | tr ',' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | grep -v '^$' || true)
+    if [ -z "$requested" ]; then
+        return 0
+    fi
+    local available
+    available=$(cd "$packs_dir" && ls pack-*.json 2>/dev/null | sed 's/^pack-//;s/\.json$//' | sort | tr '\n' ' ')
+    local unknown=""
+    while IFS= read -r name; do
+        [ -z "$name" ] && continue
+        if [ ! -f "${packs_dir}/pack-${name}.json" ]; then
+            unknown="${unknown} ${name}"
+        fi
+    done <<< "$requested"
+    if [ -n "$unknown" ]; then
+        log_error "--enable-pack: unknown pack(s):${unknown}"
+        echo "  Available packs: ${available:-<none>}" >&2
+        echo "  See deploy/packs/ for the pack partials." >&2
+        exit 1
+    fi
+    log_info "Provider packs requested: $(echo "$requested" | tr '\n' ',' | sed 's/,$//')"
 }
 
 # Safe execution with dry-run support.
@@ -2426,7 +2485,9 @@ setup_config() {
              echo "✓ Configured MCP servers:"
              echo "    Local (auto-start): atlassian, zai-vision-mcp-server, codegraph, mermaid"
              echo "    Remote (needs key): web-reader, web-search-prime, zread"
-             echo "    Available but disabled (opt-in): next-devtools, markitdown"
+             echo "    Available but disabled (opt-in): next-devtools, markitdown, autodesk-*,"
+             echo "                                      microsoft-*, google-*"
+             echo "    Enable a group with: ./setup.sh --enable-pack <autodesk|microsoft|google|markitdown|nextjs|zai>"
             echo ""
         else
             log_error "config.json source not found: ${SOURCE_CONFIG}"
@@ -2585,6 +2646,59 @@ run_resolver() {
         --state "$RESOLVED_SIDECAR" \
         $dry_arg \
         $extra_args
+}
+
+# Run the provider-pack merger (PLAN #268): deep-merges selected pack partials
+# (deploy/packs/pack-<name>.json) into the resolved config, flipping
+# mcp.<server>.enabled + tools.<ns>* flags ON for the requested packs.
+#
+# B1 (critical): the target config path MUST match where run_resolver wrote its
+# output. In normal mode the resolver writes $CONFIG_FILE; in dry-run it stages
+# to $DRY_RUN_PREVIEW_DIR/opencode.json (the run_cmd cp at setup_config is a
+# no-op in dry-run). Pointing at the wrong path makes dry-run ACs silently pass.
+#
+# No-op (return 0) if $ENABLE_PACK is empty. Errors propagate to deploy_agents.
+run_pack_merger() {
+    if [ -z "$ENABLE_PACK" ]; then
+        return 0
+    fi
+
+    if [ ! -f "$MERGE_PACKS_SCRIPT" ]; then
+        log_error "Pack merger not found: $MERGE_PACKS_SCRIPT"
+        return 1
+    fi
+    if [ ! -d "$PACKS_DIR" ]; then
+        log_error "Packs directory not found: $PACKS_DIR"
+        return 1
+    fi
+
+    local target_config="$CONFIG_FILE"
+    if [ "$DRY_RUN" = true ]; then
+        target_config="${DRY_RUN_PREVIEW_DIR}/opencode.json"
+        if [ ! -f "$target_config" ]; then
+            log_error "Dry-run preview config not found: ${target_config}"
+            log_error "The resolver must run first to stage the preview. Aborting pack merge."
+            return 1
+        fi
+    fi
+
+    # NOTE: we intentionally do NOT pass --dry-run to merge-packs.mjs here.
+    # setup.sh's dry-run contract (matching run_resolver) is "stage real files
+    # into $DRY_RUN_PREVIEW_DIR so the user can inspect them". The resolver
+    # writes to the preview for real; merge-packs must do the same so the
+    # preview reflects the would-be-merged result. merge-packs's own --dry-run
+    # flag is for standalone CLI use only.
+    log_info "Applying provider packs: ${ENABLE_PACK}"
+    node "$MERGE_PACKS_SCRIPT" \
+        --config "$target_config" \
+        --packs-dir "$PACKS_DIR" \
+        --packs "$ENABLE_PACK"
+    local rc=$?
+    if [ "$rc" -ne 0 ]; then
+        log_error "Provider-pack merge failed (exit ${rc})"
+        return 1
+    fi
+    return 0
 }
 
 # Choose a model provider (interactive TUI or --provider flag) and write the
@@ -2782,6 +2896,16 @@ deploy_agents() {
     local rc=$?
     if [ "$rc" -ne 0 ]; then
         log_error "Model resolution failed (exit ${rc})"
+        return 1
+    fi
+
+    # Apply provider packs (--enable-pack <csv>) if requested. Runs AFTER the
+    # resolver so it merges into the resolved config. Mirrors run_resolver's
+    # dry-run path (B1). No-op if $ENABLE_PACK is empty.
+    run_pack_merger
+    rc=$?
+    if [ "$rc" -ne 0 ]; then
+        log_error "Provider-pack application failed (exit ${rc})"
         return 1
     fi
 
@@ -3487,6 +3611,14 @@ print_next_steps() {
 main() {
     # Parse command line arguments
     parse_arguments "$@"
+
+    # Validate --enable-pack names early (fail fast, non-zero exit). Done here
+    # rather than deep in deploy_agents because deploy_agents is invoked with
+    # `|| true` (a resolver failure should not abort the whole setup). A bogus
+    # pack name is a hard user error and MUST abort before any config work.
+    if [ -n "$ENABLE_PACK" ]; then
+        validate_enable_pack
+    fi
 
     # Display header
     if [ "$UPDATE_ONLY" = false ] && [ "$SKILLS_ONLY" = false ]; then

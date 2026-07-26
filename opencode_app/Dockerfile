@@ -44,6 +44,7 @@ RUN useradd -m -d /home/opencode -s /bin/bash opencode
 
 # v2.0: build context is repo root. Copy app + the model-resolver assets (deploy/).
 ARG OPENCODE_PROVIDER=""
+ARG OPENCODE_PACKS=""
 COPY opencode_app/ /app/
 COPY deploy/ /app/deploy/
 
@@ -59,6 +60,19 @@ RUN node /app/deploy/resolve-models.mjs \
         --config-dest /app/opencode.json \
         --state /tmp/.resolved-models.json \
     && rm -f /tmp/.resolved-models.json
+
+# Provider packs (#268): flip mcp.<server>.enabled + tools.<ns>* ON for the
+# named packs (comma-separated, e.g. --build-arg OPENCODE_PACKS=autodesk,microsoft).
+# Runs AFTER resolve-models so it merges into the resolved /app/opencode.json.
+# Empty OPENCODE_PACKS is a true no-op (merge-packs.mjs exits 0, writes nothing).
+RUN if [ -n "$OPENCODE_PACKS" ]; then \
+        node /app/deploy/merge-packs.mjs \
+            --config /app/opencode.json \
+            --packs-dir /app/deploy/packs \
+            --packs "$OPENCODE_PACKS" ; \
+    else \
+        echo "OPENCODE_PACKS empty — skipping provider-pack merge" ; \
+    fi
 
 RUN chmod +x /app/docker-entrypoint.sh \
     && mkdir -p /home/opencode/.local/share/opencode \

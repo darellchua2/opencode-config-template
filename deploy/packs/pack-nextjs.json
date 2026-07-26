@@ -1,0 +1,9 @@
+{
+  "$comment": "Provider pack: Next.js devtools MCP server (runtime diagnosis for Next.js 16+ projects). Deep-merged by deploy/merge-packs.mjs when the user passes --enable-pack nextjs.",
+  "mcp": {
+    "next-devtools": { "enabled": true }
+  },
+  "tools": {
+    "next-devtools*": true
+  }
+}
