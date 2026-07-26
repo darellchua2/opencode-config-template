@@ -139,3 +139,44 @@ OpenCode supports subagent-to-subagent delegation via the Task tool, controlled 
 - Each spawned subagent gets its own session, context window, and step budget
 - Hub-and-spoke (primary agent -> subagent) remains the recommended pattern
 - 26 of 39 agents have explicit `task` permissions; the remaining 13 default to full access
+
+## Ponytail Plugin (scoped wrapper)
+
+[Ponytail](https://github.com/DietrichGebert/ponytail) (MIT, vendored at v4.8.4) makes coding agents write minimal necessary code via a 7-rung "lazy senior dev" ladder. This container ships a **scoped wrapper plugin** (`opencode_app/.opencode/plugins/ponytail-scoped.mjs`) — not the stock npm adapter — because the stock adapter injects into ALL agents unconditionally and its `PONYTAIL_SUBAGENT_MATCHER` is non-functional on OpenCode. The wrapper scopes injection by agent type.
+
+### Commands
+
+| Command | What it does |
+|---------|--------------|
+| `/ponytail [lite\|full\|ultra\|off]` | Set intensity, or report current mode with no argument |
+| `/ponytail-help` | Quick command reference |
+| `/ponytail-lite` | Switch to lite (name the lazier alternative, user picks) |
+| `/ponytail-full` | Switch to full (the ladder enforced — default) |
+| `/ponytail-ultra` | Switch to ultra (YAGNI extremist, deletion before addition) |
+| `/ponytail-off` | Turn off for this session |
+
+### Environment Variables
+
+Set in `.env` (see `.env.example`):
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PONYTAIL_DEFAULT_MODE` | `full` | Global intensity: `lite` \| `full` \| `ultra` \| `off` |
+| `PONYTAIL_SUBAGENT_OFF` | (built-in 7-agent list) | Regex of agent names that skip injection. Empty = use the default off-set |
+| `PONYTAIL_AGENT_MODE_MAP` | unset | JSON per-agent overrides, e.g. `{"build":"full","code-review-subagent":"lite"}` |
+
+### Agent Off-Set (default)
+
+These read-only / research agents do NOT receive ponytail injection (they shouldn't be pushed toward minimal code):
+
+- `explore`, `general`, `autoresearch-research-subagent`, `explorer-subagent`, `requirements-specialist-subagent`, `discovery-specialist-subagent`, `technical-design-specialist-subagent`
+
+Override by setting `PONYTAIL_SUBAGENT_OFF` to a custom regex.
+
+### How It Works
+
+1. `chat.message` hook caches `sessionID → agent` (the agent type arrives here).
+2. `experimental.chat.system.transform` hook resolves the agent (cache, or `client.session.get()` fallback), checks the off-set regex, resolves the mode, and appends the mode-filtered ruleset to the system prompt — once per turn (idempotent).
+3. `command.execute.before` hook persists `/ponytail <level>` switches per session.
+
+The vendored ruleset + adapted instruction builder live in `opencode_app/.opencode/plugins/ponytail/`. MIT attribution: `opencode_app/.opencode/plugins/ATTRIBUTION.md`. The stock `@dietrichgebert/ponytail` npm package is deliberately NOT in `opencode.json` `plugin` array (double-injection guard).

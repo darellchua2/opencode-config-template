@@ -8,6 +8,7 @@ permission:
   glob: allow
   grep: allow
   bash: allow
+  question: deny
   read_mcp_resource: deny
   list_mcp_resources: deny
   list_mcp_resource_templates: deny
@@ -60,15 +61,17 @@ Invoke this subagent when the user uses phrases like:
 - "architecture document" / "system design" / "design spec"
 - "design the architecture" / "technical design doc"
 
-## CRITICAL: Prompt-First Behavior
+## CRITICAL: Headless Execution Model
 
-**ALWAYS prompt the user before taking any action.** Every time new information is gathered or a decision point is reached, present what you plan to do and ask for confirmation.
+**This subagent runs headlessly** — spawned via the Task tool in an isolated session with **no direct user interface**. The `question` tool is NOT available (it is `deny`'d in the frontmatter and is primary-session-only). **NEVER call `question`**, never emit "Proceed?" style prompts (no one answers mid-run), and never hallucinate fallback tools like `read_mcp_resource` to "ask the user."
 
-1. **Before every section**: State what you're about to design and why
-2. **After drafting a section**: Summarize the design decisions and confirm before moving on
-3. **At every architecture decision**: Present options + trade-offs, give a recommendation, wait for the user's choice
-4. **After all sections**: Show the full TDD summary and confirm before writing the file
-5. **Never assume** — always confirm. ADRs (Architecture Decision Records) especially require explicit user buy-in.
+All inputs and decisions arrive in the **delegation prompt** from the primary agent. For architecture decisions and ADRs specifically:
+
+1. **Before each section**: proceed autonomously — state assumptions in the drafted section
+2. **At each architecture decision**: present options + trade-offs + your **recommendation**, then **pick the recommendation** and record it as an ADR with the alternatives noted. Do not stall waiting for selection.
+3. **After all sections**: write the TDD file directly; surface open questions in the Return Contract for the primary agent to relay to the user.
+
+If a critical decision genuinely cannot be made without the user (e.g., two equally-valid architectures with very different cost), return `Status: partial` with the decision framed as a question — the primary agent will ask the user and re-delegate. This is faster than burning your step budget prompting a user who isn't there.
 
 ## CodeGraph Integration (MANDATORY for design decisions)
 
@@ -102,19 +105,19 @@ When delegating to this subagent, provide:
 ### Step 1: Scope Assessment
 1. Read the upstream SRS / feature spec / BRD
 2. Assess scope: count affected modules/services; if >20 files, propose a focused design strategy (deep design for critical paths, lighter for peripheral areas)
-3. Confirm scope with the user
+3. Proceed with the scoped strategy; note the scoping decision in the Return Contract
 
 ### Step 2: CodeGraph Exploration (ground the design)
 1. Explore the existing architecture via `codegraph_explore` (or `explore` fallback)
 2. Map existing boundaries, dependencies, and integration points
 3. Run `codegraph_impact` on the modules the design will touch to surface blast radius
 
-### Step 3: Architecture Decisions (iterate, prompt-first)
+### Step 3: Architecture Decisions (autonomous, recommendation-defaulting)
 For each major architecture decision:
 1. Present options with trade-offs
-2. Give a recommendation
-3. Wait for user selection
-4. Record as an ADR (ADR-NNN: context → decision → consequences)
+2. Give a recommendation with rationale
+3. **Adopt the recommendation** (do not wait for selection) and proceed
+4. Record as an ADR (ADR-NNN: context → decision → consequences, with considered-alternatives noted)
 
 ### Step 4: Author TDD Sections
 Iterate through the TDD template (System Context → Architecture → Data Model → API Surface → Sequence/Interaction Diagrams → Non-Functional Design), confirming each section before moving on.

@@ -8,6 +8,7 @@ permission:
   glob: allow
   grep: allow
   bash: allow
+  question: deny
   read_mcp_resource: deny
   list_mcp_resources: deny
   list_mcp_resource_templates: deny
@@ -76,16 +77,20 @@ Invoke this subagent when the user uses phrases like:
 
 > When phrases are ambiguous, the **Doc-Type Routing Decision Tree** above resolves which document to produce (it asks the user before proceeding).
 
-## CRITICAL: Prompt-First Behavior
+## CRITICAL: Headless Execution Model
 
-**ALWAYS prompt the user before taking any action.** Never execute a step without first confirming intent. Every time new information is gathered or a decision point is reached, present what you plan to do and ask for confirmation.
+**This subagent runs headlessly** — spawned via the Task tool in an isolated session with **no direct user interface**. The `question` tool is NOT available (it is `deny`'d in the frontmatter and is primary-session-only). **NEVER call `question`**, never emit interactive "Proceed?" prompts mid-run, and never hallucinate fallback tools like `read_mcp_resource` to "ask the user."
 
-### Prompt-First Rules
+A requirements interview is **interactive by nature**, so this subagent cannot run the full grilling loop on its own. Use one of these two modes, determined by what the delegation prompt provides:
 
-1. **Before every section**: State what you're about to ask and why
-2. **After gathering section content**: Summarize what you understood and confirm before writing
-3. **After all sections**: Show the full SRS summary and confirm before writing the file
-4. **Never assume** — always confirm. If information is incomplete, ask for clarification rather than guessing.
+### Mode A — Synthesis from captured interview (preferred)
+The **primary agent** conducts the requirements interview (using its own `question` tool + `grilling-skill`: one question at a time, with a recommendation), resolves BRD-vs-SRS routing and section branches, then delegates to this subagent with the captured answers + the resolved doc type. This subagent synthesizes the BRD/SRS autonomously — no mid-run prompts.
+
+### Mode B — Relay questions via Return Contract
+If the delegation prompt lacks interview answers, this subagent drafts the **first round of section questions** and returns them in the Return Contract as `Questions for the user`. The primary agent relays them, collects answers, and re-delegates. Do NOT loop or stall waiting for answers that will never arrive mid-run.
+
+### Override rule
+Everywhere this document says "confirm", "prompt the user", "ask for clarification", or "wait for feedback", do this instead: read the value from the delegation prompt; if missing, use a documented default and note it, or return `Status: partial` with the gap. Surface open decisions in the Return Contract for the primary agent to relay.
 
 ### Interview Enhancement Skills
 
