@@ -633,6 +633,7 @@ USAGE:
 
     Available but disabled (opt-in — set enabled: true in config.json):
       next-devtools      Next.js DevTools integration
+      markitdown         Document-to-Markdown (local-only, privacy-hardened)
 
     Remote (requires ZAI_API_KEY):
       web-reader         Web page content extraction
@@ -2404,6 +2405,10 @@ setup_config() {
             run_cmd cp "$SOURCE_CONFIG" "$CONFIG_FILE"
             log_success "config.json copied successfully (from ${SOURCE_CONFIG})"
 
+            # Install local Python MCP launchers (PLAN-GIT-262: markitdown-local-mcp).
+            # Best-effort — non-fatal on offline/pip-missing.
+            install_local_mcp_launchers
+
             echo ""
         echo "✓ Configured 39 agents:"
         echo "    - build (default) - Full-featured coding agent"
@@ -2416,6 +2421,7 @@ setup_config() {
              echo "✓ Configured MCP servers:"
              echo "    Local (auto-start): atlassian, zai-vision-mcp-server, codegraph, mermaid"
              echo "    Remote (needs key): web-reader, web-search-prime, zread"
+             echo "    Available but disabled (opt-in): next-devtools, markitdown"
             echo ""
         else
             log_error "config.json source not found: ${SOURCE_CONFIG}"
@@ -2468,6 +2474,64 @@ setup_config() {
     fi
 
     return 0
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# LOCAL MCP LAUNCHER INSTALL (PLAN-GIT-262)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Install in-repo Python-based MCP launchers (currently: markitdown-local-mcp)
+# onto the user's PATH so OpenCode can spawn them via the `command` field in
+# opencode.json. Uses pip (already a soft dep via codegraph/python tooling).
+#
+# Why pip, not uv: uv is not a repo dependency and is not installed in the
+# Docker image. pip is available everywhere Python is.
+#
+# Why --user: avoids polluting system site-packages; console-script lands in
+# ~/.local/bin (Linux/macOS) or %APPDATA%\Python\Scripts (Windows). Python
+# 3.12+ auto-adds ~/.local/bin to PATH on most distros.
+install_local_mcp_launchers() {
+    echo ""
+    log_info "Installing local MCP launchers..."
+
+    # Source-of-truth launcher directory (relative to repo root = parent of deploy/)
+    local launcher_dir="${SCRIPT_DIR}/../opencode_app/mcp-servers/markitdown-local-mcp"
+
+    if [ ! -d "$launcher_dir" ]; then
+        log_warn "markitdown-local-mcp launcher source not found at ${launcher_dir} — skipping"
+        return 0
+    fi
+
+    # Prerequisite: python3 + pip
+    if ! command_exists python3; then
+        log_warn "python3 not found — cannot install markitdown-local-mcp. Install Python 3.10+ and re-run."
+        return 0
+    fi
+
+    if ! python3 -m pip --version >/dev/null 2>&1; then
+        log_warn "pip not available for python3 — cannot install markitdown-local-mcp. Install pip and re-run."
+        return 0
+    fi
+
+    # Install (network required; non-fatal if offline)
+    log_info "pip install --user --force-reinstall ${launcher_dir}"
+    if python3 -m pip install --user --force-reinstall --no-warn-script-location "$launcher_dir" >/dev/null 2>&1; then
+        log_success "markitdown-local-mcp installed"
+
+        # PATH check — warn (don't fail) if ~/.local/bin not on PATH
+        local user_bin="${HOME}/.local/bin"
+        case ":${PATH}:" in
+            *":${user_bin}:"*)
+                # All good
+                ;;
+            *)
+                log_warn "${user_bin} is not on your PATH. Add it to your shell rc to use markitdown-local-mcp:"
+                echo "    export PATH=\"${user_bin}:\$PATH\"" >&2
+                ;;
+        esac
+    else
+        log_warn "pip install failed for markitdown-local-mcp (offline?). The launcher is opt-in (enabled: false) — OpenCode will work without it. Re-run setup when online to enable."
+    fi
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -3149,6 +3213,7 @@ print_summary() {
          echo "    - zread - GitHub repo search (needs ZAI_API_KEY)"
          echo "    - codegraph - Code knowledge graph (auto-start)"
          echo "    - mermaid - Diagram rendering SVG/PNG (auto-start)"
+         echo "    - markitdown - Document-to-Markdown, local-only, opt-in"
     fi
 
     # skills directory status

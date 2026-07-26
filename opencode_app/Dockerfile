@@ -64,6 +64,12 @@ RUN chmod +x /app/docker-entrypoint.sh \
     && mkdir -p /home/opencode/.local/share/opencode \
     && chown -R opencode:opencode /app /home/opencode
 
+# PLAN-GIT-262: bake the privacy-hardened markitdown MCP launcher into the
+# image. Uses /opt/python-env/bin/pip so the console-script lands in
+# /opt/python-env/bin (already on PATH via ENV on line 33). Do NOT use uv -
+# it is not installed in this image.
+RUN /opt/python-env/bin/pip install --no-cache-dir /app/mcp-servers/markitdown-local-mcp
+
 USER opencode
 
 WORKDIR /app

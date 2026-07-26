@@ -236,12 +236,21 @@
         "CONTENT_IMAGE_SUPPORTED": "false"
       },
       "enabled": true
+    },
+    "markitdown": {
+      "type": "local",
+      "command": ["markitdown-local-mcp"],
+      "environment": {
+        "MARKITDOWN_ENABLE_PLUGINS": "false"
+      },
+      "enabled": false
     }
   },
   "tools": {
     "codegraph*": true,
     "atlassian*": true,
     "mermaid*": true,
+    "markitdown*": false,
     "zai-web-reader*": true,
     "zai-vision-mcp-server*": false,
     "zai-zread*": false,

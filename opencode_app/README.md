@@ -101,6 +101,18 @@ CodeGraph is a pre-indexed code knowledge graph MCP server enabled by default. I
 
 See the main `README.md` for full details on MCP tools, supported languages, and subagent integration.
 
+## markitdown MCP (PLAN-GIT-262)
+
+The privacy-hardened `markitdown` MCP launcher is **baked into the Docker image at build time** via `/opt/python-env/bin/pip install /app/mcp-servers/markitdown-local-mcp` (Dockerfile line 71). The `markitdown-local-mcp` binary lands in `/opt/python-env/bin`, which is already on `PATH` via the `ENV PATH="/opt/python-env/bin:${PATH}"` directive (Dockerfile line 33) — no entrypoint changes needed.
+
+The server ships as `enabled: false` (opt-in). To enable inside the container, edit `opencode_app/opencode.json` and flip `markitdown.enabled` to `true`, then rebuild.
+
+**Privacy guarantees** (see [`opencode_app/mcp-servers/markitdown-local-mcp/README.md`](mcp-servers/markitdown-local-mcp/README.md) for the full trust-boundary analysis):
+- Structural dep exclusion — no `markitdown[all]`, no `azure-*`, no `SpeechRecognition`, no `youtube-transcript-api` installed
+- `enable_plugins=False` hard-coded in launcher
+- Local file conversions make zero TCP calls (verifiable via `ss -tnp`)
+- User-supplied `http:`/`https:` URIs trigger a single `requests.get()` — equivalent to built-in `webfetch`, no Microsoft endpoints
+
 ## PPTX Workflow (BT-142)
 
 The PPTX stack is **pure Python** (`python-pptx` + `lxml`) — no Node.js, Playwright, or Sharp required in the container for slide generation. The `pptx-specialist-subagent` orchestrates 3 skills:
