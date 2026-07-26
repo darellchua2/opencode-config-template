@@ -19,6 +19,7 @@ I help you scaffold and structure Python backend projects following industry bes
 4. **Dependency Injection**: Wire up DI containers for testability
 5. **Application Factory**: Implement the factory pattern for app initialization
 6. **Project Standards**: Linting, formatting, type checking, and CI configuration
+7. **OpenCode LSP Integration**: Generate project-level `opencode.json` enabling pyright LSP for real-time type diagnostics fed to the agent
 
 ## When to use me
 
@@ -458,6 +459,37 @@ python_version = "3.12"
 strict = true
 plugins = ["pydantic.mypy"]
 ```
+
+### OpenCode LSP Integration (project-level config)
+
+Create a project-level `opencode.json` in the project root to feed real-time `pyright` type diagnostics to the agent during edits. This gives ambient type-error awareness across the cross-module import graph without the agent needing to run `mypy`/`pyright` manually.
+
+```jsonc
+{
+  "$schema": "https://opencode.ai/config.json",
+  "lsp": {
+    "pyright": {}
+  }
+}
+```
+
+**Why pyright:** handles `.py` and `.pyi`; surfaces type errors across modules (highest-value signal during refactors of repository/service layers). Complements `ruff` (CLI linter via `python-ruff-linter-skill`) and `mypy` (already in dev deps) — pyright LSP is the ambient feed; ruff/mypy remain the CI gate.
+
+**Requirement:** pyright must be installed. Add to dev dependencies in `pyproject.toml`:
+
+```toml
+[project.optional-dependencies]
+dev = [
+    # ...existing deps...
+    "pyright>=1.1.350",
+]
+```
+
+**Why project-level:** config merges with the user's global `~/.config/opencode/opencode.json`, so only the `lsp` key needs declaring here. Scoped to code projects; non-code repos stay LSP-free. Check into git so teammates inherit it.
+
+**Token cost:** diagnostics are injected into model context. Worth it for Python backends (cross-module type errors are common); monitor usage and set `"lsp": false` to temporarily disable.
+
+Refs: [LSP](https://opencode.ai/docs/lsp/) · [Config](https://opencode.ai/docs/config/)
 
 ---
 

@@ -20,6 +20,7 @@ I help you set up and manage JavaScript/TypeScript monorepos:
 5. **Shared Configs**: Centralized ESLint, TypeScript, and Tailwind configs
 6. **Build Caching**: Local and remote cache configuration
 7. **Changesets**: Version management and changelog generation
+8. **OpenCode LSP Integration**: Root-level `opencode.json` enabling typescript + eslint LSP across all packages
 
 ## When to use me
 
@@ -148,6 +149,28 @@ packages:
   "packageManager": "pnpm@9.0.0"
 }
 ```
+
+### OpenCode LSP Integration (root config)
+
+Create a root-level `opencode.json` to feed real-time TypeScript and ESLint diagnostics to the agent across all packages. The typescript server picks up each package's `tsconfig.json` (which extend `@repo/typescript-config`); the eslint server uses the shared `@repo/eslint-config`. This gives ambient cross-package type-error awareness — critical in monorepos where a change in `packages/ui` can break `apps/web`.
+
+```jsonc
+{
+  "$schema": "https://opencode.ai/config.json",
+  "lsp": {
+    "typescript": {},
+    "eslint": {}
+  }
+}
+```
+
+**Why root-level:** a single root config covers the entire workspace. Project config merges with each user's global `~/.config/opencode/opencode.json`, so only the `lsp` key needs declaring here. Check into git so the whole team inherits it.
+
+**Monorepo note:** both servers are triggered by file extension (`.ts/.tsx/.js/.jsx/.mjs/.cjs/.mts/.cts`), so they activate per-file regardless of which package the agent is editing. No per-package `opencode.json` needed.
+
+**Token cost:** diagnostics are injected into model context. In a large monorepo this can be significant — monitor usage and set `"lsp": false` to temporarily disable, or scope to specific servers.
+
+Refs: [LSP](https://opencode.ai/docs/lsp/) · [Config](https://opencode.ai/docs/config/)
 
 ---
 
