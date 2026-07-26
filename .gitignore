@@ -25,3 +25,6 @@ Thumbs.db
 # Node
 node_modules/
 .codegraph/
+
+# OpenCode runtime state (goal plugin et al.)
+.opencode/goals/
