@@ -51,23 +51,23 @@
 
 Create the vendored launcher package under `opencode_app/mcp-servers/markitdown-local-mcp/` (5 files). This is the trust boundary — it must depend ONLY on local converter libraries and construct `MarkItDown()` with zero cloud kwargs.
 
-- [ ] **1.1** Create `pyproject.toml` with constrained deps (no `[all]`, no azure/speech/youtube), **version-capped**
+- [x] **1.1** Create `pyproject.toml` with constrained deps (no `[all]`, no azure/speech/youtube), **version-capped**
     — **Why:** Pinning to specific local-only extras prevents the `markitdown[all]` metastate from pulling cloud SDKs (`azure-ai-documentintelligence`, `azure-ai-contentunderstanding`, `SpeechRecognition`, `youtube-transcript-api`) onto disk — the root of the privacy concern. The cap (`<0.2`) prevents a future `uv tool install --force` from silently pulling a markitdown version that defaults `enable_plugins=True`, adds a telemetry converter, or pulls a new cloud extra — an open floor would defeat the hardening.
     — **Done when:** `pyproject.toml` declares `markitdown[pdf,docx,pptx,xlsx,xls,outlook]>=0.1.1,<0.2` + `mcp>=1.0` only; a comment block lists every excluded extra by name.
     — **Consumers affected:** launcher venv (build/install), `deploy/setup.sh` install hook, Dockerfile build step.
-- [ ] **1.2** Create `src/markitdown_local_mcp/__main__.py` (~60 LOC) — sanitized MCP wrapper, single tool, no cloud kwargs, `enable_plugins=False` (constructor arg)
+- [x] **1.2** Create `src/markitdown_local_mcp/__main__.py` (~60 LOC) — sanitized MCP wrapper, single tool, no cloud kwargs, `enable_plugins=False` (constructor arg)
     — **Why:** The wrapper is the trust boundary — it must construct `MarkItDown()` with zero cloud kwargs and hard-disable plugins so no third-party converter can ever run. The authoritative control is the `enable_plugins=False` constructor arg; the `MARKITDOWN_ENABLE_PLUGINS` env var is belt-and-suspenders only (markitdown may not even read it).
     — **Done when:** Module exposes a single `convert_to_markdown(uri: str) -> str` tool over stdio; `MarkItDown()` is instantiated with no `docintel_endpoint`/`cu_endpoint`/`llm_client` kwargs and `enable_plugins=False`; `os.environ["MARKITDOWN_ENABLE_PLUGINS"]="false"` is set before the markitdown import as defense-in-depth.
     — **Consumers affected:** MCP runtime (all OpenCode sessions that opt in), `opencode.json` `markitdown` entry.
-- [ ] **1.3** Create `src/markitdown_local_mcp/__init__.py` — version export
+- [x] **1.3** Create `src/markitdown_local_mcp/__init__.py` — version export
     — **Why:** Standard package marker + `__version__` for `pip install` metadata and future upgrade checks.
     — **Done when:** File exports `__version__ = "0.1.0"` and the package imports cleanly under `python -c "import markitdown_local_mcp"`.
     — **Consumers affected:** pyproject build, install hook.
-- [ ] **1.4** Create `README.md` — privacy rationale, what's removed vs upstream, MIT attribution, link to upstream repo, version-pin policy
+- [x] **1.4** Create `README.md` — privacy rationale, what's removed vs upstream, MIT attribution, link to upstream repo, version-pin policy
     — **Why:** Documenting the deliberate removals gives auditors and future maintainers a clear record of why each cloud extra was excluded, where the trust boundary sits, and why the version cap exists.
     — **Done when:** README covers privacy rationale, a "Removed vs upstream" table, MIT attribution, link to `microsoft/markitdown`, and a note that version bumps require explicit review.
     — **Consumers affected:** documentation readers, security reviewers.
-- [ ] **1.5** Create `LICENSE` — MIT with microsoft/markitdown copyright notice (derivative work clause)
+- [x] **1.5** Create `LICENSE` — MIT with microsoft/markitdown copyright notice (derivative work clause)
     — **Why:** markitdown is MIT-licensed; our launcher is a derivative work and must preserve the upstream copyright notice to stay license-compliant.
     — **Done when:** `LICENSE` is MIT text with microsoft/markitdown copyright attribution and a derivative-work note.
     — **Consumers affected:** license compliance, `THIRD_PARTY_LICENSES.md` sync.
