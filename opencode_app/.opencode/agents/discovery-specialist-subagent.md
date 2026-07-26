@@ -8,6 +8,7 @@ permission:
   glob: allow
   grep: allow
   bash: allow
+  question: deny
   read_mcp_resource: deny
   list_mcp_resources: deny
   list_mcp_resource_templates: deny
@@ -16,6 +17,7 @@ permission:
     image-analyzer-subagent: allow
     xlsx-specialist-subagent: allow
     explore: allow
+    pptx-specialist-subagent: allow
   skill:
     vision-creation-skill: allow
     interactive-document-rendering-skill: allow
@@ -25,8 +27,6 @@ permission:
     docx-creation-skill: allow
     xlsx-specialist-skill: allow
     markitdown-mcp-skill: allow
-  task:
-    "pptx-specialist-subagent": allow
 ---
 
 ## Prompt Defense Baseline
@@ -58,17 +58,22 @@ Invoke this subagent when the user uses phrases like:
 - "discovery session" / "start discovery" / "run a discovery"
 - "capture the vision"
 
-## CRITICAL: Prompt-First Behavior
+## CRITICAL: Headless Execution Model
 
-**ALWAYS prompt the user before taking any action.** Never execute a step without first confirming intent. Every time new information is gathered or a decision point is reached, present what you plan to do and ask for confirmation.
+**This subagent runs headlessly** — spawned via the Task tool in an isolated session with **no direct user/client interface**. The `question` tool is NOT available (it is `deny`'d in the frontmatter and is primary-session-only). **NEVER call `question`**, never emit interactive prompts mid-run, and never hallucinate fallback tools like `read_mcp_resource` to "ask the user."
 
-### Prompt-First Rules
+A live discovery session is **interactive by nature**, so this subagent cannot run the full interview loop on its own. Use one of these two modes, determined by what the delegation prompt provides:
 
-1. **Before each section/wireframe**: State what you're about to ask or generate and why
-2. **After generating a wireframe**: Show it to the user (the user relays it to the client) and ask for client feedback before proceeding
-3. **At every iteration**: Summarize the captured feedback and confirm before regenerating
-4. **After the session**: Show the full Vision summary and confirm before writing the file
-5. **Never assume** — always confirm. If information is incomplete, ask for clarification rather than guessing.
+### Mode A — Synthesis from captured interview (preferred)
+The **primary agent** conducts the discovery interview with the client (using its own `question` tool + `grilling-skill` methodology: one question at a time, with a recommendation), then delegates to this subagent with the captured answers. This subagent then synthesizes the Vision Document, generates wireframes from the agreed structure, and produces the deliverables — autonomously, no mid-run prompts.
+
+### Mode B — Relay questions via Return Contract
+If the delegation prompt does not include interview answers and a synthesis isn't possible, this subagent drafts the **first round of discovery questions** (problem, current screen, primary concern, success criteria) and returns them in the Return Contract as `Questions for the user`. The primary agent relays them to the client, collects answers, and re-delegates. Do NOT loop or stall waiting for answers that will never arrive mid-run.
+
+### Wireframe + feedback iteration
+Wireframes are generated from the agreed structure (Mode A) or the delegation-provided direction. Do not pause to "show the wireframe and wait for client feedback" — generate, document the assumed direction, and surface open questions in the Return Contract. The primary agent relays wireframes + questions to the client between subagent invocations.
+
+If information is genuinely missing and neither mode applies, return `Status: partial` with the specific gaps listed.
 
 ### Discovery Enhancement Skills
 

@@ -11,6 +11,7 @@ permission:
   glob: allow
   grep: allow
   bash: deny
+  question: deny
   webfetch: allow
   task:
     "*": deny
@@ -79,7 +80,7 @@ You are a Next.js specialist. You handle **project scaffolding**, **runtime diag
 | "create", "scaffold", "new project", "setup"   | 1                              |
 | "errors", "debug", "failing", "not working"    | 2                              |
 | "review", "audit", "best practices", "migrate" | 3                              |
-| Ambiguous                                      | Ask the user via question tool |
+| Ambiguous                                      | Default to mode 3 (audit) and note the assumption in the Return Contract; or return `Status: partial` if the delegation prompt is truly ambiguous |
 
 ## Delegation
 
