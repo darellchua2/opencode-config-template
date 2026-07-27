@@ -298,7 +298,7 @@ After adopting, update the renamed file's `**Issue:**` / **Ticket Reference** he
 
 ### Step 5.6: Document Auto-Detect (BRD/SRS Draft Linking)
 
-[Migrated from ticket-creation-subagent on removal — preserves document-traceability when this skill runs directly in the primary session.]
+[Migrated from the former ticket-creation subagent on removal — preserves document-traceability when this skill runs directly in the primary session.]
 
 After adopting/renaming the PLAN (Step 5.5) and before generating the PLAN body (Step 6), scan for draft requirement documents and offer to link them to the ticket. Document-ladder order: **BRD first, then SRS**.
 
@@ -411,7 +411,7 @@ _How will we measure success?_
 
 ### Step 6.5: Atomicity Self-Check (Commit Gate)
 
-[Migrated from ticket-creation-subagent on removal — enforces well-formed PLANs regardless of invocation path.]
+[Migrated from the former ticket-creation subagent on removal — enforces well-formed PLANs regardless of invocation path.]
 
 Before committing the PLAN (Step 7), verify every implementation step is atomic and complete. **This gate blocks the commit** if any step is malformed.
 
@@ -463,7 +463,7 @@ echo "Committed and pushed $PLAN_FILE"
 
 ### Step 7.5: Branch-Workflow Setup Signal (post-push)
 
-[Migrated from ticket-creation-subagent on removal — ensures new projects get offered branch-workflow setup.]
+[Migrated from the former ticket-creation subagent on removal — ensures new projects get offered branch-workflow setup.]
 
 After pushing the branch (Step 7), check whether the project needs dev→uat→main release-workflow setup, applying the detection logic from `git-branch-workflow-setup-skill` §Detection Logic:
 
