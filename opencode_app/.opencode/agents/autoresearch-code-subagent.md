@@ -3,7 +3,9 @@ description: "Autonomous code optimization subagent — runs the modify → veri
 mode: subagent
 steps: 50
 permission:
-  read: allow
+  read:
+    "mcp:*": deny
+    "*": allow
   edit: allow
   glob: allow
   grep: allow

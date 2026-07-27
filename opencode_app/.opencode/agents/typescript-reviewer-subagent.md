@@ -3,7 +3,9 @@ description: TypeScript/JavaScript code review subagent focusing on type safety,
 mode: subagent
 steps: 25
 permission:
-  read: allow
+  read:
+    "mcp:*": deny
+    "*": allow
   edit: deny
   glob: allow
   grep: allow

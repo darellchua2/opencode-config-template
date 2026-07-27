@@ -3,7 +3,9 @@ description: "Responsive UI audit and fix subagent. Audits Next.js pages for res
 mode: subagent
 steps: 12
 permission:
-  read: allow
+  read:
+    "mcp:*": deny
+    "*": allow
   edit: allow
   glob: allow
   grep: allow

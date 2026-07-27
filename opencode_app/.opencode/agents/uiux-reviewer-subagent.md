@@ -3,7 +3,9 @@ description: "Review-only UI/UX design review subagent. Applies a 13-axis rubric
 mode: subagent
 steps: 30
 permission:
-  read: allow
+  read:
+    "mcp:*": deny
+    "*": allow
   edit:
     "*": deny
     "LEARNINGS/**": allow

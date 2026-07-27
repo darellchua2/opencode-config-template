@@ -2,7 +2,9 @@
 description: Specialized subagent for documentation generation. Creates docstrings, README coverage badges, and technical documentation following language-specific standards (PEP 257, Javadoc, JSDoc, XML documentation).
 mode: subagent
 permission:
-  read: allow
+  read:
+    "mcp:*": deny
+    "*": allow
   edit: allow
   glob: allow
   grep: allow

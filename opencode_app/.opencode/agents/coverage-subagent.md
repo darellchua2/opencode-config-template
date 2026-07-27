@@ -2,7 +2,9 @@
 description: Specialized subagent for test coverage reporting and documentation. Handles coverage badge generation, README updates, and coverage threshold enforcement for Next.js and Python projects.
 mode: subagent
 permission:
-  read: allow
+  read:
+    "mcp:*": deny
+    "*": allow
   edit: allow
   glob: allow
   grep: allow

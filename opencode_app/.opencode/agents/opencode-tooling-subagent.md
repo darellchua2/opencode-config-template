@@ -3,7 +3,9 @@ description: Specialized subagent for creating and maintaining OpenCode rules (A
 mode: subagent
 
 permission:
-  read: allow
+  read:
+    "mcp:*": deny
+    "*": allow
   edit: allow
   glob: allow
   grep: allow

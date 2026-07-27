@@ -2,7 +2,9 @@
 description: Specialized subagent for diagnosing and resolving errors, exceptions, and stack traces. Uses GLM-5v-turbo (vision) for screenshot-based error diagnosis. ONLY triggered on explicit user invocation - not auto-triggered for general error handling.
 mode: subagent
 permission:
-  read: allow
+  read:
+    "mcp:*": deny
+    "*": allow
   edit: deny
   glob: allow
   grep: allow

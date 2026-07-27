@@ -3,7 +3,9 @@ description: "Requirements specialist — conducts discovery interviews and draf
 mode: subagent
 steps: 50
 permission:
-  read: allow
+  read:
+    "mcp:*": deny
+    "*": allow
   edit: allow
   glob: allow
   grep: allow

@@ -2,7 +2,9 @@
 description: Specialized subagent for Test Driven Development workflow guidance. Guides through red-green-refactor cycle for multiple languages and frameworks.
 mode: subagent
 permission:
-  read: allow
+  read:
+    "mcp:*": deny
+    "*": allow
   edit: deny
   glob: allow
   grep: allow

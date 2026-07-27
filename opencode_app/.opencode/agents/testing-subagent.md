@@ -2,7 +2,9 @@
 description: Specialized subagent for test generation across multiple languages and frameworks. Covers Python pytest, Next.js unit tests, and generic test generation following industry best practices.
 mode: subagent
 permission:
-  read: allow
+  read:
+    "mcp:*": deny
+    "*": allow
   edit: allow
   glob: allow
   grep: allow

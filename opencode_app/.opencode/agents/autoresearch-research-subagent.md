@@ -3,7 +3,9 @@ description: Autonomous literature-review subagent (Tier 2, web-only). Fetches p
 mode: subagent
 steps: 30
 permission:
-  read: allow
+  read:
+    "mcp:*": deny
+    "*": allow
   edit:
     "*": deny
     "**/research*.md": allow

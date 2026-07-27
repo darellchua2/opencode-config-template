@@ -3,7 +3,9 @@ description: "Customer-facing discovery specialist — runs live discovery sessi
 mode: subagent
 steps: 60
 permission:
-  read: allow
+  read:
+    "mcp:*": deny
+    "*": allow
   edit: allow
   glob: allow
   grep: allow

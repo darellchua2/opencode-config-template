@@ -3,7 +3,9 @@ description: Python-specific code review subagent combining PEP 8, type hints, P
 mode: subagent
 steps: 25
 permission:
-  read: allow
+  read:
+    "mcp:*": deny
+    "*": allow
   edit: deny
   glob: allow
   grep: allow

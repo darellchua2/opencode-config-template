@@ -3,7 +3,9 @@ description: "Technical design specialist — authors engineering Technical Desi
 mode: subagent
 steps: 50
 permission:
-  read: allow
+  read:
+    "mcp:*": deny
+    "*": allow
   edit: allow
   glob: allow
   grep: allow

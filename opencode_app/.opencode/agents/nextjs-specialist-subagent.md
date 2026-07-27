@@ -6,7 +6,9 @@ description: >-
   appropriate skills based on task type.
 mode: subagent
 permission:
-  read: allow
+  read:
+    "mcp:*": deny
+    "*": allow
   edit: allow
   glob: allow
   grep: allow

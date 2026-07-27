@@ -2,7 +2,9 @@
 description: Specialized subagent for code linting and quality checks. Handles Python Ruff, JavaScript/TypeScript ESLint, Java Spring Boot (Checkstyle/SpotBugs), C# .NET 10 (dotnet format/analyzers), and generic linting workflows across multiple programming languages and frameworks.
 mode: subagent
 permission:
-  read: allow
+  read:
+    "mcp:*": deny
+    "*": allow
   edit: allow
   glob: allow
   grep: allow
