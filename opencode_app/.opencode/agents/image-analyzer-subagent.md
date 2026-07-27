@@ -3,7 +3,9 @@ description: "Shared image analysis utility for all agents. Accepts image/video 
 mode: subagent
 
 permission:
-  read: allow
+  read:
+    "mcp:*": deny
+    "*": allow
   edit: deny
   glob: allow
   grep: allow

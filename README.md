@@ -456,7 +456,6 @@ This repository implements **skill modularization** with 123 skills organized ac
 | **testing-subagent** | Test generation and execution | test-generator-framework, python-pytest-creator, nextjs-unit-test-creator | `explore` |
 | **tdd-subagent** | Test-driven development workflow | tdd-workflow, test-generator-framework | — |
 | **pr-workflow-subagent** | Pull request creation | pr-creation-workflow, nextjs-pr-workflow | `explore`, `general` |
-| **ticket-creation-subagent** | Issue/ticket creation | ticket-plan-workflow-skill | `explore` |
 | **discovery-specialist-subagent** | Customer-facing discovery: Vision docs + wireframes | vision-creation-skill | `explore`, `image-analyzer-subagent`, `xlsx-specialist-subagent` |
 | **requirements-specialist-subagent** | BRD + SRS drafting (BABOK/IIBA + IEEE 830) | brd-creation-skill, srs-creation-skill | `explore`, `image-analyzer-subagent`, `xlsx-specialist-subagent` |
 | **technical-design-specialist-subagent** | Technical design + ADRs (engineering 'how' stage, glm-5.1) | technical-design-creation-skill | `explore`, `image-analyzer-subagent`, `architecture-review-subagent` |
@@ -511,7 +510,6 @@ Some subagents recognize natural language triggers:
 | Subagent | Trigger Phrases |
 |----------|-----------------|
 | **pr-workflow-subagent** | "create pr", "pr merge to [branch]", "merge to main", "pull request" |
-| **ticket-creation-subagent** | "create issue", "new ticket", "jira ticket" |
 | **pptx-specialist-subagent** | "PowerPoint", ".pptx", "presentation", "slides", "deck", "html to pptx" |
 | **startup-ceo-subagent** | "pitch deck", "investor deck", "board update", "fundraising", "demo day" |
 | **uiux-reviewer-subagent** | "design review", "UI audit", "UX review", "visual review", "review UI design" |

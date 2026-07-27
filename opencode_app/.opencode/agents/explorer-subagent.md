@@ -3,7 +3,9 @@ description: Fast agent specialized for exploring codebases. Find files by patte
 mode: subagent
 steps: 10
 permission:
-  read: allow
+  read:
+    "mcp:*": deny
+    "*": allow
   edit: deny
   bash: deny
 ---

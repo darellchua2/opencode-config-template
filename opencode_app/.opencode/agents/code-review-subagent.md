@@ -3,7 +3,9 @@ description: Comprehensive code review subagent combining SOLID principles, clea
 mode: subagent
 steps: 30
 permission:
-  read: allow
+  read:
+    "mcp:*": deny
+    "*": allow
   edit:
     "*": deny
     "LEARNINGS/**": allow

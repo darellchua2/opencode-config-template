@@ -2,7 +2,9 @@
 description: Specialized subagent for pull request workflows with framework-specific quality checks. Handles PR creation, quality gates (lint/build/test), semantic versioning, and JIRA integration for Next.js, Python, and generic projects.
 mode: subagent
 permission:
-  read: allow
+  read:
+    "mcp:*": deny
+    "*": allow
   edit: allow
   glob: allow
   grep: allow

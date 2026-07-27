@@ -4,7 +4,9 @@ mode: subagent
 temperature: 0.7
 steps: 30
 permission:
-  read: allow
+  read:
+    "mcp:*": deny
+    "*": allow
   edit: allow
   bash: allow
   webfetch: allow

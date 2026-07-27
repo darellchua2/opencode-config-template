@@ -3,7 +3,9 @@ description: Specialized subagent for architecture review using clean architectu
 mode: subagent
 steps: 40
 permission:
-  read: allow
+  read:
+    "mcp:*": deny
+    "*": allow
   edit: deny
   glob: allow
   grep: allow

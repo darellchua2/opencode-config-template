@@ -8,7 +8,9 @@ description: >-
   Routes to the appropriate skill based on task type.
 mode: subagent
 permission:
-  read: allow
+  read:
+    "mcp:*": deny
+    "*": allow
   edit: allow
   glob: allow
   grep: allow
@@ -153,6 +155,18 @@ Use these defaults unless the user specifies otherwise:
 ## Autodesk MCP Servers
 
 When Autodesk MCP servers are configured (`autodesk-revit`, `autodesk-fusion`, `autodesk-model-data`, `autodesk-help`), use them for live model data access. Load `autodesk-aps-skill` for REST API patterns when MCP servers are unavailable or for cloud API integration (Data Management, Model Derivative, Design Automation).
+
+## CodeGraph Integration
+
+When `.codegraph/` exists in the project AND the task involves code-like artifacts (URDF/SDF robot descriptions, G-code generators, parametric CAD scripts), use CodeGraph:
+
+| CodeGraph Tool | Use For |
+|---|---|
+| `codegraph_search` | Find robot description generators / G-code emitters by name |
+| `codegraph_callers` | Trace which factories consume a URDF template |
+| `codegraph_files` | Enumerate CAD-related source files |
+
+If `.codegraph/` does not exist or the task is pure geometry (STEP/STL), fall back to grep/glob/read. Do NOT call `read_mcp_resource` — codegraph is tools-only (no resources); use the `codegraph_*` tools directly.
 
 ## Return Contract
 

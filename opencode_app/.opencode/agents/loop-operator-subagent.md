@@ -3,7 +3,9 @@ description: Autonomous loop execution operator that iterates tasks until comple
 mode: subagent
 steps: 25
 permission:
-  read: allow
+  read:
+    "mcp:*": deny
+    "*": allow
   edit: allow
   glob: allow
   grep: allow

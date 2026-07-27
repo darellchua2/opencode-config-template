@@ -4,7 +4,9 @@ mode: subagent
 hidden: true
 steps: 15
 permission:
-  read: allow
+  read:
+    "mcp:*": deny
+    "*": allow
   edit: allow
   bash: allow
   skill:

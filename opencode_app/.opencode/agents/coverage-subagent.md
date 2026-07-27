@@ -2,7 +2,9 @@
 description: Specialized subagent for test coverage reporting and documentation. Handles coverage badge generation, README updates, and coverage threshold enforcement for Next.js and Python projects.
 mode: subagent
 permission:
-  read: allow
+  read:
+    "mcp:*": deny
+    "*": allow
   edit: allow
   glob: allow
   grep: allow
@@ -44,6 +46,18 @@ Delegation:
 - Git commits: Request from parent agent
 
 Always follow industry best practices for coverage documentation.
+
+## CodeGraph Integration
+
+When `.codegraph/` exists in the project, use CodeGraph to map code structure for coverage analysis:
+
+| CodeGraph Tool | Use For |
+|---|---|
+| `codegraph_files` | Enumerate source files for coverage targets |
+| `codegraph_search` | Find untested symbols by name |
+| `codegraph_callers` / `callees` | Trace dead code paths (no callers = potentially uncoverable) |
+
+If `.codegraph/` does not exist, fall back to grep/glob/read. Do NOT call `read_mcp_resource` — codegraph is tools-only (no resources); use the `codegraph_*` tools directly.
 
 ## Return Contract
 

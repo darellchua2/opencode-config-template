@@ -39,7 +39,7 @@ Use this skill when:
 | pr-workflow-subagent | Before creating PR (step 3.5) |
 | code-review-subagent | After completing refactoring |
 | testing-subagent | After creating tests |
-| ticket-creation-subagent | After initial PLAN creation |
+| ticket-plan-workflow-skill | After initial PLAN creation |
 
 ## Core Workflow
 
@@ -241,7 +241,7 @@ fi
 
 ### Atomic Step Missing Rationale (Malformed Step)
 
-A step that uses the `**N.M**` marker but is missing a **Why** line is **malformed** and must be flagged. This is the reusable flag primitive that `ticket-creation-subagent`'s commit-blocking self-check depends on.
+A step that uses the `**N.M**` marker but is missing a **Why** line is **malformed** and must be flagged. This is the reusable flag primitive that `ticket-plan-workflow-skill`'s commit-blocking self-check depends on.
 
 ```bash
 # Find atomic steps (N.M marker) and verify each carries the full rationale triple:
@@ -257,7 +257,7 @@ grep -nE '^\- \[.\] \*\*[0-9]+\.[0-9]+\*\*' "$PLAN_FILE" | while read -r step_li
 done
 ```
 
-**Flag behavior**: emit a warning per malformed step listing its line number and the step text. Do **not** auto-rewrite or delete the step — the authoring source (`ticket-creation-subagent`) is responsible for adding the rationale; the updater only reports the gap.
+**Flag behavior**: emit a warning per malformed step listing its line number and the step text. Do **not** auto-rewrite or delete the step — the authoring source (`ticket-plan-workflow-skill`) is responsible for adding the rationale; the updater only reports the gap.
 
 ### Branch Name Unparseable
 

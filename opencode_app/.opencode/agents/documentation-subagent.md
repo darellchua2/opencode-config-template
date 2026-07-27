@@ -2,7 +2,9 @@
 description: Specialized subagent for documentation generation. Creates docstrings, README coverage badges, and technical documentation following language-specific standards (PEP 257, Javadoc, JSDoc, XML documentation).
 mode: subagent
 permission:
-  read: allow
+  read:
+    "mcp:*": deny
+    "*": allow
   edit: allow
   glob: allow
   grep: allow
@@ -56,6 +58,18 @@ Workflow:
 5. Ensure documentation matches code behavior and is kept in sync
 
 Prioritize documenting public APIs and complex logic. Documentation should be clear, concise, and accurate.
+
+## CodeGraph Integration
+
+When `.codegraph/` exists in the project, use CodeGraph to gather symbol context for documentation:
+
+| CodeGraph Tool | Use For |
+|---|---|
+| `codegraph_node` | Get full signature/docs of a symbol to document |
+| `codegraph_callers` / `callees` | Discover how a symbol is used (informs doc examples) |
+| `codegraph_search` | Find related symbols to cross-reference |
+
+If `.codegraph/` does not exist, fall back to grep/glob/read. Do NOT call `read_mcp_resource` — codegraph is tools-only (no resources); use the `codegraph_*` tools directly.
 
 ## Return Contract
 

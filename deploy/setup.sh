@@ -600,7 +600,7 @@ USAGE:
                          CONFIGURED FEATURES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-   AGENTS (39):
+   AGENTS (38):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
@@ -628,7 +628,6 @@ USAGE:
     image-analyzer       Images/screenshots to code, OCR, error diagnosis
     error-resolver       Error diagnosis with stack trace analysis
     opencode-tooling     OpenCode config creation and maintenance
-    ticket-creation      GitHub issues and JIRA ticket management
     startup-founder      Startup founder business operations agent
     startup-ceo          Investor-ready pitch decks and board updates
     office-document      Office document specialist: Word, PowerPoint, Excel
@@ -2474,7 +2473,7 @@ setup_config() {
             install_local_mcp_launchers
 
             echo ""
-        echo "✓ Configured 39 agents:"
+        echo "✓ Configured 38 agents:"
         echo "    - build (default) - Full-featured coding agent"
         echo "    - plan - Planning agent (read-only)"
         echo "    - explore - Codebase exploration and analysis"
@@ -3364,7 +3363,7 @@ print_summary() {
 
     # Agents configured
     if [ -f "$CONFIG_FILE" ]; then
-        echo "✓ Configured 39 agents:"
+        echo "✓ Configured 38 agents:"
         echo "    - build (default) - Full-featured coding agent"
         echo "    - plan - Planning agent (read-only)"
         echo "    - explore - Codebase exploration and analysis"
@@ -3556,7 +3555,7 @@ print_next_steps() {
     echo "                        🚀 Quick Start"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "🤖 Agents (39):"
+    echo "🤖 Agents (38):"
     echo "  - build (default) - Full-featured coding agent"
     echo "  - plan - Planning agent (read-only)"
     echo "  - explore - Fast codebase exploration and analysis"

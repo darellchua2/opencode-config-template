@@ -2,7 +2,9 @@
 description: Specialized subagent for Test Driven Development workflow guidance. Guides through red-green-refactor cycle for multiple languages and frameworks.
 mode: subagent
 permission:
-  read: allow
+  read:
+    "mcp:*": deny
+    "*": allow
   edit: deny
   glob: allow
   grep: allow
@@ -111,3 +113,15 @@ Key differences from standard TDD:
 - Code writing: Request from parent agent (read-only guidance)
 
 Provide clear, actionable guidance. Focus on teaching TDD methodology.
+
+## CodeGraph Integration
+
+When `.codegraph/` exists in the project, prioritize CodeGraph tools for test target discovery:
+
+| CodeGraph Tool | Use For |
+|---|---|
+| `codegraph_search` | Find symbols by name to test |
+| `codegraph_callers` / `callees` | Identify edge-case call paths to cover |
+| `codegraph_impact` | Assess what tests to update when source changes |
+
+If `.codegraph/` does not exist, fall back to grep/glob/read. Do NOT call `read_mcp_resource` — codegraph is tools-only (no resources); use the `codegraph_*` tools directly.

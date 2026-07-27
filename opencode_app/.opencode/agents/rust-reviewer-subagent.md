@@ -3,7 +3,9 @@ description: Rust code review subagent focusing on ownership, borrow checker, un
 mode: subagent
 steps: 25
 permission:
-  read: allow
+  read:
+    "mcp:*": deny
+    "*": allow
   edit: deny
   glob: allow
   grep: allow

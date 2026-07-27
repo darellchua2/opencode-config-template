@@ -3,7 +3,9 @@ description: Go code review subagent focusing on Go idioms, concurrency safety, 
 mode: subagent
 steps: 25
 permission:
-  read: allow
+  read:
+    "mcp:*": deny
+    "*": allow
   edit: deny
   glob: allow
   grep: allow

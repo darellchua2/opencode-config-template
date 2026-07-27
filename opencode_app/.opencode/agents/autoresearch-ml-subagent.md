@@ -3,7 +3,9 @@ description: Autonomous ML training research subagent — runs the karpathy-styl
 mode: subagent
 steps: 50
 permission:
-  read: allow
+  read:
+    "mcp:*": deny
+    "*": allow
   edit:
     "*": deny
     "**/train.py": allow
