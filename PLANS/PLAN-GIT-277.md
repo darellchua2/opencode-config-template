@@ -1,8 +1,10 @@
 # PLAN-GIT-277
 
+> **CLOSED 2026-07-27 — No work performed on this branch.** Verification against `main` found the entire plan **already implemented by PR #275** (commit `8225352`, merged): *"refactor(agents): remove ticket-creation-subagent + tighten read perms + CodeGraph routing"*. All Part A and Part B acceptance criteria are satisfied on `main`; no agent files were edited on `GIT-277`. See `## Closure Verification` at end of file.
+
 **Issue:** #277 — Tighten `read: allow` to object form (35 agents) + add CodeGraph routing to 6 code-centric agents
-**Branch:** `issue-273` (working on existing branch per user instruction; no new branch); NOTE: plan-updater-skill will not auto-match (extracts 273 ≠ 277) — checkboxes must be flipped manually during execution.
-**Status:** Ready
+**Branch:** `GIT-277` (created off `main` for verification; original plan draft referenced `issue-273`).
+**Status:** Done — no-op; already on `main` via PR #275.
 
 ## Overview
 
@@ -154,3 +156,18 @@ None.
 - `grep -l "## CodeGraph Integration" opencode_app/.opencode/agents/*.md | wc -l` == 24
 - All 35 edited agent files parse as valid YAML frontmatter (Phase 3.1)
 - After redeploy, spawning `nextjs-specialist-subagent` for Mode 3 audit produces zero `read_mcp_resource` errors (qualitative; tracked in follow-up)
+
+## Closure Verification
+
+Verified on branch `GIT-277` (off `main`) on 2026-07-27. **No agent files were edited** — the work was found pre-completed on `main`.
+
+| Acceptance check | Expected | Actual | OK |
+|---|---|---|---|
+| `read: allow` string-form hits | 0 | 0 | yes |
+| `"mcp:*": deny` object-form hits | 35 | 35 | yes |
+| 6 target agents have `## CodeGraph Integration` | all 6 | all 6 (nextjs, tdd, coverage, documentation, cad-specialist, opencode-tooling) | yes |
+| nextjs mode-gating (skip Mode 1, use Mode 2/3) | yes | yes — `nextjs-specialist-subagent.md:105-107` | yes |
+| CodeGraph section count (informational) | 24 | 23 | n/a — plan baseline drift (actual baseline 17, not 18); every required agent present |
+| YAML frontmatter parse, all 38 agent files | clean | 38/38, 0 errors | yes |
+
+Implementing commit: `8225352` — *"refactor(agents): remove ticket-creation-subagent + tighten read perms + CodeGraph routing (#275)"*, merged to `main`.
