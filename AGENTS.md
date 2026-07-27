@@ -35,7 +35,7 @@ agnostic** — swap to Anthropic/OpenAI/OpenRouter/LM Studio via
 |------|----------------------|---------|
 | `primary` | `glm-5.2` (1M ctx) | **Primary session only** — holds the long orchestrator context. No subagent uses this. |
 | `reasoning` | `glm-5.1` (200k) | Correctness-critical: reviewers (code/architecture/language incl. java/uiux), repo-ops-specialist, tdd, opentofu-explorer, loop-operator, opencode-tooling, technical-design-specialist, discovery-specialist, requirements-specialist, autoresearch-ml, autoresearch-code |
-| `fast` | `glm-5-turbo` (200k) | Exploratory / low-impact / coordination: explorer, testing, specialists (nextjs/cad/m365/google/office-docs), document creators, pr-workflow, ticket-creation, autoresearch-research |
+| `fast` | `glm-5-turbo` (200k) | Exploratory / low-impact / coordination: explorer, testing, specialists (nextjs/cad/m365/google/office-docs), document creators, pr-workflow, autoresearch-research |
 | `docs` | `glm-4.7` (204k) | Docs/lint/reporting: documentation, linting, coverage |
 | `vision` | `glm-5v-turbo` (200k) | **Multimodal required**: image-analyzer, error-resolver. No structured output. |
 
