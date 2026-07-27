@@ -26,7 +26,7 @@ I provide a structured **Software Requirements Specification (SRS)** creation wo
 Use this skill when:
 - A feature needs **internal requirements engineering** for the development team (NOT a customer-facing doc — that is `vision-creation-skill`)
 - Someone says "create srs", "software requirements", "functional spec", "feature spec", "specification", "write srs"
-- You want a structured artifact that feeds into the PLAN file via `ticket-creation-subagent`
+- You want a structured artifact that feeds into the PLAN file via `ticket-plan-workflow-skill`
 - The customer-facing Vision is signed off and must be translated into developer-ready requirements
 - Reviewing/updating an existing SRS
 
@@ -41,7 +41,7 @@ The SRS is **internal — for the development team**. It encodes tradeoffs, non-
 - **`requirements-specialist-subagent`** — the agent that authors the SRS (this skill is its template)
 - **`vision-creation-skill`** — the upstream customer-facing doc; the signed Vision feeds INTO the SRS
 - **`interactive-document-rendering-skill`** — shared HTML + DOCX rendering standard (snapshot HTML for SRS)
-- **`ticket-creation-subagent`** — auto-detects draft SRS in `docs/srs/` during Full workflow, renames to ticket key, links in PLAN header
+- **`ticket-plan-workflow-skill`** — auto-detects draft SRS in `docs/srs/` during Full workflow, renames to ticket key, links in PLAN header
 - **`ticket-plan-workflow-skill`** — downstream consumer; SRS feeds into the PLAN file
 - **`xlsx-specialist-skill` / `xlsx-specialist-subagent`** — peer tabular deliverables (RTM, data dictionary)
 - **`verification-loop-skill`** — acceptance-criteria alignment between SRS and implementation
@@ -340,7 +340,7 @@ docs/srs/SRS-draft-{kebab-slug}.md
 docs/srs/SRS-{ticket-key}.md
 ```
 
-- Renamed via `git mv` by `ticket-creation-subagent` during Full workflow (preserves git history)
+- Renamed via `git mv` by `ticket-plan-workflow-skill` during Full workflow (preserves git history)
 - If the draft was never committed (untracked on the new branch), a plain `mv` + `git add` is used instead
 
 ### Bidirectional Linkage
@@ -348,7 +348,7 @@ docs/srs/SRS-{ticket-key}.md
 | Direction | Field | Location |
 |-----------|-------|----------|
 | SRS → PLAN | `**PLAN**: PLANS/PLAN-{key}.md` | SRS header (filled at rename time) |
-| PLAN → SRS | `**SRS**: docs/srs/SRS-{key}.md` | PLAN header (injected by ticket-creation-subagent) |
+| PLAN → SRS | `**SRS**: docs/srs/SRS-{key}.md` | PLAN header (injected by ticket-plan-workflow-skill) |
 
 ---
 

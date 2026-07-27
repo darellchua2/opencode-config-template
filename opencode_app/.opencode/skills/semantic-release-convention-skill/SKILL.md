@@ -46,7 +46,7 @@ This is a **governance skill** - it defines conventions that other skills and ag
 | Consumer | Type | Usage |
 |----------|------|-------|
 | `pr-workflow-subagent` | Agent | PR creation with release conventions |
-| `ticket-creation-subagent` | Agent | Version label assignment during ticket creation |
+| `ticket-plan-workflow-skill` | Skill | Version label assignment during ticket creation (primary direct load) |
 
 ---
 
