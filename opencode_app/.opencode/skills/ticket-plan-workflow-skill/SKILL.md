@@ -296,6 +296,36 @@ After adopting, update the renamed file's `**Issue:**` / **Ticket Reference** he
 
 > **History preservation**: always use `git mv`, never a plain `mv`, so the rename is tracked across commits.
 
+### Step 5.6: Document Auto-Detect (BRD/SRS Draft Linking)
+
+[Migrated from ticket-creation-subagent on removal — preserves document-traceability when this skill runs directly in the primary session.]
+
+After adopting/renaming the PLAN (Step 5.5) and before generating the PLAN body (Step 6), scan for draft requirement documents and offer to link them to the ticket. Document-ladder order: **BRD first, then SRS**.
+
+**5.6a. BRD Auto-Detect** (`docs/brd/`):
+```bash
+ls docs/brd/BRD-draft-*.md 2>/dev/null
+```
+- If drafts found: ask the user (via `question`) "Found draft BRD(s): [list]. Link to this ticket?"
+- If the user confirms and selects a draft:
+  - Rename: `git mv docs/brd/BRD-draft-{slug}.md docs/brd/BRD-{ticket-key}.md` (if the draft was never committed / untracked on a new branch, use plain `mv` + `git add`)
+  - Update the BRD header `**PLAN**:` placeholder to `PLANS/PLAN-{ticket-key}.md`
+  - Set `BRD_PATH=docs/brd/BRD-{ticket-key}.md` for PLAN header injection (Step 6)
+- If no drafts found or user declines: `BRD_PATH=""` (skip — backward-compatible)
+
+**5.6b. SRS Auto-Detect** (`docs/srs/`):
+```bash
+ls docs/srs/SRS-draft-*.md 2>/dev/null
+```
+- If drafts found: ask the user "Found draft SRS(s): [list]. Link to this ticket?"
+- If the user confirms and selects a draft:
+  - Rename: `git mv docs/srs/SRS-draft-{slug}.md docs/srs/SRS-{ticket-key}.md` (plain `mv` + `git add` if untracked)
+  - Update the SRS header `**PLAN**:` placeholder to `PLANS/PLAN-{ticket-key}.md`
+  - Set `SRS_PATH=docs/srs/SRS-{ticket-key}.md` for PLAN header injection (Step 6)
+- If no drafts found or user declines: `SRS_PATH=""` (skip — backward-compatible)
+
+> **Document header injection**: when generating the PLAN (Step 6), inject linked documents into the PLAN header after the `**Branch**:` line, in ladder order — `**BRD**: {BRD_PATH}` (if set) then `**SRS**: {SRS_PATH}` (if set). Both are optional and present only when linked.
+
 **Formatted Body/Description Template**:
 ```markdown
 ## Overview
@@ -362,7 +392,7 @@ _Every step MUST be atomic (one reversible concern) and carry a rationale. Rejec
 
 ## Step Authoring Rules
 - **Atomic**: one reversible concern per step; if a step does two things, split it.
-- **Rationale mandatory**: every step MUST have a **Why**; a step without rationale is malformed and blocks commit (enforced by `ticket-creation-subagent`; flagged by `plan-updater-skill`).
+- **Rationale mandatory**: every step MUST have a **Why**; a step without rationale is malformed and blocks commit (enforced by this skill's Step 6.5 self-check; flagged by `plan-updater-skill`).
 - **Completion signal**: every step MUST have an objective **Done when** check, not a subjective "done".
 - **Consumers explicit**: list affected consumers so reviewers/execution know blast radius; write "none" if truly isolated.
 
@@ -378,6 +408,24 @@ _Identify potential risks and how to mitigate them_
 ## Success Metrics
 _How will we measure success?_
 ```
+
+### Step 6.5: Atomicity Self-Check (Commit Gate)
+
+[Migrated from ticket-creation-subagent on removal — enforces well-formed PLANs regardless of invocation path.]
+
+Before committing the PLAN (Step 7), verify every implementation step is atomic and complete. **This gate blocks the commit** if any step is malformed.
+
+**Procedure**:
+1. Read the generated PLAN file back from disk.
+2. Find every implementation-step line matching the checkbox marker: `- [ ] **N.M**` (and `- [x]` for completed steps).
+3. For each step, confirm it carries all three rationale fields on the lines immediately following:
+   - `— **Why:**`
+   - `— **Done when:**`
+   - `— **Consumers affected:**`
+4. **If ANY step is missing any of the three** → **do NOT commit/push**. Surface the malformed steps (line number + step text) to the user, ask them to supply the missing fields, regenerate, and re-check. Only proceed once the self-check passes (zero malformed steps).
+5. Stage the PLAN (and any linked BRD/SRS) only after the gate passes.
+
+> This gate is what makes "a step without a Why is malformed and blocks commit" enforceable. It runs whether the skill is loaded directly by the primary or invoked any other way.
 
 ### Step 7: Commit and Push PLAN file
 
@@ -412,6 +460,19 @@ echo "Committed and pushed $PLAN_FILE"
 - Scope: `plan` (identifies plan-related commits)
 - Subject: Describes the PLAN file added
 - Body: Optional additional context
+
+### Step 7.5: Branch-Workflow Setup Signal (post-push)
+
+[Migrated from ticket-creation-subagent on removal — ensures new projects get offered branch-workflow setup.]
+
+After pushing the branch (Step 7), check whether the project needs dev→uat→main release-workflow setup, applying the detection logic from `git-branch-workflow-setup-skill` §Detection Logic:
+
+1. Check for the skip marker: `.opencode/branch-workflow-skipped`. If present → skip (do not signal).
+2. Check for existing release tooling (any of): `.releaserc.json`, `release.config.js`, semantic-release / release-please / standard-version config, or `dev`/`uat`/`release` branches.
+3. **If release tooling is already present** → the workflow is already set up; do not signal.
+4. **If the skip marker is absent AND no release tooling is found** → emit `NEEDS_GIT_BRANCH_SETUP: true` in the return contract / summary so the primary agent can offer branch-workflow setup (the primary loads `git-branch-workflow-setup-skill` and prompts the user).
+
+> Do NOT invoke `git-branch-workflow-setup-skill` or spawn `repo-ops-specialist-subagent` from within this skill — the primary agent owns that handoff (hub-and-spoke). This step only emits the signal.
 
 ### Step 8: Update Ticket with Initial Progress
 
