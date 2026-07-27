@@ -357,6 +357,18 @@ permission:
 
 Always read files before modifying. Use webfetch to verify latest docs before creating/updating tooling.
 
+## CodeGraph Integration
+
+When `.codegraph/` exists in the project AND the review target is code (not config/agent/skill markdown), use CodeGraph:
+
+| CodeGraph Tool | Use For |
+|---|---|
+| `codegraph_search` | Find symbols referenced in agent/skill docs |
+| `codegraph_callers` / `callees` | Verify cross-references in tooling docs match actual code |
+| `codegraph_impact` | Assess blast radius when a tooling change touches code |
+
+For markdown-only reviews (agents, skills, AGENTS.md), skip CodeGraph — use grep/glob/read. Do NOT call `read_mcp_resource` — codegraph is tools-only (no resources); use the `codegraph_*` tools directly.
+
 ## Return Contract
 
 When your task is complete, return ONLY this structure:

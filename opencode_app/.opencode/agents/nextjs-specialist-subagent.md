@@ -98,6 +98,16 @@ You are a Next.js specialist. You handle **project scaffolding**, **runtime diag
 - Environment variable templates
 - Server/Client Component boundary discipline
 
+## CodeGraph Integration
+
+When `.codegraph/` exists in the project, use CodeGraph selectively by mode:
+
+- **Mode 1 (Scaffolding):** Skip — new/empty project has no symbols to index yet.
+- **Mode 2 (Runtime Diagnosis):** Use `codegraph_impact` for error blast radius, `codegraph_callers` to find callers of failing server actions.
+- **Mode 3 (Project Audit):** Use `codegraph_files` to map routes/components, `codegraph_search` + `codegraph_impact` to find anti-pattern usage and assess refactor cost.
+
+If `.codegraph/` does not exist, fall back to grep/glob/read. Do NOT call `read_mcp_resource` — codegraph is tools-only (no resources); use the `codegraph_*` tools directly.
+
 ## Return Contract
 
 **Status:** [success | partial | failed]

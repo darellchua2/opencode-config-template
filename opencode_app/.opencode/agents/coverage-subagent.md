@@ -47,6 +47,18 @@ Delegation:
 
 Always follow industry best practices for coverage documentation.
 
+## CodeGraph Integration
+
+When `.codegraph/` exists in the project, use CodeGraph to map code structure for coverage analysis:
+
+| CodeGraph Tool | Use For |
+|---|---|
+| `codegraph_files` | Enumerate source files for coverage targets |
+| `codegraph_search` | Find untested symbols by name |
+| `codegraph_callers` / `callees` | Trace dead code paths (no callers = potentially uncoverable) |
+
+If `.codegraph/` does not exist, fall back to grep/glob/read. Do NOT call `read_mcp_resource` — codegraph is tools-only (no resources); use the `codegraph_*` tools directly.
+
 ## Return Contract
 
 When your task is complete, return ONLY this structure:
