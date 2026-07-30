@@ -4,8 +4,8 @@ mode: subagent
 steps: 10
 permission:
   read:
-    "mcp:*": deny
     "*": allow
+    "mcp:*": deny
   edit: deny
   bash: deny
 ---

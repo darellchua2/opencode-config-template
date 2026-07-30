@@ -4,8 +4,8 @@ mode: subagent
 steps: 25
 permission:
   read:
-    "mcp:*": deny
     "*": allow
+    "mcp:*": deny
   edit: allow
   glob: allow
   grep: allow

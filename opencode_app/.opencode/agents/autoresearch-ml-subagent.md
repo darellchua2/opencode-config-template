@@ -4,8 +4,8 @@ mode: subagent
 steps: 50
 permission:
   read:
-    "mcp:*": deny
     "*": allow
+    "mcp:*": deny
   edit:
     "*": deny
     "**/train.py": allow

@@ -3,8 +3,8 @@ description: Specialized subagent for test generation across multiple languages 
 mode: subagent
 permission:
   read:
-    "mcp:*": deny
     "*": allow
+    "mcp:*": deny
   edit: allow
   glob: allow
   grep: allow

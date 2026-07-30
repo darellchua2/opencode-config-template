@@ -9,8 +9,8 @@ description: >-
 mode: subagent
 permission:
   read:
-    "mcp:*": deny
     "*": allow
+    "mcp:*": deny
   edit: allow
   glob: allow
   grep: allow

@@ -3,8 +3,8 @@ description: Specialized subagent for pull request workflows with framework-spec
 mode: subagent
 permission:
   read:
-    "mcp:*": deny
     "*": allow
+    "mcp:*": deny
   edit: allow
   glob: allow
   grep: allow

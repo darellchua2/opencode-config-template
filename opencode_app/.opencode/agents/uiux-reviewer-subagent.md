@@ -4,8 +4,8 @@ mode: subagent
 steps: 30
 permission:
   read:
-    "mcp:*": deny
     "*": allow
+    "mcp:*": deny
   edit:
     "*": deny
     "LEARNINGS/**": allow

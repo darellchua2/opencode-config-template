@@ -3,8 +3,8 @@ description: Specialized subagent for diagnosing and resolving errors, exception
 mode: subagent
 permission:
   read:
-    "mcp:*": deny
     "*": allow
+    "mcp:*": deny
   edit: deny
   glob: allow
   grep: allow

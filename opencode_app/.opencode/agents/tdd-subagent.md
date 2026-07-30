@@ -3,8 +3,8 @@ description: Specialized subagent for Test Driven Development workflow guidance.
 mode: subagent
 permission:
   read:
-    "mcp:*": deny
     "*": allow
+    "mcp:*": deny
   edit: deny
   glob: allow
   grep: allow
