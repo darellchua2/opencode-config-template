@@ -17,8 +17,9 @@ sees and attempts the tool.
 
 1. **Upstream**: MCP resource tools bypass `Permission.disabled()` visibility filter
    (PR #33686 fixed only `list_mcp_resource_templates`)
-2. **Our config**: All 35 custom subagents have `read` permission rules in wrong order
-   (`mcp:*: deny` before `*: allow` — `*` wins as "last matching rule")
+2. **Our config**: 35 of 38 custom subagents have `read` permission rules in wrong order
+   (`mcp:*: deny` before `*: allow` — `*` wins as "last matching rule"). The remaining 3
+   have no `read:` block at all and rely solely on global merge.
 3. **Our config**: Built-in `explore`/`general` agents have no `permission.read` block
    (relies entirely on global config merge)
 
@@ -46,9 +47,14 @@ sees and attempts the tool.
 
 ## Implementation Phases
 
-### Phase 1: Fix permission rule ordering in all 35 custom subagents
+### Phase 1: Fix permission rule ordering in 35 custom subagents
 
-All subagent frontmatter files have:
+35 of 38 subagent frontmatter files have `read:` blocks with the wrong rule order.
+The 3 excluded files (`office-document-primary-agent.md`, `pptx-specialist-subagent.md`,
+`startup-ceo-subagent.md`) have no `read:` block — they inherit the global
+`permission.read: {"mcp:*": "deny"}` at runtime and are covered by Phase 3 instructions.
+
+All 35 files with `read:` blocks have:
 ```yaml
 read:
   "mcp:*": deny    # WRONG: evaluated first
@@ -73,6 +79,11 @@ read:
 
 ### Phase 2: Add explicit permission.read to built-in explore and general agents
 
+> **Scope note:** `build` and `plan` primary agents are intentionally excluded.
+> They are orchestrators that receive full `deploy/.AGENTS.md` steering (Phase 3)
+> and are unlikely to directly attempt MCP resource reads. `explore` and `general`
+> are spawned subagents with focused tasks where the tool visibility issue triggers.
+
 - [ ] **2.1** Add `permission.read` block to `explore` agent in `opencode_app/opencode.json`
     — **Why:** The built-in explore agent has no permission block; while user config merges last and wins, adding explicit `read: {"*": "allow", "mcp:*": "deny"}` provides defense-in-depth and makes the intent visible in the agent config itself.
     — **Done when:** `jq '.agent.explore.permission.read' opencode_app/opencode.json` returns `{"*": "allow", "mcp:*": "deny"}`
@@ -90,14 +101,14 @@ read:
 
 ### Phase 3: Strengthen instruction-based mitigation
 
-- [ ] **3.1** Add explicit MCP resource tool avoidance to `deploy/.AGENTS.md` CodeGraph section
-    — **Why:** The upstream bug makes `read_mcp_resource` visible to all agents. Until opencode fixes the visibility filter, instruction-based mitigation is the only reliable steering. Current text says "do not call it" but doesn't explain WHY (visibility bug) or what to do instead.
-    — **Done when:** CodeGraph section has a paragraph explaining the visibility bug and explicit instruction: "If you see `read_mcp_resource` in your tool list, do NOT call it — use `codegraph_*` tools or built-in `Read`/`grep`/`glob` instead."
+- [ ] **3.1** Revise existing CodeGraph paragraph in `deploy/.AGENTS.md` (line ~26) to explain the visibility bug
+    — **Why:** The upstream bug makes `read_mcp_resource` and `list_mcp_resources` visible to all agents despite being runtime-denied. The current text (line 26) already says "do not call it" but doesn't explain WHY (visibility bug) — the model sees the tool and doesn't know it will fail. Revise, don't duplicate.
+    — **Done when:** The existing CodeGraph paragraph includes: "Due to an upstream opencode visibility bug, `read_mcp_resource` and `list_mcp_resources` remain in the model's tool list even though they are runtime-denied — do NOT attempt to call them. Use `codegraph_*` tools or built-in `Read`/`grep`/`glob` instead."
     — **Consumers affected:** primary session, all subagents that inherit user-level AGENTS.md
 
 - [ ] **3.2** Mirror the same guidance in `opencode_app/AGENTS.md` (Docker standalone)
-    — **Why:** Docker standalone mode has its own AGENTS.md that doesn't inherit from `deploy/.AGENTS.md`. Needs the same instruction.
-    — **Done when:** Docker AGENTS.md CodeGraph section has matching guidance
+    — **Why:** Docker standalone mode has its own AGENTS.md that doesn't inherit from `deploy/.AGENTS.md`. Needs the same instruction covering both `read_mcp_resource` and `list_mcp_resources`.
+    — **Done when:** Docker AGENTS.md CodeGraph section has matching guidance for both tools
     — **Consumers affected:** Docker container sessions
 
 - [ ] **3.3** Add explicit avoidance instruction to `explorer-subagent.md` prompt body
@@ -117,6 +128,16 @@ read:
     — **Done when:** `./deploy/setup.sh --dry-run` completes without errors
     — **Consumers affected:** deployment workflow
 
+- [ ] **4.3** Deploy to `~/.config/opencode/` (actual deployment, not dry-run)
+    — **Why:** The fix doesn't take effect until `setup.sh` copies source files to `~/.config/opencode/`. Dry-run only stages to a preview dir.
+    — **Done when:** `./deploy/setup.sh` completes; `grep -c '"mcp:\*": deny' ~/.config/opencode/agents/explorer-subagent.md` shows correct ordering in deployed copy
+    — **Consumers affected:** all deployed opencode sessions
+
+- [ ] **4.4** Functional smoke test (best-effort, non-deterministic)
+    — **Why:** Verify the instruction mitigation actually steers the model away from `read_mcp_resource`. Non-deterministic (model-dependent), so this is a smoke test, not a hard gate.
+    — **Done when:** Spawn an explore subagent with a code lookup task in a project with `.codegraph/`; verify it uses `codegraph_*` tools or `grep`/`glob` and does NOT attempt `read_mcp_resource` or `list_mcp_resources`
+    — **Consumers affected:** none (validation only)
+
 ---
 
 ## Technical Notes
@@ -135,11 +156,21 @@ read:
 | Risk | Likelihood | Mitigation |
 |------|-----------|------------|
 | JSON syntax error in opencode.json | Low | Validate with `jq` after edit (Step 2.3) |
+| YAML frontmatter corruption during batch edit | Low | Validate each file: `grep -c 'mcp:\*: deny'` confirms 35 matches post-edit; spot-check 3-5 files for structural integrity |
 | Wrong file edited (subagent vs built-in) | Low | File paths are distinct: `.opencode/agents/*.md` vs `opencode.json` agent block |
 | Instruction too aggressive (blocks legitimate MCP resource reads) | Very Low | `mcp:*` deny is already in place; we're only strengthening visibility, not enforcement |
 
 ## Success Metrics
 
-- Built-in `explore` subagent stops attempting `read_mcp_resource` calls
+- Built-in `explore` subagent stops attempting `read_mcp_resource` and `list_mcp_resources` calls
 - Zero subagent frontmatter files with wrong permission ordering
 - `opencode.json` explore/general agents have explicit `permission.read`
+
+## Commit Strategy
+
+Atomic commits per the repo's AGENTS.md conventions (never mix layers):
+
+1. `fix(agents): reorder read permission rules in 35 subagent frontmatters` — Phase 1 (35-file YAML swap)
+2. `fix(config): add explicit permission.read to explore and general agents` — Phase 2 (opencode.json)
+3. `docs(agents): strengthen MCP resource tool avoidance in instructions` — Phase 3 (AGENTS.md + explorer prompt)
+4. `docs(plan): update PLAN-GIT-278 with review findings` — this revision
