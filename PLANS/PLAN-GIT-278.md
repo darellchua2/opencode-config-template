@@ -67,12 +67,12 @@ read:
   "mcp:*": deny     # specific second — wins
 ```
 
-- [ ] **1.1** Swap `read` permission rule order in all 35 `opencode_app/.opencode/agents/*.md` files (put `"*": allow` before `"mcp:*": deny`)
+- [x] **1.1** Swap `read` permission rule order in all 35 `opencode_app/.opencode/agents/*.md` files (put `"*": allow` before `"mcp:*": deny`)
     — **Why:** The docs state "put the catch-all `*` first, specific rules after" with "last matching rule wins." Current order makes the deny dead code within the agent's own ruleset. Though global config merge handles it at runtime, fixing the order ensures correctness even if merge behavior changes.
     — **Done when:** All 35 files have `"*": allow` before `"mcp:*": deny` in their `read:` permission block; `grep -c` confirms zero files with old ordering
     — **Consumers affected:** `deploy/setup.sh` (deploys these files), all subagent sessions (correct permission enforcement)
 
-- [ ] **1.2** Verify no subagent uses shorthand `read: allow` or `read: deny` (which would replace the object form)
+- [x] **1.2** Verify no subagent uses shorthand `read: allow` or `read: deny` (which would replace the object form)
     — **Why:** Shorthand form replaces the object form entirely, losing the `mcp:*` deny. Need to confirm all 35 use object syntax.
     — **Done when:** `grep` confirms all 35 files use object syntax `read:` with sub-keys, not shorthand
     — **Consumers affected:** none (validation only)
@@ -84,56 +84,56 @@ read:
 > and are unlikely to directly attempt MCP resource reads. `explore` and `general`
 > are spawned subagents with focused tasks where the tool visibility issue triggers.
 
-- [ ] **2.1** Add `permission.read` block to `explore` agent in `opencode_app/opencode.json`
+- [x] **2.1** Add `permission.read` block to `explore` agent in `opencode_app/opencode.json`
     — **Why:** The built-in explore agent has no permission block; while user config merges last and wins, adding explicit `read: {"*": "allow", "mcp:*": "deny"}` provides defense-in-depth and makes the intent visible in the agent config itself.
     — **Done when:** `jq '.agent.explore.permission.read' opencode_app/opencode.json` returns `{"*": "allow", "mcp:*": "deny"}`
     — **Consumers affected:** built-in explore subagent sessions, `deploy/setup.sh` (copies config)
 
-- [ ] **2.2** Add `permission.read` block to `general` agent in `opencode_app/opencode.json`
+- [x] **2.2** Add `permission.read` block to `general` agent in `opencode_app/opencode.json`
     — **Why:** Same rationale as explore — the general agent also inherits from built-in defaults. Explicit deny makes intent clear.
     — **Done when:** `jq '.agent.general.permission.read' opencode_app/opencode.json` returns `{"*": "allow", "mcp:*": "deny"}`
     — **Consumers affected:** built-in general subagent sessions
 
-- [ ] **2.3** Validate JSON syntax after edits
+- [x] **2.3** Validate JSON syntax after edits
     — **Why:** opencode.json is the critical config file — syntax errors break everything.
     — **Done when:** `jq empty opencode_app/opencode.json` exits 0, `node -e "require('./opencode_app/opencode.json')"` succeeds
     — **Consumers affected:** entire opencode deployment
 
 ### Phase 3: Strengthen instruction-based mitigation
 
-- [ ] **3.1** Revise existing CodeGraph paragraph in `deploy/.AGENTS.md` (line ~26) to explain the visibility bug
+- [x] **3.1** Revise existing CodeGraph paragraph in `deploy/.AGENTS.md` (line ~26) to explain the visibility bug
     — **Why:** The upstream bug makes `read_mcp_resource` and `list_mcp_resources` visible to all agents despite being runtime-denied. The current text (line 26) already says "do not call it" but doesn't explain WHY (visibility bug) — the model sees the tool and doesn't know it will fail. Revise, don't duplicate.
     — **Done when:** The existing CodeGraph paragraph includes: "Due to an upstream opencode visibility bug, `read_mcp_resource` and `list_mcp_resources` remain in the model's tool list even though they are runtime-denied — do NOT attempt to call them. Use `codegraph_*` tools or built-in `Read`/`grep`/`glob` instead."
     — **Consumers affected:** primary session, all subagents that inherit user-level AGENTS.md
 
-- [ ] **3.2** Mirror the same guidance in `opencode_app/AGENTS.md` (Docker standalone)
+- [x] **3.2** Mirror the same guidance in `opencode_app/AGENTS.md` (Docker standalone)
     — **Why:** Docker standalone mode has its own AGENTS.md that doesn't inherit from `deploy/.AGENTS.md`. Needs the same instruction covering both `read_mcp_resource` and `list_mcp_resources`.
     — **Done when:** Docker AGENTS.md CodeGraph section has matching guidance for both tools
     — **Consumers affected:** Docker container sessions
 
-- [ ] **3.3** Add explicit avoidance instruction to `explorer-subagent.md` prompt body
+- [x] **3.3** Add explicit avoidance instruction to `explorer-subagent.md` prompt body
     — **Why:** The explorer-subagent is the primary agent for codebase exploration and the most likely to encounter this issue. Its prompt already has CodeGraph Integration section but doesn't explicitly say "do not call read_mcp_resource."
     — **Done when:** Explorer-subagent prompt has a line: "Do NOT call `read_mcp_resource` or `list_mcp_resources` — they are denied at runtime and will waste a step. Use `codegraph_*` tools or built-in `read`/`grep`/`glob` directly."
     — **Consumers affected:** explorer-subagent sessions
 
 ### Phase 4: Validation
 
-- [ ] **4.1** Run documentation-consistency check (counts unchanged — no agents/skills added or removed)
+- [x] **4.1** Run documentation-consistency check (counts unchanged — no agents/skills added or removed)
     — **Why:** The sync rules require that changes to agents trigger documentation sync checks. Since we're only editing frontmatter and config (not adding/removing), counts should be unchanged.
     — **Done when:** Agent count still 38, skill count still 124 in setup.sh; README tables match
     — **Consumers affected:** none (validation only)
 
-- [ ] **4.2** Verify deploy dry-run produces correct output
+- [x] **4.2** Verify deploy dry-run produces correct output
     — **Why:** Ensure the config changes don't break the deploy script.
     — **Done when:** `./deploy/setup.sh --dry-run` completes without errors
     — **Consumers affected:** deployment workflow
 
-- [ ] **4.3** Deploy to `~/.config/opencode/` (actual deployment, not dry-run)
+- [x] **4.3** Deploy to `~/.config/opencode/` (actual deployment, not dry-run)
     — **Why:** The fix doesn't take effect until `setup.sh` copies source files to `~/.config/opencode/`. Dry-run only stages to a preview dir.
     — **Done when:** `./deploy/setup.sh` completes; `grep -c '"mcp:\*": deny' ~/.config/opencode/agents/explorer-subagent.md` shows correct ordering in deployed copy
     — **Consumers affected:** all deployed opencode sessions
 
-- [ ] **4.4** Functional smoke test (best-effort, non-deterministic)
+- [x] **4.4** Functional smoke test (best-effort, non-deterministic)
     — **Why:** Verify the instruction mitigation actually steers the model away from `read_mcp_resource`. Non-deterministic (model-dependent), so this is a smoke test, not a hard gate.
     — **Done when:** Spawn an explore subagent with a code lookup task in a project with `.codegraph/`; verify it uses `codegraph_*` tools or `grep`/`glob` and does NOT attempt `read_mcp_resource` or `list_mcp_resources`
     — **Consumers affected:** none (validation only)
