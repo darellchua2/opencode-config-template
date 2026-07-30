@@ -389,10 +389,22 @@
       }
     },
     "explore": {
-      "model": "zai-coding-plan/glm-5-turbo"
+      "model": "zai-coding-plan/glm-5-turbo",
+      "permission": {
+        "read": {
+          "*": "allow",
+          "mcp:*": "deny"
+        }
+      }
     },
     "general": {
-      "model": "zai-coding-plan/glm-5.1"
+      "model": "zai-coding-plan/glm-5.1",
+      "permission": {
+        "read": {
+          "*": "allow",
+          "mcp:*": "deny"
+        }
+      }
     }
   }
 }
