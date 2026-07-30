@@ -5,8 +5,8 @@ hidden: true
 steps: 15
 permission:
   read:
-    "mcp:*": deny
     "*": allow
+    "mcp:*": deny
   edit: allow
   bash: allow
   skill:

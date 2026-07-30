@@ -3,8 +3,8 @@ description: Configure and use Google's official MCP servers (Maps, BigQuery, GC
 mode: subagent
 permission:
   read:
-    "mcp:*": deny
     "*": allow
+    "mcp:*": deny
   edit: allow
   glob: allow
   grep: allow

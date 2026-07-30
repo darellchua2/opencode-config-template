@@ -3,8 +3,8 @@ description: Specialized subagent for Word document creation and manipulation. C
 mode: subagent
 permission:
   read:
-    "mcp:*": deny
     "*": allow
+    "mcp:*": deny
   edit: allow
   glob: allow
   grep: allow

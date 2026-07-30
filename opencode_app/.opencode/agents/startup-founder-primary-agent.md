@@ -5,8 +5,8 @@ temperature: 0.7
 steps: 30
 permission:
   read:
-    "mcp:*": deny
     "*": allow
+    "mcp:*": deny
   edit: allow
   bash: allow
   webfetch: allow

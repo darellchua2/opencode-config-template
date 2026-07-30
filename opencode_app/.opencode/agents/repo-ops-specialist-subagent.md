@@ -3,8 +3,8 @@ description: Specialized subagent for git repository operations — repository s
 mode: subagent
 permission:
   read:
-    "mcp:*": deny
     "*": allow
+    "mcp:*": deny
   edit: allow
   glob: allow
   grep: allow
