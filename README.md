@@ -169,6 +169,53 @@ docker compose down
 docker compose build --no-cache
 ```
 
+## Project-Scoped Install (`opencode-init`)
+
+Not every project needs all 38 agents + 125 skills. `opencode-init` installs a **curated subset** into a target project's `.opencode/` and writes a project `opencode.json` configuring just that subset — chosen interactively (TUI) or via flags (LLM/CI). It is the project-scoped companion to the global `setup.sh` deploy, and is symlinked onto PATH as `opencode-init` by `setup.sh`.
+
+> **Mutually exclusive with global deploy for isolation.** OpenCode **merges** config and **unions** agents/skills across `~/.config/opencode` and `<project>/.opencode`. A project subset only yields an *isolated* curated experience on a **clean slate** (no global deploy). If `~/.config/opencode/agents/` is non-empty, the project install is **additive** — `opencode-init` detects this and warns. `permission.task` (scoped subagent-spawn allowlist) still restricts auto-spawning even with a global deploy; `@`-mention still bypasses it. See [issue #286](https://github.com/darellchua2/opencode-config-template/issues/286) and `PLANS/PLAN-GIT-286.md`.
+
+### Presets
+
+| Preset | Agents | Skills | MCPs | Use for |
+|--------|--------|--------|------|---------|
+| `core` | explorer | git-semantic-commits, continuous-learning | codegraph, mermaid | Minimal baseline |
+| `review` | code-review + architecture + 5 language reviewers | 9 Code Quality | codegraph | Code quality gates |
+| `frontend` | nextjs-specialist + uiux-reviewer + responsive-audit | 14 (Next.js/React/Three.js/a11y) | next-devtools, codegraph, mermaid | Web frontend |
+| `backend` | python-reviewer | 10 (Python/DB/API/security/docker) | codegraph | Server / devops-lite |
+| `docs` | documentation + coverage + docx/pptx/xlsx + office-doc | 15 (document ladder) | mermaid | Document generation |
+| `devops` | repo-ops + opentofu-explorer | 26 (release/IaC/JIRA) | codegraph | Git / infra / release |
+| `business` | startup-founder + ceo + discovery + requirements + technical-design | 12 (BD/pitch/planning) | — | BD / founder workflows |
+| `research` | autoresearch-{ml,code,research} + loop-operator | 11 (autoresearch + papers) | codegraph | Autonomous loops (ml needs GPU) |
+| `cad` | cad-specialist | 14 (CAD & Hardware Design) | — | CAD / robotics / hardware |
+| `integrations` | microsoft-m365 + google-mcp specialists | 3 config | 15 (M365 + Google + markitdown) | External MCP suites |
+
+Member counts include transitive deps auto-pulled by the resolver (a preset's agent `permission.task` delegates + `permission.skill` requirements). Run `opencode-init --expand <preset>` to see the exact resolved set.
+
+### Usage
+
+```bash
+# Introspect (LLM/CI-friendly JSON — do this before installing)
+opencode-init --list categories
+opencode-init --list agents --category review
+opencode-init --describe code-review-subagent      # skills + delegates + model availability
+opencode-init --expand review                      # full resolved set, writes nothing
+
+# Install (flag path — primary)
+opencode-init --project . --preset review --yes            # install a preset
+opencode-init --project . --agents code-review-subagent --yes   # specific agents (deps auto-pulled)
+opencode-init --project . --preset review --provider anthropic --yes   # pick the model provider
+opencode-init --project . --preset review --dry-run        # preview the manifest, write nothing
+opencode-init --project . --preset docs --yes --prune      # switch preset, remove the old subset
+
+# Install (interactive TUI — humans)
+opencode-init                                        # walks a menu (arrow keys), then installs
+
+opencode-init --help
+```
+
+What lands in the target project: `<project>/.opencode/opencode.json` (scoped `permission.skill` + `permission.task` allowlists, `agent.build/plan/explore/general`, selected MCPs), `<project>/.opencode/agents/*.md` (model injected per tier), `<project>/.opencode/skills/<name>/`, `<project>/.opencode/models.json`, a slim `<project>/AGENTS.md`, and a `.opencode-init.manifest.json` (enables safe `--prune`).
+
 ## Prerequisites
 
 - **Node.js v20+** and **npm** (required for MCP servers)
@@ -409,6 +456,8 @@ TypeScript, JavaScript, Python, Go, Rust, Java, C#, PHP, Ruby, C, C++, Swift, Ko
 ## Skill Modularization
 
 This repository implements **skill modularization** with 125 skills organized across 21 categories. Skills are designed with clear separation of concerns and explicit dependencies.
+
+> **Registry-derived (PLAN-GIT-286):** every skill + agent now carries a `category:` frontmatter field, which `deploy/build-registry.mjs` reads to emit `deploy/registry.json` — the single source of truth consumed by the `opencode-init` project-scoped installer and (regenerable into) this category table. To refresh after editing frontmatter: `node deploy/build-registry.mjs` (CI fails on drift via `--check`).
 
 > **Migration Complete (BT-142):** The `pptx-specialist-*` stack has been migrated to chenyu's JSON-in-PPTX architecture. Final skill count is **123** (−1 `pptx-specialist-skill` decomposed, +3 chenyu skills, +2 new decomposition skills, +2 Academic & Research Writing skills added post-migration). See `PLANS/PLAN-BT-142.md` for the full plan. The legacy `pptx-specialist-skill` has been removed; all PPTX operations now route through `pptx-specialist-subagent` → `pptx-generate-slide-skill` / `pptx-generate-template-skill` / `pptx-template-modifier-skill`. Post-#283: +1 `zai-vision-analysis-skill` (Z.AI direct-API vision, free `glm-4.6v-flash`) → **125**.
 
