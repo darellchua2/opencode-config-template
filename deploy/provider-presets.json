@@ -4,10 +4,10 @@
     "label": "Z.AI (default)",
     "primary": "zai-coding-plan/glm-5.2",
     "tiers": {
-      "reasoning": "zai-coding-plan/glm-5.1",
+      "reasoning": "zai-coding-plan/glm-5.2",
       "fast": "zai-coding-plan/glm-5-turbo",
       "docs": "zai-coding-plan/glm-4.7",
-      "vision": "zai-coding-plan/glm-5v-turbo"
+      "vision": "zai/glm-4.6v-flash"
     }
   },
   "anthropic": {

@@ -51,7 +51,7 @@ This subagent produces **TDD drafts** (`docs/technical-design/TDD-{key}.md`). It
 
 ## Model Tier
 
-This subagent runs at `glm-5.1` (sound-reasoning tier), the same tier as the reviewers (`code-review`, `architecture-review`, language reviewers). It is the **first non-reviewer** at this tier — justified because design **authoring** requires the same reasoning depth as design **review** (architecture decisions, trade-off analysis, data modeling, ADR authoring are correctness-critical, not low-impact transcription).
+This subagent runs on the **reasoning** tier, the same tier as the reviewers (`code-review`, `architecture-review`, language reviewers). It is the **first non-reviewer** at this tier — justified because design **authoring** requires the same reasoning depth as design **review** (architecture decisions, trade-off analysis, data modeling, ADR authoring are correctness-critical, not low-impact transcription).
 
 ## Trigger Phrases
 

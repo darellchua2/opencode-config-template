@@ -1919,6 +1919,10 @@ function Invoke-Resolver {
     if (Test-Path $ProjectOverrides) { $resolverArgs += @("--project-overrides", $ProjectOverrides) }
     if ($Force) { $resolverArgs += "--force" }
     if ($Provider) { $resolverArgs += @("--provider", $Provider, "--presets", $ProviderPresets) }
+    # Deploy-time exposed-model guard (#281): fail-fast if a tier/source pin
+    # references a model its provider doesn't serve. Guarded by file presence.
+    $ProviderModelsFile = Join-Path $DeployDir "provider-models.json"
+    if (Test-Path $ProviderModelsFile) { $resolverArgs += @("--provider-models", $ProviderModelsFile) }
     if ($DryRun) { $resolverArgs += "--dry-run" }
     & node $ResolverScript @resolverArgs
 }

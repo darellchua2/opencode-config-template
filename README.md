@@ -98,6 +98,11 @@ Override files (precedence highest-first; see `MIGRATION.md`):
 | `~/.config/opencode/models.json` | tier map, global (written by `--provider`) |
 | `deploy/models.default.json` | Z.AI defaults |
 
+> **Vision tier (Z.AI):** uses `zai/glm-4.6v-flash` (free), served by the `zai` API
+> provider — separate from the `zai-coding-plan` subscription. Requires
+> `opencode auth login` (Z.AI) or `ZAI_API_KEY` (auto-injected in Docker via
+> `docker-entrypoint.sh`). See `AGENTS.md` § Subagent Model Tiering.
+
 ### Windows (PowerShell)
 
 ```powershell
@@ -458,7 +463,7 @@ This repository implements **skill modularization** with 123 skills organized ac
 | **pr-workflow-subagent** | Pull request creation | pr-creation-workflow, nextjs-pr-workflow | `explore`, `general` |
 | **discovery-specialist-subagent** | Customer-facing discovery: Vision docs + wireframes | vision-creation-skill | `explore`, `image-analyzer-subagent`, `xlsx-specialist-subagent` |
 | **requirements-specialist-subagent** | BRD + SRS drafting (BABOK/IIBA + IEEE 830) | brd-creation-skill, srs-creation-skill | `explore`, `image-analyzer-subagent`, `xlsx-specialist-subagent` |
-| **technical-design-specialist-subagent** | Technical design + ADRs (engineering 'how' stage, glm-5.1) | technical-design-creation-skill | `explore`, `image-analyzer-subagent`, `architecture-review-subagent` |
+| **technical-design-specialist-subagent** | Technical design + ADRs (engineering 'how' stage) | technical-design-creation-skill | `explore`, `image-analyzer-subagent`, `architecture-review-subagent` |
 | **documentation-subagent** | Documentation generation | docstring-generator, coverage-readme-workflow | — |
 | **coverage-subagent** | Coverage reporting | coverage-readme-workflow | — |
 | **opentofu-explorer-subagent** | Infrastructure as code | 7 OpenTofu skills (AWS, K8s, Keycloak, Neon, ECR) | — |
