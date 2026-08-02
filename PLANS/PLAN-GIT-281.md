@@ -141,29 +141,29 @@ required only because the free vision model is not on the subscription.
 
 ### Phase 3: Add the deploy-time exposed-model guard (issue fix #3)
 
-- [ ] **3.1** Create `deploy/provider-models.json` mapping provider-prefix → exposed model id array, seeding `zai-coding-plan: [glm-4.7, glm-5-turbo, glm-5.2]` and `zai: [glm-4.6v-flash, glm-4.5-flash, glm-4.7-flash, …]` (free-tier + key Z.AI API models).
+- [x] **3.1** Create `deploy/provider-models.json` mapping provider-prefix → exposed model id array, seeding `zai-coding-plan: [glm-4.7, glm-5-turbo, glm-5.2]` and `zai: [glm-4.6v-flash, glm-4.5-flash, glm-4.7-flash, …]` (free-tier + key Z.AI API models).
     — **Why:** Gives the resolver a static, offline source of truth for "is this model actually served by its provider?" without a live network probe (fragile in offline/CI deploys).
     — **Done when:** File exists, is valid JSON, and lists `glm-4.6v-flash` under `zai` and `glm-5.2` under `zai-coding-plan`.
     — **Consumers affected:** `resolve-models.mjs` guard (3.2).
 
-- [ ] **3.2** Extend `deploy/resolve-models.mjs`: after resolving each agent model **and** the primary/explore/general models (computed at `:265-288`), split `provider/model`, look the provider up in `provider-models.json` (loaded via a new `--provider-models <file>` arg), and collect any model not in the exposed set; if non-empty, print `error: tier <T> pins <model> which is not exposed by provider <P>` per offender and `process.exit(1)`. The guard MUST also validate the **source** `opencode_app/opencode.json` pins (primary + explore + general), not only per-agent tier models, so a stale source pin is caught. Edge cases: (a) a model string with no `/` → skip-with-warning (don't crash on split); (b) a provider prefix **absent** from `provider-models.json` (e.g. `anthropic`/`openai`/`openrouter` presets) → warn-and-skip (cannot validate unknown providers; avoids false-positive deploy failures). Skip the whole check when the arg is absent (back-compat) or `--force` is set (flag already exists + is wired).
+- [x] **3.2** Extend `deploy/resolve-models.mjs`: after resolving each agent model **and** the primary/explore/general models (computed at `:265-288`), split `provider/model`, look the provider up in `provider-models.json` (loaded via a new `--provider-models <file>` arg), and collect any model not in the exposed set; if non-empty, print `error: tier <T> pins <model> which is not exposed by provider <P>` per offender and `process.exit(1)`. The guard MUST also validate the **source** `opencode_app/opencode.json` pins (primary + explore + general), not only per-agent tier models, so a stale source pin is caught. Edge cases: (a) a model string with no `/` → skip-with-warning (don't crash on split); (b) a provider prefix **absent** from `provider-models.json` (e.g. `anthropic`/`openai`/`openrouter` presets) → warn-and-skip (cannot validate unknown providers; avoids false-positive deploy failures). Skip the whole check when the arg is absent (back-compat) or `--force` is set (flag already exists + is wired).
     — **Why:** Surfaces bad pins at deploy (fail-fast) instead of at first subagent spawn, preventing a regression like this from ever shipping silently again. Source-config validation closes the Docker gap (Root Cause #4).
     — **Done when:** `node deploy/resolve-models.mjs … --provider-models deploy/provider-models.json` exits non-zero when a tier is deliberately repinned to an unexposed model (verified by a temporary bad pin), and exits 0 on the corrected map; a deliberately stale `opencode_app/opencode.json` source pin is also flagged.
     — **Consumers affected:** `setup.sh`, `setup.ps1`.
 
-- [ ] **3.3** Wire the guard into `deploy/setup.sh` and `deploy/setup.ps1`: pass `--provider-models deploy/provider-models.json` to the resolver invocation (apply + dry-run paths — resolver script var at `setup.sh:98` / `setup.ps1:102`), so every deploy runs the check.
+- [x] **3.3** Wire the guard into `deploy/setup.sh`, `deploy/setup.ps1`, **and `opencode_app/Dockerfile`** (build-time RUN — added beyond the original plan since the Docker path is a deploy entrypoint per Root Cause #4): pass `--provider-models deploy/provider-models.json` to every resolver invocation (file-existence-guarded for back-compat), so every deploy runs the check.
     — **Why:** The guard only protects users if it actually runs during their deploy flow.
     — **Done when:** `grep -n provider-models deploy/setup.sh deploy/setup.ps1` shows the flag passed on the resolver call in both scripts.
     — **Consumers affected:** all deploys.
 
 ### Phase 4: Sync docs + verify
 
-- [ ] **4.1** Update counts/listings if any changed (model-tier banner in `setup.sh`/`setup.ps1` — confirmed they do NOT hardcode model names, so likely no banner edit) and add a one-line `MIGRATION.md` note: "vision tier moved to free `zai/glm-4.6v-flash`; reasoning moved to `glm-5.2`".
+- [x] **4.1** Update counts/listings if any changed (model-tier banner in `setup.sh`/`setup.ps1` — confirmed they do NOT hardcode model names, so likely no banner edit) and add a one-line `MIGRATION.md` note: "vision tier moved to free `zai/glm-4.6v-flash`; reasoning moved to `glm-5.2`".
     — **Why:** Keeps the documentation-sync invariant (repo convention) intact; the migration note explains the behavior change to existing deployers.
     — **Done when:** No doc still advertises `glm-5v-turbo`/`glm-5.1` as a current tier pin; `MIGRATION.md` has the note.
     — **Consumers affected:** none (docs).
 
-- [ ] **4.2** Verify end-to-end: run the resolver dry-run with `--provider-models` and confirm 0 unexposed-model errors, all `reasoning` agents resolve to `zai-coding-plan/glm-5.2`, and both `vision` agents resolve to `zai/glm-4.6v-flash`; confirm the source `opencode_app/opencode.json` pins pass the guard; optionally spawn `image-analyzer-subagent` on a sample image once `zai` is authenticated.
+- [x] **4.2** Verify end-to-end: run the resolver dry-run with `--provider-models` and confirm 0 unexposed-model errors, all `reasoning` agents resolve to `zai-coding-plan/glm-5.2`, and both `vision` agents resolve to `zai/glm-4.6v-flash`; confirm the source `opencode_app/opencode.json` pins pass the guard; optionally spawn `image-analyzer-subagent` on a sample image once `zai` is authenticated.
     — **Why:** Proves the defect is fixed and the guard is green before opening the PR.
     — **Done when:** Dry-run table shows the expected models, `Summary: N written, 0 skipped(unresolved)`, and no guard error (including for source-config pins).
     — **Consumers affected:** none (verification).
@@ -207,3 +207,8 @@ required only because the free vision model is not on the subscription.
 - Phase 1 complete: all tier-map sources + hardcoded pins repointed; residual grep clean except the AGENTS.md tier table (fixed in 2.2).
 - **Phase 2.1 deviation:** `zai` confirmed **built-in** via `docker-entrypoint.sh:18` (`auth["zai"]` write) + existing `{env:ZAI_API_KEY}` interpolation in `opencode.json` — **no custom `provider.zai` block added** (would conflict with built-in). Corrects the plan's original hedge.
 - Phase 2.2 complete: AGENTS.md tier table updated (reasoning→`glm-5.2`, vision→`zai/glm-4.6v-flash`) + vision-auth prerequisite note; README note added.
+
+**2026-08-02 (execution — Phase 3+4 applied, COMPLETE)** —
+- Phase 3 complete: `deploy/provider-models.json` created; exposed-model guard added to `resolve-models.mjs` (`--provider-models`, fail-fast exit 1, warn-skip for no-slash/unknown-provider, `--force` bypass, back-compat when absent); wired into `setup.sh`, `setup.ps1`, **and `opencode_app/Dockerfile`** (file-existence-guarded). Verified: corrected map → exit 0; deliberately-bad tier pin → exit 1; bad source-config pin → exit 1; `--force` → bypass; no-arg → back-compat.
+- Phase 4 complete: MIGRATION.md note added; setup banners need no edit (confirmed they don't hardcode model names).
+- **End-to-end verified:** all 38 agents resolve to provider-exposed models (reasoning×18→`glm-5.2`, vision×2→`zai/glm-4.6v-flash`, fast×12, docs×3, long-context×3, primary/explore/general); guard green; zero stale `glm-5.1`/`glm-5v-turbo` pins outside `provider-models.json` (the legitimate `zai` API catalog) and the PLAN before/after table.

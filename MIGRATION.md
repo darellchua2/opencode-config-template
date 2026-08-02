@@ -40,6 +40,13 @@ migration, and how to revert.
   4. `~/.config/opencode/models.json` (tier map, global)
   5. `deploy/models.default.json` (Z.AI defaults)
 
+> **Default tier models (updated #281):** `reasoning` → `zai-coding-plan/glm-5.2`
+> and `vision` → `zai/glm-4.6v-flash` (Z.AI's free vision model, served by the
+> `zai` API provider — not the coding-plan subscription; needs `opencode auth
+> login` or `ZAI_API_KEY`). The resolver also runs an **exposed-model guard** at
+> deploy (`--provider-models deploy/provider-models.json`): it fails fast if a
+> tier or source-config pin references a model its provider doesn't serve.
+
 ---
 
 ## Automatic migration (on first v2.0 setup)
