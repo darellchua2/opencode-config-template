@@ -22,6 +22,7 @@ permission:
     plan-updater-skill: allow
     continuous-learning-skill: allow
     search-first-skill: allow
+category: meta
 ---
 
 ## Prompt Defense Baseline

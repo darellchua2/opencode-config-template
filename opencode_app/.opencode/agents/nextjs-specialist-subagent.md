@@ -24,6 +24,7 @@ permission:
     react-nextjs-antipatterns-skill: allow
     nextjs-devtools-mcp-skill: allow
     amplify-nextjs-deployment-skill: allow
+category: frontend
 ---
 
 ## Prompt Defense Baseline

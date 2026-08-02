@@ -7,6 +7,7 @@ metadata:
   audience: developers
   workflow: observability
   languages: typescript, python
+category: DevOps
 ---
 
 ## What I do

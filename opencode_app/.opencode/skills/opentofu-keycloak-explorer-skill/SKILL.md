@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: identity-management
+category: OpenTofu
 ---
 
 # OpenTofu Keycloak Explorer

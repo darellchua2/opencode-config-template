@@ -7,6 +7,7 @@ metadata:
   audience: developers
   workflow: monorepo
   languages: typescript, javascript
+category: DevOps
 ---
 
 ## What I do

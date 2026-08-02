@@ -8,6 +8,7 @@ metadata:
   workflow: security
   languages: language-agnostic
   protocol: autoresearch-opt-in
+category: Security
 ---
 
 ## What I do

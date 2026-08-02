@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: engineers, robotics-developers, hardware-designers, makers
   workflow: cad-viewer
+category: CAD & Hardware Design
 ---
 
 # CAD Viewer

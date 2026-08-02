@@ -8,6 +8,7 @@ metadata:
   workflow: discovery, customer-facing
   trigger: explicit-only
   languages: markdown
+category: Framework
 ---
 
 ## What I do

@@ -7,6 +7,7 @@ metadata:
   audience: developers, agents, subagents
   workflow: documentation, audit, consistency
   protocol: autoresearch-opt-in
+category: OpenCode Meta
 ---
 
 ## What I do

@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: code-quality
+category: Language-Specific
 ---
 
 ## What I do

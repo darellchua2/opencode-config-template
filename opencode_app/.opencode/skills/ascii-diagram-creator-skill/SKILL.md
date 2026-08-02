@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: diagram-generation
+category: Git/Workflow
 ---
 
 ## What I do

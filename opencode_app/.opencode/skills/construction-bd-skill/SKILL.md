@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers, construction-tech
   workflow: business-development
+category: Startup/Business
 ---
 
 # Construction Business Development Skill

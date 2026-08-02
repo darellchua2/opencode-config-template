@@ -13,6 +13,7 @@ permission:
     startup-pitch-deck-skill: allow
   task:
     "pptx-specialist-subagent": allow
+category: business
 ---
 
 ## Prompt Defense Baseline

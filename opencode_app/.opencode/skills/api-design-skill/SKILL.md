@@ -8,6 +8,7 @@ metadata:
   workflow: api-design
   languages: typescript, python, openapi, graphql
   protocol: autoresearch-opt-in
+category: Framework
 ---
 
 ## What I do

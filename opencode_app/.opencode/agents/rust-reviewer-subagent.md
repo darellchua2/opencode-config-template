@@ -20,6 +20,7 @@ permission:
     code-smells-skill: allow
     continuous-learning-skill: allow
     search-first-skill: allow
+category: review
 ---
 
 You are a Rust code review specialist. Perform thorough quality analysis with Rust-specific expertise.

@@ -11,6 +11,7 @@ permission:
   bash: allow
   skill:
     xlsx-specialist-skill: allow
+category: docs
 ---
 
 ## Prompt Defense Baseline

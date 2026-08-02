@@ -1,6 +1,7 @@
 ---
 name: codegraph-setup-skill
 description: Initialize and manage CodeGraph — a pre-indexed code knowledge graph MCP server. Use when setting up CodeGraph in a new project, re-indexing after major changes, checking index status, or troubleshooting. Triggers on "codegraph init", "codegraph setup", "initialize codegraph", "reindex codegraph", "codegraph status", or when a project lacks a `.codegraph/` directory and the agent needs code exploration.
+category: Configuration
 ---
 
 # CodeGraph Setup Skill

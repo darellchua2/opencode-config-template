@@ -22,6 +22,7 @@ permission:
     opencode-skill-creation-skill: allow
     opencode-skills-maintainer-skill: allow
     documentation-sync-workflow-skill: allow
+category: meta
 ---
 
 ## Prompt Defense Baseline

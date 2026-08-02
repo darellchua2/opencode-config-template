@@ -18,6 +18,7 @@ permission:
     opentofu-provisioning-workflow-skill: allow
     opentofu-provider-setup-skill: allow
     opentofu-ecr-provision-skill: allow
+category: devops
 ---
 
 ## Prompt Defense Baseline

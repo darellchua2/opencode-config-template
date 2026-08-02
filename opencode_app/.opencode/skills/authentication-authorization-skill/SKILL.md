@@ -7,6 +7,7 @@ metadata:
   audience: developers
   workflow: authentication
   languages: typescript, python
+category: Security
 ---
 
 ## What I do

@@ -17,6 +17,7 @@ permission:
     image-analyzer-subagent: allow
   skill:
     playwright-responsive-audit-skill: allow
+category: frontend
 ---
 
 ## Prompt Defense Baseline

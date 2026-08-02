@@ -11,6 +11,7 @@ permission:
   bash: deny
   skill:
     docx-creation-skill: allow
+category: docs
 ---
 
 ## Prompt Defense Baseline

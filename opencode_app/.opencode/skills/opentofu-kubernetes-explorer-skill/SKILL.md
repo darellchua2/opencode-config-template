@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: container-orchestration
+category: OpenTofu
 ---
 
 # OpenTofu Kubernetes Explorer

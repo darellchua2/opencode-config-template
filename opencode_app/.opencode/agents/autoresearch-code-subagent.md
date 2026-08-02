@@ -20,6 +20,7 @@ permission:
     autoresearch-code-skill: allow
     continuous-learning-skill: allow
     strategic-compact-skill: allow
+category: research
 ---
 
 ## Prompt Defense Baseline

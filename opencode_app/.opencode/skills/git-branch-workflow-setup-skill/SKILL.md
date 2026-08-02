@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: agent
   workflow: scaffolding
+category: Git/Workflow
 ---
 
 ## What I do

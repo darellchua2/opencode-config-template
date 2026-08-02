@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers, maintainers, project managers
   workflow: issue-management
+category: JIRA
 ---
 
 ## What I do

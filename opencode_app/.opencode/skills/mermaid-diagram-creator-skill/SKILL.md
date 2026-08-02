@@ -7,6 +7,7 @@ metadata:
   audience: developers
   workflow: diagram-generation
   protocol: autoresearch-opt-in
+category: Git/Workflow
 ---
 
 ## What I do

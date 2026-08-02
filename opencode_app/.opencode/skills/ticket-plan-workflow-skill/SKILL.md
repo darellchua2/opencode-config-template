@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: unified-planning
+category: Git/Workflow
 ---
 
 ## What I do

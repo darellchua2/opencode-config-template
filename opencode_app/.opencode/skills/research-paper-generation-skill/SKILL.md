@@ -13,6 +13,7 @@ compatibility: opencode
 metadata:
   audience: researchers
   workflow: research
+category: Academic & Research Writing
 ---
 
 # Research Paper Generation Skill

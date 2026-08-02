@@ -23,6 +23,7 @@ permission:
     verification-loop-skill: allow
     search-first-skill: allow
     context-budget-skill: allow
+category: review
 ---
 
 ## Prompt Defense Baseline

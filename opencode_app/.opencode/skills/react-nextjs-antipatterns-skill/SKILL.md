@@ -9,6 +9,7 @@ metadata:
   languages: typescript, javascript
   frameworks: react, nextjs
   protocol: autoresearch-opt-in
+category: Framework-Specific
 ---
 
 ## What I do

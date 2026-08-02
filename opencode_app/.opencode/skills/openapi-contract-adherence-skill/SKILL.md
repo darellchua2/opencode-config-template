@@ -12,6 +12,7 @@ metadata:
   workflow: contract-management, api-evolution
   trigger: explicit-only
   languages: openapi, typescript, python
+category: Framework
 ---
 
 ## What I do

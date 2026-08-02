@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: changelog-generation
+category: Language-Specific
 ---
 
 ## What I do

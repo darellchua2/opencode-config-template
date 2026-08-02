@@ -10,6 +10,7 @@ compatibility: opencode
 metadata:
   audience: developers, researchers, robotics-engineers
   workflow: 3d-data-processing
+category: CAD & Hardware Design
 ---
 
 # Open3D 3D Data Processing

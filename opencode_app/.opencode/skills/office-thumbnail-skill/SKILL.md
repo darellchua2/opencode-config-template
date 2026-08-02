@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: visual-analysis
+category: Office Utilities
 ---
 
 ## What I do

@@ -7,6 +7,7 @@ metadata:
   audience: developers
   workflow: testing-framework
   protocol: autoresearch-opt-in
+category: Framework
 ---
 
 ## What I do

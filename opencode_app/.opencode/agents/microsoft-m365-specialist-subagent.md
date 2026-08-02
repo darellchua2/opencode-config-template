@@ -13,6 +13,7 @@ permission:
   webfetch: allow
   skill:
     microsoft-m365-config-skill: allow
+category: integrations
 ---
 
 ## Prompt Defense Baseline

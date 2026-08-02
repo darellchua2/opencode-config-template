@@ -22,6 +22,7 @@ permission:
     python-backend-skill: allow
     continuous-learning-skill: allow
     search-first-skill: allow
+category: review
 ---
 
 You are a Python code review specialist. Perform thorough quality analysis with Python-specific expertise.

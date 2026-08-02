@@ -11,6 +11,7 @@ permission:
   bash: deny
   skill:
     coverage-readme-workflow-skill: allow
+category: docs
 ---
 
 ## Prompt Defense Baseline

@@ -16,6 +16,7 @@ compatibility: opencode
 metadata:
   audience: developers, maintainers
   workflow: commit-formatting
+category: Git/Workflow
 ---
 
 ## What I do

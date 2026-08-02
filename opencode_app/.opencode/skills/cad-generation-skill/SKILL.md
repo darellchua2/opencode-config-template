@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: engineers, robotics-developers, hardware-designers, makers
   workflow: cad-generation
+category: CAD & Hardware Design
 ---
 
 # CAD generation, inspection, and validation

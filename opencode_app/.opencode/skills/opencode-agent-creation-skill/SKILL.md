@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: agent-development
+category: OpenCode Meta
 ---
 
 ## What I do

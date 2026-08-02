@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: documentation
+category: Documentation
 ---
 
 ## What I do

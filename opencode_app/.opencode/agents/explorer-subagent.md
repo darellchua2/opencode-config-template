@@ -8,6 +8,7 @@ permission:
     "mcp:*": deny
   edit: deny
   bash: deny
+category: meta
 ---
 
 ## Prompt Defense Baseline

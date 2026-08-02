@@ -24,6 +24,7 @@ permission:
     changelog-python-cliff-skill: allow
     search-first-skill: allow
     version-bump-standard-skill: allow
+category: meta
 ---
 
 ## Prompt Defense Baseline

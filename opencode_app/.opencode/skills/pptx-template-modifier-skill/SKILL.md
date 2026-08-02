@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: template-extension
+category: Presentation
 ---
 
 ## What I do

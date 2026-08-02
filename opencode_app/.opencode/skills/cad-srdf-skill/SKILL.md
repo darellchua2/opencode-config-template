@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: engineers, robotics-developers, hardware-designers, makers
   workflow: srdf
+category: CAD & Hardware Design
 ---
 
 # SRDF

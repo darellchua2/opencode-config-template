@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers, administrators
   workflow: m365-integration
+category: Configuration
 ---
 
 ## What I do

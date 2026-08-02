@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: jira-status-transition
+category: JIRA
 ---
 
 ## What I do

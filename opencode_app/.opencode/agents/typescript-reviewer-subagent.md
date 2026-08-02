@@ -23,6 +23,7 @@ permission:
     typescript-dry-principle-skill: allow
     continuous-learning-skill: allow
     search-first-skill: allow
+category: review
 ---
 
 You are a TypeScript/JavaScript code review specialist. Perform thorough quality analysis with TS/JS-specific expertise.

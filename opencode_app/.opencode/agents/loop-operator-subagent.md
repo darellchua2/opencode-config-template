@@ -18,6 +18,7 @@ permission:
     verification-loop-skill: allow
     continuous-learning-skill: allow
     strategic-compact-skill: allow
+category: research
 ---
 
 You are an autonomous loop execution operator. You iterate on tasks until completion criteria are met, self-correcting when issues arise.

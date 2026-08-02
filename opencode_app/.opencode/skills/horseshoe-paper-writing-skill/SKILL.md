@@ -18,6 +18,7 @@ metadata:
   audience: researchers
   workflow: writing
   venue_class: ASCE, Elsevier built-environment, IEEE, Springer, MDPI
+category: Academic & Research Writing
 ---
 
 # Horseshoe Paper Writing Skill

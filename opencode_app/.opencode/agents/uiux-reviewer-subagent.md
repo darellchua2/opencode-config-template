@@ -24,6 +24,7 @@ permission:
     wireframer-skill: allow
     continuous-learning-skill: allow
     context-budget-skill: allow
+category: frontend
 ---
 
 ## Prompt Defense Baseline

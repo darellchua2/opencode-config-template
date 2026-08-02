@@ -26,6 +26,7 @@ permission:
     autoresearch-research-skill: allow
     search-first-skill: allow
     strategic-compact-skill: allow
+category: research
 ---
 
 ## Prompt Defense Baseline

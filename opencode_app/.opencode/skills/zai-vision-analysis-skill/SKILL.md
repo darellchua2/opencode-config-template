@@ -7,6 +7,7 @@ metadata:
   audience: agents
   workflow: vision
   requires: ZAI_API_KEY
+category: Responsive & Visual Testing
 ---
 
 ## What I do

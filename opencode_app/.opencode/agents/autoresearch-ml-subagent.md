@@ -24,6 +24,7 @@ permission:
     autoresearch-core-skill: allow
     autoresearch-ml-skill: allow
     strategic-compact-skill: allow
+category: research
 ---
 
 ## GPU Preflight (run FIRST, before anything else)

@@ -7,6 +7,7 @@ metadata:
   audience: ml-researchers
   workflow: autonomous-iteration
   protocol: autoresearch-default-on
+category: Autoresearch
 ---
 
 ## What I do

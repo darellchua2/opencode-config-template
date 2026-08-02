@@ -8,6 +8,7 @@ metadata:
   workflow: debugging
   trigger: explicit-only
   protocol: autoresearch-opt-in
+category: Framework
 ---
 
 ## What I do

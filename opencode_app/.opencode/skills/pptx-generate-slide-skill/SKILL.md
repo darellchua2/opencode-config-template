@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: presentation-generation
+category: Presentation
 ---
 
 ## What I do

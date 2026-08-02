@@ -8,6 +8,7 @@ metadata:
   workflow: verification, quality-assurance
   trigger: explicit-only
   protocol: autoresearch-opt-in
+category: Agent Optimization
 ---
 
 ## What I do

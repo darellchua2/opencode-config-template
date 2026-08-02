@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: pdf-processing
+category: Framework
 ---
 
 ## What I do

@@ -8,6 +8,7 @@ metadata:
   workflow: planning, alignment
   trigger: explicit-only
   version: "1"
+category: Planning & Alignment
 ---
 
 ## What I do
