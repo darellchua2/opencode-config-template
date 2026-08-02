@@ -26,6 +26,7 @@ permission:
     api-design-skill: allow
     openapi-contract-adherence-skill: allow
     markitdown-mcp-skill: allow
+category: business
 ---
 
 ## Prompt Defense Baseline

@@ -7,6 +7,7 @@ metadata:
   audience: developers
   workflow: code-quality
   protocol: autoresearch-opt-in
+category: Framework
 ---
 
 ## What I do

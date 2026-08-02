@@ -14,6 +14,7 @@ permission:
   skill:
     docx-creation-skill: allow
     startup-business-docs-skill: allow
+category: business
 ---
 
 ## Prompt Defense Baseline

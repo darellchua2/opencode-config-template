@@ -8,6 +8,7 @@ metadata:
   workflow: documentation, domain-design
   trigger: auto
   version: "1"
+category: Planning & Alignment
 ---
 
 ## What I do

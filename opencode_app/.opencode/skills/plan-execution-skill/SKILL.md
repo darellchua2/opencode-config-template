@@ -7,6 +7,7 @@ metadata:
   audience: developers, agents, subagents
   workflow: planning, execution, progress-tracking
   protocol: autoresearch-opt-in
+category: Git/Workflow
 ---
 
 ## What I do

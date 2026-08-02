@@ -31,6 +31,7 @@ permission:
     autodesk-aps-skill: allow
     civil-3d-skill: allow
     open3d-skill: allow
+category: cad
 ---
 
 ## Prompt Defense Baseline

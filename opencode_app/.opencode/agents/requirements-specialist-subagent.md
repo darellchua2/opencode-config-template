@@ -26,6 +26,7 @@ permission:
     xlsx-specialist-skill: allow
     search-first-skill: allow
     markitdown-mcp-skill: allow
+category: business
 ---
 
 ## Prompt Defense Baseline

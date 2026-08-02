@@ -7,6 +7,7 @@ metadata:
   audience: developers
   workflow: code-quality
   languages: java
+category: Language-Specific
 ---
 
 ## What I do

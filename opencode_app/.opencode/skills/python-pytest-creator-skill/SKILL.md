@@ -7,6 +7,7 @@ metadata:
   audience: developers
   workflow: python-testing
   protocol: autoresearch-opt-in
+category: Language-Specific
 ---
 
 ## What I do

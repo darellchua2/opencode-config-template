@@ -7,6 +7,7 @@ metadata:
   audience: developers
   workflow: database
   languages: sql, typescript, python
+category: DevOps
 ---
 
 ## What I do

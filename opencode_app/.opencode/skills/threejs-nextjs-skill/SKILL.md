@@ -17,6 +17,7 @@ metadata:
   workflow: integration-guidance
   languages: [typescript, javascript]
   frameworks: [three.js, react-three-fiber, next.js, react]
+category: Framework-Specific
 ---
 
 # Three.js + Next.js Integration Guidance

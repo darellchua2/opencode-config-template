@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: cloud-infrastructure
+category: OpenTofu
 ---
 
 # OpenTofu AWS Explorer

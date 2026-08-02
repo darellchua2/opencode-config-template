@@ -8,6 +8,7 @@ metadata:
   workflow: requirements-engineering
   trigger: explicit-only
   languages: markdown
+category: Framework
 ---
 
 ## What I do

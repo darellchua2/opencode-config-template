@@ -26,6 +26,7 @@ permission:
     docx-creation-skill: allow
     xlsx-specialist-skill: allow
     markitdown-mcp-skill: allow
+category: business
 ---
 
 ## Prompt Defense Baseline

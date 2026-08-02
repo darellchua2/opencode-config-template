@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: project-setup
+category: Framework-Specific
 ---
 
 ## What I do

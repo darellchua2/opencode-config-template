@@ -34,6 +34,7 @@ permission:
     typescript-dry-principle-skill: allow
     continuous-learning-skill: allow
     context-budget-skill: allow
+category: review
 ---
 
 ## Prompt Defense Baseline

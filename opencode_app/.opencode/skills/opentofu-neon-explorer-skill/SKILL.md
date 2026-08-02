@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: database-management
+category: OpenTofu
 ---
 
 # OpenTofu Neon Explorer

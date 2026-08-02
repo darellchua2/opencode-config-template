@@ -8,6 +8,7 @@ metadata:
   workflow: research, decision-making
   trigger: explicit-only
   protocol: autoresearch-opt-in
+category: Agent Optimization
 ---
 
 ## What I do

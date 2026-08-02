@@ -14,6 +14,7 @@ metadata:
   audience: developers
   workflow: code-cleanup
   protocol: autoresearch-opt-in
+category: Code Quality
 ---
 
 ## What I do

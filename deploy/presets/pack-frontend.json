@@ -1,0 +1,31 @@
+{
+  "$comment": "Preset 'frontend' for deploy/init.mjs (--preset frontend). Derived by /tmp/gen-presets.mjs from deploy/registry.json; edit via the generator, not by hand.",
+  "name": "frontend",
+  "description": "Web frontend: Next.js specialist + UI/UX review + responsive audit, with the Next.js/React/Three.js/a11y skill stack.",
+  "agents": [
+    "nextjs-specialist-subagent",
+    "uiux-reviewer-subagent",
+    "responsive-audit-subagent"
+  ],
+  "skills": [
+    "accessibility-a11y-skill",
+    "amplify-nextjs-deployment-skill",
+    "frontend-design-skill",
+    "nextjs-devtools-mcp-skill",
+    "nextjs-image-usage-skill",
+    "nextjs-pr-workflow-skill",
+    "nextjs-standard-setup-skill",
+    "nextjs-unit-test-creator-skill",
+    "playwright-responsive-audit-skill",
+    "react-nextjs-antipatterns-skill",
+    "threejs-nextjs-skill",
+    "typescript-dry-principle-skill",
+    "uiux-review-skill",
+    "wireframer-skill"
+  ],
+  "mcps": [
+    "next-devtools",
+    "codegraph",
+    "mermaid"
+  ]
+}

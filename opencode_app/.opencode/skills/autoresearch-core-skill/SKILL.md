@@ -7,6 +7,7 @@ metadata:
   audience: developers
   workflow: autonomous-iteration
   protocol-source: true
+category: Autoresearch
 ---
 
 ## What I do

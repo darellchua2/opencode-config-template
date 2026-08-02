@@ -7,6 +7,7 @@ metadata:
   audience: developers
   workflow: test-coverage-documentation
   protocol: autoresearch-opt-in
+category: Documentation
 ---
 
 ## What I do

@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: engineers, robotics-developers, hardware-designers, makers
   workflow: sendcutsend
+category: CAD & Hardware Design
 ---
 
 # SendCutSend

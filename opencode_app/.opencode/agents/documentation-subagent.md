@@ -13,6 +13,7 @@ permission:
     docstring-generator-skill: allow
     coverage-readme-workflow-skill: allow
     markitdown-mcp-skill: allow
+category: docs
 ---
 
 ## Prompt Defense Baseline

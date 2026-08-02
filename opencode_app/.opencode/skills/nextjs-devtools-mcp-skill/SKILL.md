@@ -8,6 +8,7 @@ metadata:
   workflow: frontend
   scope: nextjs-runtime
   pattern: mcp-diagnosis
+category: Framework-Specific
 ---
 
 ## What this skill does

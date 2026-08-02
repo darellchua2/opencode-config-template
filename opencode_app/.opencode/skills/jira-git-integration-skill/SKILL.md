@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: jira-git-integration
+category: JIRA
 ---
 
 ## What I do

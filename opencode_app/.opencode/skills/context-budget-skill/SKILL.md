@@ -7,6 +7,7 @@ metadata:
   audience: developers, agents
   workflow: optimization, context-management
   trigger: explicit-only
+category: Agent Optimization
 ---
 
 ## What I do

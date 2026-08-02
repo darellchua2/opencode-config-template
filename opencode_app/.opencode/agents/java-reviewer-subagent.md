@@ -20,6 +20,7 @@ permission:
     code-smells-skill: allow
     continuous-learning-skill: allow
     search-first-skill: allow
+category: review
 ---
 
 You are a Java code review specialist. Perform thorough quality analysis with Java-specific expertise.

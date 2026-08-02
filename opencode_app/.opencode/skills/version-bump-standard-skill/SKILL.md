@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers, devops
   workflow: release-management
+category: Git/Workflow
 ---
 
 # Version Bump Standard

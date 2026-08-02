@@ -1891,6 +1891,7 @@ function Deploy-Skills {
 
     Deploy-Agents
     Deploy-Plugins
+    Setup-OpencodeInitShim
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -2140,6 +2141,36 @@ function Install-LocalMcpLaunchers {
 # plugins dir so opencode auto-loads them. Mirrors the skills deploy pattern.
 # These are NOT npm packages (those live in opencode.json plugin[]); they are
 # local TS plugins auto-discovered from ~/.config/opencode/plugins/.
+
+# Install the opencode-init wrapper shim (project-scoped selective installer CLI).
+# Writes a opencode-init.cmd wrapper into the user bin dir that invokes node on
+# <repo>\deploy\init.mjs. Avoids mklink (needs Developer Mode/admin). Idempotent.
+# Additive — does not change any other setup.ps1 behavior.
+function Setup-OpencodeInitShim {
+    $initSrc = Join-Path $RepoDir "deploy\init.mjs"
+    if (-not (Test-Path $initSrc)) {
+        Write-LogWarn "opencode-init source not found at $initSrc; skipping shim"
+        return
+    }
+    $userBin = Join-Path $env:APPDATA "Python\Scripts"
+    if (-not (Test-Path $userBin)) { New-Item -ItemType Directory -Force -Path $userBin | Out-Null }
+    $shim = Join-Path $userBin "opencode-init.cmd"
+    $nodeExe = (Get-Command node -ErrorAction SilentlyContinue).Source
+    if (-not $nodeExe) { $nodeExe = "node" }
+    $body = "@echo off`r`n`"$nodeExe`" `"$initSrc`" %*`r`n"
+    if ((Test-Path $shim) -and ((Get-Content $shim -Raw) -eq $body)) {
+        Write-LogInfo "opencode-init shim already correct at $shim"
+    } else {
+        Set-Content -Path $shim -Value $body -Encoding ASCII
+        Write-Host "[SUCCESS] opencode-init installed to $shim" -ForegroundColor Green
+    }
+    # PATH check
+    $pathDirs = $env:PATH -split ';'
+    if ($pathDirs -notcontains $userBin) {
+        Write-LogWarn "$userBin is not on your PATH. Add it to use opencode-init."
+    }
+}
+
 function Deploy-Plugins {
     Write-Host ""
     Write-LogInfo "Setting up plugins..."

@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: engineers, robotics-developers, hardware-designers, makers
   workflow: implicit-cad
+category: CAD & Hardware Design
 ---
 
 # Implicit CAD

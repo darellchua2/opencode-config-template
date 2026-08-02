@@ -10,6 +10,7 @@ permission:
   glob: allow
   grep: allow
   bash: allow
+category: meta
 ---
 
 ## Prompt Defense Baseline

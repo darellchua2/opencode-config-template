@@ -8,6 +8,7 @@ metadata:
   workflow: code-quality
   languages: language-agnostic
   protocol: autoresearch-opt-in
+category: Code Quality
 ---
 
 ## What I do

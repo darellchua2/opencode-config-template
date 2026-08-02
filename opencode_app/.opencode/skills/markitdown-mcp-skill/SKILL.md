@@ -8,6 +8,7 @@ metadata:
   workflow: document-conversion
   scope: binary-doc-text-extraction
   pattern: mcp-document-reading
+category: Configuration
 ---
 
 ## What this skill does

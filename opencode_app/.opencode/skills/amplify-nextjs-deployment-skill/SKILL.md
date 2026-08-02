@@ -8,6 +8,7 @@ metadata:
   workflow: deployment
   scope: nextjs-amplify-hosting
   pattern: amplify-deployment
+category: Framework-Specific
 ---
 
 ## What this skill does

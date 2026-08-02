@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: infrastructure-as-code
+category: OpenTofu
 ---
 
 # OpenTofu ECR Provisioning

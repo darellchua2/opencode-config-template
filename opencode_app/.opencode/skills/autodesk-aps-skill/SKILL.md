@@ -11,6 +11,7 @@ compatibility: opencode
 metadata:
   audience: developers, bim-developers, cad-developers
   workflow: api-integration
+category: CAD & Hardware Design
 ---
 
 # Autodesk Platform Services (APS) Integration

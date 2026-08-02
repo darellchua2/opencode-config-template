@@ -18,6 +18,7 @@ permission:
     python-ruff-linter-skill: allow
     javascript-eslint-linter-skill: allow
     continuous-learning-skill: allow
+category: meta
 ---
 
 ## Prompt Defense Baseline

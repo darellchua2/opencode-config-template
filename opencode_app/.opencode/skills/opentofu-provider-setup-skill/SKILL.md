@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: infrastructure-provisioning
+category: OpenTofu
 ---
 
 # OpenTofu Provider Setup

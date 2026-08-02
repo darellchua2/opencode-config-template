@@ -8,6 +8,7 @@ metadata:
   workflow: pr-creation
   languages: language-agnostic
   protocol: autoresearch-opt-in
+category: Framework
 ---
 
 ## What I do

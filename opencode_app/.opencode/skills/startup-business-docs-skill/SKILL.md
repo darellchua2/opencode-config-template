@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers, startup-founders
   workflow: business-documents
+category: Startup/Business
 ---
 
 ## What I do

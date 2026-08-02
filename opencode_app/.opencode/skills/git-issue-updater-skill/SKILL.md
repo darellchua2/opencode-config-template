@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers, maintainers
   workflow: issue-tracking
+category: Git/Workflow
 ---
 
 ## What I do

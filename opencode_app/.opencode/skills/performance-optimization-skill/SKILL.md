@@ -8,6 +8,7 @@ metadata:
   workflow: performance
   languages: typescript, python, javascript
   protocol: autoresearch-opt-in
+category: Framework
 ---
 
 ## What I do

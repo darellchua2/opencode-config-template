@@ -7,6 +7,7 @@ metadata:
   audience: developers
   workflow: containerization
   languages: dockerfile, yaml
+category: DevOps
 ---
 
 ## What I do

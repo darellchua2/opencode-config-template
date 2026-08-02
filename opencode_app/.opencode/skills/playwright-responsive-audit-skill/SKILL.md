@@ -7,6 +7,7 @@ metadata:
   audience: developers
   workflow: testing
   protocol: autoresearch-opt-in
+category: Responsive & Visual Testing
 ---
 
 ## What I do

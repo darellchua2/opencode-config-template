@@ -7,6 +7,7 @@ metadata:
   audience: developers
   workflow: project-setup
   languages: python
+category: Language-Specific
 ---
 
 ## What I do

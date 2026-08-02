@@ -15,6 +15,7 @@ permission:
     continuous-learning-skill: allow
     agent-introspection-debugging-skill: allow
     zai-vision-analysis-skill: allow
+category: meta
 ---
 
 ## Prompt Defense Baseline

@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: engineers, robotics-developers, hardware-designers, makers
   workflow: dxf
+category: CAD & Hardware Design
 ---
 
 # DXF generation and validation

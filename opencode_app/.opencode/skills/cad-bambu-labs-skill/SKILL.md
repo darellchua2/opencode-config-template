@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: engineers, robotics-developers, hardware-designers, makers
   workflow: bambu-printing
+category: CAD & Hardware Design
 ---
 
 # Bambu Labs

@@ -8,6 +8,7 @@ metadata:
   workflow: frontend
   scope: nextjs-image
   pattern: image-implementation
+category: Framework-Specific
 ---
 
 ## What this skill does

@@ -12,6 +12,7 @@ permission:
   skill:
     tdd-workflow-skill: allow
     plan-updater-skill: allow
+category: meta
 ---
 
 ## Prompt Defense Baseline

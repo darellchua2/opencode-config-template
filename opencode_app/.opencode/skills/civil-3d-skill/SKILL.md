@@ -9,6 +9,7 @@ compatibility: opencode
 metadata:
   audience: civil-engineers, bim-developers, surveyors
   workflow: civil-engineering
+category: CAD & Hardware Design
 ---
 
 # Civil 3D Workflow Guidance

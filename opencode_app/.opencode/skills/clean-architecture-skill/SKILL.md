@@ -7,6 +7,7 @@ metadata:
   audience: developers
   workflow: architecture
   languages: language-agnostic
+category: Code Quality
 ---
 
 ## What I do

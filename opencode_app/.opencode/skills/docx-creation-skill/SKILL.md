@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: document-generation
+category: Framework
 ---
 
 ## What I do

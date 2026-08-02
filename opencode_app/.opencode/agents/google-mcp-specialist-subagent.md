@@ -10,6 +10,7 @@ permission:
   grep: allow
   bash: allow
   webfetch: allow
+category: integrations
 ---
 
 ## Prompt Defense Baseline

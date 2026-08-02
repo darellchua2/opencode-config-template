@@ -8,6 +8,7 @@ metadata:
   workflow: document-rendering
   trigger: referenced-by-skill
   languages: html, markdown
+category: Framework
 ---
 
 ## What I do

@@ -31,6 +31,7 @@ permission:
     plan-execution-skill: allow
     search-first-skill: allow
     continuous-learning-skill: allow
+category: devops
 ---
 
 ## Prompt Defense Baseline

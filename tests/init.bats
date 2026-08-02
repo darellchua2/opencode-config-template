@@ -1,0 +1,134 @@
+#!/usr/bin/env bats
+
+# Tests for deploy/init.mjs (opencode-init) — the project-scoped selective installer.
+# Covers the flag path (primary contract); the interactive TUI is not tested here
+# (needs a real TTY). See PLANS/PLAN-GIT-286 Phase 5.4.
+
+REPO="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)"
+INIT="node ${REPO}/deploy/init.mjs"
+REG="${REPO}/deploy/registry.json"
+OC="${REPO}/opencode_app/opencode.json"
+
+# JSON helper: extract a value/length via python3 (already a setup.sh dependency).
+jq_len() { python3 -c "import sys,json; print(len(json.load(sys.stdin)))"; }
+jq_get() { python3 -c "import sys,json; d=json.load(sys.stdin); print($1)"; }
+
+setup() {
+  export TMP_PROJ="$(mktemp -d)"
+  git -C "$TMP_PROJ" init -q
+}
+teardown() { rm -rf "$TMP_PROJ"; }
+
+@test "registry.json exists with correct agent/skill counts" {
+  [ -f "$REG" ]
+  agents=$(jq_get "len(d['agents'])" < "$REG")
+  skills=$(jq_get "len(d['skills'])" < "$REG")
+  echo "agents=$agents skills=$skills" >&3
+  [ "$agents" = "38" ]
+  [ "$skills" = "125" ]
+}
+
+@test "--list agents is valid JSON with 38 entries" {
+  count=$($INIT --list agents 2>/dev/null | jq_len)
+  [ "$count" = "38" ]
+}
+
+@test "--list agents --category review filters to reviewers" {
+  count=$($INIT --list agents --category review 2>/dev/null | jq_len)
+  [ "$count" = "7" ]
+}
+
+@test "--list skills is valid JSON with 125 entries" {
+  count=$($INIT --list skills 2>/dev/null | jq_len)
+  [ "$count" = "125" ]
+}
+
+@test "--list categories is valid non-empty JSON" {
+  count=$($INIT --list categories 2>/dev/null | jq_len)
+  [ "$count" -gt 10 ]
+}
+
+@test "--list presets shows all 10 presets" {
+  count=$($INIT --list presets 2>/dev/null | jq_len)
+  [ "$count" = "10" ]
+}
+
+@test "--describe code-review-subagent returns skills+delegates+modelAvailable" {
+  out=$($INIT --describe code-review-subagent 2>/dev/null)
+  skills=$(echo "$out" | jq_get "len(d['requiresSkills'])")
+  delegates=$(echo "$out" | jq_get "len(d['delegatesTo'])")
+  avail=$(echo "$out" | jq_get "d['modelAvailable']")
+  echo "skills=$skills delegates=$delegates avail=$avail" >&3
+  [ "$skills" = "11" ]
+  [ "$delegates" -ge 5 ]
+  [ "$avail" = "True" ]
+}
+
+@test "--expand review resolves transitive closure (8 agents incl. image-analyzer)" {
+  agents=$($INIT --expand review 2>/dev/null | jq_get "len(d['agents'])")
+  has_img=$($INIT --expand review 2>/dev/null | jq_get "'image-analyzer-subagent' in d['agents']")
+  echo "agents=$agents has_image-analyzer=$has_img" >&3
+  [ "$agents" = "8" ]
+  [ "$has_img" = "True" ]
+}
+
+@test "install review --yes lands exactly 8 agents + 16 skills + codegraph (resolver deps)" {
+  run $INIT --project "$TMP_PROJ" --preset review --yes
+  [ "$status" -eq 0 ]
+  agent_files=$(ls "$TMP_PROJ/.opencode/agents/" | wc -l)
+  skill_dirs=$(ls "$TMP_PROJ/.opencode/skills/" | wc -l)
+  [ "$agent_files" -eq 8 ]
+  [ "$skill_dirs" -eq 16 ]
+}
+
+@test "each installed agent has a model: frontmatter line" {
+  $INIT --project "$TMP_PROJ" --preset review --yes >/dev/null 2>&1
+  grep -q "^model:" "$TMP_PROJ/.opencode/agents/code-review-subagent.md"
+}
+
+@test "generated opencode.json has scoped permission.task with *:deny FIRST + build/plan/explore/general" {
+  $INIT --project "$TMP_PROJ" --preset review --yes >/dev/null 2>&1
+  # *:deny must be present
+  python3 -c "import json; d=json.load(open('$TMP_PROJ/.opencode/opencode.json')); t=d['agent']['build']['permission']['task']; assert t.get('*')=='deny', 'task * not deny'; assert list(t.keys())[0]=='*', '* must be first'; assert set(['build','plan','explore','general']).issubset(d['agent']), 'missing builtin agent blocks'; print('ok')"
+}
+
+@test "--dry-run writes nothing into the project" {
+  $INIT --project "$TMP_PROJ" --preset core --yes --dry-run >/dev/null 2>&1
+  [ ! -d "$TMP_PROJ/.opencode" ]
+}
+
+@test "non-TTY without --yes exits non-zero" {
+  run $INIT --project "$TMP_PROJ" --preset core
+  [ "$status" -ne 0 ]
+}
+
+@test "re-run install is idempotent (no error, same counts)" {
+  $INIT --project "$TMP_PROJ" --preset review --yes >/dev/null 2>&1
+  run $INIT --project "$TMP_PROJ" --preset review --yes
+  [ "$status" -eq 0 ]
+  agent_files=$(ls "$TMP_PROJ/.opencode/agents/" | wc -l)
+  [ "$agent_files" -eq 8 ]
+}
+
+@test "--prune removes previously-installed entries absent from the new set" {
+  $INIT --project "$TMP_PROJ" --preset review --yes >/dev/null 2>&1
+  before=$(ls "$TMP_PROJ/.opencode/agents/" | wc -l)
+  [ "$before" -eq 8 ]
+  # switch to docs (disjoint agents) with --prune
+  $INIT --project "$TMP_PROJ" --preset docs --yes --prune >/dev/null 2>&1
+  # code-review-subagent should be gone (not in docs closure)
+  [ ! -f "$TMP_PROJ/.opencode/agents/code-review-subagent.md" ]
+}
+
+@test "manifest is written and lists installed agents/skills" {
+  $INIT --project "$TMP_PROJ" --preset core --yes >/dev/null 2>&1
+  [ -f "$TMP_PROJ/.opencode/.opencode-init.manifest.json" ]
+  m_agents=$(jq_get "len(d['agents'])" < "$TMP_PROJ/.opencode/.opencode-init.manifest.json")
+  [ "$m_agents" -ge 1 ]
+}
+
+@test "clean-slate warning fires when ~/.config/opencode/agents is non-empty" {
+  # This machine has a global deploy (51 agents). The summary (stderr) must mention it.
+  run bash -c "$INIT --project '$TMP_PROJ' --preset core --dry-run 2>&1 >/dev/null"
+  echo "$output" | grep -qi "GLOBAL DEPLOY DETECTED"
+}

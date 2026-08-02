@@ -14,6 +14,7 @@ compatibility: opencode
 metadata:
   audience: developers, maintainers
   workflow: commit-compact-authoring
+category: Git/Workflow
 ---
 
 ## What I Do

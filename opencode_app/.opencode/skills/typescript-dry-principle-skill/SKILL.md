@@ -7,6 +7,7 @@ metadata:
   audience: developers
   workflow: code-refactoring
   protocol: autoresearch-opt-in
+category: Framework-Specific
 ---
 
 ## What I do

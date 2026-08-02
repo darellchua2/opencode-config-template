@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers, agents, subagents
   workflow: documentation, progress-tracking
+category: Git/Workflow
 ---
 
 ## What I do

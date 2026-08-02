@@ -9,6 +9,7 @@ metadata:
   trigger: explicit-only
   protocol: autoresearch-opt-in
   version: "2"
+category: Agent Optimization
 ---
 
 ## What I do

@@ -6,6 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: ooxml-surgical-editing
+category: Office Utilities
 ---
 
 ## What I do

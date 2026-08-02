@@ -7,6 +7,7 @@ metadata:
   audience: developers
   workflow: maintenance
   protocol: autoresearch-opt-in
+category: OpenCode Meta
 ---
 
 ## What I do
