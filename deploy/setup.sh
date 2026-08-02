@@ -2619,6 +2619,12 @@ run_resolver() {
     if [ -n "$PROVIDER" ]; then
         extra_args="$extra_args --provider ${PROVIDER} --presets ${PROVIDER_PRESETS}"
     fi
+    # Deploy-time exposed-model guard (#281): fail-fast if a tier/source pin
+    # references a model its provider doesn't serve. Guarded by file presence so
+    # older deploys without provider-models.json are unaffected.
+    if [ -f "${DEPLOY_DIR}/provider-models.json" ]; then
+        extra_args="$extra_args --provider-models ${DEPLOY_DIR}/provider-models.json"
+    fi
 
     local project_map_arg=""
     [ -f "$PROJECT_MODELS_MAP" ] && project_map_arg="--project-map ${PROJECT_MODELS_MAP}"

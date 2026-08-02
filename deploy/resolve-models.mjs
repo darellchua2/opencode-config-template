@@ -27,7 +27,7 @@
 //     [--config-src <opencode.json>] [--config-dest <deployed config.json>] \
 //     [--state <.resolved-models.json sidecar>] \
 //     [--provider <name> --presets <provider-presets.json>] \
-//     [--force] [--dry-run] [--preview-dir <path>] [--verbose] [--json]
+//     [--force] [--dry-run] [--preview-dir <path>] [--provider-models <file>] [--verbose] [--json]
 
 import { readFile, writeFile, readdir, mkdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
@@ -43,7 +43,7 @@ function parseArgsCamel(argv) {
     userMap: null, projectMap: null,
     overrides: null, projectOverrides: null,
     configSrc: null, configDest: null,
-    state: null, provider: null, presets: null,
+    state: null, provider: null, presets: null, providerModels: null,
     force: false, dryRun: false, verbose: false, json: false,
   };
   const boolKeys = new Set(["force", "dryRun", "verbose", "json", "liftOnly"]);
@@ -132,6 +132,7 @@ async function main() {
   const overrides = (await readJsonMaybe(O.overrides)) || {};
   const projectOverrides = (await readJsonMaybe(O.projectOverrides)) || {};
   const state = (await readJsonMaybe(O.state)) || {};
+  const providerModelsMap = await readJsonMaybe(O.providerModels);
 
   // Provider shortcut: presets[provider] acts as a (global) tier map override.
   let providerMap = null;
@@ -267,6 +268,7 @@ async function main() {
   const generalModel = tierModel("reasoning");
   let configPatched = false;
   let configObj = null;
+  let sourceConfigPins = null;
   if (O.configDest && primary) {
     if (O.configSrc && existsSync(O.configSrc)) {
       configObj = await readJsonMaybe(O.configSrc);
@@ -274,6 +276,12 @@ async function main() {
       configObj = await readJsonMaybe(O.configDest);
     }
     if (configObj) {
+      // Snapshot raw source-config pins BEFORE patching, for the exposed-model guard.
+      sourceConfigPins = {
+        "source opencode.json model": configObj.model,
+        "source opencode.json agent.explore": configObj.agent && configObj.agent.explore && configObj.agent.explore.model,
+        "source opencode.json agent.general": configObj.agent && configObj.agent.general && configObj.agent.general.model,
+      };
       configObj.model = primary;
       configObj.agent = configObj.agent || {};
       if (exploreModel) {
@@ -322,6 +330,55 @@ async function main() {
     if (visionStems.length && O.verbose) {
       console.error(`Note: vision-tier agents [${visionStems.join(", ")}] require a multimodal model.`);
     }
+  }
+
+  // ── exposed-model guard (deploy-time fail-fast) ──
+  // Validates every resolved model (per-agent + primary/explore/general + raw
+  // source-config pins) against provider-models.json, so a tier pinned to a model
+  // its provider doesn't serve is caught at deploy — not at first subagent spawn.
+  // Skipped when --provider-models is absent (back-compat) or --force is set.
+  let guardOffenders = [];
+  const guardWarns = [];
+  if (providerModelsMap && !O.force) {
+    const checkModel = (label, modelStr) => {
+      if (!modelStr || modelStr === "(preserved)") return;
+      const s = String(modelStr);
+      const slash = s.indexOf("/");
+      if (slash === -1) {
+        guardWarns.push(`guard: ${label} model "${s}" has no provider/ prefix — skipped`);
+        return;
+      }
+      const prov = s.slice(0, slash);
+      const mdl = s.slice(slash + 1);
+      const list = providerModelsMap[prov];
+      if (!list) {
+        guardWarns.push(`guard: ${label} provider "${prov}" not in provider-models map — skipped (cannot validate)`);
+        return;
+      }
+      const exposed = new Set(list.map((m) => (typeof m === "string" && m.includes("/") ? m.slice(m.indexOf("/") + 1) : m)));
+      if (!exposed.has(mdl)) {
+        guardOffenders.push(`${label} pins "${s}" — "${mdl}" NOT exposed by provider "${prov}"`);
+      }
+    };
+    for (const stem of Object.keys(newState)) {
+      checkModel(`agent ${stem} (${tierOf[stem] || "?"})`, newState[stem] && newState[stem].model);
+    }
+    if (primary) checkModel("primary", primary);
+    if (exploreModel) checkModel("explore (fast tier)", exploreModel);
+    if (generalModel) checkModel("general (reasoning tier)", generalModel);
+    if (sourceConfigPins) {
+      for (const [label, val] of Object.entries(sourceConfigPins)) checkModel(label, val);
+    }
+  }
+  if (providerModelsMap && guardWarns.length && !O.json) {
+    for (const w of guardWarns) console.error(w);
+  }
+  if (guardOffenders.length) {
+    console.error(`\nerror: ${guardOffenders.length} resolved model(s) pinned to a model its provider does not expose:`);
+    for (const o of guardOffenders) console.error(`  - ${o}`);
+    console.error("Fix the tier map (deploy/models.default.json / deploy/provider-presets.json) or the source opencode.json pin,");
+    console.error("or update deploy/provider-models.json. Bypass with --force (not recommended).");
+    process.exit(1);
   }
 
   // Determine where resolved files go and whether to write at all.

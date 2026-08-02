@@ -55,6 +55,7 @@ RUN node /app/deploy/resolve-models.mjs \
         --agents-dest /app/.opencode/agents \
         --tiers /app/deploy/agent-tiers.json \
         --default-map /app/deploy/models.default.json \
+        --provider-models /app/deploy/provider-models.json \
         --presets /app/deploy/provider-presets.json \
         $([ -n "$OPENCODE_PROVIDER" ] && echo "--provider $OPENCODE_PROVIDER") \
         --config-dest /app/opencode.json \
