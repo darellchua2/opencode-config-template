@@ -51,7 +51,7 @@ Prompt the user for the following information:
 - **Mode**: `primary` or `subagent`
 
 **Configuration Options**:
-- **Model**: Provider/model-id — primary agents use `zai-coding-plan/glm-5.2` (1M context); subagents tier by purpose: `glm-5.2` (reasoning/review/refactor), `glm-5-turbo` (explore/low-impact), `zai/glm-4.6v-flash` (vision, free Z.AI API — separate auth), `glm-4.7` (docs/lint)
+- **Model**: Provider/model-id — primary agents use `zai-coding-plan/glm-5.2` (1M context); subagents tier by purpose: `glm-5.2` (reasoning/review/refactor), `glm-5-turbo` (explore/low-impact), `glm-4.7` (docs/lint — incl. `image-analyzer-subagent`/`error-resolver-subagent`, which obtain image content via `zai-vision-analysis-skill`). The `vision` tier (`zai/glm-4.6v`) is opt-in paid multimodal only.
 - **Temperature**: 0.0-1.0 (default: 0.7)
 - **Steps**: Max agentic iterations (default: 5)
 - **Hidden**: Hide from @ autocomplete (default: false, subagents only)

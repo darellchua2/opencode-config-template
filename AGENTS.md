@@ -36,19 +36,22 @@ agnostic** — swap to Anthropic/OpenAI/OpenRouter/LM Studio via
 | `primary` | `glm-5.2` (1M ctx) | **Primary session only** — holds the long orchestrator context. No subagent uses this. |
 | `reasoning` | `glm-5.2` (200k) | Correctness-critical: reviewers (code/architecture/language incl. java/uiux), repo-ops-specialist, tdd, opentofu-explorer, loop-operator, opencode-tooling, technical-design-specialist, discovery-specialist, requirements-specialist, autoresearch-ml, autoresearch-code |
 | `fast` | `glm-5-turbo` (200k) | Exploratory / low-impact / coordination: explorer, testing, specialists (nextjs/cad/m365/google/office-docs), document creators, pr-workflow, autoresearch-research |
-| `docs` | `glm-4.7` (204k) | Docs/lint/reporting: documentation, linting, coverage |
-| `vision` | `zai/glm-4.6v-flash` (128k, free) | **Multimodal required**: image-analyzer, error-resolver. Served by the **`zai` API provider** (not the coding-plan subscription) — see auth prerequisite below. |
+| `docs` | `glm-4.7` (204k) | Docs/lint/reporting: documentation, linting, coverage. **Also `image-analyzer-subagent` + `error-resolver-subagent`** — text-based; they obtain image/screenshot content via `zai-vision-analysis-skill` (free `glm-4.6v-flash` direct Z.AI API), then interpret it. |
+| `vision` | `zai/glm-4.6v` (128k) | **Opt-in paid multimodal only** — no default agent uses this tier. The `zai` provider (per models.dev) exposes `glm-4.6v` ($0.30/$0.90), `glm-4.5v`, `glm-5v-turbo`. Use only when a caller explicitly requests the paid provider-vision path. |
 
 Pick the tier by what the agent *does*: correctness-critical → `reasoning`;
-exploratory/low-impact → `fast`; docs/lint → `docs`; vision → `vision`.
-**Never default a subagent to the `primary` tier.**
+exploratory/low-impact → `fast`; docs/lint → `docs`. **Never default a subagent to
+the `primary` tier.** Image/screenshot analysis is **not** a separate tier — it is done
+by `docs`-tier text agents (`image-analyzer-subagent`, `error-resolver-subagent`) via
+`zai-vision-analysis-skill` (free direct API). The `vision` tier is opt-in paid.
 
-> **Vision-tier auth prerequisite:** the `vision` tier uses `zai/glm-4.6v-flash`
-> (Z.AI's free vision model), served by the **`zai` API provider** — separate from
-> the `zai-coding-plan` subscription. Authenticate it once: `opencode auth login`
-> (select Z.AI), or export `ZAI_API_KEY` (Docker injects this automatically via
-> `opencode_app/docker-entrypoint.sh`). Without it, vision subagents fail with a
-> provider-auth error.
+> **Image analysis (default = free):** `image-analyzer-subagent` / `error-resolver-subagent`
+> run on text `glm-4.7` and obtain image content by invoking `zai-vision-analysis-skill`,
+> which calls the Z.AI vision API directly at `glm-4.6v-flash` (free). Requires `ZAI_API_KEY`
+> (`opencode auth login` Z.AI, or exported — Docker injects it via `docker-entrypoint.sh`).
+> The free `glm-4.6v-flash` is **not** in models.dev, so it is reachable only via this direct
+> API call (not the `zai` provider) — hence the skill. The `vision` provider tier (paid
+> `glm-4.6v`/`glm-5v-turbo`) is used only on explicit request.
 
 ### Resolution precedence (highest wins)
 1. `<project>/.opencode/agent-overrides.json` (per-agent, project-local)
