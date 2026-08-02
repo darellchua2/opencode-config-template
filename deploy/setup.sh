@@ -3613,6 +3613,35 @@ print_next_steps() {
 # MAIN EXECUTION
 ################################################################################
 
+# Setup the opencode-init symlink (project-scoped selective installer CLI).
+# Symlinks <repo>/deploy/init.mjs -> ~/.local/bin/opencode-init so the CLI is on
+# PATH and invocable from any project (the LLM uses it via the routing rule in
+# AGENTS.md). Idempotent: refreshes a stale link, skips a correct one. Additive —
+# does not touch any other setup.sh behavior.
+setup_opencode_init_symlink() {
+    local init_src="${REPO_DIR}/deploy/init.mjs"
+    if [ ! -f "$init_src" ]; then
+        log_warn "opencode-init source not found at ${init_src}; skipping symlink"
+        return 0
+    fi
+    local user_bin="${HOME}/.local/bin"
+    mkdir -p "$user_bin"
+    local link="${user_bin}/opencode-init"
+    # Refresh if missing or pointing elsewhere; leave alone if already correct.
+    if [ -L "$link" ] && [ "$(readlink -f "$link" 2>/dev/null)" = "$(readlink -f "$init_src" 2>/dev/null)" ]; then
+        log_info "opencode-init symlink already correct at ${link}"
+    else
+        ln -sf "$init_src" "$link"
+        log_success "opencode-init installed to ${link}"
+    fi
+    # PATH check (mirrors the markitdown pattern ~line 2587)
+    case ":${PATH}:" in
+        *":${user_bin}:"*) ;;
+        *) log_warn "${user_bin} is not on your PATH. Add it to your shell rc to use opencode-init:" \
+           && echo "    export PATH=\"${user_bin}:\$PATH\"" >&2 ;;
+    esac
+}
+
 main() {
     # Parse command line arguments
     parse_arguments "$@"
@@ -3826,6 +3855,7 @@ main() {
     setup_model_provider || true
     deploy_agents || true
     deploy_plugins || true
+    setup_opencode_init_symlink || true
     setup_learnings_dir || true
     setup_shell_vars || true
 
