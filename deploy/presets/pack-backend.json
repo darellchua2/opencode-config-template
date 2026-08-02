@@ -1,0 +1,23 @@
+{
+  "$comment": "Preset 'backend' for deploy/init.mjs (--preset backend). Derived by /tmp/gen-presets.mjs from deploy/registry.json; edit via the generator, not by hand.",
+  "name": "backend",
+  "description": "Server/devops-lite: Python backend/packaging, DB migrations, API design, security, auth, docker, observability.",
+  "agents": [
+    "python-reviewer-subagent"
+  ],
+  "skills": [
+    "api-design-skill",
+    "authentication-authorization-skill",
+    "database-migration-skill",
+    "docker-containerization-skill",
+    "logging-observability-skill",
+    "openapi-contract-adherence-skill",
+    "performance-optimization-skill",
+    "python-backend-skill",
+    "python-packaging-skill",
+    "security-audit-skill"
+  ],
+  "mcps": [
+    "codegraph"
+  ]
+}

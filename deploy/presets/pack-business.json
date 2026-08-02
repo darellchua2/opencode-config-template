@@ -1,0 +1,27 @@
+{
+  "$comment": "Preset 'business' for deploy/init.mjs (--preset business). Derived by /tmp/gen-presets.mjs from deploy/registry.json; edit via the generator, not by hand.",
+  "name": "business",
+  "description": "BD/founder workflows: startup founder + CEO + discovery + requirements + technical design, with business/pitch/BD skills.",
+  "agents": [
+    "startup-founder-primary-agent",
+    "startup-ceo-subagent",
+    "discovery-specialist-subagent",
+    "requirements-specialist-subagent",
+    "technical-design-specialist-subagent"
+  ],
+  "skills": [
+    "brd-creation-skill",
+    "construction-bd-skill",
+    "domain-modeling-skill",
+    "grill-me-skill",
+    "grill-with-docs-skill",
+    "grilling-skill",
+    "interactive-document-rendering-skill",
+    "srs-creation-skill",
+    "startup-business-docs-skill",
+    "startup-pitch-deck-skill",
+    "technical-design-creation-skill",
+    "vision-creation-skill"
+  ],
+  "mcps": []
+}

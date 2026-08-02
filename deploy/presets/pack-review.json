@@ -1,0 +1,28 @@
+{
+  "$comment": "Preset 'review' for deploy/init.mjs (--preset review). Derived by /tmp/gen-presets.mjs from deploy/registry.json; edit via the generator, not by hand.",
+  "name": "review",
+  "description": "Code quality gates: comprehensive + architecture + 5 language reviewers, backed by the 8 Code Quality skills.",
+  "agents": [
+    "code-review-subagent",
+    "architecture-review-subagent",
+    "python-reviewer-subagent",
+    "typescript-reviewer-subagent",
+    "go-reviewer-subagent",
+    "rust-reviewer-subagent",
+    "java-reviewer-subagent"
+  ],
+  "skills": [
+    "clean-architecture-skill",
+    "clean-code-skill",
+    "code-smells-skill",
+    "complexity-management-skill",
+    "deprecated-code-cleanup-skill",
+    "design-patterns-skill",
+    "object-design-skill",
+    "security-audit-skill",
+    "solid-principles-skill"
+  ],
+  "mcps": [
+    "codegraph"
+  ]
+}

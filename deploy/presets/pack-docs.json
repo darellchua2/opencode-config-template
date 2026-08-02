@@ -1,0 +1,33 @@
+{
+  "$comment": "Preset 'docs' for deploy/init.mjs (--preset docs). Derived by /tmp/gen-presets.mjs from deploy/registry.json; edit via the generator, not by hand.",
+  "name": "docs",
+  "description": "Document generation: docs/coverage + Word/PowerPoint/Excel specialists + the BRD/SRS/Vision/TDD document ladder.",
+  "agents": [
+    "documentation-subagent",
+    "coverage-subagent",
+    "docx-creation-subagent",
+    "pptx-specialist-subagent",
+    "xlsx-specialist-subagent",
+    "office-document-primary-agent"
+  ],
+  "skills": [
+    "brd-creation-skill",
+    "coverage-readme-workflow-skill",
+    "docstring-generator-skill",
+    "docx-creation-skill",
+    "interactive-document-rendering-skill",
+    "office-thumbnail-skill",
+    "ooxml-editing-skill",
+    "pdf-specialist-skill",
+    "pptx-generate-slide-skill",
+    "pptx-generate-template-skill",
+    "pptx-template-modifier-skill",
+    "srs-creation-skill",
+    "technical-design-creation-skill",
+    "vision-creation-skill",
+    "xlsx-specialist-skill"
+  ],
+  "mcps": [
+    "mermaid"
+  ]
+}
