@@ -34,14 +34,21 @@ agnostic** — swap to Anthropic/OpenAI/OpenRouter/LM Studio via
 | Tier | Default model (Z.AI) | Use for |
 |------|----------------------|---------|
 | `primary` | `glm-5.2` (1M ctx) | **Primary session only** — holds the long orchestrator context. No subagent uses this. |
-| `reasoning` | `glm-5.1` (200k) | Correctness-critical: reviewers (code/architecture/language incl. java/uiux), repo-ops-specialist, tdd, opentofu-explorer, loop-operator, opencode-tooling, technical-design-specialist, discovery-specialist, requirements-specialist, autoresearch-ml, autoresearch-code |
+| `reasoning` | `glm-5.2` (200k) | Correctness-critical: reviewers (code/architecture/language incl. java/uiux), repo-ops-specialist, tdd, opentofu-explorer, loop-operator, opencode-tooling, technical-design-specialist, discovery-specialist, requirements-specialist, autoresearch-ml, autoresearch-code |
 | `fast` | `glm-5-turbo` (200k) | Exploratory / low-impact / coordination: explorer, testing, specialists (nextjs/cad/m365/google/office-docs), document creators, pr-workflow, autoresearch-research |
 | `docs` | `glm-4.7` (204k) | Docs/lint/reporting: documentation, linting, coverage |
-| `vision` | `glm-5v-turbo` (200k) | **Multimodal required**: image-analyzer, error-resolver. No structured output. |
+| `vision` | `zai/glm-4.6v-flash` (128k, free) | **Multimodal required**: image-analyzer, error-resolver. Served by the **`zai` API provider** (not the coding-plan subscription) — see auth prerequisite below. |
 
 Pick the tier by what the agent *does*: correctness-critical → `reasoning`;
 exploratory/low-impact → `fast`; docs/lint → `docs`; vision → `vision`.
 **Never default a subagent to the `primary` tier.**
+
+> **Vision-tier auth prerequisite:** the `vision` tier uses `zai/glm-4.6v-flash`
+> (Z.AI's free vision model), served by the **`zai` API provider** — separate from
+> the `zai-coding-plan` subscription. Authenticate it once: `opencode auth login`
+> (select Z.AI), or export `ZAI_API_KEY` (Docker injects this automatically via
+> `opencode_app/docker-entrypoint.sh`). Without it, vision subagents fail with a
+> provider-auth error.
 
 ### Resolution precedence (highest wins)
 1. `<project>/.opencode/agent-overrides.json` (per-agent, project-local)

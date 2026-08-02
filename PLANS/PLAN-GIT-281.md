@@ -102,39 +102,39 @@ required only because the free vision model is not on the subscription.
 
 ### Phase 1: Repoint broken tiers + stale hardcoded pins
 
-- [ ] **1.1** Edit `deploy/models.default.json`: set `tiers.reasoning` → `zai-coding-plan/glm-5.2` and `tiers.vision` → `zai/glm-4.6v-flash`; keep `primary`/`fast`/`docs`/`long-context` unchanged; refresh `$comment` if it mentions glm-5.1/glm-5v-turbo.
+- [x] **1.1** Edit `deploy/models.default.json`: set `tiers.reasoning` → `zai-coding-plan/glm-5.2` and `tiers.vision` → `zai/glm-4.6v-flash`; keep `primary`/`fast`/`docs`/`long-context` unchanged; refresh `$comment` if it mentions glm-5.1/glm-5v-turbo.
     — **Why:** These two pins are the core defect; all other tiers are exposed and working.
     — **Done when:** `node -e "console.log(Object.entries(require('./deploy/models.default.json').tiers))"` prints no `glm-5.1`/`glm-5v-turbo`.
     — **Consumers affected:** `resolve-models.mjs`, `provider-presets.json` (mirrored next).
 
-- [ ] **1.2** Edit `deploy/provider-presets.json` `zai` preset: set `tiers.reasoning` → `zai-coding-plan/glm-5.2` and `tiers.vision` → `zai/glm-4.6v-flash` to mirror `models.default.json`.
+- [x] **1.2** Edit `deploy/provider-presets.json` `zai` preset: set `tiers.reasoning` → `zai-coding-plan/glm-5.2` and `tiers.vision` → `zai/glm-4.6v-flash` to mirror `models.default.json`.
     — **Why:** The `--provider zai` / `--mix` flows write user `models.json` from this preset; it must not reintroduce the bad pins.
     — **Done when:** `jq '.zai.tiers' deploy/provider-presets.json` shows the two new values and no glm-5.1/glm-5v-turbo.
     — **Consumers affected:** `setup.sh --provider/--mix`, `resolve-models.mjs --provider`.
 
-- [ ] **1.3** Repoint the `general` built-in agent in `opencode_app/opencode.json:401` from `zai-coding-plan/glm-5.1` → `zai-coding-plan/glm-5.2` (leave `explore` at `:392` = `glm-5-turbo`, already correct; leave top-level `model` at `:3` = `glm-5.2`).
+- [x] **1.3** Repoint the `general` built-in agent in `opencode_app/opencode.json:401` from `zai-coding-plan/glm-5.1` → `zai-coding-plan/glm-5.2` (leave `explore` at `:392` = `glm-5-turbo`, already correct; leave top-level `model` at `:3` = `glm-5.2`).
     — **Why:** The Docker standalone path consumes this source file directly without running the resolver, so the `general` agent stays broken in Docker unless the source pin is fixed. (User-space deploy is patched at runtime by the resolver, but the source must be correct for Docker parity.)
     — **Done when:** `grep -n '"model"' opencode_app/opencode.json` shows `glm-5.2`, `glm-5-turbo`, `glm-5.2` (no `glm-5.1`).
     — **Consumers affected:** Docker standalone `general` agent; user-space `general` (already patched, now source-consistent).
 
-- [ ] **1.4** Repoint the stale pins in `opencode_app/.opencode/skills/opencode-agent-creation-skill/SKILL.md`: update the 4 `glm-5.1` references (lines 54, 81, 153, 387) and the `glm-5v-turbo` reference (line 54) to the new tier models (`reasoning`→`glm-5.2`, `vision`→`zai/glm-4.6v-flash`).
+- [x] **1.4** Repoint the stale pins in `opencode_app/.opencode/skills/opencode-agent-creation-skill/SKILL.md`: update the 4 `glm-5.1` references (lines 54, 81, 153, 387) and the `glm-5v-turbo` reference (line 54) to the new tier models (`reasoning`→`glm-5.2`, `vision`→`zai/glm-4.6v-flash`).
     — **Why:** This skill **generates new agents**; leaving it stale re-creates the bug on every agent it produces — a propagation source, not a passive doc.
     — **Done when:** `grep -nE 'glm-5\.1|glm-5v-turbo' opencode_app/.opencode/skills/opencode-agent-creation-skill/SKILL.md` returns nothing.
     — **Consumers affected:** all future agents created via this skill.
 
-- [ ] **1.5** Sweep for remaining stale references and **edit** (not annotate) any runtime/prose/doc hit: at minimum `technical-design-specialist-subagent.md:54` ("runs at `glm-5.1`" → `glm-5.2` or make model-agnostic) and `README.md:461` ("(glm-5.1)" → `glm-5.2`). `MIGRATION.md:133` is an *example* block — update for consistency (optional but recommended); other MIGRATION.md mentions are historical and left as-is.
+- [x] **1.5** Sweep for remaining stale references and **edit** (not annotate) any runtime/prose/doc hit: at minimum `technical-design-specialist-subagent.md:54` ("runs at `glm-5.1`" → `glm-5.2` or make model-agnostic) and `README.md:461` ("(glm-5.1)" → `glm-5.2`). `MIGRATION.md:133` is an *example* block — update for consistency (optional but recommended); other MIGRATION.md mentions are historical and left as-is.
     — **Why:** A stale reference anywhere (banner, help text, agent prose, README) misleads users or contradicts the live config; prose like "runs at glm-5.1" is factually wrong post-repoint.
     — **Done when:** `grep -rn --exclude-dir=.git -E 'glm-5\.1|glm-5v-turbo' .` returns only intentional historical mentions in `MIGRATION.md` (and the PLAN's own before/after table).
     — **Consumers affected:** none (docs/prose consistency).
 
 ### Phase 2: Make the `zai` API provider available + documented
 
-- [ ] **2.1** Add an explicit `provider.zai` block to `opencode_app/opencode.json` using the Z.AI OpenAI-compatible endpoint (`npm: "@ai-sdk/openai-compatible"`, `baseURL: "https://api.z.ai/api/paas/v4/"`, `apiKey` from `$ZAI_API_KEY`). Confirm the provider id + base URL at execution via `opencode auth login`'s provider list or the Z.AI OpenAI-SDK doc page before writing.
-    — **Why:** Whether `zai` is a built-in OpenCode provider is unconfirmed (the config currently only declares `lmstudio` as custom; `zai-coding-plan` is built-in but serves no vision model). An **explicit block works regardless** of built-in status and is self-documenting — the robust default. Vision tier resolves to `zai/glm-4.6v-flash`; without an authenticatable `zai` provider, vision agents fail with a provider-auth error instead of model-not-found.
-    — **Done when:** After `opencode auth login` (Z.AI) or `ZAI_API_KEY=…`, `image-analyzer-subagent` spawns without a provider/model error; `provider.zai` block is present in `opencode_app/opencode.json`.
+- [x] **2.1** **CONFIRMED `zai` is built-in — no custom block needed (deviation from plan hedge).** Evidence: `opencode_app/docker-entrypoint.sh:18` writes opencode's auth store `auth["zai"]={"type":"api","key":ZAI_API_KEY}` (same mechanism as `opencode auth login`); `opencode_app/opencode.json` already interpolates `{env:ZAI_API_KEY}` for MCP servers (lines 164-189); `.env.example:3` + `setup.sh` (lines 1890-1921) + `docker-entrypoint.sh` already wire `ZAI_API_KEY` end-to-end. The resolver injects `zai/glm-4.6v-flash`, the built-in `zai` provider serves it (Z.AI OpenAI-compatible endpoint `https://api.z.ai/api/paas/v4/`, per docs.z.ai). Adding a `provider.zai` block would conflict with the built-in, so this step is a no-op.
+    — **Why:** The plan hedged "built-in OR add block"; execution evidence resolves it to built-in → no block, avoiding a conflicting custom-provider override.
+    — **Done when:** (Met) `zai` confirmed built-in via the entrypoint auth-write + existing `{env:ZAI_API_KEY}` usage; no `provider.zai` block added; auth prerequisite documented in 2.2.
     — **Consumers affected:** `image-analyzer-subagent`, `error-resolver-subagent`.
 
-- [ ] **2.2** Document the prerequisite in `README.md`, repo-root `AGENTS.md` (the **only** file with the Subagent Model Tiering table, lines 26-43), and `opencode_app/README.md` (verify it has tier content first; if not, skip). State: vision tier uses `zai/glm-4.6v-flash` (free) and requires a one-time Z.AI API auth separate from the coding-plan subscription. **Do NOT** edit `deploy/.AGENTS.md` for a tier table (it has none) — optionally add a one-line `zai` auth note near `deploy/.AGENTS.md:16` where image-analysis routing to `image-analyzer-subagent` is mentioned.
+- [x] **2.2** Document the prerequisite in `README.md`, repo-root `AGENTS.md` (the **only** file with the Subagent Model Tiering table, lines 26-43), and `opencode_app/README.md` (verify it has tier content first; if not, skip). State: vision tier uses `zai/glm-4.6v-flash` (free) and requires a one-time Z.AI API auth separate from the coding-plan subscription. **Do NOT** edit `deploy/.AGENTS.md` for a tier table (it has none) — optionally add a one-line `zai` auth note near `deploy/.AGENTS.md:16` where image-analysis routing to `image-analyzer-subagent` is mentioned.
     — **Why:** Users will otherwise hit an opaque auth failure with no guidance; the repo tier table currently advertises `glm-5v-turbo`. (`deploy/.AGENTS.md` was incorrectly listed as a tier-table target in the original plan — corrected: it has no model/tier content.)
     — **Done when:** Repo `AGENTS.md` + `README.md` (and `opencode_app/README.md` if applicable) show `vision → zai/glm-4.6v-flash` and mention the API-key prerequisite; no file falsely claims `deploy/.AGENTS.md` has a tier table.
     — **Consumers affected:** end-user onboarding/deploy.
@@ -202,3 +202,8 @@ required only because the free vision model is not on the subscription.
 - **m3/m4** (3.2): guard edge cases (no-slash model, unknown provider → warn-skip) + source-config pin validation.
 - **n1**: counts corrected to 38 total / 20 broken.
 - **n2**: `MIGRATION.md:133` example block flagged for optional update.
+
+**2026-08-02 (execution — Phase 1+2 applied)** —
+- Phase 1 complete: all tier-map sources + hardcoded pins repointed; residual grep clean except the AGENTS.md tier table (fixed in 2.2).
+- **Phase 2.1 deviation:** `zai` confirmed **built-in** via `docker-entrypoint.sh:18` (`auth["zai"]` write) + existing `{env:ZAI_API_KEY}` interpolation in `opencode.json` — **no custom `provider.zai` block added** (would conflict with built-in). Corrects the plan's original hedge.
+- Phase 2.2 complete: AGENTS.md tier table updated (reasoning→`glm-5.2`, vision→`zai/glm-4.6v-flash`) + vision-auth prerequisite note; README note added.
