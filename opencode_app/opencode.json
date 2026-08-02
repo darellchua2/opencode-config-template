@@ -23,6 +23,7 @@
     "skill": {
       "*": "deny",
 
+      "zai-vision-analysis-skill": "allow",
       "openapi-contract-adherence-skill": "allow",
       "markitdown-mcp-skill": "allow",
       "git-branch-workflow-setup-skill": "allow",
