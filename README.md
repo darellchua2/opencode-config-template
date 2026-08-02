@@ -23,7 +23,7 @@ opencode-config-template/
 │   ├── .dockerignore
 │   ├── .opencode/
 │   │       ├── agents/              # 39 subagent .md files
-│   │       └── skills/              # 124 skill directories
+│   │       └── skills/              # 125 skill directories
 │   └── README.md                # Docker usage guide
 ├── docker-compose.yml           # Docker Compose service definition
 ├── .env.example                 # Environment variable template
@@ -408,9 +408,9 @@ TypeScript, JavaScript, Python, Go, Rust, Java, C#, PHP, Ruby, C, C++, Swift, Ko
 
 ## Skill Modularization
 
-This repository implements **skill modularization** with 124 skills organized across 21 categories. Skills are designed with clear separation of concerns and explicit dependencies.
+This repository implements **skill modularization** with 125 skills organized across 21 categories. Skills are designed with clear separation of concerns and explicit dependencies.
 
-> **Migration Complete (BT-142):** The `pptx-specialist-*` stack has been migrated to chenyu's JSON-in-PPTX architecture. Final skill count is **123** (−1 `pptx-specialist-skill` decomposed, +3 chenyu skills, +2 new decomposition skills, +2 Academic & Research Writing skills added post-migration). See `PLANS/PLAN-BT-142.md` for the full plan. The legacy `pptx-specialist-skill` has been removed; all PPTX operations now route through `pptx-specialist-subagent` → `pptx-generate-slide-skill` / `pptx-generate-template-skill` / `pptx-template-modifier-skill`. Post-#283: +1 `zai-vision-analysis-skill` (Z.AI direct-API vision, free `glm-4.6v-flash`) → **124**.
+> **Migration Complete (BT-142):** The `pptx-specialist-*` stack has been migrated to chenyu's JSON-in-PPTX architecture. Final skill count is **123** (−1 `pptx-specialist-skill` decomposed, +3 chenyu skills, +2 new decomposition skills, +2 Academic & Research Writing skills added post-migration). See `PLANS/PLAN-BT-142.md` for the full plan. The legacy `pptx-specialist-skill` has been removed; all PPTX operations now route through `pptx-specialist-subagent` → `pptx-generate-slide-skill` / `pptx-generate-template-skill` / `pptx-template-modifier-skill`. Post-#283: +1 `zai-vision-analysis-skill` (Z.AI direct-API vision, free `glm-4.6v-flash`) → **125**.
 
 ### Skill Categories
 
@@ -431,11 +431,11 @@ This repository implements **skill modularization** with 124 skills organized ac
 | **Agent Optimization** (7) | continuous-learning, eval-harness, strategic-compact, verification-loop, search-first, context-budget, agent-introspection-debugging | AI agent session optimization, research-first workflow, context auditing, and agent debugging |
 | **Autoresearch** (4) | autoresearch-core-skill, autoresearch-ml-skill, autoresearch-code-skill, autoresearch-research-skill | Autonomous research loops: 5-stage Understand→Hypothesize→Experiment→Evaluate→Log methodology. ML training (GPU), code optimization, literature review. Evaluated by mechanical `{"pass":bool,"score":N}` — no LLM self-judgment. Ported from uditgoenka/autoresearch + karpathy/autoresearch (MIT). |
 | **Startup/Business** (3) | startup-pitch-deck-skill, startup-business-docs-skill, construction-bd-skill | Startup pitch decks, business documentation, construction proposals |
-| **Configuration** (4) | microsoft-m365-config-skill, codegraph-setup-skill, markitdown-mcp-skill, zai-vision-analysis-skill | Microsoft 365 MCP, CodeGraph, markitdown MCP, and Z.AI direct-API vision (free `glm-4.6v-flash`) |
+| **Configuration** (3) | microsoft-m365-config-skill, codegraph-setup-skill, markitdown-mcp-skill | Microsoft 365 MCP, CodeGraph, and markitdown MCP setup |
 | **Security** (2) | security-audit-skill, authentication-authorization-skill | Security auditing, vulnerability scanning, and auth implementation |
 | **DevOps** (4) | docker-containerization-skill, monorepo-management-skill, database-migration-skill, logging-observability-skill | Containerization, monorepos, database migrations, and observability |
 | **Planning & Alignment** (4) | grilling-skill, domain-modeling-skill, grill-with-docs-skill, grill-me-skill | Relentless interview/grilling sessions and domain model (CONTEXT.md glossary + ADR) capture |
-| **Responsive & Visual Testing** (2) | wireframer-skill, playwright-responsive-audit-skill | Low-fidelity wireframe/prototype generation and Playwright-driven responsive UI audit + fix methodology |
+| **Responsive & Visual Testing** (3) | wireframer-skill, playwright-responsive-audit-skill, zai-vision-analysis-skill | Low-fidelity wireframe/prototype generation, Playwright-driven responsive UI audit + fix, and Z.AI direct-API image/screenshot analysis (free `glm-4.6v-flash`) |
 | **CAD & Hardware Design** (14) | cad-generation-skill, cad-viewer-skill, cad-step-parts-skill, cad-dxf-skill, cad-urdf-skill, cad-srdf-skill, cad-sdf-skill, cad-sendcutsend-skill, cad-gcode-skill, cad-bambu-labs-skill, cad-implicit-skill, autodesk-aps-skill, civil-3d-skill, open3d-skill | Parametric CAD generation (STEP/STL/3MF/GLB), CAD Viewer previews, off-the-shelf parts, DXF drawings, robot descriptions (URDF/SRDF/SDF), G-code slicing, 3D printing (Bambu Labs), SendCutSend validation, implicit CAD, Autodesk APS API integration, Civil 3D workflows, Open3D 3D data processing |
 
 > **Note**: 6 redundant skills archived to `skills/_archived/`: `nextjs-complete-setup`, `python-docstring-generator`, `nextjs-tsdoc-documentor`, `git-pr-creator`, `git-issue-plan-workflow`, `jira-ticket-plan-workflow`. Use `docstring-generator` for all language docstrings (Python PEP 257, TypeScript TSDoc, Java Javadoc, C# XML docs). Use `ticket-plan-workflow-skill` for unified GitHub/JIRA ticket planning. 
