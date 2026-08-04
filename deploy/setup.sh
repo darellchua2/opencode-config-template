@@ -404,6 +404,25 @@ log_warn() { log "WARNING" "$@"; }
 log_error() { log "ERROR" "$@"; }
 log_success() { log "SUCCESS" "$@"; }
 
+# Count active SKILL.md files in a directory, excluding _archived (matches
+# the deploy's rsync --exclude='_archived'). Used by banners/status listings
+# so skill counts can never drift from disk. BT-157.
+count_skills() {
+    [ -d "$1" ] || { echo 0; return; }
+    find "$1" -type f -name "SKILL.md" -not -path "*/_archived/*" 2>/dev/null | wc -l
+}
+
+# Auto-derive per-category counts from skill frontmatter (category: field),
+# excluding _archived. Drift-proof replacement for the hand-maintained listings.
+# Prints "Category (N)" lines sorted by count desc. BT-157.
+print_skill_categories() {
+    [ -d "$1" ] || return
+    find "$1" -type f -name "SKILL.md" -not -path "*/_archived/*" -exec grep -hE '^[[:space:]]*category:' {} + 2>/dev/null \
+        | sed -E 's/^[[:space:]]*category:[[:space:]]*//' \
+        | sort | uniq -c | sort -rn \
+        | while read -r n c; do [ -n "$c" ] && echo "    - ${c} (${n})"; done
+}
+
 ################################################################################
 # ERROR HANDLING
 ################################################################################
@@ -682,96 +701,11 @@ USAGE:
       google-gce         Google Compute Engine management
       google-gke         Google Kubernetes Engine management
 
-    SKILLS (126):
-              Framework (19):       test-generator-framework, linting-workflow,
-                                      pr-creation-workflow, pr-merge-workflow,
-                                      error-resolver-workflow, tdd-workflow,
-                                      docx-creation,
-                                      xlsx-specialist, pdf-specialist, frontend-design,
-                                      uiux-review-skill,
-                                      api-design-skill, openapi-contract-adherence-skill,
-                                      performance-optimization-skill, srs-creation-skill,
-                                      brd-creation-skill, technical-design-creation-skill,
-                                      vision-creation-skill, interactive-document-rendering-skill
+    SKILLS ($(count_skills "${REPO_DIR}/opencode_app/.opencode/skills")):
 
-            Presentation (3):       pptx-generate-slide-skill, pptx-generate-template-skill,
-                                      pptx-template-modifier-skill
+$(print_skill_categories "${REPO_DIR}/opencode_app/.opencode/skills")
 
-            Office Utilities (2):   ooxml-editing-skill, office-thumbnail-skill
-
-            Language-Specific (8): python-pytest-creator, python-ruff-linter,
-                                  javascript-eslint-linter, changelog-python-cliff,
-                                  python-backend-skill, python-packaging-skill,
-                                  csharp-linter-skill, java-linter-skill
-
-          Framework-Specific (10): nextjs-pr-workflow, nextjs-unit-test-creator,
-                                 nextjs-standard-setup, nextjs-image-usage,
-                                 nextjs-devtools-mcp, amplify-nextjs-deployment,
-                                  typescript-dry-principle, accessibility-a11y-skill,
-                                  react-nextjs-antipatterns-skill,
-                                  threejs-nextjs-skill
-
-           OpenCode Meta (4):    opencode-agent-creation, opencode-skill-creation,
-                                 opencode-skills-maintainer,
-                                 documentation-consistency-skill
-
-           OpenTofu (7):         opentofu-aws-explorer, opentofu-keycloak-explorer,
-                                 opentofu-kubernetes-explorer, opentofu-neon-explorer,
-                                 opentofu-provider-setup, opentofu-provisioning-workflow,
-                                 opentofu-ecr-provision
-
-            Git/Workflow (13):   ascii-diagram-creator, mermaid-diagram-creator,
-                                  ticket-plan-workflow-skill, plan-execution-skill,
-                                  plan-automation-loop-skill,
-                                  git-issue-labeler, git-issue-updater,
-                                  git-semantic-commits, semantic-release-convention,
-                                  git-compact-commits, plan-updater, version-bump-standard,
-                                  git-branch-workflow-setup-skill
-
-          Documentation (3):    coverage-readme-workflow, docstring-generator,
-                                 documentation-sync-workflow
-
-          JIRA (3):             jira-status-updater, jira-git-integration, jira-ticket-labeler
-
-         Code Quality (8):     solid-principles-skill, clean-code-skill, clean-architecture-skill,
-                               design-patterns-skill, object-design-skill, code-smells-skill,
-                               complexity-management-skill, deprecated-code-cleanup-skill
-
-       Agent Optimization (7):  continuous-learning-skill, eval-harness-skill,
-                                strategic-compact-skill, verification-loop-skill,
-                                search-first-skill, context-budget-skill,
-                                agent-introspection-debugging-skill
-
-            Autoresearch (4):  autoresearch-core-skill, autoresearch-ml-skill,
-                                autoresearch-code-skill, autoresearch-research-skill
-
-            Startup/Business (3): startup-pitch-deck-skill, startup-business-docs-skill,
-                                  construction-bd-skill
-
-            Configuration (3):    microsoft-m365-config-skill, codegraph-setup-skill,
-                                  markitdown-mcp-skill
-
-              Security (2):     security-audit-skill, authentication-authorization-skill
-
-                 DevOps (4):     docker-containerization-skill, monorepo-management-skill,
-                                 database-migration-skill, logging-observability-skill
-
-       Planning & Alignment (4): grilling-skill, domain-modeling-skill,
-                                 grill-with-docs-skill, grill-me-skill
-
- Responsive & Visual Testing (2): wireframer-skill,
-                                   playwright-responsive-audit-skill
-
-    CAD & Hardware Design (14): cad-generation, cad-viewer, cad-step-parts,
-                                 cad-dxf, cad-urdf, cad-srdf, cad-sdf,
-                                 cad-sendcutsend, cad-gcode, cad-bambu-labs,
-                                 cad-implicit, autodesk-aps-skill,
-                                 civil-3d-skill, open3d-skill
-
-  Academic & Research Writing (2): horseshoe-paper-writing-skill,
-                                    research-paper-generation-skill
-
-    Run 'opencode --list-skills' for detailed descriptions
+     Run 'opencode --list-skills' for detailed descriptions
     Run 'opencode --skill <name> "prompt"' to invoke a skill
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -3444,123 +3378,9 @@ print_summary() {
 
     # skills directory status
     if [ -d "$SKILLS_DIR" ] && [ "$(ls -A "${SKILLS_DIR}" 2>/dev/null)" ]; then
-        local skill_count=$(find "${SKILLS_DIR}" -type f -name "SKILL.md" 2>/dev/null | wc -l)
+        local skill_count=$(count_skills "${SKILLS_DIR}")
         echo "✓ skills: ${skill_count} skills deployed to ${SKILLS_DIR}/"
-        echo "    - Framework (19):"
-        echo "      - test-generator-framework"
-        echo "      - linting-workflow"
-        echo "      - pr-creation-workflow"
-        echo "      - pr-merge-workflow"
-        echo "      - error-resolver-workflow"
-        echo "      - tdd-workflow"
-        echo "      - docx-creation"
-        echo "      - xlsx-specialist"
-        echo "      - pdf-specialist"
-        echo "      - frontend-design"
-        echo "      - uiux-review-skill"
-        echo "      - api-design-skill"
-        echo "      - openapi-contract-adherence-skill"
-        echo "      - performance-optimization-skill"
-        echo "      - srs-creation-skill"
-        echo "      - brd-creation-skill"
-        echo "      - technical-design-creation-skill"
-        echo "      - vision-creation-skill"
-        echo "      - interactive-document-rendering-skill"
-        echo "    - Language-Specific (8):"
-        echo "      - python-pytest-creator"
-        echo "      - python-ruff-linter"
-        echo "      - javascript-eslint-linter"
-        echo "      - changelog-python-cliff"
-        echo "      - python-backend-skill"
-        echo "      - python-packaging-skill"
-        echo "      - csharp-linter-skill"
-        echo "      - java-linter-skill"
-        echo "    - Presentation (3):"
-        echo "      - pptx-generate-slide-skill, pptx-generate-template-skill"
-        echo "      - pptx-template-modifier-skill"
-        echo "    - Office Utilities (2):"
-        echo "      - ooxml-editing-skill, office-thumbnail-skill"
-        echo "    - Framework-Specific (10):"
-        echo "      - nextjs-pr-workflow"
-        echo "      - nextjs-unit-test-creator"
-        echo "      - nextjs-standard-setup"
-        echo "      - nextjs-image-usage"
-        echo "      - nextjs-devtools-mcp"
-        echo "      - amplify-nextjs-deployment"
-        echo "      - typescript-dry-principle"
-        echo "      - accessibility-a11y-skill"
-        echo "      - react-nextjs-antipatterns-skill"
-        echo "      - threejs-nextjs-skill"
-        echo "    - OpenCode Meta (4):"
-        echo "      - opencode-agent-creation"
-        echo "      - opencode-skill-creation"
-        echo "      - opencode-skills-maintainer"
-        echo "      - documentation-consistency-skill"
-        echo "    - OpenTofu (7):"
-        echo "      - opentofu-aws-explorer"
-        echo "      - opentofu-keycloak-explorer"
-        echo "      - opentofu-kubernetes-explorer"
-        echo "      - opentofu-neon-explorer"
-        echo "      - opentofu-provider-setup"
-        echo "      - opentofu-provisioning-workflow"
-        echo "      - opentofu-ecr-provision"
-        echo "    - Git/Workflow (13):"
-        echo "      - ascii-diagram-creator"
-        echo "      - mermaid-diagram-creator"
-        echo "      - ticket-plan-workflow-skill"
-        echo "      - plan-execution-skill"
-        echo "      - plan-automation-loop-skill"
-        echo "      - git-issue-labeler"
-        echo "      - git-issue-updater"
-        echo "      - git-semantic-commits"
-        echo "      - semantic-release-convention"
-        echo "      - git-compact-commits"
-        echo "      - plan-updater"
-        echo "      - version-bump-standard"
-        echo "      - git-branch-workflow-setup-skill"
-        echo "    - Documentation (3):"
-        echo "      - coverage-readme-workflow"
-        echo "      - docstring-generator"
-        echo "      - documentation-sync-workflow"
-         echo "    - Academic & Research Writing (2):"
-         echo "      - horseshoe-paper-writing-skill"
-         echo "      - research-paper-generation-skill"
-         echo "    - JIRA (3):"
-         echo "      - jira-status-updater"
-         echo "      - jira-git-integration"
-         echo "      - jira-ticket-labeler"
-        echo "    - Code Quality (8):"
-        echo "      - solid-principles"
-        echo "      - clean-code"
-        echo "      - clean-architecture"
-        echo "      - design-patterns"
-        echo "      - object-design"
-        echo "      - code-smells"
-        echo "      - complexity-management"
-        echo "      - deprecated-code-cleanup-skill"
-         echo "    - Planning & Alignment (4):"
-         echo "      - grilling-skill"
-         echo "      - domain-modeling-skill"
-         echo "      - grill-with-docs-skill"
-         echo "      - grill-me-skill"
-        echo "    - Responsive & Visual Testing (2):"
-        echo "      - wireframer-skill"
-        echo "      - playwright-responsive-audit-skill"
-        echo "    - CAD & Hardware Design (14):"
-        echo "      - cad-generation-skill"
-        echo "      - cad-viewer-skill"
-        echo "      - cad-step-parts-skill"
-        echo "      - cad-dxf-skill"
-        echo "      - cad-urdf-skill"
-        echo "      - cad-srdf-skill"
-        echo "      - cad-sdf-skill"
-        echo "      - cad-sendcutsend-skill"
-        echo "      - cad-gcode-skill"
-        echo "      - cad-bambu-labs-skill"
-        echo "      - cad-implicit-skill"
-        echo "      - autodesk-aps-skill"
-        echo "      - civil-3d-skill"
-        echo "      - open3d-skill"
+        print_skill_categories "${SKILLS_DIR}"
 
     else
         echo "✗ skills: Not deployed"
@@ -3626,16 +3446,11 @@ print_next_steps() {
     echo "         opencode \"prompt\" (uses build)"
      echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-      echo "                     📦 123 Skills Available"
+      echo "                     📦 $(count_skills "${REPO_DIR}/opencode_app/.opencode/skills") Skills Available"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo ""
-     echo "  Framework (19) • Language-Specific (8) • Presentation (3)"
-     echo "  Office Utilities (2) • Framework-Specific (10) • OpenCode Meta (4)"
-      echo "  OpenTofu (7) • Git/Workflow (13) • Documentation (3) • JIRA (3) • Code Quality (8)"
-    echo "  Agent Optimization (7) • Planning & Alignment (4) • Academic & Research Writing (2)"
-    echo "  Responsive & Visual Testing (2)"
-    echo "  CAD & Hardware Design (14)"
-    echo ""
+     echo ""
+     print_skill_categories "${REPO_DIR}/opencode_app/.opencode/skills"
+     echo ""
     echo "  Run 'opencode --list-skills' for detailed descriptions"
     echo "  Run 'opencode --skill <name> \"prompt\"' to use a skill"
     echo ""

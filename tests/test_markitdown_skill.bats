@@ -67,22 +67,25 @@ AGENTS_WITH_SKILL_GRANT=(
 }
 
 # =============================================================================
-# Cross-file skill count consistency (locks the count at 124)
+# Cross-file skill count consistency (dynamic: count_skills == disk == README)
 # =============================================================================
 
 @test "skill_count_consistent_across_docs" {
-  actual=$(find opencode_app/.opencode/skills -maxdepth 2 -name SKILL.md | wc -l)
+  # Active count excludes _archived (matches count_skills/Get-SkillCount). BT-157.
+  actual=$(find opencode_app/.opencode/skills -maxdepth 2 -name SKILL.md -not -path '*/_archived/*' | wc -l | tr -d ' ')
   echo "Actual skill count: $actual" >&3
 
-  # setup.sh help text
-  setup_count=$(grep -oE 'SKILLS \([0-9]+\)' deploy/setup.sh | grep -oE '[0-9]+' | head -1)
-  echo "setup.sh count: $setup_count" >&3
+  # setup.sh: dynamic via count_skills() helper — source it, verify output == disk,
+  # and confirm no stale hardcoded literal remains. BT-157.
+  source <(sed -n '/^count_skills()/,/^}/p' deploy/setup.sh)
+  setup_count=$(count_skills opencode_app/.opencode/skills | tr -d ' ')
+  echo "setup.sh count_skills output: $setup_count" >&3
   [ "$setup_count" = "$actual" ]
+  ! grep -qE 'SKILLS \([0-9]+\)' deploy/setup.sh
 
-  # setup.ps1 help text
-  setupps1_count=$(grep -oE 'SKILLS \([0-9]+\)' deploy/setup.ps1 | grep -oE '[0-9]+' | head -1)
-  echo "setup.ps1 count: $setupps1_count" >&3
-  [ "$setupps1_count" = "$actual" ]
+  # setup.ps1: dynamic via Get-SkillCount — verify helper present + no stale literal.
+  grep -q 'function Get-SkillCount' deploy/setup.ps1
+  ! grep -qE 'SKILLS \([0-9]+\)' deploy/setup.ps1
 
   # opencode_app/README.md skill directory count
   docker_count=$(grep -oE '[0-9]+ skill director(y|ies)' opencode_app/README.md | grep -oE '[0-9]+' | head -1)

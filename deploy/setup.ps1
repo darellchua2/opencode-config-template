@@ -171,6 +171,34 @@ function Write-LogError   { param([string]$Msg) Write-Log "ERROR"   $Msg }
 function Write-LogSuccess { param([string]$Msg) Write-Log "SUCCESS" $Msg }
 function Write-LogDebug   { param([string]$Msg) Write-Log "DEBUG"   $Msg }
 
+# Count active SKILL.md files in a directory, excluding _archived (matches the
+# deploy's _archived skip). Drift-proof skill count for banners/status. BT-157.
+function Get-SkillCount {
+    param([string]$Path)
+    if (-not (Test-Path $Path)) { return 0 }
+    return @(Get-ChildItem -Path $Path -Recurse -Filter "SKILL.md" -File -ErrorAction SilentlyContinue |
+             Where-Object { $_.FullName -notmatch "[\\/]_archived[\\/]" }).Count
+}
+
+# Auto-derive per-category counts from skill frontmatter (category: field),
+# excluding _archived. Prints "Category (N)" lines sorted by count desc. BT-157.
+function Get-SkillCategories {
+    param([string]$Path)
+    if (-not (Test-Path $Path)) { return }
+    Get-ChildItem -Path $Path -Recurse -Filter "SKILL.md" -File -ErrorAction SilentlyContinue |
+        Where-Object { $_.FullName -notmatch "[\\/]_archived[\\/]" } |
+        ForEach-Object {
+            $cat = (Get-Content $_.FullName -ErrorAction SilentlyContinue |
+                    Where-Object { $_ -match '^\s*category:\s*(.+)$' } |
+                    Select-Object -First 1) -replace '^\s*category:\s*',''
+            [pscustomobject]@{ Category = $cat.Trim() }
+        } |
+        Where-Object { $_.Category } |
+        Group-Object Category |
+        Sort-Object Count -Descending |
+        ForEach-Object { "    - {0} ({1})" -f $_.Name, $_.Count }
+}
+
 ################################################################################
 # UTILITY FUNCTIONS
 ################################################################################
@@ -921,89 +949,9 @@ USAGE:
     Usage: opencode --agent build 'implement auth feature'
             opencode --agent explore 'find all API routes'
  
-            SKILLS (126):
-              Framework (19):       test-generator-framework, linting-workflow,
-                                      pr-creation-workflow, pr-merge-workflow,
-                                      error-resolver-workflow, tdd-workflow,
-                                      docx-creation,
-                                      xlsx-specialist, pdf-specialist, frontend-design,
-                                      uiux-review-skill,
-                                      api-design-skill, openapi-contract-adherence-skill,
-                                      performance-optimization-skill, srs-creation-skill,
-                                      brd-creation-skill, technical-design-creation-skill,
-                                      vision-creation-skill, interactive-document-rendering-skill
+            SKILLS ($(Get-SkillCount (Join-Path $RepoDir 'opencode_app\.opencode\skills'))):
 
-            Presentation (3):       pptx-generate-slide-skill, pptx-generate-template-skill,
-                                      pptx-template-modifier-skill
-
-            Office Utilities (2):   ooxml-editing-skill, office-thumbnail-skill
-
-            Language-Specific (8): python-pytest-creator, python-ruff-linter,
-                                  javascript-eslint-linter, changelog-python-cliff,
-                                  python-backend-skill, python-packaging-skill,
-                                  csharp-linter-skill, java-linter-skill
-
-           Framework-Specific (10): nextjs-pr-workflow, nextjs-unit-test-creator,
-                                  nextjs-standard-setup, nextjs-image-usage,
-                                  nextjs-devtools-mcp, amplify-nextjs-deployment,
-                                  typescript-dry-principle, accessibility-a11y-skill,
-                                  react-nextjs-antipatterns-skill,
-                                  threejs-nextjs-skill
-           OpenCode Meta (4):    opencode-agent-creation, opencode-skill-creation,
-                                 opencode-skills-maintainer,
-                                 documentation-consistency-skill
-           OpenTofu (7):         opentofu-aws-explorer, opentofu-keycloak-explorer,
-                                 opentofu-kubernetes-explorer, opentofu-neon-explorer,
-                                 opentofu-provider-setup, opentofu-provisioning-workflow,
-                                 opentofu-ecr-provision
-            Git/Workflow (13):    ascii-diagram-creator, mermaid-diagram-creator,
-                                   ticket-plan-workflow-skill, plan-execution-skill,
-                                   plan-automation-loop-skill,
-                                   git-issue-labeler, git-issue-updater,
-                                   git-semantic-commits, semantic-release-convention,
-                                   git-compact-commits, plan-updater, version-bump-standard,
-                                   git-branch-workflow-setup-skill
-          Documentation (3):    coverage-readme-workflow, docstring-generator,
-                                 documentation-sync-workflow
-
-          JIRA (3):             jira-status-updater, jira-git-integration, jira-ticket-labeler
-          Code Quality (8):     solid-principles, clean-code, clean-architecture,
-                                design-patterns, object-design, code-smells,
-                                complexity-management, deprecated-code-cleanup-skill
-
-       Agent Optimization (7):  continuous-learning, eval-harness,
-                                 strategic-compact, verification-loop,
-                                 search-first, context-budget,
-                                 agent-introspection-debugging
-
-            Autoresearch (4):  autoresearch-core-skill, autoresearch-ml-skill,
-                                autoresearch-code-skill, autoresearch-research-skill
-
-            Startup/Business (3): startup-pitch-deck-skill, startup-business-docs-skill,
-                                  construction-bd-skill
-
-            Configuration (3):    microsoft-m365-config-skill, codegraph-setup-skill,
-                                  markitdown-mcp-skill
-
-              Security (2):     security-audit-skill, authentication-authorization-skill
-
-                 DevOps (4):     docker-containerization-skill, monorepo-management-skill,
-                                 database-migration-skill, logging-observability-skill
-
-      Planning & Alignment (4): grilling-skill, domain-modeling-skill,
-                                grill-with-docs-skill, grill-me-skill
-
- Responsive & Visual Testing (2): wireframer-skill,
-                                   playwright-responsive-audit-skill
-
-    CAD & Hardware Design (14): cad-generation, cad-viewer, cad-step-parts,
-                                 cad-dxf, cad-urdf, cad-srdf, cad-sdf,
-                                 cad-sendcutsend, cad-gcode, cad-bambu-labs,
-                                 cad-implicit, autodesk-aps-skill,
-civil-3d-skill, open3d-skill
-
-  Academic & Research Writing (2): horseshoe-paper-writing-skill,
-                                    research-paper-generation-skill
+$(Get-SkillCategories (Join-Path $RepoDir 'opencode_app\.opencode\skills'))
 
     Run 'opencode --list-skills' for detailed descriptions
     Run 'opencode --skill <name> \"prompt\"' to invoke a skill
@@ -1808,93 +1756,12 @@ function Deploy-Skills {
         }
          Write-LogSuccess "Skills copied successfully to $SkillsDir"
          
-        $skillCount = @(Get-ChildItem $SkillsDir -Directory -ErrorAction SilentlyContinue).Count
+        $skillCount = Get-SkillCount $SkillsDir
         Write-Host ""
         Write-Host "Deployed $skillCount skills to $SkillsDir" -ForegroundColor Green
         Write-Host ""
-        Write-Host "  Skill Categories:" -ForegroundColor Cyan
-          Write-Host "    Framework (19):"
-        Write-Host "      - test-generator-framework, linting-workflow"
-        Write-Host "      - pr-creation-workflow, pr-merge-workflow"
-        Write-Host "      - error-resolver-workflow, tdd-workflow"
-        Write-Host "      - docx-creation, xlsx-specialist, pdf-specialist"
-        Write-Host "      - frontend-design"
-        Write-Host "      - uiux-review-skill"
-        Write-Host "      - api-design-skill, openapi-contract-adherence-skill"
-        Write-Host "      - performance-optimization-skill"
-        Write-Host "      - srs-creation-skill"
-        Write-Host "      - brd-creation-skill"
-        Write-Host "      - technical-design-creation-skill"
-        Write-Host "      - vision-creation-skill"
-        Write-Host "      - interactive-document-rendering-skill"
-        Write-Host "    Language-Specific (8):"
-        Write-Host "      - python-pytest-creator, python-ruff-linter"
-        Write-Host "      - javascript-eslint-linter, changelog-python-cliff"
-        Write-Host "      - python-backend-skill, python-packaging-skill"
-        Write-Host "      - csharp-linter-skill, java-linter-skill"
-        Write-Host "    Presentation (3):"
-        Write-Host "      - pptx-generate-slide-skill, pptx-generate-template-skill"
-        Write-Host "      - pptx-template-modifier-skill"
-        Write-Host "    Office Utilities (2):"
-        Write-Host "      - ooxml-editing-skill, office-thumbnail-skill"
-        Write-Host "    Framework-Specific (10):"
-        Write-Host "      - nextjs-pr-workflow, nextjs-unit-test-creator"
-        Write-Host "      - nextjs-standard-setup, nextjs-image-usage"
-        Write-Host "      - nextjs-devtools-mcp"
-        Write-Host "      - amplify-nextjs-deployment"
-        Write-Host "      - typescript-dry-principle, accessibility-a11y-skill"
-        Write-Host "      - react-nextjs-antipatterns-skill"
-        Write-Host "      - threejs-nextjs-skill"
-        Write-Host "    OpenCode Meta (4):"
-        Write-Host "      - opencode-agent-creation, opencode-skill-creation"
-        Write-Host "      - opencode-skills-maintainer"
-        Write-Host "      - documentation-consistency-skill"
-        Write-Host "    OpenTofu (7):"
-        Write-Host "      - opentofu-aws-explorer, opentofu-keycloak-explorer"
-        Write-Host "      - opentofu-kubernetes-explorer, opentofu-neon-explorer"
-        Write-Host "      - opentofu-provider-setup, opentofu-provisioning-workflow"
-        Write-Host "      - opentofu-ecr-provision"
-         Write-Host "    Git/Workflow (13):"
-         Write-Host "      - ascii-diagram-creator, mermaid-diagram-creator"
-         Write-Host "      - ticket-plan-workflow-skill, plan-execution-skill"
-         Write-Host "      - plan-automation-loop-skill"
-        Write-Host "      - git-issue-labeler, git-issue-updater"
-        Write-Host "      - git-semantic-commits, semantic-release-convention"
-        Write-Host "      - git-compact-commits"
-        Write-Host "      - plan-updater"
-        Write-Host "      - version-bump-standard"
-        Write-Host "      - git-branch-workflow-setup-skill"
-        Write-Host "    Documentation (3):"
-        Write-Host "      - coverage-readme-workflow, docstring-generator"
-        Write-Host "      - documentation-sync-workflow"
-         Write-Host "    Academic & Research Writing (2):"
-         Write-Host "      - horseshoe-paper-writing-skill, research-paper-generation-skill"
-         Write-Host "    JIRA (3):"
-         Write-Host "      - jira-status-updater, jira-git-integration, jira-ticket-labeler"
-        Write-Host "    Code Quality (8):"
-        Write-Host "      - solid-principles, clean-code, clean-architecture"
-        Write-Host "      - design-patterns, object-design, code-smells"
-        Write-Host "      - complexity-management, deprecated-code-cleanup-skill"
-        Write-Host "    Agent Optimization (7):"
-        Write-Host "      - continuous-learning, eval-harness"
-        Write-Host "      - strategic-compact, verification-loop"
-        Write-Host "      - search-first, context-budget"
-        Write-Host "      - agent-introspection-debugging"
-        Write-Host "    Startup/Business (3):"
-        Write-Host "      - startup-pitch-deck-skill, startup-business-docs-skill"
-        Write-Host "      - construction-bd-skill"
-        Write-Host "    Configuration (3):"
-        Write-Host "      - microsoft-m365-config-skill, codegraph-setup-skill, markitdown-mcp-skill"
-        Write-Host "    Planning & Alignment (4):"
-        Write-Host "      - grilling-skill, domain-modeling-skill"
-        Write-Host "      - grill-with-docs-skill, grill-me-skill"
-        Write-Host "    Responsive & Visual Testing (2):"
-        Write-Host "      - wireframer-skill, playwright-responsive-audit-skill"
-        Write-Host "    CAD & Hardware Design (14):"
-        Write-Host "      - cad-generation-skill, cad-viewer-skill, cad-step-parts-skill"
-        Write-Host "      - cad-dxf-skill, cad-urdf-skill, cad-srdf-skill, cad-sdf-skill"
-        Write-Host "      - cad-sendcutsend-skill, cad-gcode-skill, cad-bambu-labs-skill"
-        Write-Host "      - cad-implicit-skill, autodesk-aps-skill, civil-3d-skill, open3d-skill"
+         Write-Host "  Skill Categories:" -ForegroundColor Cyan
+        Get-SkillCategories $SkillsDir
         Write-Host ""
         Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
         Write-Host ""
@@ -2704,16 +2571,11 @@ function Show-NextSteps {
     Write-Host "         opencode `"prompt`" (uses build)"
      Write-Host ""
     Write-Host "=====================================================================" -ForegroundColor White
-      Write-Host "                     123 Skills Available" -ForegroundColor White
+      Write-Host "                     $(Get-SkillCount (Join-Path $RepoDir 'opencode_app\.opencode\skills')) Skills Available" -ForegroundColor White
      Write-Host "=====================================================================" -ForegroundColor White
+      Write-Host ""
+      Get-SkillCategories (Join-Path $RepoDir 'opencode_app\.opencode\skills')
      Write-Host ""
-     Write-Host "  Framework (19) • Language-Specific (8) • Presentation (3)"
-      Write-Host "  Office Utilities (2) • Framework-Specific (10) • OpenCode Meta (4)"
-      Write-Host "  OpenTofu (7) • Git/Workflow (13) • Documentation (3) • JIRA (3) • Code Quality (8)"
-      Write-Host "  Agent Optimization (7) • Planning & Alignment (4) • Academic & Research Writing (2)"
-     Write-Host "  Responsive & Visual Testing (2)"
-     Write-Host "  CAD & Hardware Design (14)"
-    Write-Host ""
     Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
     Write-Host "  Run 'opencode --skill <name> `"prompt`"' to invoke a skill"
     Write-Host ""
