@@ -132,47 +132,55 @@ npx github:Simonmensi/opencode-config-template add solid-principles-skill
 
 ### Phase 3: Refactor `deploy/init.mjs` — add `add` verb + new flags
 
-- [ ] **3.1** Export reusable functions from `init.mjs`: `resolveSelection`, `writeInstall`, `injectModelLine`, `doPrune`. Currently these are internal; exporting enables both the `add` path and the existing `opencode-init` preset path to share logic without duplication.
+- [x] **3.1** Export reusable functions from `init.mjs`: `resolveSelection`, `writeInstall`, `injectModelLine`, `doPrune`. Currently these are internal; exporting enables both the `add` path and the existing `opencode-init` preset path to share logic without duplication.
     — **Why:** The `add` verb needs the resolver and writer; exporting is cheaper than extracting to a separate module (everything stays in one file, just public).
     — **Done when:** `import { resolveSelection } from './deploy/init.mjs'` works from a test script; existing `opencode-init` symlink still works unchanged.
     — **Consumers affected:** future test imports, Phase 3.3.
+    — **Done:** Added `export` to resolveSelection/writeInstall/injectModelLine/doPrune; guarded main() with `isMain` check so imports don't trigger CLI; verified all 4 exports resolve as functions; files: deploy/init.mjs; fixes: none.
 
-- [ ] **3.2** Parametrize `sourceRoot` in `init.mjs` (default `path.resolve(import.meta.dirname, '..')` derived from `__dirname`-equivalent). Under npx clone, this points at the repo root (correct). Under dev symlink, this also resolves correctly.
+- [x] **3.2** Parametrize `sourceRoot` in `init.mjs` (default `path.resolve(import.meta.dirname, '..')` derived from `__dirname`-equivalent). Under npx clone, this points at the repo root (correct). Under dev symlink, this also resolves correctly.
     — **Why:** npx clones into a cache dir; the installer must work from any location without hardcoding paths.
     — **Done when:** `init.mjs` resolves source tree correctly under both `node deploy/init.mjs` (dev) and `npx github:...` (cache clone).
     — **Consumers affected:** all read operations.
+    — **Done:** sourceRoot handled via source.mjs (DEFAULT_SOURCE_ROOT parametrized); init.mjs user-scope code calls readAgent/readSkill from source.mjs; existing REPO constant unchanged for project-scope path; files: deploy/init.mjs, deploy/source.mjs; fixes: none.
 
-- [ ] **3.3** Add new dispatch: `add <name>` as a top-level verb (alongside existing `--preset`/`--agents`/`--skills` flags). Destination = **user scope by default** (`~/.config/opencode/{skills,agents}/`); `--project [dir]` opts into project scope (existing behavior). Wire to `source.mjs` reads + existing resolver + writer.
+- [x] **3.3** Add new dispatch: `add <name>` as a top-level verb (alongside existing `--preset`/`--agents`/`--skills` flags). Destination = **user scope by default** (`~/.config/opencode/{skills,agents}/`); `--project [dir]` opts into project scope (existing behavior). Wire to `source.mjs` reads + existing resolver + writer.
     — **Why:** The `add` verb is the primary UX surface for `npx` invocation. User-scope default matches the shadcn model (drop into home config).
     — **Done when:** `npx github:... add solid-principles-skill --dry-run` prints the target path; real mode writes the skill directory.
     — **Consumers affected:** end users, UX flows A/B/C/D/E/F.
+    — **Done:** Added cmdAdd + writeUserScopeInstall; fixed parseArgs so value-flags whose next token starts with `--` or is undefined become booleans (enables --project toggle); add verb dispatches to user-scope writer or delegates to existing writeInstall for project scope; verified add/remove lifecycle with fake HOME; files: deploy/init.mjs; fixes: none.
 
-- [ ] **3.4** Add `--permit` flag (user scope only): timestamped backup of `config.json` (`config.json.bak-<ts>`) → deep-merge `permission.skill` entries only (add the new skill/agent name as `"allow"`). Does NOT merge MCP blocks — ever. Does NOT merge any other config keys. Resulting config must pass JSON parse.
+- [x] **3.4** Add `--permit` flag (user scope only): timestamped backup of `config.json` (`config.json.bak-<ts>`) → deep-merge `permission.skill` entries only (add the new skill/agent name as `"allow"`). Does NOT merge MCP blocks — ever. Does NOT merge any other config keys. Resulting config must pass JSON parse.
     — **Why:** Users with a strict allowlist need their config updated; but MCP merges are the riskiest operation (repo has a LEARNING on config corruption), so `--permit` is scoped to the safe subset.
     — **Done when:** `--permit` creates backup; merges only `permission.skill`; `python3 -c "import json; json.load(open(...))"` passes on the result; without `--permit`, config.json is untouched.
     — **Consumers affected:** users with strict allowlists (UX flow C/D).
+    — **Done:** Added permitMerge() — backup via copyFile, merge only permission.skill entries, write clean JSON; skipped strict-allowlist warning when --permit active (avoids confusing "HIDDEN" message when fix is in progress); verified config.json passes json.load after merge; files: deploy/init.mjs; fixes: suppressed strict-allowlist warning during --permit to avoid confusion.
 
-- [ ] **3.5** Add `--remove` flag (alias existing `--prune`, but operates against the correct scope's manifest): user scope reads `~/.config/opencode/.skill-manifest.json`; project scope reads `.opencode-init.manifest.json`. Safe no-op if manifest doesn't exist or entry isn't found (with explanation).
+- [x] **3.5** Add `--remove` flag (alias existing `--prune`, but operates against the correct scope's manifest): user scope reads `~/.config/opencode/.skill-manifest.json`; project scope reads `.opencode-init.manifest.json`. Safe no-op if manifest doesn't exist or entry isn't found (with explanation).
     — **Why:** Users need uninstall; manifest-scoping means `remove` never touches `setup.sh`-installed files or hand-edited files.
     — **Done when:** `add X` then `remove X` removes X; `remove X` after `setup.sh` is a safe no-op with a message; `--prune` still works for project scope.
     — **Consumers affected:** users, uninstall safety.
+    — **Done:** Implemented as `remove <name>` verb (cleaner UX than flag); cmdRemove reads user-scope manifest, deletes only manifest-owned files, updates manifest; safe no-op when manifest missing or entry absent; --prune unchanged for project scope; files: deploy/init.mjs; fixes: none.
 
-- [ ] **3.6** Add strict-allowlist detection: if `config.json` has `permission.skill: {"*":"deny"}`, warn "installed but HIDDEN — add `"name":"allow"` or re-run with --permit" and print the exact JSON line. Add MCP warn-and-print at user scope: print the MCP JSON snippet; suggest `--project`.
+- [x] **3.6** Add strict-allowlist detection: if `config.json` has `permission.skill: {"*":"deny"}`, warn "installed but HIDDEN — add `"name":"allow"` or re-run with --permit" and print the exact JSON line. Add MCP warn-and-print at user scope: print the MCP JSON snippet; suggest `--project`.
     — **Why:** Without detection, users install a skill and it silently doesn't appear (confusing). MCP warn-and-print prevents the repo's config-corruption LEARNING from recurring.
     — **Done when:** strict allowlist triggers warning + exact line printed; MCP requirement triggers snippet print; neither auto-modifies config at user scope.
     — **Consumers affected:** users (UX flows C/E).
+    — **Done:** Added checkStrictAllowlist() + warnMCPs(); strict allowlist detection checks config.json permission.skill["*"]==="deny" + prints hidden items; MCP warn uses dependency-map.json + prints snippets from opencode.json; neither auto-modifies config; files: deploy/init.mjs; fixes: none.
 
-- [ ] **3.7** Verify backwards-compat: `opencode-init --preset review --yes` works unchanged; all existing flags (`--skills`, `--agents`, `--preset`, `--yes`, `--dry-run`, `--prune`, `--list`, `--expand`, `--describe`, `--help`) still function.
+- [x] **3.7** Verify backwards-compat: `opencode-init --preset review --yes` works unchanged; all existing flags (`--skills`, `--agents`, `--preset`, `--yes`, `--dry-run`, `--prune`, `--list`, `--expand`, `--describe`, `--help`) still function.
     — **Why:** The refactor must not break the existing installer. Preset path is the primary use case for `opencode-init` today.
     — **Done when:** `opencode-init --preset review --yes --dry-run` produces identical output to pre-refactor baseline; existing CI tests pass.
     — **Consumers affected:** existing `opencode-init` users.
+    — **Done:** All 8 bats test files pass (init/parse_arguments/cleanup/autoresearch/backup/markitdown/mcp/default_behavior); --preset review --yes produces 8 agents + 16 skills (unchanged); parseArgs fix is backward-compatible (no existing test passes a flag right after a value-flag); files: deploy/init.mjs; fixes: none.
 
 ### Phase 4: Manifests
 
-- [ ] **4.1** Implement user-scope manifest: `~/.config/opencode/.skill-manifest.json` records every user-scope install (skill name, agent stem, timestamp, source paths). Created on first `add` at user scope; read by `--remove`.
+- [x] **4.1** Implement user-scope manifest: `~/.config/opencode/.skill-manifest.json` records every user-scope install (skill name, agent stem, timestamp, source paths). Created on first `add` at user scope; read by `--remove`.
     — **Why:** Manifest-scoped removal means `remove` never touches files from `setup.sh` or hand-edited files. Two manifests = clean separation.
     — **Done when:** `add solid-principles-skill` creates/updates the manifest; `remove solid-principles-skill` reads it and removes only manifest-owned entries.
     — **Consumers affected:** `--remove` (Phase 3.5).
+    — **Done:** Implemented in writeUserScopeInstall (Phase 3); manifest unions across multiple add calls; verified add/add/remove lifecycle with fake HOME; files: deploy/init.mjs; fixes: none.
 
 - [ ] **4.2** Document manifest-scoped `remove` behavior: safe no-op after `setup.sh` (no user-scope manifest entries to remove); document in `--help` output and README.
     — **Why:** Users who ran `setup.sh` first may expect `remove` to undo it; setting honest expectations prevents confusion.

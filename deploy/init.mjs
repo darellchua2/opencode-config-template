@@ -27,13 +27,14 @@
 // global ~/.config/opencode config. Agents/skills directories are ADDITIVE (unioned).
 // => isolation (curated subset) only holds on a clean slate (no global deploy).
 
-import { readFile, writeFile, mkdir, readdir, rm, cp } from "node:fs/promises";
+import { readFile, writeFile, mkdir, readdir, rm, cp, copyFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { dirname, join, resolve, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import os from "node:os";
 import { singleSelect, multiSelect, textInput, confirm } from "./tui-primitives.mjs";
+import { readAgent, readSkill } from "./source.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO = dirname(__dirname); // deploy/.. = repo root
@@ -49,9 +50,14 @@ const PROVIDER_MODELS = join(DEPLOY, "provider-models.json");
 const RESOLVER = join(DEPLOY, "resolve-models.mjs");
 const SOURCE_OC = join(REPO, "opencode_app/opencode.json");
 const BUILTINS = new Set(["explore", "general", "scout", "build", "plan", "compaction", "title", "summary"]);
+const USER_OC = join(os.homedir(), ".config/opencode");
+const USER_AGENTS = join(USER_OC, "agents");
+const USER_SKILLS = join(USER_OC, "skills");
+const USER_CONFIG = join(USER_OC, "config.json");
+const USER_MANIFEST = join(USER_OC, ".skill-manifest.json");
 
 // ─────────────────────────── arg parsing ────────────────────────────────
-const BOOL_FLAGS = new Set(["yes", "dryRun", "force", "prune", "help", "verbose"]);
+const BOOL_FLAGS = new Set(["yes", "dryRun", "force", "prune", "help", "verbose", "permit", "noDeps"]);
 function parseArgs(argv) {
   const opts = { rest: [] };
   for (let i = 0; i < argv.length; i++) {
@@ -60,7 +66,11 @@ function parseArgs(argv) {
     if (a.startsWith("--")) {
       const key = a.slice(2).replace(/-([a-z])/g, (_, c) => c.toUpperCase());
       if (BOOL_FLAGS.has(key)) opts[key] = true;
-      else opts[key] = argv[++i];
+      else {
+        const next = argv[i + 1];
+        if (next === undefined || next.startsWith("--")) opts[key] = true;
+        else { opts[key] = next; i++; }
+      }
     } else {
       opts.rest.push(a);
     }
@@ -102,7 +112,7 @@ async function loadDepMap() {
 
 // ─────────────────────────── selection resolver (Phase 3.1) ─────────────
 // Pure function: input selection -> resolved install set with transitive closure.
-function resolveSelection({ agents: agentIn = [], skills: skillIn = [], mcps: mcpIn = [], presets = [] }, reg, depMap) {
+export function resolveSelection({ agents: agentIn = [], skills: skillIn = [], mcps: mcpIn = [], presets = [] }, reg, depMap) {
   const agentByName = new Map(reg.agents.map((a) => [a.stem, a]));
   const skillByName = new Map(reg.skills.map((s) => [s.name, s]));
   const warnings = [];
@@ -267,7 +277,7 @@ async function filesDiffer(p1, p2) {
   } catch { return true; }
 }
 
-async function writeInstall(sel, opts, reg, depMap) {
+export async function writeInstall(sel, opts, reg, depMap) {
   const project = resolve(opts.project || process.cwd());
   const ocDir = join(project, ".opencode");
   const agentsDir = join(ocDir, "agents");
@@ -423,7 +433,7 @@ async function generateOpenencodeJson(sel, project) {
 
 // Inject/replace a single `model: <value>` line in the YAML frontmatter.
 // Mirrors resolve-models.mjs injectModel(): strip any existing model line, prepend.
-function injectModelLine(content, modelValue) {
+export function injectModelLine(content, modelValue) {
   if (!modelValue) return content;
   const lines = content.split(/\r?\n/);
   if (lines.length === 0 || lines[0].trim() !== "---") {
@@ -466,7 +476,7 @@ function generateAgentsMd(sel, reg) {
 }
 
 // Phase 3.7: prune manifest-owned entries not in the new set
-async function doPrune(sel, opts) {
+export async function doPrune(sel, opts) {
   const project = resolve(opts.project || process.cwd());
   const ocDir = join(project, ".opencode");
   const manifestFile = join(ocDir, ".opencode-init.manifest.json");
@@ -507,6 +517,166 @@ async function summarize(sel, project, globalDeploy) {
   e("");
 }
 
+// ─────────────────────────── user-scope add/remove (Phase 3) ────────────
+async function cmdAdd(args, opts, reg, depMap) {
+  const name = args[0];
+  if (!name) die("add: specify a skill or agent name (e.g. 'solid-principles-skill'). Use --list agents|skills to browse.", 2);
+
+  const isAgent = reg.agents.some((a) => a.stem === name);
+  const isSkill = reg.skills.some((s) => s.name === name);
+  if (!isAgent && !isSkill) die(`'${name}' not found. Use --list agents|skills to browse.`, 2);
+
+  const noDeps = !!opts.noDeps;
+  let sel;
+  if (noDeps) {
+    sel = isAgent
+      ? { agents: [name], skills: [], mcps: [], warnings: [] }
+      : { agents: [], skills: [name], mcps: [], warnings: [] };
+  } else {
+    sel = resolveSelection(isAgent ? { agents: [name] } : { skills: [name] }, reg, depMap);
+  }
+
+  const project = opts.project === true ? process.cwd() : opts.project;
+  if (project) {
+    opts.project = project;
+    await writeInstall(sel, opts, reg, depMap);
+    return;
+  }
+  await writeUserScopeInstall(sel, opts, reg, depMap);
+}
+
+async function writeUserScopeInstall(sel, opts, reg, depMap) {
+  const dry = !!opts.dryRun;
+
+  if (dry) {
+    process.stdout.write(JSON.stringify({
+      dryRun: true,
+      scope: "user",
+      destination: USER_OC,
+      agents: sel.agents,
+      skills: sel.skills,
+      mcps: sel.mcps,
+      warnings: sel.warnings,
+    }, null, 2) + "\n");
+    return;
+  }
+
+  // write agents (via source.mjs)
+  await mkdir(USER_AGENTS, { recursive: true });
+  const tierModels = {};
+  for (const stem of sel.agents) {
+    const agent = await readAgent(stem);
+    const tier = reg.agents.find((a) => a.stem === stem)?.tier || "unassigned";
+    if (!tierModels[tier]) tierModels[tier] = await tierToModel(tier, opts.provider);
+    const content = injectModelLine(agent.content, tierModels[tier]);
+    await writeFile(join(USER_AGENTS, `${stem}.md`), content, "utf8");
+  }
+
+  // write skills
+  await mkdir(USER_SKILLS, { recursive: true });
+  for (const sname of sel.skills) {
+    const skill = await readSkill(sname);
+    await cp(skill.dir, join(USER_SKILLS, sname), { recursive: true, force: true });
+  }
+
+  // update user-scope manifest
+  const prevManifest = (await readJsonMaybe(USER_MANIFEST)) || { agents: [], skills: [] };
+  const manifest = {
+    generatedAt: new Date().toISOString(),
+    tool: "opencode-skill",
+    agents: [...new Set([...(prevManifest.agents || []), ...sel.agents])].sort(),
+    skills: [...new Set([...(prevManifest.skills || []), ...sel.skills])].sort(),
+  };
+  await writeFile(USER_MANIFEST, JSON.stringify(manifest, null, 2) + "\n", "utf8");
+
+  console.log(`installed into ${USER_OC}:`);
+  console.log(`  agents:  ${sel.agents.length}  -> ~/.config/opencode/agents/`);
+  console.log(`  skills:  ${sel.skills.length}  -> ~/.config/opencode/skills/`);
+  if (sel.warnings.length) for (const w of sel.warnings) console.log(`  - ${w}`);
+
+  await checkStrictAllowlist(sel, opts);
+  await warnMCPs(sel, depMap);
+  if (opts.permit) await permitMerge(sel);
+}
+
+async function checkStrictAllowlist(sel, opts) {
+  if (opts.permit) return; // --permit handles it — skip the warning
+  const config = await readJsonMaybe(USER_CONFIG);
+  if (!config) return;
+  const ps = config.permission?.skill;
+  if (!ps || ps["*"] !== "deny") return;
+  const hidden = [...sel.agents, ...sel.skills].filter((name) => ps[name] !== "allow");
+  if (!hidden.length) return;
+  console.error(`\n⚠  STRICT ALLOWLIST DETECTED — ${hidden.length} item(s) installed but HIDDEN.`);
+  console.error(`   Add to config.json permission.skill, or re-run with --permit:`);
+  for (const name of hidden) console.error(`     "${name}": "allow"`);
+}
+
+async function warnMCPs(sel, depMap) {
+  const needed = new Set();
+  for (const sname of sel.skills) {
+    const implied = depMap[sname];
+    if (implied) for (const m of implied) needed.add(m);
+  }
+  if (!needed.size) return;
+  const oc = await readJsonMaybe(SOURCE_OC);
+  console.error(`\n⚠  MCP REQUIREMENT — ${needed.size} MCP server(s) needed. Paste into config.json, or re-run with --project:`);
+  for (const m of needed) {
+    const def = oc?.mcp?.[m];
+    const snippet = def ? { ...def, enabled: true } : { enabled: true };
+    console.error(`     "${m}": ${JSON.stringify(snippet)}`);
+  }
+}
+
+async function permitMerge(sel) {
+  const config = (await readJsonMaybe(USER_CONFIG)) || {};
+  if (existsSync(USER_CONFIG)) {
+    const ts = new Date().toISOString().replace(/[:.]/g, "-");
+    await copyFile(USER_CONFIG, `${USER_CONFIG}.bak-${ts}`);
+    console.log(`  backup: config.json.bak-${ts}`);
+  }
+  if (!config.permission) config.permission = {};
+  if (!config.permission.skill) config.permission.skill = {};
+  for (const stem of sel.agents) config.permission.skill[stem] = "allow";
+  for (const sname of sel.skills) config.permission.skill[sname] = "allow";
+  await mkdir(USER_OC, { recursive: true });
+  await writeFile(USER_CONFIG, JSON.stringify(config, null, 2) + "\n", "utf8");
+  console.log(`  merged permission.skill (${sel.agents.length + sel.skills.length} entries)`);
+}
+
+async function cmdRemove(args, opts) {
+  const name = args[0];
+  if (!name) die("remove: specify a skill or agent name.", 2);
+  const project = opts.project === true ? process.cwd() : opts.project;
+  if (project) {
+    die("remove --project: use --prune instead (project-scope removal via manifest).", 2);
+  }
+  const prev = await readJsonMaybe(USER_MANIFEST);
+  if (!prev) {
+    console.log("no user-scope manifest found — nothing to remove.");
+    console.log("(files installed by setup.sh are not tracked by opencode-skill and cannot be removed this way.)");
+    return;
+  }
+  const wasAgent = (prev.agents || []).includes(name);
+  const wasSkill = (prev.skills || []).includes(name);
+  if (!wasAgent && !wasSkill) {
+    console.log(`'${name}' not found in user-scope manifest — nothing to remove.`);
+    return;
+  }
+  if (wasAgent) {
+    const f = join(USER_AGENTS, `${name}.md`);
+    if (existsSync(f)) await rm(f, { force: true });
+  }
+  if (wasSkill) {
+    const d = join(USER_SKILLS, name);
+    if (existsSync(d)) await rm(d, { recursive: true, force: true });
+  }
+  prev.agents = (prev.agents || []).filter((a) => a !== name);
+  prev.skills = (prev.skills || []).filter((s) => s !== name);
+  await writeFile(USER_MANIFEST, JSON.stringify(prev, null, 2) + "\n", "utf8");
+  console.log(`removed '${name}' from user scope.`);
+}
+
 // ─────────────────────────── main ───────────────────────────────────────
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
@@ -515,6 +685,10 @@ async function main() {
   const reg = await loadRegistry();
   reg.__presets = await loadPresets();
   const depMap = await loadDepMap();
+
+  // verb dispatch: add / remove (npx UX surface)
+  if (opts.rest[0] === "add") { await cmdAdd(opts.rest.slice(1), opts, reg, depMap); return; }
+  if (opts.rest[0] === "remove") { await cmdRemove(opts.rest.slice(1), opts); return; }
 
   // read modes
   if (opts.list) { cmdList(opts.list, reg, opts); return; }
@@ -631,24 +805,32 @@ async function runInteractive(reg, depMap, opts) {
 }
 
 function printHelp() {
-  process.stdout.write(`opencode-init — project-scoped selective OpenCode installer
+  process.stdout.write(`opencode-skill — opencode skill/agent registry + CLI installer
 
 USAGE
-  opencode-init --list agents [--category X]      list agents (JSON)
-  opencode-init --list skills [--category X]      list skills (JSON)
-  opencode-init --list categories                 list categories + counts
-  opencode-init --list mcps                       list MCP servers
-  opencode-init --list presets                    list presets
-  opencode-init --describe <name>                 full agent/skill entry + deps
-  opencode-init --expand <preset>                 full resolved install set
-  opencode-init --project <dir> --preset <p> --yes       install a preset
-  opencode-init --project <dir> --agents <a,b> --yes     install specific agents
-  opencode-init ... --dry-run                     preview, write nothing
-  opencode-init ... --prune                       remove previously-installed entries not in the set
-  opencode-init --help
+  opencode-skill add <name>                    install a skill or agent (USER scope)
+  opencode-skill add <name> --project [dir]    install to project .opencode/ (full config)
+  opencode-skill remove <name>                 remove a user-scope install
+  opencode-skill --list agents [--category X]      list agents (JSON)
+  opencode-skill --list skills [--category X]      list skills (JSON)
+  opencode-skill --list categories                 list categories + counts
+  opencode-skill --list mcps                       list MCP servers
+  opencode-skill --list presets                    list presets
+  opencode-skill --describe <name>                 full agent/skill entry + deps
+  opencode-skill --expand <preset>                 full resolved install set
+  opencode-skill --project <dir> --preset <p> --yes       install a preset (project scope)
+  opencode-skill --project <dir> --agents <a,b> --yes     install specific agents
+  opencode-skill ... --dry-run                     preview, write nothing
+  opencode-skill ... --prune                       remove previously-installed entries not in the set
+  opencode-skill --help
+
+SCOPE
+  User scope (default for 'add'): drops files into ~/.config/opencode/{agents,skills}/.
+  opencode auto-discovers them — no config.json touch unless --permit.
+  Project scope (--project): writes .opencode/{agents,skills}/ + opencode.json + models.json + AGENTS.md.
 
 FLAGS
-  --project <dir>      target project (default: cwd)
+  --project [dir]      project scope (default: cwd). Without 'add', takes a <dir> value.
   --preset <csv>       preset name(s): core review frontend backend docs devops business research cad integrations
   --agents <csv>       agent stem(s)
   --skills <csv>       skill name(s)
@@ -659,12 +841,17 @@ FLAGS
   --dry-run            preview the install manifest, write nothing
   --force              overwrite conflicting files opencode-init didn't write
   --prune              remove opencode-init-owned entries absent from the new set
+  --permit             (user scope) backup config.json + merge permission entries only
+  --no-deps            (add) skip transitive dependency resolution
 
 CONFIG MERGE SEMANTICS
   opencode MERGES config and UNIONS agents/skills across ~/.config/opencode and
-  <project>/.opencode. A curated/isolated subset only results on a CLEAN SLATE
-  (no global deploy); otherwise the install is ADDITIVE. The CLI detects + warns.
+  <project>/.opencode. User-scope 'add' is a pure file-drop (auto-discovered);
+  --permit backs up config.json then merges only permission.skill entries.
 `);
 }
 
-main().catch((e) => { console.error(`opencode-init: ${e.message}`); process.exit(1); });
+const isMain = process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1]);
+if (isMain) {
+  main().catch((e) => { console.error(`opencode-skill: ${e.message}`); process.exit(1); });
+}
