@@ -414,27 +414,27 @@ _Owner: `opencode-tooling-subagent` using `documentation-sync-workflow-skill`_
 
 _Owner: `general` delegate_
 
-- [ ] **10.1** Run `bash -n deploy/setup.sh` — syntax check
+- [x] **10.1** Run `bash -n deploy/setup.sh` — syntax check
     — **Why:** Catches shell syntax errors (unterminated strings, bad interpolation) introduced by D1 edits.
     — **Done when:** Exits 0 with no errors.
     — **Consumers affected:** CI, all users.
 
-- [ ] **10.2** Run `pwsh -n deploy/setup.ps1` — syntax check
+- [x] **10.2** Run `pwsh -n deploy/setup.ps1` — syntax check
     — **Why:** Catches PowerShell syntax errors introduced by D1 edits.
     — **Done when:** Exits 0 with no errors.
     — **Consumers affected:** Windows CI, Windows users.
 
-- [ ] **10.3** Run `node deploy/build-registry.mjs --check` (or equivalent validation)
+- [x] **10.3** Run `node deploy/build-registry.mjs --check` (or equivalent validation)
     — **Why:** Validates registry.json consistency after rebuild.
     — **Done when:** Exits 0; registry contains all skills including new ones.
     — **Consumers affected:** opencode-init, README.
 
-- [ ] **10.4** Run full bats suite (including new `test_count_drift.bats`)
+- [x] **10.4** Run full bats suite (including new `test_count_drift.bats`)
     — **Why:** End-to-end verification that all tests pass including the new drift gate.
     — **Done when:** All bats tests pass, including test_count_drift.bats.
     — **Consumers affected:** CI.
 
-- [ ] **10.5** Run `deploy/setup.sh --dry-run` (or equivalent) and verify banner counts match directory counts
+- [x] **10.5** Run `deploy/setup.sh --dry-run` (or equivalent) and verify banner counts match directory counts
     — **Why:** Final integration check — the banner the user sees must match reality. This is the "done" signal for D1.
     — **Done when:** Banner shows correct skill count and agent count, both matching `find`/`ls` directory counts.
     — **Consumers affected:** End user experience.
