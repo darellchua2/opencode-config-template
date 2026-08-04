@@ -54,11 +54,19 @@ const {
 
 const PONYTAIL_DEFAULT_MODE = normalizeMode(process.env.PONYTAIL_DEFAULT_MODE) || DEFAULT_MODE;
 
-// Default off-set: read-only / research agents that should NOT be pushed toward minimal code.
+// Default off-set: agents that should NOT receive Ponytail injection —
+// read-only/research agents (Ponytail N/A) + non-coding agents (docs,
+// business, integrations, vision) where the lazy-code ruleset is irrelevant
+// and only adds context weight. Coding agents stay in the injection set.
 const DEFAULT_OFF_PATTERN =
   '^(explore|general|autoresearch-research-subagent|explorer-subagent|' +
   'requirements-specialist-subagent|discovery-specialist-subagent|' +
-  'technical-design-specialist-subagent)$';
+  'technical-design-specialist-subagent|' +
+  'coverage-subagent|documentation-subagent|docx-creation-subagent|' +
+  'pptx-specialist-subagent|xlsx-specialist-subagent|office-document-primary-agent|' +
+  'startup-ceo-subagent|startup-founder-primary-agent|' +
+  'google-mcp-specialist-subagent|microsoft-m365-specialist-subagent|' +
+  'image-analyzer-subagent)$';
 
 function compileOffRegex() {
   const pattern = process.env.PONYTAIL_SUBAGENT_OFF || DEFAULT_OFF_PATTERN;
