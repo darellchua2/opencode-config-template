@@ -15,6 +15,10 @@ This repo-level `AGENTS.md` defines repo-specific conventions. User-level routin
 
 `opencode_app/.opencode/` is the **single source** for agents and skills. Never edit deployed `~/.config/opencode/` copies directly — edit the source, then redeploy.
 
+## Dependency Management
+
+`package-lock.json` is committed. Dependency changes MUST run `npm install` and commit the regenerated lockfile — `npm ci` hard-fails on drift.
+
 ## Subagent Locations
 
 | Location | Scope | Deployed? |

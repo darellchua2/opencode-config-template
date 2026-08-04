@@ -96,17 +96,8 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Install semantic-release plugins
-        run: |
-          npm install --no-save \
-            semantic-release \
-            @semantic-release/commit-analyzer \
-            @semantic-release/release-notes-generator \
-            @semantic-release/changelog \
-            @semantic-release/exec \
-            @semantic-release/git \
-            @semantic-release/github \
-            conventional-changelog-conventionalcommits
+      - name: Install dependencies
+        run: npm ci
 
       - name: Create Release with CHANGELOG
         env:
