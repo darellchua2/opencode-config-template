@@ -107,13 +107,14 @@
     — **Done:** `diff -q` check; if identical → silent `log_info`; if stale → 2× `log_warn` (explains risk: stale shipped instructions cause incorrect agent behavior) + prompt default `y`. Fixes the root cause of the stale-deployed-AGENTS.md / `read_mcp_resource` symptom. `bash -n` clean.
 - [x] **7.4** Mirror 7.3 in `deploy/setup.ps1` (Get-FileHash comparison + stale warning + default `$true`)
     — **Done:** PowerShell parity via `Get-FileHash` SHA256 comparison.
-- [ ] **7.5** **[flagged — pre-existing, NOT auto-fixed]** `git-compact-commits-skill` + `git-semantic-commits-skill` frontmatter `description` contains `says: "..."` (colon+space+quote) which breaks strict YAML (`ScannerError: mapping values are not allowed here`). opencode's parser may handle these leniently (skills load), but they are non-conformant. **Action deferred** — the fix (quote/block-scalar the description) touches skill content and warrants review; tracked here, not in #297 scope.
+- [x] **7.5** `git-compact-commits-skill` + `git-semantic-commits-skill` frontmatter `description` contained `says: "..."` (colon+space+quote) → strict-YAML `ScannerError`.
+    — **Done:** converted both `description` values to YAML folded block scalars (`>-`), preserving content byte-for-byte (colons/quotes intact). Verified: **0 frontmatter parse errors** across all skills repo-wide.
 
 ### Phase 7 acceptance
 
 - [x] All shipped skill `metadata` is string-to-string (verified via `yaml.safe_load` across all SKILL.md; 0 non-string values).
 - [x] `setup.sh` / `setup.ps1` warn loudly + default to overwrite when deployed AGENTS.md is stale (diff/hash-detected); silent when up-to-date.
-- [ ] 7.5 — 2 pre-existing ScannerError descriptions (flagged, deferred).
+- [x] 7.5 — 2 pre-existing ScannerError descriptions fixed (folded block scalars); all skills now strict-YAML-valid.
 
 ## Acceptance Criteria
 
