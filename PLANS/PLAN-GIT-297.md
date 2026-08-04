@@ -1,7 +1,7 @@
 **Issue**: #297
 **Title**: Remediate verified opencode-config drift (skill-count, category table, deprecated `tools:` block)
 **Branch**: `fix/297-audit-remediation`
-**Status**: Open
+**Status**: Complete
 
 > **Provenance note.** This PLAN supersedes the initial audit report that informed issue #297. A re-audit (grounded in verbatim command output) refuted 4 of the original 5 items: `zai-vision-analysis-skill` was already retired; the agent count is genuinely 39 (not 38); the fabricated `deploy/agent-tiers.json` and "long-context tier" do not exist; and `pptx-specialist` is correctly on `glm-5-turbo`. Only the `tools:` block survived. The re-audit additionally surfaced real skill-count drift (113→115) and a category table that omits 3 skills — those are the primary work here.
 
@@ -31,91 +31,55 @@
 
 ### Phase 1: Fix skill-count drift (113 → 115)
 
-- [ ] **1.1** `README.md:24` — `# 113 skill directories` → `# 115 skill directories`
-    — **Why:** Onboarding file-tree comment; must match disk so contributors trust it.
-    — **Done when:** `grep -n "113 skill" README.md` exits 1 (zero matches); `grep -n "115 skill" README.md` shows the new value.
-    — **Consumers affected:** All repo readers.
-- [ ] **1.2** `README.md:280` — `with 113 skills organized across 17 categories` → `with 115 skills organized across 18 categories`
-    — **Why:** Prose summary of the modularization section; both numbers drifted (skills +2 net, categories +1).
-    — **Done when:** `grep -nE "113 skills|17 categories" README.md` exits 1; `grep -nE "115 skills|18 categories" README.md` shows the new values.
-    — **Consumers affected:** All repo readers.
-- [ ] **1.3** `deploy/setup.sh:586` — `SKILLS (113):` → `SKILLS (115):`
-    — **Why:** Deploy banner ships a stale count to every user running `setup.sh`.
-    — **Done when:** `grep -nE "SKILLS \(113\)" deploy/setup.sh` exits 1; `grep -nE "SKILLS \(115\)" deploy/setup.sh` shows the new value.
-    — **Consumers affected:** All user-space deployments via `deploy/setup.sh`.
-- [ ] **1.4** `deploy/setup.ps1:382` — `SKILLS (113):` → `SKILLS (115):`
-    — **Why:** Windows parity with setup.sh — stale count breaks the PowerShell banner.
-    — **Done when:** `grep -nE "SKILLS \(113\)" deploy/setup.ps1` exits 1; `grep -nE "SKILLS \(115\)" deploy/setup.ps1` shows the new value.
-    — **Consumers affected:** All Windows users running `deploy/setup.ps1`.
+- [x] **1.1** `README.md:24` — `# 113 skill directories` → `# 115 skill directories`
+    — **Done:** updated; verified `grep "113 skill" README.md` empty.
+- [x] **1.2** `README.md:280` — `with 113 skills organized across 17 categories` → `with 115 skills organized across 18 categories`
+    — **Done:** both numbers updated.
+- [x] **1.3** `deploy/setup.sh:586` — `SKILLS (113):` → `SKILLS (115):`
+    — **Done:** updated.
+- [x] **1.4** `deploy/setup.ps1:382` — `SKILLS (113):` → `SKILLS (115):`
+    — **Done:** updated.
+- [x] **1.5** *(scope expansion)* `deploy/setup.sh:2425` — `📦 113 Skills Available` → `115`; `deploy/setup.ps1:1781` — `113 Skills Available` → `115`; `opencode_app/README.md:26` — `# 113 skill directories` → `# 115`
+    — **Done:** 3 additional count locations discovered during execution (not in original PLAN); all fixed. fixes: original PLAN missed these — same drift class documented in PLAN-GIT-237.
 
 ### Phase 2: Reconcile README category table (add 3 missing skills)
 
-- [ ] **2.1** `README.md:286` (Framework row) — append `pptx-generate-slide-skill, pptx-template-modifier-skill` to the skill list; bump `(20)` → `(22)`
-    — **Why:** Both are part of the pptx-specialist 3-skill pipeline (generate-slide → template-modifier → specialist) and belong with `pptx-specialist` already in this row. Currently absent from the table entirely.
-    — **Done when:** Row lists all original 20 + the 2 new skills; parenthetical reads `(22)`; the 2 skill names appear in the row.
-    — **Consumers affected:** Repo readers discovering the pptx pipeline.
-- [ ] **2.2** `README.md:294` (Code Quality row) — append `deprecated-code-cleanup-skill` to the skill list; bump `(7)` → `(8)`
-    — **Why:** `deprecated-code-cleanup-skill` (TypeScript @deprecated dependency-traced removal) fits the Code Quality category (solid-principles, clean-code, code-smells). Currently absent from the table.
-    — **Done when:** Row lists all original 7 + the new skill; parenthetical reads `(8)`.
-    — **Consumers affected:** Repo readers discovering cleanup tooling.
-- [ ] **2.3** Verify the category table parentheticals now sum to 115
-    — **Why:** Atomicity gate — the whole point is that table-count == disk-count (115).
-    — **Done when:** Sum of all 18 rows' parentheticals equals 115 (recompute manually or via `grep -oE "\([0-9]+\)"` on the table lines and sum). Cross-check: `ls -d opencode_app/.opencode/skills/*/ | grep -vE "_archived|_common" | wc -l` → 115.
-    — **Consumers affected:** All downstream consumers — this is the release quality gate for the table.
+- [x] **2.1** `README.md:286` (Framework row) — added `pptx-generate-slide-skill, pptx-template-modifier-skill`; `(20)` → `(22)`
+    — **Done:** row now lists 22 skills.
+- [x] **2.2** `README.md:294` (Code Quality row) — added `deprecated-code-cleanup-skill`; `(7)` → `(8)`
+    — **Done:** row now lists 8 skills.
+- [x] **2.3** Category table parentheticals sum to 115
+    — **Done:** verified `sed -n '286,303p' README.md | sum = 115`; disk = 115.
+- [x] **2.4** *(scope expansion)* Reconciled category blocks in `deploy/setup.sh` (main banner 587-662 + summary banner 2432-2438) and `deploy/setup.ps1` (main 383-449 + summary 1788-1794) — added the 3 new skills + the missing **Autoresearch (4)** row (#239 sync miss); both main + summary banners now sum to 115.
+    — **Done:** all four deploy-script banners verified at 115. fixes: deploy-script category blocks were also stale (missing Autoresearch + 3 skills); not in original PLAN.
+    — **Flagged tech debt (NOT fixed):** the verbose debug-echo function (`setup.sh:2248+`, `setup.ps1:1250+`) is a *pre-existing broken* listing missing 5 entire categories (Agent Optimization, Startup/Business, Configuration, Security, DevOps) + Autoresearch. Rebuilding it is out of scope for count-drift; tracked separately.
 
 ### Phase 3: Migrate deprecated `tools:` block to `permission`
 
-- [ ] **3.1** `opencode_app/opencode.json:245-271` — convert the top-level `"tools": { ... }` boolean block into a top-level `"permission": { ... }` block, mapping `true` → `"allow"`, `false` → `"deny"` (key-for-key)
-    — **Why:** The `tools` boolean config is deprecated as of opencode v1.1.1 (confirmed: https://opencode.ai/docs/permissions/ — "the legacy `tools` boolean config is deprecated and has been merged into `permission`"). This repo is a **configurator** — the template ships to every user deploy, so it should model current syntax. Behavior is preserved (the docs state the merge is equivalent).
-    — **Done when:** (a) `grep -n '"tools"' opencode_app/opencode.json` exits 1 (no top-level `tools` key); (b) a top-level `"permission"` object exists containing all 25 former keys with `allow`/`deny` string values; (c) `python3 -c "import json; json.load(open('opencode_app/opencode.json'))"` exits 0 (valid JSON).
-    — **Consumers affected:** Every user deploy + Docker standalone (shipped config template).
-    — **Note:** Verify no top-level `permission` key already exists before adding (re-audit confirmed it does not — top keys are `$schema, model, default_agent, plugin, command, instructions, provider, mcp, tools, agent`). If a `permission` key is introduced elsewhere later, merge rather than duplicate.
-- [ ] **3.2** Spot-check that the 4 `allow` entries (`codegraph*`, `atlassian*`, `mermaid*`, `zai-web-reader*`) and the 21 `deny` entries map 1:1
-    — **Why:** Prevents accidental semantic drift during migration (e.g. flipping a value).
-    — **Done when:** Count of `"allow"` values == 4 and `"deny"` values == 21 in the new `permission` block; the keys match the former `tools` block exactly.
-    — **Consumers affected:** MCP server availability at runtime.
+- [x] **3.1** `opencode_app/opencode.json:245-271` — converted top-level `"tools": {bool}` → top-level `"permission": {allow/deny}` (25 entries, `true`→`"allow"`, `false`→`"deny"`)
+    — **Done:** `python3 -c json.load` VALID; `grep '"tools"'` empty; 4 allow + 21 deny entries map 1:1.
+- [x] **3.2** Spot-check 4 allow / 21 deny 1:1 mapping
+    — **Done:** verified; behavior preserved per opencode.ai/docs/permissions (tools boolean merged into permission v1.1.1).
 
 ### Phase 4: Add responsive-audit to tier table (cosmetic)
 
-- [ ] **4.1** `AGENTS.md:34` (glm-5.1 tier row) — add `responsive-audit` to the comma-separated agent list
-    — **Why:** `responsive-audit-subagent.md:4` declares `model: zai-coding-plan/glm-5.1`, but the tier table omits it. Tier choice is correct (sound-reasoning Playwright audit); only the listing is incomplete.
-    — **Done when:** `responsive-audit` appears in the glm-5.1 row; `grep -n "responsive-audit" AGENTS.md` returns ≥1 match.
-    — **Consumers affected:** Repo readers consulting tier assignments.
+- [x] **4.1** `AGENTS.md:34` (glm-5.1 row) — added `responsive-audit` to the agent list
+    — **Done:** `grep "responsive-audit" AGENTS.md` matches; matches actual `responsive-audit-subagent.md:4 model: glm-5.1`.
 
 ### Phase 5: Verification Gate
 
-- [ ] **5.1** Skill-count consistency sweep — no stale `113` remains anywhere:
-    ```bash
-    grep -rnE "113 skill|SKILLS \(113\)|17 categories" README.md deploy/setup.sh deploy/setup.ps1
-    ```
-    — **Done when:** Exits 1 (zero matches).
-    — **Consumers affected:** All downstream — release quality gate.
-- [ ] **5.2** Category-table sum == disk count:
-    ```bash
-    ls -d opencode_app/.opencode/skills/*/ | grep -vE "_archived|_common" | wc -l   # must be 115
-    ```
-    Manually sum the 18 row parentheticals — must equal 115.
-    — **Done when:** Both equal 115.
-- [ ] **5.3** opencode.json valid + tools block gone:
-    ```bash
-    python3 -c "import json; json.load(open('opencode_app/opencode.json'))" && echo VALID
-    grep -n '"tools"' opencode_app/opencode.json   # must exit 1
-    ```
-    — **Done when:** JSON parses; no top-level `tools` key.
-- [ ] **5.4** Agent count still correct (regression check — no accidental agent edits):
-    ```bash
-    ls opencode_app/.opencode/agents/*.md | wc -l   # must be 39
-    grep -n "39 subagent\|39 agent" README.md       # must still match
-    ```
-    — **Done when:** Count is 39; README still says 39.
+- [x] **5.1** `grep -rniE "113 skill|SKILLS \(113\)|17 categor"` → CLEAN (zero matches) ✓
+- [x] **5.2** disk count == table sum == **115** ✓
+- [x] **5.3** opencode.json VALID, no top-level `tools` key ✓
+- [x] **5.4** agent count == 39 (no regression) ✓
 
 ## Acceptance Criteria
 
-- [ ] All skill-count references across `README.md`, `deploy/setup.sh`, `deploy/setup.ps1` read **115** (and `18 categories`).
-- [ ] README category table lists all 115 skills (sum of parentheticals == 115); the 3 previously-missing skills (`deprecated-code-cleanup-skill`, `pptx-generate-slide-skill`, `pptx-template-modifier-skill`) are placed in appropriate rows.
-- [ ] `opencode_app/opencode.json` has no top-level `tools` key; an equivalent top-level `permission` object holds all 25 former entries with `allow`/`deny` values; JSON parses.
-- [ ] `AGENTS.md` tier table names `responsive-audit` under glm-5.1.
-- [ ] Agent count remains 39 (unchanged) — no regression.
+- [x] All skill-count references across `README.md`, `deploy/setup.sh`, `deploy/setup.ps1`, `opencode_app/README.md` read **115** (and `18 categories`).
+- [x] README category table + both deploy-script main/summary banners list all 115 skills (sum == 115); the 3 previously-missing skills placed; missing Autoresearch row added to deploy scripts.
+- [x] `opencode_app/opencode.json` has no top-level `tools` key; equivalent top-level `permission` object holds all 25 former entries; JSON parses.
+- [x] `AGENTS.md` tier table names `responsive-audit` under glm-5.1.
+- [x] Agent count remains 39 (unchanged) — no regression.
 
 ## Out of Scope (explicitly NOT done — verified non-issues)
 
