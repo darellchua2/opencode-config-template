@@ -192,6 +192,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
+## Optional dependency: docling (not ported — pip-installed on demand)
+
+`docling` and `docling-mcp[local]` are **not shipped in this repository** — they are PyPI packages installed on-demand when the user explicitly runs `--enable-pack docling` (Decision 6: not baked by default, ~3-4 GB). Their licenses are carried by the pip packages themselves. Key transitive licenses:
+
+| Package | License | Purpose |
+|---------|---------|---------|
+| `docling` / `docling-core` | MIT | Layout-aware document parsing |
+| `torch` | BSD-style | Tensor computation (ML models) |
+| `rapidocr` | Apache-2.0 | OCR engine |
+| `transformers` (huggingface) | Apache-2.0 | ML model loading |
+
+**Trust boundary:** unlike markitdown (zero phone-home, fully local), docling downloads ML models from `huggingface.co` on first use (~hundreds of MB, cached thereafter). See `docling-mcp-skill` trust-boundary section for details.
+
 ## License of this repository
 
 This repository is licensed under Apache-2.0 — see `LICENSE`. All ported

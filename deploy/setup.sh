@@ -340,7 +340,7 @@ MODELS_ONLY=false        # --models-only (provider + resolve only)
 FORCE_RESOLVE=false      # --force (ignore preserve-edits)
 MIGRATE_ONLY=false       # --migrate (migration + resolve only)
 MIX_MODE=false           # --mix (per-category provider/model editor)
-ENABLE_PACK=""           # --enable-pack <csv> (provider packs: autodesk,markitdown,nextjs,zai)
+ENABLE_PACK=""           # --enable-pack <csv> (provider packs: autodesk,markitdown,nextjs,zai,docling)
 
 # API Keys (initialize to empty to avoid unbound variable errors)
 # Capture from environment if they exist
@@ -568,7 +568,7 @@ USAGE:
   PROVIDER PACKS (deploy-time MCP toggle):
     --enable-pack <csv>   Enable provider pack(s) — flips mcp.<server>.enabled
                           and tools.<ns>* flags ON for the named packs. Available
-                          packs: autodesk, markitdown, nextjs, zai
+                          packs: autodesk, markitdown, nextjs, zai, docling
                           (comma-separated, e.g. --enable-pack autodesk,markitdown).
                           No-op if omitted; default state of every pack is OFF.
 
@@ -851,7 +851,7 @@ parse_arguments() {
                 # Accept any value including "" (empty = no-op, handled by
                 # merge-packs.mjs). Only error if no following token at all.
                 if [ $# -lt 2 ]; then
-                    log_error "--enable-pack requires an argument (csv: autodesk,markitdown,nextjs,zai)"
+                    log_error "--enable-pack requires an argument (csv: autodesk,markitdown,nextjs,zai,docling)"
                     exit 1
                 fi
                 ENABLE_PACK="$2"
@@ -2411,8 +2411,8 @@ setup_config() {
              echo "✓ Configured MCP servers:"
              echo "    Local (auto-start): atlassian, zai-vision-mcp-server, codegraph, mermaid"
              echo "    Remote (needs key): web-reader, web-search-prime, zread"
-             echo "    Available but disabled (opt-in): next-devtools, markitdown, autodesk-*"
-             echo "    Enable a group with: ./setup.sh --enable-pack <autodesk|markitdown|nextjs|zai>"
+             echo "    Available but disabled (opt-in): next-devtools, markitdown, autodesk-*, docling"
+             echo "    Enable a group with: ./setup.sh --enable-pack <autodesk|markitdown|nextjs|zai|docling>"
             echo ""
         else
             log_error "config.json source not found: ${SOURCE_CONFIG}"

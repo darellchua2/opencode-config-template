@@ -59,7 +59,7 @@ param(
     [switch]$Migrate,
     [switch]$Mix,
     # Provider packs (#268): deploy-time MCP toggle. CSV of pack names
-    # (autodesk,markitdown,nextjs,zai). Empty = no-op.
+    # (autodesk,markitdown,nextjs,zai,docling). Empty = no-op.
     [string]$EnablePack = ""
 )
 
@@ -898,7 +898,7 @@ USAGE:
   PROVIDER PACKS (deploy-time MCP toggle):
     -EnablePack <csv>    Enable provider pack(s) — flips mcp.<server>.enabled
                          and tools.<ns>* flags ON. Available packs:
-                         autodesk, markitdown, nextjs, zai
+                         autodesk, markitdown, nextjs, zai, docling
                          (comma-separated). No-op if omitted; default OFF.
                          Example: -EnablePack autodesk,markitdown
 
@@ -1704,7 +1704,7 @@ function Set-Configuration {
             Write-Host "Configured MCP servers:" -ForegroundColor Green
             Write-Host "    - Local (auto-start): atlassian, zai-vision-mcp-server, codegraph, mermaid"
             Write-Host "    - Remote (needs key): web-reader, zread"
-            Write-Host "    - Available but disabled (opt-in): web-search-prime, next-devtools, markitdown"
+            Write-Host "    - Available but disabled (opt-in): web-search-prime, next-devtools, markitdown, docling"
             Write-Host ""
         } else {
             Write-LogError "config.json source not found: $SourceConfig"
