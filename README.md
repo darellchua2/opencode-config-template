@@ -589,7 +589,7 @@ When enabled, retrofitted skills emit mechanical evaluator output `{"pass":bool,
 
 ### Ponytail (scoped wrapper plugin)
 
-[Ponytail](https://github.com/DietrichGebert/ponytail) (MIT, vendored at v4.8.4) makes coding agents write minimal necessary code via a 7-rung "lazy senior dev" ladder (YAGNI → reuse → stdlib → native → installed dep → one-liner → minimum-that-works). This repo ships a **scoped wrapper plugin** (`opencode_app/.opencode/plugins/ponytail-scoped.mjs`) instead of the stock npm adapter — it adds agent-type-aware scoping the upstream OpenCode adapter lacks:
+[Ponytail](https://github.com/DietrichGebert/ponytail) (MIT, vendored at v4.8.4) makes coding agents write minimal necessary code via a 7-rung "lazy senior dev" ladder (YAGNI → reuse → stdlib → native → installed dep → one-liner → minimum-that-works). This repo ships a **scoped wrapper plugin** (`opencode_app/.opencode/plugins/ponytail-scoped.ts`) instead of the stock npm adapter — it adds agent-type-aware scoping the upstream OpenCode adapter lacks:
 
 - **Read-only/research agents skip injection** (`explore`, `general`, `autoresearch-research-subagent`, `explorer-subagent`, `requirements-specialist-subagent`, `discovery-specialist-subagent`, `technical-design-specialist-subagent`) — they aren't pushed toward minimal code.
 - **Per-agent mode overrides** via `PONYTAIL_AGENT_MODE_MAP` (JSON).
