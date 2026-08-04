@@ -248,10 +248,11 @@ _Owner: `opencode-tooling-subagent`_
 
 _Owner: `opencode-tooling-subagent`_
 
-- [ ] **6.1** Create `canvastekk-workflow-nodes/.opencode/skills/workflow-node-sdk-skill/SKILL.md` with version duo/triad, CDS normalization, async-blocking-poll, ZAI client + node mixin patterns
+- [x] **6.1** Create `canvastekk-workflow-nodes/.opencode/skills/workflow-node-sdk-skill/SKILL.md` with version duo/triad, CDS normalization, async-blocking-poll, ZAI client + node mixin patterns
     — **Why:** 4 patterns specific to the workflow-nodes SDK are captured in LEARNINGS but have no skill. Project-scoped (not global) because only this repo uses the SDK.
     — **Done when:** SKILL.md exists at the project-scoped path with frontmatter, provenance, all 4 patterns. No global sync needed (Phase 9 skips this).
     — **Consumers affected:** `canvastekk-workflow-nodes` development workflows only.
+    — **Done:** Created at canvastekk-workflow-nodes/.opencode/skills/workflow-node-sdk-skill/SKILL.md; 4 patterns: ZaiClient, ZaiNodeMixin, CDS normalization, blocking poll; files: external repo; fixes: none
 
 ---
 
@@ -259,42 +260,42 @@ _Owner: `opencode-tooling-subagent`_
 
 _Owner: `opencode-tooling-subagent`_
 
-- [ ] **7.1** Add C1 recall rule prose to `architecture-review-subagent.md` frontmatter body
+- [x] **7.1** Add C1 recall rule prose to `architecture-review-subagent.md` frontmatter body
     — **Why:** Architecture reviews currently miss patterns captured in LEARNINGS because reviewers don't explicitly recall them. CodeRabbit's reinforcement rule pattern validates: explicitly instructing recall improves pattern application.
     — **Done when:** Frontmatter body contains: *"Before responding, recall LEARNINGS via the `memory` tool (scope: project, query: the review topic) AND read any `LEARNINGS/*.md` surfaced by the autoinject manifest. Do not skip patterns that apply."*
     — **Consumers affected:** architecture review workflows.
 
-- [ ] **7.2** Add C1 recall rule prose to `code-review-subagent.md` frontmatter body
+- [x] **7.2** Add C1 recall rule prose to `code-review-subagent.md` frontmatter body
     — **Why:** Same rationale as 7.1 — code reviews benefit equally from LEARNINGS recall.
     — **Done when:** Identical recall rule prose present in frontmatter body.
     — **Consumers affected:** code review workflows.
 
-- [ ] **7.3** Add C1 recall rule prose to `python-reviewer-subagent.md` frontmatter body
+- [x] **7.3** Add C1 recall rule prose to `python-reviewer-subagent.md` frontmatter body
     — **Why:** Python-specific LEARNINGS (Pydantic, ORM, Alembic) are directly relevant to Python reviews.
     — **Done when:** Identical recall rule prose present in frontmatter body.
     — **Consumers affected:** Python review workflows.
 
-- [ ] **7.4** Add C1 recall rule prose to `typescript-reviewer-subagent.md` frontmatter body
+- [x] **7.4** Add C1 recall rule prose to `typescript-reviewer-subagent.md` frontmatter body
     — **Why:** TypeScript-specific LEARNINGS (hooks, render, Next.js) directly relevant.
     — **Done when:** Identical recall rule prose present in frontmatter body.
     — **Consumers affected:** TypeScript review workflows.
 
-- [ ] **7.5** Add C1 recall rule prose to `java-reviewer-subagent.md` frontmatter body
+- [x] **7.5** Add C1 recall rule prose to `java-reviewer-subagent.md` frontmatter body
     — **Why:** Java-specific LEARNINGS may exist in repos; recall ensures they're checked.
     — **Done when:** Identical recall rule prose present in frontmatter body.
     — **Consumers affected:** Java review workflows.
 
-- [ ] **7.6** Add C1 recall rule prose to `go-reviewer-subagent.md` frontmatter body
+- [x] **7.6** Add C1 recall rule prose to `go-reviewer-subagent.md` frontmatter body
     — **Why:** Go-specific LEARNINGS may exist; recall ensures pattern coverage.
     — **Done when:** Identical recall rule prose present in frontmatter body.
     — **Consumers affected:** Go review workflows.
 
-- [ ] **7.7** Add C1 recall rule prose to `rust-reviewer-subagent.md` frontmatter body
+- [x] **7.7** Add C1 recall rule prose to `rust-reviewer-subagent.md` frontmatter body
     — **Why:** Rust-specific LEARNINGS may exist; recall ensures pattern coverage.
     — **Done when:** Identical recall rule prose present in frontmatter body.
     — **Consumers affected:** Rust review workflows.
 
-- [ ] **7.8** Add C1 recall rule prose to `uiux-reviewer-subagent.md` frontmatter body
+- [x] **7.8** Add C1 recall rule prose to `uiux-reviewer-subagent.md` frontmatter body
     — **Why:** uiux-reviewer is the 8th reviewer subagent (has a Return Contract section at L209, applies a 13-axis review rubric). Originally omitted from C1 — must be included for consistency.
     — **Done when:** Identical recall rule prose present in frontmatter body.
     — **Consumers affected:** UI/UX review workflows.
@@ -305,17 +306,17 @@ _Owner: `opencode-tooling-subagent`_
 
 _Owner: `opencode-tooling-subagent`_
 
-- [ ] **8.1** Add `fastapi-pydantic-orm-patterns-skill: allow` to `python-reviewer-subagent.md` `permission.skill` block + UPDATE existing prose at L96 (C2)
+- [x] **8.1** Add `fastapi-pydantic-orm-patterns-skill: allow` to `python-reviewer-subagent.md` `permission.skill` block + UPDATE existing prose at L96 (C2)
     — **Why:** Python reviewer needs to load A1 skill during reviews. L96 already names the A1 patterns in prose (`"Pydantic-on-JSONB pitfalls, detached-instance bugs, enum strategy resolution patterns"`) — adding new prose would DUPLICATE. Instead, update L96 to reference the skill by name.
     — **Done when:** `permission.skill` block contains the allow entry; L96 prose updated to reference `fastapi-pydantic-orm-patterns-skill` by name (not a new prose block).
     — **Consumers affected:** Python review workflows.
 
-- [ ] **8.2** Add `react-hooks-antipatterns-skill: allow` + `react-render-antipatterns-skill: allow` to `typescript-reviewer-subagent.md` `permission.skill` block + awareness prose (C3)
+- [x] **8.2** Add `react-hooks-antipatterns-skill: allow` + `react-render-antipatterns-skill: allow` to `typescript-reviewer-subagent.md` `permission.skill` block + awareness prose (C3)
     — **Why:** TypeScript reviewer needs both B1 split skills; the old `react-nextjs-antipatterns-skill` is deleted in Phase 4.
     — **Done when:** Both entries present in allowlist; awareness prose mentions hooks vs render pattern separation.
     — **Consumers affected:** TypeScript/React review workflows.
 
-- [ ] **8.3** Add C4 strict `Patterns applied/violated` field to Return Contract Convention in repo `AGENTS.md` — **SPLIT into general + reviewer sub-section**
+- [x] **8.3** Add C4 strict `Patterns applied/violated` field to Return Contract Convention in repo `AGENTS.md` — **SPLIT into general + reviewer sub-section**
     — **Why:** AGENTS.md L96 states "All subagents return this structure" — the convention governs all 34 subagents with a Return Contract section. Injecting a reviewer-required field into the general section would make 26 of 34 agents non-conformant. The fix: keep the general quartet [Status/Output/Summary/Issues] universal, and add a "Reviewer Additions" sub-section scoping `Patterns applied/violated` to the 8 reviewers only.
     — **Done when:** Return Contract Convention section restructured as:
       > **General (all subagents):** Status / Output / Summary / Issues
@@ -326,42 +327,42 @@ _Owner: `opencode-tooling-subagent`_
       > - If no LEARNINGS pattern applied or was violated, emit `Patterns applied/violated: []` (empty list, never omit).
     — **Consumers affected:** 8 reviewer subagents (explicitly scoped); 26 non-reviewer agents remain conformant with the general quartet.
 
-- [ ] **8.4** Add C4 `Patterns applied/violated` field to `architecture-review-subagent.md` Return Contract
+- [x] **8.4** Add C4 `Patterns applied/violated` field to `architecture-review-subagent.md` Return Contract
     — **Why:** Each reviewer must have the field in its own Return Contract section for the convention to be enforceable per-subagent.
     — **Done when:** Field specification present, matching the AGENTS.md convention wording.
     — **Consumers affected:** Architecture review outputs.
 
-- [ ] **8.5** Add C4 `Patterns applied/violated` field to `code-review-subagent.md` Return Contract
+- [x] **8.5** Add C4 `Patterns applied/violated` field to `code-review-subagent.md` Return Contract
     — **Why:** Same rationale as 8.4.
     — **Done when:** Field specification present.
     — **Consumers affected:** Code review outputs.
 
-- [ ] **8.6** Add C4 `Patterns applied/violated` field to `python-reviewer-subagent.md` Return Contract
+- [x] **8.6** Add C4 `Patterns applied/violated` field to `python-reviewer-subagent.md` Return Contract
     — **Why:** Same rationale as 8.4.
     — **Done when:** Field specification present.
     — **Consumers affected:** Python review outputs.
 
-- [ ] **8.7** Add C4 `Patterns applied/violated` field to `typescript-reviewer-subagent.md` Return Contract
+- [x] **8.7** Add C4 `Patterns applied/violated` field to `typescript-reviewer-subagent.md` Return Contract
     — **Why:** Same rationale as 8.4.
     — **Done when:** Field specification present.
     — **Consumers affected:** TypeScript review outputs.
 
-- [ ] **8.8** Add C4 `Patterns applied/violated` field to `java-reviewer-subagent.md` Return Contract
+- [x] **8.8** Add C4 `Patterns applied/violated` field to `java-reviewer-subagent.md` Return Contract
     — **Why:** Same rationale as 8.4.
     — **Done when:** Field specification present.
     — **Consumers affected:** Java review outputs.
 
-- [ ] **8.9** Add C4 `Patterns applied/violated` field to `go-reviewer-subagent.md` Return Contract
+- [x] **8.9** Add C4 `Patterns applied/violated` field to `go-reviewer-subagent.md` Return Contract
     — **Why:** Same rationale as 8.4.
     — **Done when:** Field specification present.
     — **Consumers affected:** Go review outputs.
 
-- [ ] **8.10** Add C4 `Patterns applied/violated` field to `rust-reviewer-subagent.md` Return Contract
+- [x] **8.10** Add C4 `Patterns applied/violated` field to `rust-reviewer-subagent.md` Return Contract
     — **Why:** Same rationale as 8.4.
     — **Done when:** Field specification present.
     — **Consumers affected:** Rust review outputs.
 
-- [ ] **8.11** Add C4 `Patterns applied/violated` field to `uiux-reviewer-subagent.md` Return Contract
+- [x] **8.11** Add C4 `Patterns applied/violated` field to `uiux-reviewer-subagent.md` Return Contract
     — **Why:** uiux-reviewer is the 8th reviewer (has Return Contract at L209, applies a 13-axis rubric). Originally omitted from C4 — must be included for consistency with the 8.3 convention split.
     — **Done when:** Field specification present, matching the AGENTS.md "Reviewer Additions" sub-section wording.
     — **Consumers affected:** UI/UX review outputs.
