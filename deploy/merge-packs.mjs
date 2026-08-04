@@ -29,7 +29,7 @@
 //   node merge-packs.mjs \
 //     --config <opencode.json> \
 //     --packs-dir <deploy/packs> \
-//     --packs autodesk,microsoft \
+//     --packs autodesk \
 //     [--dry-run] [--verbose]
 //
 // Exit codes: 0 success/no-op, 1 bad args / unknown pack / parse error / IO.

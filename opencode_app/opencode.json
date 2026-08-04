@@ -82,7 +82,6 @@
       "security-audit-skill": "allow",
       "performance-optimization-skill": "allow",
 
-      "microsoft-m365-config-skill": "allow",
       "nextjs-devtools-mcp-skill": "allow",
       "codegraph-setup-skill": "allow",
       "ascii-diagram-creator-skill": "allow",
@@ -123,24 +122,11 @@
       "zai-web-reader*": "allow",
       "zai-vision-mcp-server*": "deny",
       "zai-zread*": "deny",
-      "google-bigquery*": "deny",
-      "google-maps*": "deny",
-      "google-gce*": "deny",
-      "google-gke*": "deny",
       "autodesk-revit*": "deny",
       "autodesk-model-data*": "deny",
       "autodesk-fusion*": "deny",
       "autodesk-help*": "deny",
-      "next-devtools*": "deny",
-      "microsoft-teams*": "deny",
-      "microsoft-mail*": "deny",
-      "microsoft-calendar*": "deny",
-      "microsoft-sharepoint*": "deny",
-      "microsoft-onedrive*": "deny",
-      "microsoft-user*": "deny",
-      "microsoft-word*": "deny",
-      "microsoft-copilot*": "deny",
-      "microsoft-dataverse*": "deny"
+      "next-devtools*": "deny"
     }
   },
   "command": {
@@ -224,58 +210,6 @@
       },
       "enabled": true
     },
-    "google-bigquery": {
-      "type": "local",
-      "command": [
-        "npx",
-        "-y",
-        "mcp-remote",
-        "https://mcp.googleapis.com/bigquery/v1/sse"
-      ],
-      "environment": {
-        "GOOGLE_APPLICATION_CREDENTIALS": "${env:GOOGLE_APPLICATION_CREDENTIALS}"
-      },
-      "enabled": false
-    },
-    "google-maps": {
-      "type": "local",
-      "command": [
-        "npx",
-        "-y",
-        "mcp-remote",
-        "https://mcp.googleapis.com/maps/v1/sse"
-      ],
-      "environment": {
-        "GOOGLE_APPLICATION_CREDENTIALS": "${env:GOOGLE_APPLICATION_CREDENTIALS}"
-      },
-      "enabled": false
-    },
-    "google-gce": {
-      "type": "local",
-      "command": [
-        "npx",
-        "-y",
-        "mcp-remote",
-        "https://mcp.googleapis.com/compute/v1/sse"
-      ],
-      "environment": {
-        "GOOGLE_APPLICATION_CREDENTIALS": "${env:GOOGLE_APPLICATION_CREDENTIALS}"
-      },
-      "enabled": false
-    },
-    "google-gke": {
-      "type": "local",
-      "command": [
-        "npx",
-        "-y",
-        "mcp-remote",
-        "https://mcp.googleapis.com/kubernetes-engine/v1/sse"
-      ],
-      "environment": {
-        "GOOGLE_APPLICATION_CREDENTIALS": "${env:GOOGLE_APPLICATION_CREDENTIALS}"
-      },
-      "enabled": false
-    },
     "autodesk-revit": {
       "type": "remote",
       "url": "https://mcp.autodesk.com/revit/v1",
@@ -311,54 +245,6 @@
     "next-devtools": {
       "type": "local",
       "command": ["npx", "-y", "next-devtools-mcp@latest"],
-      "enabled": false
-    },
-    "microsoft-teams": {
-      "type": "local",
-      "command": ["npx", "-y", "mcp-remote", "https://mcp.cloud.microsoft/teams/v1/sse"],
-      "enabled": false
-    },
-    "microsoft-mail": {
-      "type": "local",
-      "command": ["npx", "-y", "mcp-remote", "https://mcp.cloud.microsoft/mail/v1/sse"],
-      "enabled": false
-    },
-    "microsoft-calendar": {
-      "type": "local",
-      "command": ["npx", "-y", "mcp-remote", "https://mcp.cloud.microsoft/calendar/v1/sse"],
-      "enabled": false
-    },
-    "microsoft-sharepoint": {
-      "type": "local",
-      "command": ["npx", "-y", "mcp-remote", "https://mcp.cloud.microsoft/sharepoint/v1/sse"],
-      "enabled": false
-    },
-    "microsoft-onedrive": {
-      "type": "local",
-      "command": ["npx", "-y", "mcp-remote", "https://mcp.cloud.microsoft/onedrive/v1/sse"],
-      "enabled": false
-    },
-    "microsoft-user": {
-      "type": "local",
-      "command": ["npx", "-y", "mcp-remote", "https://mcp.cloud.microsoft/me/v1/sse"],
-      "enabled": false
-    },
-    "microsoft-word": {
-      "type": "local",
-      "command": ["npx", "-y", "mcp-remote", "https://mcp.cloud.microsoft/word/v1/sse"],
-      "enabled": false
-    },
-    "microsoft-copilot": {
-      "type": "local",
-      "command": ["npx", "-y", "mcp-remote", "https://mcp.cloud.microsoft/copilot/v1/sse"],
-      "enabled": false
-    },
-    "microsoft-dataverse": {
-      "type": "local",
-      "command": ["npx", "-y", "mcp-remote", "https://mcp.cloud.microsoft/dataverse/v1/sse"],
-      "environment": {
-        "POWER_PLATFORM_ENV_ID": "${env:POWER_PLATFORM_ENV_ID}"
-      },
       "enabled": false
     },
     "mermaid": {

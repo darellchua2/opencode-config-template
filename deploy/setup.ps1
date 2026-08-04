@@ -59,7 +59,7 @@ param(
     [switch]$Migrate,
     [switch]$Mix,
     # Provider packs (#268): deploy-time MCP toggle. CSV of pack names
-    # (autodesk,microsoft,google,markitdown,nextjs,zai). Empty = no-op.
+    # (autodesk,markitdown,nextjs,zai). Empty = no-op.
     [string]$EnablePack = ""
 )
 
@@ -898,15 +898,15 @@ USAGE:
   PROVIDER PACKS (deploy-time MCP toggle):
     -EnablePack <csv>    Enable provider pack(s) — flips mcp.<server>.enabled
                          and tools.<ns>* flags ON. Available packs:
-                         autodesk, microsoft, google, markitdown, nextjs, zai
+                         autodesk, markitdown, nextjs, zai
                          (comma-separated). No-op if omitted; default OFF.
-                         Example: -EnablePack autodesk,microsoft
+                         Example: -EnablePack autodesk,markitdown
 
 =======================================================================
                          CONFIGURED FEATURES
 =======================================================================
 
-    AGENTS (38):
+    AGENTS (36):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
@@ -937,8 +937,6 @@ USAGE:
     startup-founder      Startup founder business operations agent
     startup-ceo          Investor-ready pitch decks and board updates
     office-document      Office document specialist: Word, PowerPoint, Excel
-    google-mcp           Google Cloud MCP (BigQuery, Maps, GCE, GKE)
-    microsoft-m365       Microsoft 365 MCP (Teams, Mail, Calendar, SharePoint, etc.)
      nextjs-specialist  Next.js scaffolding + runtime MCP diagnosis
     opentofu-explorer    OpenTofu/Terraform infrastructure management
     cad-specialist       CAD, robotics, hardware design orchestration
@@ -1692,7 +1690,7 @@ function Set-Configuration {
             Install-LocalMcpLaunchers
 
             Write-Host ""
-             Write-Host "Configured 38 agents:" -ForegroundColor Green
+             Write-Host "Configured 36 agents:" -ForegroundColor Green
             Write-Host "    - build (default) - Full-featured coding agent"
             Write-Host "    - plan - Planning agent (read-only)"
             Write-Host "    - explore - Codebase exploration and analysis"
@@ -2562,13 +2560,13 @@ function Show-NextSteps {
     Write-Host "  2. Start LM Studio: http://127.0.0.1:1234/v1"
     Write-Host "  3. Verify installation: opencode --version"
     Write-Host ""
-    Write-Host "Agents (38):"
+    Write-Host "Agents (36):"
     Write-Host "  - build (default) - Full-featured coding agent"
     Write-Host "  - plan - Planning agent (read-only)"
     Write-Host "  - explore - Codebase exploration and analysis"
     Write-Host "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
     Write-Host "  - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
-    Write-Host "  - ... and 34 more agents"
+    Write-Host "  - ... and 32 more agents"
     Write-Host ""
     Write-Host "  Usage: opencode --agent <name> `"prompt`""
     Write-Host "         opencode `"prompt`" (uses build)"

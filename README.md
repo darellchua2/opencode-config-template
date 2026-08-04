@@ -23,8 +23,8 @@ opencode-config-template/
 │   ├── AGENTS.md                # Container-specific instructions
 │   ├── .dockerignore
 │   ├── .opencode/
-│   │       ├── agents/              # 38 subagent .md files
-│   │       └── skills/              # 126 skill directories
+│   │       ├── agents/              # 36 subagent .md files
+│   │       └── skills/              # 125 skill directories
 │   └── README.md                # Docker usage guide
 ├── docker-compose.yml           # Docker Compose service definition
 ├── .env.example                 # Environment variable template
@@ -238,7 +238,7 @@ Run `opencode-init --list agents` or `--list skills` to browse in JSON, or visit
 
 ## Project-Scoped Install (`opencode-init`)
 
-Not every project needs all 38 agents + 126 skills. <!-- count: hand-maintained — sync on skill/agent add (BT-157) --> `opencode-init` installs a **curated subset** into a target project's `.opencode/` and writes a project `opencode.json` configuring just that subset — chosen interactively (TUI) or via flags (LLM/CI). It is the project-scoped companion to the global `setup.sh` deploy, and is symlinked onto PATH as `opencode-init` by `setup.sh`.
+Not every project needs all 36 agents + 125 skills. <!-- count: hand-maintained — sync on skill/agent add (BT-157) --> `opencode-init` installs a **curated subset** into a target project's `.opencode/` and writes a project `opencode.json` configuring just that subset — chosen interactively (TUI) or via flags (LLM/CI). It is the project-scoped companion to the global `setup.sh` deploy, and is symlinked onto PATH as `opencode-init` by `setup.sh`.
 
 > **Mutually exclusive with global deploy for isolation.** OpenCode **merges** config and **unions** agents/skills across `~/.config/opencode` and `<project>/.opencode`. A project subset only yields an *isolated* curated experience on a **clean slate** (no global deploy). If `~/.config/opencode/agents/` is non-empty, the project install is **additive** — `opencode-init` detects this and warns. `permission.task` (scoped subagent-spawn allowlist) still restricts auto-spawning even with a global deploy; `@`-mention still bypasses it. See [issue #286](https://github.com/darellchua2/opencode-config-template/issues/286) and `PLANS/PLAN-GIT-286.md`.
 
@@ -255,7 +255,6 @@ Not every project needs all 38 agents + 126 skills. <!-- count: hand-maintained 
 | `business` | startup-founder + ceo + discovery + requirements + technical-design | 12 (BD/pitch/planning) | — | BD / founder workflows |
 | `research` | autoresearch-{ml,code,research} + loop-operator | 11 (autoresearch + papers) | codegraph | Autonomous loops (ml needs GPU) |
 | `cad` | cad-specialist | 14 (CAD & Hardware Design) | — | CAD / robotics / hardware |
-| `integrations` | microsoft-m365 + google-mcp specialists | 3 config | 15 (M365 + Google + markitdown) | External MCP suites |
 
 Member counts include transitive deps auto-pulled by the resolver (a preset's agent `permission.task` delegates + `permission.skill` requirements). Run `opencode-init --expand <preset>` to see the exact resolved set.
 
@@ -326,7 +325,7 @@ nvm install 24
 
 ## MCP Servers
 
-The configuration ships 26 MCP server entries. **6 are enabled by default:**
+The configuration ships 13 MCP server entries. **6 are enabled by default:**
 
 | Server | Type | Purpose |
 |--------|------|---------|
@@ -337,7 +336,7 @@ The configuration ships 26 MCP server entries. **6 are enabled by default:**
 | `zai-web-reader` | remote | Web page content extraction |
 | `zai-zread` | remote | GitHub repository search/reading |
 
-The remaining 20 (Microsoft 365, Autodesk, Google Cloud, `next-devtools`, `web-search-prime`, `markitdown`, etc.) are `enabled: false` and opt-in. To enable one, set `"enabled": true` (and grant its tools in the `tools` block) in `config.json`.
+The remaining 7 (Autodesk, `next-devtools`, `web-search-prime`, `markitdown`) are `enabled: false` and opt-in. To enable one, set `"enabled": true` (and grant its tools in the `tools` block) in `config.json`.
 
 #### Provider Packs — deploy-time MCP toggle (#268)
 
@@ -346,8 +345,6 @@ Instead of editing 4–9 JSON entries to enable a logical group of MCP servers, 
 | Pack | Servers enabled | Requires |
 |------|----------------|----------|
 | `autodesk` | autodesk-revit, autodesk-model-data, autodesk-fusion, autodesk-help | `AUTODESK_API_KEY` |
-| `microsoft` | microsoft-teams, -mail, -calendar, -sharepoint, -onedrive, -user, -word, -copilot, -dataverse (9) | M365 Copilot license |
-| `google` | google-bigquery, google-maps, google-gce, google-gke | `GOOGLE_APPLICATION_CREDENTIALS` |
 | `markitdown` | markitdown | Python launcher (auto-installed by `setup.sh`; baked into Docker image) |
 | `nextjs` | next-devtools | A running Next.js dev server |
 | `zai` | zai-web-search-prime | `ZAI_API_KEY` |
@@ -355,15 +352,15 @@ Instead of editing 4–9 JSON entries to enable a logical group of MCP servers, 
 ```bash
 # User-space deploy (setup.sh)
 ./deploy/setup.sh --enable-pack autodesk              # one pack
-./deploy/setup.sh --enable-pack autodesk,microsoft    # multiple
-./deploy/setup.sh --enable-pack google --dry-run      # preview without writing
+./deploy/setup.sh --enable-pack autodesk,markitdown   # multiple
+./deploy/setup.sh --enable-pack markitdown --dry-run  # preview without writing
 ./deploy/setup.sh --quick --enable-pack markitdown    # combine with other modes
 
 # Windows (setup.ps1)
-./deploy/setup.ps1 -EnablePack autodesk,microsoft
+./deploy/setup.ps1 -EnablePack autodesk,markitdown
 
 # Docker (build-time)
-docker compose build --build-arg OPENCODE_PACKS=autodesk,microsoft
+docker compose build --build-arg OPENCODE_PACKS=autodesk,markitdown
 ```
 
 Default state of every pack is **OFF** — existing deployments are unaffected unless a pack is explicitly requested. Empty/omitted `--enable-pack` is a no-op. Unknown pack names exit non-zero with a clear error. See [`PLAN.md`](PLAN.md) (issue #268) for the full design and the opencode-tooling review that shaped it.
@@ -489,7 +486,7 @@ TypeScript, JavaScript, Python, Go, Rust, Java, C#, PHP, Ruby, C, C++, Swift, Ko
 
 ## Skill Modularization
 
-This repository implements **skill modularization** with 126 skills organized across 21 categories. <!-- count: hand-maintained — sync on skill add (BT-157) --> Skills are designed with clear separation of concerns and explicit dependencies.
+This repository implements **skill modularization** with 125 skills organized across 21 categories. <!-- count: hand-maintained — sync on skill add (BT-157) --> Skills are designed with clear separation of concerns and explicit dependencies.
 
 > **Registry-derived (PLAN-GIT-286):** every skill + agent now carries a `category:` frontmatter field, which `deploy/build-registry.mjs` reads to emit `deploy/registry.json` — the single source of truth consumed by the `opencode-init` project-scoped installer and (regenerable into) this category table. To refresh after editing frontmatter: `node deploy/build-registry.mjs` (CI fails on drift via `--check`).
 
@@ -514,7 +511,7 @@ This repository implements **skill modularization** with 126 skills organized ac
 | **Agent Optimization** (7) | continuous-learning, eval-harness, strategic-compact, verification-loop, search-first, context-budget, agent-introspection-debugging | AI agent session optimization, research-first workflow, context auditing, and agent debugging |
 | **Autoresearch** (4) | autoresearch-core-skill, autoresearch-ml-skill, autoresearch-code-skill, autoresearch-research-skill | Autonomous research loops: 5-stage Understand→Hypothesize→Experiment→Evaluate→Log methodology. ML training (GPU), code optimization, literature review. Evaluated by mechanical `{"pass":bool,"score":N}` — no LLM self-judgment. Ported from uditgoenka/autoresearch + karpathy/autoresearch (MIT). |
 | **Startup/Business** (3) | startup-pitch-deck-skill, startup-business-docs-skill, construction-bd-skill | Startup pitch decks, business documentation, construction proposals |
-| **Configuration** (3) | microsoft-m365-config-skill, codegraph-setup-skill, markitdown-mcp-skill | Microsoft 365 MCP, CodeGraph, and markitdown MCP setup |
+| **Configuration** (2) | codegraph-setup-skill, markitdown-mcp-skill | CodeGraph and markitdown MCP setup |
 | **Security** (2) | security-audit-skill, authentication-authorization-skill | Security auditing, vulnerability scanning, and auth implementation |
 | **DevOps** (4) | docker-containerization-skill, monorepo-management-skill, database-migration-skill, logging-observability-skill | Containerization, monorepos, database migrations, and observability |
 | **Planning & Alignment** (4) | grilling-skill, domain-modeling-skill, grill-with-docs-skill, grill-me-skill | Relentless interview/grilling sessions and domain model (CONTEXT.md glossary + ADR) capture |
@@ -525,7 +522,7 @@ This repository implements **skill modularization** with 126 skills organized ac
 
 ### Agents
 
-38 agent `.md` files (plus 4 config-builtin agents defined directly in `config.json`: `build`, `plan`, `explore`, `general`) provide specialized task handling. Note: the 2 `*-primary-agent` files (`startup-founder`, `office-document`) are routing hubs but are declared with `mode: subagent`.
+36 agent `.md` files (plus 4 config-builtin agents defined directly in `config.json`: `build`, `plan`, `explore`, `general`) provide specialized task handling. Note: the 2 `*-primary-agent` files (`startup-founder`, `office-document`) are routing hubs but are declared with `mode: subagent`.
 
 #### Primary Agents
 
@@ -559,9 +556,7 @@ This repository implements **skill modularization** with 126 skills organized ac
 | **docx-creation-subagent** | Word document creation | docx-creation | — |
 | **image-analyzer-subagent** | Image analysis (native multimodal `zai/glm-5v-turbo`) | (built-in vision) | — |
 | **responsive-audit-subagent** | Responsive UI audit and fix | playwright-responsive-audit-skill | `explore`, `general`, `image-analyzer-subagent` |
-| **google-mcp-specialist-subagent** | Google Cloud MCP setup and usage | google-bigquery, google-maps, google-gce, google-gke | — |
 | **cad-specialist-subagent** | CAD, robotics, hardware design — orchestrates 14 CAD/engineering skills | cad-generation, cad-viewer, cad-step-parts, cad-dxf, cad-urdf, cad-srdf, cad-sdf, cad-sendcutsend, cad-gcode, cad-bambu-labs, cad-implicit, autodesk-aps-skill, civil-3d-skill, open3d-skill | — |
-| **microsoft-m365-specialist-subagent** | Microsoft 365 MCP setup and usage | microsoft-teams, microsoft-mail, microsoft-calendar, microsoft-sharepoint | — |
 | **explorer-subagent** | Fast codebase exploration and analysis | (built-in search capabilities) | — |
 | **pptx-specialist-subagent** | PowerPoint presentations (read, create, edit, analyze) | pptx-generate-slide, pptx-generate-template, pptx-template-modifier | — |
 | **xlsx-specialist-subagent** | Spreadsheets (read, create, edit, analyze) | xlsx-specialist | — |

@@ -912,7 +912,7 @@ SCOPE
 
 FLAGS
   --project [dir]      project scope (default: cwd). Without 'add', takes a <dir> value.
-  --preset <csv>       preset name(s): core review frontend backend docs devops business research cad integrations
+  --preset <csv>       preset name(s): core review frontend backend docs devops business research cad
   --agents <csv>       agent stem(s)
   --skills <csv>       skill name(s)
   --mcps <csv>         MCP server key(s)
