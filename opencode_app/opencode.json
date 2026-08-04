@@ -9,7 +9,7 @@
     "opencode-superlocalmemory",
     "@mohak34/opencode-notifier@latest",
     "opencode-pty",
-    "opencode-vibeguard",
+    "opencode-vibeguard@0.1.0",
     "opencode-gemini-auth@latest",
     "opencode-goal-plugin",
     "@nick-vi/opencode-type-inject",
@@ -18,7 +18,11 @@
   "instructions": ["AGENTS.md"],
   "permission": {
     "read": {
-      "mcp:*": "deny"
+      "*": "allow",
+      "mcp:*": "deny",
+      "*.env": "deny",
+      "*.env.*": "deny",
+      "*.env.example": "allow"
     },
     "skill": {
       "*": "deny",

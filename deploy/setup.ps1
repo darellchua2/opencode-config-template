@@ -635,6 +635,10 @@ function New-PreRollbackBackup {
     if (Test-Path $AgentsDestDir) {
         Copy-Item $AgentsDestDir (Join-Path $preDir "agents") -Recurse -Force
     }
+    $vgCfgPre = Join-Path $ConfigDir "vibeguard.config.json"
+    if (Test-Path $vgCfgPre) {
+        Copy-Item $vgCfgPre (Join-Path $preDir "vibeguard.config.json") -Force
+    }
 
     Write-LogSuccess "Pre-rollback backup created: $preDir"
     return $preDir
@@ -1692,6 +1696,14 @@ function Set-Configuration {
             if (-not $DryRun) { Copy-Item $configSrc $ConfigFile -Force }
             Write-LogSuccess "config.json copied successfully (from $SourceConfig)"
 
+            # Deploy vibeguard secret-masking config (PLAN-GIT-315).
+            $vgSrc = Join-Path $RepoDir "opencode_app\.opencode\vibeguard.config.json"
+            if (Test-Path $vgSrc) {
+                $vgDest = Join-Path $ConfigDir "vibeguard.config.json"
+                if (-not $DryRun) { Copy-Item $vgSrc $vgDest -Force }
+                Write-LogSuccess "vibeguard.config.json deployed (secret masking active)"
+            }
+
             # Install local Python MCP launchers (PLAN-GIT-262: markitdown-local-mcp).
             # Best-effort — non-fatal on offline/pip-missing.
             Install-LocalMcpLaunchers
@@ -1712,6 +1724,7 @@ function Set-Configuration {
             Write-Host "    - Local (auto-start): atlassian, zai-vision-mcp-server, codegraph, mermaid"
             Write-Host "    - Remote (needs key): web-reader, zread"
             Write-Host "    - Available but disabled (opt-in): web-search-prime, next-devtools, markitdown, docling"
+            Write-Host "Secret masking: active (vibeguard)" -ForegroundColor Green
             Write-Host ""
         } else {
             Write-LogError "config.json source not found: $SourceConfig"
@@ -2462,6 +2475,8 @@ function Invoke-AutoUpdate {
             $agentsDest = Join-Path $ConfigDir "AGENTS.md"
             if (Test-Path $agentsDest) { Copy-Item $agentsDest (Join-Path $backupDir "AGENTS.md") }
             if (Test-Path $SkillsDir) { Copy-Item $SkillsDir (Join-Path $backupDir "skills") -Recurse }
+            $vgCfgUpd = Join-Path $ConfigDir "vibeguard.config.json"
+            if (Test-Path $vgCfgUpd) { Copy-Item $vgCfgUpd (Join-Path $backupDir "vibeguard.config.json") }
             Remove-OldBackups
         }
 

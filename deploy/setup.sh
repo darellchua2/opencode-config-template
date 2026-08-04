@@ -1465,6 +1465,9 @@ create_pre_rollback_backup() {
     if [ -f "${CONFIG_DIR}/AGENTS.md" ]; then
         cp -f "${CONFIG_DIR}/AGENTS.md" "${pre_dir}/AGENTS.md"
     fi
+    if [ -f "${CONFIG_DIR}/vibeguard.config.json" ]; then
+        cp -f "${CONFIG_DIR}/vibeguard.config.json" "${pre_dir}/vibeguard.config.json"
+    fi
     if [ -d "$SKILLS_DIR" ]; then
         cp -r "$SKILLS_DIR" "${pre_dir}/skills"
     fi
@@ -2404,6 +2407,13 @@ setup_config() {
             # Heavy (~3-4 GB) — only runs when explicitly opted in.
             install_docling
 
+            # Deploy vibeguard secret-masking config (PLAN-GIT-315).
+            local vg_src="${REPO_DIR}/opencode_app/.opencode/vibeguard.config.json"
+            if [ -f "$vg_src" ]; then
+                run_cmd cp "$vg_src" "${CONFIG_DIR}/vibeguard.config.json"
+                log_success "vibeguard.config.json deployed (secret masking active)"
+            fi
+
             echo ""
         echo "✓ Configured $(count_agents "${REPO_DIR}/opencode_app/.opencode/agents") agents:"
         echo "    - build (default) - Full-featured coding agent"
@@ -2418,6 +2428,7 @@ setup_config() {
              echo "    Remote (needs key): web-reader, web-search-prime, zread"
              echo "    Available but disabled (opt-in): next-devtools, markitdown, autodesk-*, docling"
              echo "    Enable a group with: ./setup.sh --enable-pack <autodesk|markitdown|nextjs|zai|docling>"
+             echo "✓ Secret masking: active (vibeguard)"
             echo ""
         else
             log_error "config.json source not found: ${SOURCE_CONFIG}"
@@ -3161,6 +3172,12 @@ create_backup_before_update() {
         log_info "Backed up: ${CONFIG_DIR}/AGENTS.md"
     fi
 
+    # Backup vibeguard.config.json if it exists (PLAN-GIT-315)
+    if [ -f "${CONFIG_DIR}/vibeguard.config.json" ]; then
+        cp "${CONFIG_DIR}/vibeguard.config.json" "${backup_dir}/vibeguard.config.json"
+        log_info "Backed up: ${CONFIG_DIR}/vibeguard.config.json"
+    fi
+
     # Backup skills directory if it exists
     if [ -d "$SKILLS_DIR" ]; then
         cp -r "$SKILLS_DIR" "${backup_dir}/skills"
@@ -3393,6 +3410,11 @@ print_summary() {
          echo "    - codegraph - Code knowledge graph (auto-start)"
          echo "    - mermaid - Diagram rendering SVG/PNG (auto-start)"
          echo "    - markitdown - Document-to-Markdown, local-only, opt-in"
+
+    # Secret masking
+    if [ -f "${CONFIG_DIR}/vibeguard.config.json" ]; then
+         echo "✓ Secret masking: active (vibeguard)"
+    fi
     fi
 
     # skills directory status
