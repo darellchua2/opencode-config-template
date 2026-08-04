@@ -1135,11 +1135,22 @@ function Set-Configuration {
 
     if (Test-Path $agentsSrc) {
         if (Test-Path $agentsDest) {
-            Write-LogWarn "AGENTS.md already exists at $agentsDest"
-            if (Read-YesNo "Do you want to overwrite it?" $false) {
-                New-FileBackup $agentsDest
-                if (-not $DryRun) { Copy-Item $agentsSrc $agentsDest -Force }
-                Write-LogSuccess "AGENTS.md copied successfully (renamed from .AGENTS.md)"
+            $stale = $true
+            if (-not $DryRun) {
+                $stale = ((Get-FileHash $agentsSrc).Hash -ne (Get-FileHash $agentsDest).Hash)
+            }
+            if ($stale) {
+                Write-LogWarn "AGENTS.md at $agentsDest is STALE - it differs from the source $agentsSrc"
+                Write-LogWarn "Stale shipped instructions can cause incorrect agent behavior (e.g. deprecated tool guidance). Recommend overwriting."
+                if (Read-YesNo "Overwrite with the current source version?" $true) {
+                    New-FileBackup $agentsDest
+                    if (-not $DryRun) { Copy-Item $agentsSrc $agentsDest -Force }
+                    Write-LogSuccess "AGENTS.md updated successfully (renamed from .AGENTS.md)"
+                } else {
+                    Write-LogWarn "Kept stale AGENTS.md - shipped agent instructions may be out of date."
+                }
+            } else {
+                Write-LogInfo "AGENTS.md already up to date at $agentsDest"
             }
         } else {
             if (-not $DryRun) { Copy-Item $agentsSrc $agentsDest -Force }
