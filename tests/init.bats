@@ -62,7 +62,7 @@ teardown() { rm -rf "$TMP_PROJ"; }
   delegates=$(echo "$out" | jq_get "len(d['delegatesTo'])")
   avail=$(echo "$out" | jq_get "d['modelAvailable']")
   echo "skills=$skills delegates=$delegates avail=$avail" >&3
-  [ "$skills" = "11" ]
+  [ "$skills" = "12" ]
   [ "$delegates" -ge 5 ]
   [ "$avail" = "True" ]
 }
@@ -81,7 +81,7 @@ teardown() { rm -rf "$TMP_PROJ"; }
   agent_files=$(ls "$TMP_PROJ/.opencode/agents/" | wc -l)
   skill_dirs=$(ls "$TMP_PROJ/.opencode/skills/" | wc -l)
   [ "$agent_files" -eq 8 ]
-  [ "$skill_dirs" -eq 16 ]
+  [ "$skill_dirs" -eq 18 ]
 }
 
 @test "each installed agent has a model: frontmatter line" {

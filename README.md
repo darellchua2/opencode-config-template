@@ -24,7 +24,7 @@ opencode-config-template/
 │   ├── .dockerignore
 │   ├── .opencode/
 │   │       ├── agents/              # 36 subagent .md files
-│   │       └── skills/              # 126 skill directories
+│   │       └── skills/              # 129 skill directories
 │   └── README.md                # Docker usage guide
 ├── docker-compose.yml           # Docker Compose service definition
 ├── .env.example                 # Environment variable template
@@ -500,8 +500,8 @@ This repository implements **skill modularization** with 125 skills organized ac
 | **Framework** (19) | test-generator-framework, linting-workflow, pr-creation-workflow, pr-merge-workflow, error-resolver-workflow, tdd-workflow, docx-creation, xlsx-specialist, pdf-specialist, frontend-design, uiux-review-skill, api-design-skill, openapi-contract-adherence-skill, performance-optimization-skill, srs-creation-skill, brd-creation-skill, technical-design-creation-skill, vision-creation-skill, interactive-document-rendering-skill | Generic workflows, testing patterns, document creation, UI design + review, API design, contract adherence, performance, and the document ladder (BRD/SRS/vision + technical design documents) |
 | **Presentation** (3) | pptx-generate-slide-skill, pptx-generate-template-skill, pptx-template-modifier-skill | Template-driven PowerPoint generation — extract, fill, extend |
 | **Office Utilities** (2) | ooxml-editing-skill, office-thumbnail-skill | Generic Office OOXML surgical edits and visual thumbnail/conversion |
-| **Language-Specific** (8) | python-pytest-creator, python-ruff-linter, javascript-eslint-linter, changelog-python-cliff, python-backend-skill, python-packaging-skill, csharp-linter-skill, java-linter-skill | Language-specific test, linting, project scaffolding, and packaging |
-| **Framework-Specific** (10) | nextjs-pr-workflow, nextjs-unit-test-creator, nextjs-standard-setup, nextjs-image-usage, nextjs-devtools-mcp, amplify-nextjs-deployment, typescript-dry-principle, accessibility-a11y-skill, react-nextjs-antipatterns-skill, threejs-nextjs-skill | Next.js 16, React 19, TypeScript, accessibility, Three.js integration, and AWS Amplify deployment |
+| **Language-Specific** (9) | python-pytest-creator, python-ruff-linter, javascript-eslint-linter, changelog-python-cliff, python-backend-skill, python-packaging-skill, csharp-linter-skill, java-linter-skill, fastapi-pydantic-orm-patterns-skill | Language-specific test, linting, project scaffolding, packaging, and backend patterns |
+| **Framework-Specific** (11) | nextjs-pr-workflow, nextjs-unit-test-creator, nextjs-standard-setup, nextjs-image-usage, nextjs-devtools-mcp, amplify-nextjs-deployment, typescript-dry-principle, accessibility-a11y-skill, react-hooks-antipatterns-skill, react-render-antipatterns-skill, threejs-nextjs-skill | Next.js 16, React 19, TypeScript, accessibility, Three.js integration, and AWS Amplify deployment |
 | **OpenCode Meta** (4) | opencode-agent-creation, opencode-skill-creation, opencode-skills-maintainer, documentation-consistency-skill | Agent and skill creation/maintenance, documentation consistency auditing |
 | **OpenTofu** (7) | opentofu-aws-explorer, opentofu-keycloak-explorer, opentofu-kubernetes-explorer, opentofu-neon-explorer, opentofu-provider-setup, opentofu-provisioning-workflow, opentofu-ecr-provision | Infrastructure as Code |
 | **Git/Workflow** (13) | ascii-diagram-creator, mermaid-diagram-creator, ticket-plan-workflow-skill, plan-execution-skill, plan-automation-loop-skill, git-issue-labeler, git-issue-updater, git-semantic-commits, semantic-release-convention, git-compact-commits, plan-updater, version-bump-standard, git-branch-workflow-setup-skill | Diagrams, git operations, release conventions, version bumping, compact commits, branch workflow orchestration, and fully-automated per-phase plan execution (lint+build+test+e2e gate → per-step traceability → commit → push) via `/run-plan` |
@@ -514,7 +514,7 @@ This repository implements **skill modularization** with 125 skills organized ac
 | **Startup/Business** (3) | startup-pitch-deck-skill, startup-business-docs-skill, construction-bd-skill | Startup pitch decks, business documentation, construction proposals |
 | **Configuration** (3) | codegraph-setup-skill, markitdown-mcp-skill, docling-mcp-skill | CodeGraph, markitdown, and docling MCP setup |
 | **Security** (2) | security-audit-skill, authentication-authorization-skill | Security auditing, vulnerability scanning, and auth implementation |
-| **DevOps** (4) | docker-containerization-skill, monorepo-management-skill, database-migration-skill, logging-observability-skill | Containerization, monorepos, database migrations, and observability |
+| **DevOps** (5) | docker-containerization-skill, monorepo-management-skill, database-migration-skill, logging-observability-skill, aws-iac-safety-skill | Containerization, monorepos, database migrations, observability, and IaC safety |
 | **Planning & Alignment** (4) | grilling-skill, domain-modeling-skill, grill-with-docs-skill, grill-me-skill | Relentless interview/grilling sessions and domain model (CONTEXT.md glossary + ADR) capture |
 | **Responsive & Visual Testing** (3) | wireframer-skill, playwright-responsive-audit-skill, zai-vision-analysis-skill | Low-fidelity wireframe/prototype generation, Playwright-driven responsive UI audit + fix (persistent PTY watch loop), and Z.AI direct-API image/screenshot analysis (free `glm-4.6v-flash`) |
 | **CAD & Hardware Design** (14) | cad-generation-skill, cad-viewer-skill, cad-step-parts-skill, cad-dxf-skill, cad-urdf-skill, cad-srdf-skill, cad-sdf-skill, cad-sendcutsend-skill, cad-gcode-skill, cad-bambu-labs-skill, cad-implicit-skill, autodesk-aps-skill, civil-3d-skill, open3d-skill | Parametric CAD generation (STEP/STL/3MF/GLB), CAD Viewer previews, off-the-shelf parts, DXF drawings, robot descriptions (URDF/SRDF/SDF), G-code slicing, 3D printing (Bambu Labs), SendCutSend validation, implicit CAD, Autodesk APS API integration, Civil 3D workflows, Open3D 3D data processing |
@@ -552,7 +552,7 @@ This repository implements **skill modularization** with 125 skills organized ac
 | **code-review-subagent** | Comprehensive code review | All 7 Code Quality skills + continuous-learning, complexity-management | `explore`, `general` |
 | **repo-ops-specialist-subagent** | Git repository operations | version-bump-standard, semantic-release-convention, pr-creation-workflow, pr-merge-workflow, git-issue-labeler | `explore`, `general` |
 | **error-resolver-subagent** | Error diagnosis and resolution | error-resolver-workflow | — |
-| **nextjs-specialist-subagent** | Next.js scaffolding + runtime MCP diagnosis + project audit | nextjs-standard-setup, nextjs-devtools-mcp, docstring-generator, nextjs-image-usage, react-nextjs-antipatterns, amplify-nextjs-deployment | — |
+| **nextjs-specialist-subagent** | Next.js scaffolding + runtime MCP diagnosis + project audit | nextjs-standard-setup, nextjs-devtools-mcp, docstring-generator, nextjs-image-usage, react-hooks-antipatterns, react-render-antipatterns, amplify-nextjs-deployment | — |
 | **opencode-tooling-subagent** | Skills, agents, and rules creation + doc sync | opencode-skill-creation, opencode-agent-creation, opencode-skills-maintainer, documentation-sync-workflow | — |
 | **docx-creation-subagent** | Word document creation | docx-creation | — |
 | **image-analyzer-subagent** | Image analysis (native multimodal `zai/glm-5v-turbo`) | (built-in vision) | — |
@@ -612,7 +612,7 @@ When enabled, retrofitted skills emit mechanical evaluator output `{"pass":bool,
 
 **Retrofitted skills (30 total):**
 - **Tier 1 (full loop, 7)**: verification-loop, tdd-workflow, eval-harness, continuous-learning, deprecated-code-cleanup, linting-workflow, coverage-readme-workflow
-- **Tier 2 (partial, 8)**: documentation-consistency, error-resolver-workflow, opencode-skills-maintainer, plan-execution, pr-creation-workflow, pr-merge-workflow, react-nextjs-antipatterns, playwright-responsive-audit
+- **Tier 2 (partial, 7)**: documentation-consistency, error-resolver-workflow, opencode-skills-maintainer, plan-execution, pr-creation-workflow, pr-merge-workflow, playwright-responsive-audit
 - **Tier 3 (light safety, 15)**: search-first, api-design, security-audit, code-smells, performance-optimization, typescript-dry-principle, solid-principles, clean-code, test-generator-framework, python-pytest-creator, nextjs-unit-test-creator, nextjs-pr-workflow, mermaid-diagram-creator, wireframer, frontend-design
 
 **Maintenance:** `opencode-skills-maintainer-skill` includes a Citation drift audit rule that flags skills with iteration-keyword mentions lacking proper `autoresearch-core-skill/references/` citations.

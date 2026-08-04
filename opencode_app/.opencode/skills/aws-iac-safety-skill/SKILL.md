@@ -1,19 +1,3 @@
-<!--
-  Provenance (maintainer-only, not rendered to model context):
-  - repo-level-github-resources-without-count-gating : canvastekk-devops/LEARNINGS/anti-patterns/repo-level-github-resources-without-count-gating.md
-  - hardcoded-dev-ssm-path-via-ci-variable : canvastekk-devops/LEARNINGS/anti-patterns/hardcoded-dev-ssm-path-via-ci-variable.md
-  - cross-module-ecr-lifecycle-ownership : canvastekk-devops/LEARNINGS/anti-patterns/cross-module-ecr-lifecycle-ownership.md
-  - update-ssm-secrets-reference-on-new-params : canvastekk-devops/LEARNINGS/conventions/update-ssm-secrets-reference-on-new-params.md
-  - lambda-web-adapter-over-mangum : canvastekk-floor-flatness-app/LEARNINGS/decisions/lambda-web-adapter-over-mangum.md
-  Excluded as duplicates: Lambda Function URL CNAME (opentofu-aws-explorer:1158),
-    GHA Artifact Name Mismatch (opentofu-provisioning-workflow:769),
-    Lambda Public Without Auth (security-audit:499),
-    ECR Lowercase Naming (opentofu-ecr-provision:687),
-    Local Terraform State (security-audit:526),
-    No Rollback on Deploy (opentofu-provisioning-workflow:808).
-  Extracted PLAN-GIT-312.
--->
-
 ---
 name: aws-iac-safety-skill
 description: AWS Infrastructure-as-Code safety patterns — GitHub resource count gating, SSM parameter CI passthrough pitfalls, cross-module ECR lifecycle ownership, SSM_SECRETS_REFERENCE convention, and Lambda Web Adapter for dual-target deployment (EC2 + Lambda)
@@ -26,6 +10,8 @@ metadata:
   frameworks: terraform, opentofu, github-actions
 category: DevOps
 ---
+
+<!-- Provenance: canvastekk-devops + canvastekk-floor-flatness-app LEARNINGS. PLAN-GIT-312. Excludes: Lambda CNAME, GHA artifact mismatch, Lambda public auth, ECR lowercase, local TF state, no-rollback (all in other skills). -->
 
 ## What I do
 

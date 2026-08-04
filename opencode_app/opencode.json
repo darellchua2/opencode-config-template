@@ -113,7 +113,11 @@
       "threejs-nextjs-skill": "allow",
       "frontend-design-skill": "allow",
       "accessibility-a11y-skill": "allow",
-      "changelog-python-cliff-skill": "allow"
+      "changelog-python-cliff-skill": "allow",
+      "fastapi-pydantic-orm-patterns-skill": "allow",
+      "aws-iac-safety-skill": "allow",
+      "react-hooks-antipatterns-skill": "allow",
+      "react-render-antipatterns-skill": "allow"
     },
     "tool": {
       "codegraph*": "allow",

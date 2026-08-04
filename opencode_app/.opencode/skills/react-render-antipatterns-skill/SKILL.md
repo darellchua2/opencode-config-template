@@ -1,12 +1,3 @@
-<!--
-  Provenance (maintainer-only, not rendered to model context):
-  - fragment-key-in-map : canvastekk-frontend-nextjs/LEARNINGS/
-  - unsafe-json-parse-event-handler : canvastekk-frontend-nextjs/LEARNINGS/
-  - inconsistent-visibility-toggle-strategy : canvastekk-frontend-nextjs/LEARNINGS/
-  - folder-tabs-theme-driven : canvastekk-frontend-nextjs/LEARNINGS/
-  Split from react-nextjs-antipatterns-skill (PLAN-GIT-312, B1 split).
--->
-
 ---
 name: react-render-antipatterns-skill
 description: Detect and fix React render-time anti-patterns — missing fragment keys in .map(), unsafe JSON.parse in event handlers, inconsistent visibility toggle strategies, and theme-driven component design with CSS custom properties
@@ -19,6 +10,8 @@ metadata:
   frameworks: react
 category: Framework-Specific
 ---
+
+<!-- Provenance: canvastekk-frontend-nextjs LEARNINGS. Split from react-nextjs-antipatterns-skill. PLAN-GIT-312. -->
 
 ## What I do
 

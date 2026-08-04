@@ -1,25 +1,3 @@
-<!--
-  Provenance (maintainer-only, not rendered to model context):
-  - pydantic-v2-checklist : canvastekk-workflow-engine/LEARNINGS/conventions/pydantic-v2-best-practices.md
-  - annotated-field-pattern : canvastekk-workflow-engine/LEARNINGS/patterns/pydantic-annotated-field-pattern.md
-  - field-ellipsis-discouraged : canvastekk-workflow-engine/LEARNINGS/anti-patterns/pydantic-field-ellipsis-discouraged.md
-  - migration-syntax-invisible : canvastekk-workflow-engine/LEARNINGS/anti-patterns/migration-syntax-error-invisible-to-pytest.md
-  - broad-except-masks-bugs : canvastekk-workflow-engine/LEARNINGS/anti-patterns/broad-except-masks-bugs-as-unreachable.md
-  - auth-early-return-null : canvastekk-workflow-engine/LEARNINGS/anti-patterns/auth-early-return-null-account-id.md
-  - fail-toggle : canvastekk-workflow-engine/LEARNINGS/decisions/fail-closed-open-config-toggle.md
-  - encryption-key-validation : canvastekk-workflow-engine/LEARNINGS/anti-patterns/encryption-key-length-not-validated.md
-  - layered-fastapi : canvastekk-workflow-engine/LEARNINGS/decisions/architecture-review-fastapi-app.md
-  - response-schema-drift : canvastekk-workflow-engine/LEARNINGS/anti-patterns/multi-source-response-schema-drift.md
-  - two-step-lookup : canvastekk-workflow-engine/LEARNINGS/decisions/two-step-definition-lookup.md
-  - claim-check-cache : canvastekk-workflow-engine/LEARNINGS/patterns/claim-check-ephemeral-secret-cache.md
-  - placeholder-swap : canvastekk-workflow-engine/LEARNINGS/patterns/placeholder-swap-validation.md
-  - n-plus-1-enrichment : canvastekk-defect-service/LEARNINGS/anti-patterns/n-plus-1-enrichment-queries.md
-  - hardcoded-timeout : canvastekk-workflow-engine/LEARNINGS/anti-patterns/hardcoded-magic-timeout-activities.md
-  - missing-tenant-isolation : canvastekk-workflow-engine/LEARNINGS/anti-patterns/missing-tenant-isolation-definitions.md
-  - inline-imports : canvastekk-workflow-engine/LEARNINGS/anti-patterns/inline-imports-in-functions.md
-  Extracted PLAN-GIT-312.
--->
-
 ---
 name: fastapi-pydantic-orm-patterns-skill
 description: Backend Python patterns — Pydantic v2 conventions (ConfigDict, Annotated types, serializers), FastAPI architecture (layered, DI, config), ORM pitfalls (migration syntax errors, N+1 queries), defensive coding (broad except, auth early-return, encryption validation), multi-tenant isolation, and race-free state transitions
@@ -32,6 +10,8 @@ metadata:
   frameworks: fastapi, pydantic, sqlalchemy
 category: Language-Specific
 ---
+
+<!-- Provenance: canvastekk-workflow-engine + canvastekk-defect-service LEARNINGS. PLAN-GIT-312. Excludes 12 patterns already in python-backend-skill, design-patterns-skill, object-design-skill. -->
 
 ## What I do
 

@@ -1,15 +1,3 @@
-<!--
-  Provenance (maintainer-only, not rendered to model context):
-  - derived-state-props-without-sync : canvastekk-frontend-nextjs/LEARNINGS/
-  - ref-guard-early-return : canvastekk-frontend-nextjs/LEARNINGS/
-  - loading-state-in-usecallback-deps : canvastekk-frontend-nextjs/LEARNINGS/
-  - inline-computed-usememo-dep : canvastekk-frontend-nextjs/LEARNINGS/
-  - reset-refs-on-effect-restart : canvastekk-frontend-nextjs/LEARNINGS/
-  - toast-promise-await-without-catch : canvastekk-frontend-nextjs/LEARNINGS/
-  - hook-decomposition-complex-component : canvastekk-frontend-nextjs/LEARNINGS/
-  Split from react-nextjs-antipatterns-skill (PLAN-GIT-312, B1 split).
--->
-
 ---
 name: react-hooks-antipatterns-skill
 description: Detect and fix React hooks anti-patterns — stale useState from props, StrictMode double-execution, useCallback/useMemo dependency traps, stale ref accumulators, toast.promise double-consumer leaks, and hook decomposition for complex components
@@ -22,6 +10,8 @@ metadata:
   frameworks: react
 category: Framework-Specific
 ---
+
+<!-- Provenance: canvastekk-frontend-nextjs LEARNINGS. Split from react-nextjs-antipatterns-skill. PLAN-GIT-312. -->
 
 ## What I do
 

@@ -373,37 +373,37 @@ _Owner: `opencode-tooling-subagent`_
 
 _Owner: `opencode-tooling-subagent` using `documentation-sync-workflow-skill`_
 
-- [ ] **9.1** Update `deploy/setup.sh` — add A1, A4, B1 split skills to per-category listing; remove deleted `react-nextjs-antipatterns-skill`; verify `count_skills()` + new `count_agents()` are used in banner/echoes
+- [x] **9.1** Update `deploy/setup.sh` — add A1, A4, B1 split skills to per-category listing; remove deleted `react-nextjs-antipatterns-skill`; verify `count_skills()` + new `count_agents()` are used in banner/echoes
     — **Why:** Setup.sh is the primary install script — skill/agent listings must match directory reality. Adding 3 new skills (A1, A4, and the 2 B1 split skills minus the 1 deleted = net +3) changes the counts.
     — **Done when:** Category listings updated; old skill removed; banner uses dynamic counts; `bash -n setup.sh` passes.
     — **Consumers affected:** All users running `deploy/setup.sh`.
 
-- [ ] **9.2** Update `deploy/setup.ps1` — Windows parity for step 9.1 changes
+- [x] **9.2** Update `deploy/setup.ps1` — Windows parity for step 9.1 changes
     — **Why:** setup.ps1 must mirror setup.sh changes (same skill adds/removes, same dynamic counts).
     — **Done when:** Listings updated; old skill removed; `Get-AgentCount` used; `pwsh -n setup.ps1` passes.
     — **Consumers affected:** Windows users running setup.ps1.
 
-- [ ] **9.3** Update `README.md` — Skill Categories table + intro total + **agent-count math at L241**
+- [x] **9.3** Update `README.md` — Skill Categories table + intro total + **agent-count math at L241**
     — **Why:** README is the public-facing documentation; counts and table must match the installed skills. L241 has hand-maintained `"Not every project needs all 36 agents + 125 skills"` — the agent count must reconcile with D1's dynamic count.
     — **Done when:** Skill Categories table includes A1 (`Language-Specific`), A4 (`DevOps`), B1 split skills (`Framework-Specific`); old skill removed; total count correct. L241 agent count updated to match D1 dynamic count (or noted as approximate).
     — **Consumers affected:** All repo visitors and `opencode-init` users.
 
-- [ ] **9.4** Update `opencode_app/README.md` — Docker-specific docs + **agent-count math at L171**
+- [x] **9.4** Update `opencode_app/README.md` — Docker-specific docs + **agent-count math at L171**
     — **Why:** L171 has `"24 of 36 agents have explicit task permissions; the remaining 12 default to full access"` — this is agent-count-conditional math (24 + 12 = 36). If the agent total changes, both summands need re-derivation.
     — **Done when:** L171 agent math reconciled with D1 dynamic count; any skill/agent count references updated.
     — **Consumers affected:** Docker users.
 
-- [ ] **9.5** Update `opencode_app/opencode.json` — add A1 + A4 + B1 split skills to `permission.skill` allowlist
+- [x] **9.5** Update `opencode_app/opencode.json` — add A1 + A4 + B1 split skills to `permission.skill` allowlist
     — **Why:** Without allowlist entries, new skills are invisible to the primary session. NOTE: `react-nextjs-antipatterns-skill` is NOT in the global allowlist (confirmed — it was loaded only via 4 per-agent overrides, which are cleaned up in Phase 4.3b/c/d). No removal needed here.
     — **Done when:** `"fastapi-pydantic-orm-patterns-skill": "allow"`, `"aws-iac-safety-skill": "allow"`, `"react-hooks-antipatterns-skill": "allow"`, `"react-render-antipatterns-skill": "allow"` present in global allowlist. Old skill entry NOT present (confirm absence — no removal action).
     — **Consumers affected:** Primary session (skill visibility).
 
-- [ ] **9.6** Rebuild `deploy/registry.json` via `node deploy/build-registry.mjs`
+- [x] **9.6** Rebuild `deploy/registry.json` via `node deploy/build-registry.mjs`
     — **Why:** Registry is a generated file — manual edits are overwritten. Must rebuild to include new skills and their `category:` frontmatter.
     — **Done when:** `node deploy/build-registry.mjs` completes without error; new skills appear in registry with correct categories (`Language-Specific`, `DevOps`, `Framework-Specific`).
     — **Consumers affected:** `opencode-init --list/--describe/--expand`, README category table derivation.
 
-- [ ] **9.7** Update `deploy/.AGENTS.md` — hand-maintained skill/agent counts
+- [x] **9.7** Update `deploy/.AGENTS.md` — hand-maintained skill/agent counts
     — **Why:** `deploy/.AGENTS.md` deploys to `~/.config/opencode/AGENTS.md` and contains hand-maintained counts that WILL drift after +3 net skills: L89 (`"Only the 80 explicitly-allowed skills appear... the other 44 are hidden"`) and L93 (`"34 of 36 subagents have their own permission.skill blocks"`). These must reconcile with the new skill/agent totals.
     — **Done when:** L89 allowlist count updated (80 → 83 for +3 primary-visible skills; 44 → 41 hidden). L93 agent count reconciled with D1 dynamic count. Verify deployed copy at `~/.config/opencode/AGENTS.md` matches after redeploy.
     — **Consumers affected:** All sessions (this file is injected into every opencode session's system prompt).
