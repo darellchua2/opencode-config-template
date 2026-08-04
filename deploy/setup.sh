@@ -682,7 +682,7 @@ USAGE:
       google-gce         Google Compute Engine management
       google-gke         Google Kubernetes Engine management
 
-    SKILLS (125):
+    SKILLS (126):
               Framework (19):       test-generator-framework, linting-workflow,
                                       pr-creation-workflow, pr-merge-workflow,
                                       error-resolver-workflow, tdd-workflow,
@@ -720,8 +720,9 @@ USAGE:
                                  opentofu-provider-setup, opentofu-provisioning-workflow,
                                  opentofu-ecr-provision
 
-           Git/Workflow (12):   ascii-diagram-creator, mermaid-diagram-creator,
+            Git/Workflow (13):   ascii-diagram-creator, mermaid-diagram-creator,
                                   ticket-plan-workflow-skill, plan-execution-skill,
+                                  plan-automation-loop-skill,
                                   git-issue-labeler, git-issue-updater,
                                   git-semantic-commits, semantic-release-convention,
                                   git-compact-commits, plan-updater, version-bump-standard,
@@ -3452,11 +3453,12 @@ print_summary() {
         echo "      - opentofu-provider-setup"
         echo "      - opentofu-provisioning-workflow"
         echo "      - opentofu-ecr-provision"
-        echo "    - Git/Workflow (12):"
+        echo "    - Git/Workflow (13):"
         echo "      - ascii-diagram-creator"
         echo "      - mermaid-diagram-creator"
         echo "      - ticket-plan-workflow-skill"
         echo "      - plan-execution-skill"
+        echo "      - plan-automation-loop-skill"
         echo "      - git-issue-labeler"
         echo "      - git-issue-updater"
         echo "      - git-semantic-commits"
@@ -3578,7 +3580,7 @@ print_next_steps() {
     echo ""
      echo "  Framework (19) • Language-Specific (8) • Presentation (3)"
      echo "  Office Utilities (2) • Framework-Specific (10) • OpenCode Meta (4)"
-     echo "  OpenTofu (7) • Git/Workflow (12) • Documentation (3) • JIRA (3) • Code Quality (8)"
+      echo "  OpenTofu (7) • Git/Workflow (13) • Documentation (3) • JIRA (3) • Code Quality (8)"
     echo "  Agent Optimization (7) • Planning & Alignment (4) • Academic & Research Writing (2)"
     echo "  Responsive & Visual Testing (2)"
     echo "  CAD & Hardware Design (14)"

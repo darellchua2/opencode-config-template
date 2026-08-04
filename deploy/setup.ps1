@@ -921,7 +921,7 @@ USAGE:
     Usage: opencode --agent build 'implement auth feature'
             opencode --agent explore 'find all API routes'
  
-            SKILLS (125):
+            SKILLS (126):
               Framework (19):       test-generator-framework, linting-workflow,
                                       pr-creation-workflow, pr-merge-workflow,
                                       error-resolver-workflow, tdd-workflow,
@@ -956,12 +956,13 @@ USAGE:
                                  opentofu-kubernetes-explorer, opentofu-neon-explorer,
                                  opentofu-provider-setup, opentofu-provisioning-workflow,
                                  opentofu-ecr-provision
-           Git/Workflow (12):    ascii-diagram-creator, mermaid-diagram-creator,
-                                  ticket-plan-workflow-skill, plan-execution-skill,
-                                  git-issue-labeler, git-issue-updater,
-                                  git-semantic-commits, semantic-release-convention,
-                                  git-compact-commits, plan-updater, version-bump-standard,
-                                  git-branch-workflow-setup-skill
+            Git/Workflow (13):    ascii-diagram-creator, mermaid-diagram-creator,
+                                   ticket-plan-workflow-skill, plan-execution-skill,
+                                   plan-automation-loop-skill,
+                                   git-issue-labeler, git-issue-updater,
+                                   git-semantic-commits, semantic-release-convention,
+                                   git-compact-commits, plan-updater, version-bump-standard,
+                                   git-branch-workflow-setup-skill
           Documentation (3):    coverage-readme-workflow, docstring-generator,
                                  documentation-sync-workflow
 
@@ -1842,9 +1843,10 @@ function Deploy-Skills {
         Write-Host "      - opentofu-kubernetes-explorer, opentofu-neon-explorer"
         Write-Host "      - opentofu-provider-setup, opentofu-provisioning-workflow"
         Write-Host "      - opentofu-ecr-provision"
-        Write-Host "    Git/Workflow (12):"
-        Write-Host "      - ascii-diagram-creator, mermaid-diagram-creator"
-        Write-Host "      - ticket-plan-workflow-skill, plan-execution-skill"
+         Write-Host "    Git/Workflow (13):"
+         Write-Host "      - ascii-diagram-creator, mermaid-diagram-creator"
+         Write-Host "      - ticket-plan-workflow-skill, plan-execution-skill"
+         Write-Host "      - plan-automation-loop-skill"
         Write-Host "      - git-issue-labeler, git-issue-updater"
         Write-Host "      - git-semantic-commits, semantic-release-convention"
         Write-Host "      - git-compact-commits"
@@ -2667,7 +2669,7 @@ function Show-NextSteps {
      Write-Host ""
      Write-Host "  Framework (19) • Language-Specific (8) • Presentation (3)"
       Write-Host "  Office Utilities (2) • Framework-Specific (10) • OpenCode Meta (4)"
-      Write-Host "  OpenTofu (7) • Git/Workflow (12) • Documentation (3) • JIRA (3) • Code Quality (8)"
+      Write-Host "  OpenTofu (7) • Git/Workflow (13) • Documentation (3) • JIRA (3) • Code Quality (8)"
       Write-Host "  Agent Optimization (7) • Planning & Alignment (4) • Academic & Research Writing (2)"
      Write-Host "  Responsive & Visual Testing (2)"
      Write-Host "  CAD & Hardware Design (14)"

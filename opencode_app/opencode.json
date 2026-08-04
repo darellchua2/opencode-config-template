@@ -51,6 +51,7 @@
       "jira-status-updater-skill": "allow",
       "jira-ticket-labeler-skill": "allow",
       "plan-execution-skill": "allow",
+      "plan-automation-loop-skill": "allow",
       "plan-updater-skill": "allow",
       "pr-creation-workflow-skill": "allow",
       "pr-merge-workflow-skill": "allow",
@@ -119,6 +120,11 @@
     "goal": {
       "description": "Set a session-scoped goal and auto-continue until complete.",
       "template": "$ARGUMENTS",
+      "agent": "build"
+    },
+    "run-plan": {
+      "description": "Fully-automated plan execution loop — implement PLAN*.md phase-by-phase (lint+build+test+e2e gate, then commit + push per phase). Deliberate trigger; /goal stays generic.",
+      "template": "Load the skill `plan-automation-loop-skill` and run it to fully implement the plan file given as the argument: $ARGUMENTS",
       "agent": "build"
     }
   },
