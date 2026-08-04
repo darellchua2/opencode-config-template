@@ -30,8 +30,8 @@ Subagents are right-sized by purpose; only the primary session uses the 1M-conte
 | Model | Context | Use for |
 |-------|---------|---------|
 | `glm-5.2` | 1,000,000 | **Primary session only** — holds the long orchestrator context. No subagent uses this. |
-| `glm-5.1` | 200,000 | Sound-reasoning: reviewers (code/architecture/language), repo-ops-specialist, tdd, opentofu-explorer, loop-operator, opencode-tooling, technical-design-specialist, responsive-audit, autoresearch-ml, autoresearch-code |
-| `glm-5-turbo` | 200,000 | Exploratory / low-impact / coordination: explorer, testing, setup, specialists, document creators, pr-workflow, ticket-creation, discovery-specialist, requirements-specialist, autoresearch-research |
+| `glm-5.1` | 200,000 | Sound-reasoning: reviewers (code/architecture/language), repo-ops-specialist, tdd, opentofu-explorer, loop-operator, opencode-tooling, technical-design-specialist, responsive-audit, uiux-reviewer, autoresearch-ml, autoresearch-code |
+| `glm-5-turbo` | 200,000 | Exploratory / low-impact / coordination: explorer, testing, setup, specialists, document creators, pr-workflow, ticket-creation, discovery-specialist, requirements-specialist, startup-ceo, autoresearch-research |
 | `glm-5v-turbo` | 200,000 | **Vision required**: image-analyzer, error-resolver. No structured output. |
 | `glm-4.7` | 204,800 | Docs/lint/reporting: documentation, linting, coverage |
 
@@ -54,6 +54,8 @@ When adding/removing a skill or subagent, update these files to maintain synchro
 | `deploy/setup.ps1` | Mirror of setup.sh (Windows parity) |
 | `README.md` | Skill Categories and Subagents tables |
 | `opencode_app/README.md` | Docker-specific docs if relevant |
+
+> **Count-propagation note:** each deploy script has **multiple** count surfaces (e.g. `setup.sh` has 3: the main category banner, the `📦 N Skills Available` summary, and the verbose `--status` debug listing). When a count changes, grep the old number across the whole file (e.g. `grep -nE "113 skill|SKILLS \(113\)" deploy/setup.sh`) and update **every** occurrence, not just the first one found. This is the recurring drift class documented in PLAN-GIT-237 and PLAN-GIT-297.
 
 After changes, invoke the `documentation-sync-workflow` skill or delegate to `opencode-tooling-subagent` for guided synchronization.
 
