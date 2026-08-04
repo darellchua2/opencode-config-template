@@ -659,7 +659,7 @@ USAGE:
     Usage: opencode --agent build "implement auth feature"
            opencode --agent explore "find all API routes"
 
-  MCP SERVERS (13):
+  MCP SERVERS (14):
     Auto-start (local npx servers):
       codegraph           Pre-indexed code knowledge graph (100% local)
       atlassian          JIRA and Confluence integration
@@ -669,6 +669,7 @@ USAGE:
     Available but disabled (opt-in — set enabled: true in config.json):
       next-devtools      Next.js DevTools integration
       markitdown         Document-to-Markdown (local-only, privacy-hardened)
+      docling            Layout-aware document extraction (heavy ~3-4 GB)
 
     Remote (requires ZAI_API_KEY):
       web-reader         Web page content extraction
@@ -2394,6 +2395,10 @@ setup_config() {
             # Best-effort — non-fatal on offline/pip-missing.
             install_local_mcp_launchers
 
+            # Install docling-mcp if --enable-pack docling was requested (PLAN-GIT-308).
+            # Heavy (~3-4 GB) — only runs when explicitly opted in.
+            install_docling
+
             echo ""
         echo "✓ Configured 36 agents:"
         echo "    - build (default) - Full-featured coding agent"
@@ -2517,6 +2522,36 @@ install_local_mcp_launchers() {
         esac
     else
         log_warn "pip install failed for markitdown-local-mcp (offline?). The launcher is opt-in (enabled: false) — OpenCode will work without it. Re-run setup when online to enable."
+    fi
+}
+
+# Install docling-mcp (heavy ~3-4 GB) — only when --enable-pack docling is
+# requested. Unlike markitdown (local-dir pip install), docling-mcp comes from
+# PyPI. First convert downloads ~hundreds of MB of models from huggingface.co.
+install_docling() {
+    if ! echo "$ENABLE_PACK" | grep -qw "docling"; then
+        return 0
+    fi
+
+    echo ""
+    log_info "Installing docling-mcp[local] (~3-4 GB with models)..."
+
+    if ! command_exists python3; then
+        log_warn "python3 not found — cannot install docling-mcp. Install Python 3.10+ and re-run."
+        return 0
+    fi
+
+    if ! python3 -m pip --version >/dev/null 2>&1; then
+        log_warn "pip not available for python3 — cannot install docling-mcp. Install pip and re-run."
+        return 0
+    fi
+
+    log_info "pip install --user docling-mcp[local]"
+    if python3 -m pip install --user --no-warn-script-location "docling-mcp[local]" >/dev/null 2>&1; then
+        log_success "docling-mcp installed"
+        log_info "NOTE: first 'docling convert' will download ~hundreds of MB of models from huggingface.co (cached thereafter)."
+    else
+        log_warn "pip install failed for docling-mcp (offline or OOM?). The pack is opt-in — OpenCode will work without it. Re-run setup when online to enable."
     fi
 }
 

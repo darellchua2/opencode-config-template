@@ -1689,6 +1689,10 @@ function Set-Configuration {
             # Best-effort — non-fatal on offline/pip-missing.
             Install-LocalMcpLaunchers
 
+            # Install docling-mcp if --enable-pack docling was requested (PLAN-GIT-308).
+            # Heavy (~3-4 GB) — only runs when explicitly opted in.
+            Install-Docling
+
             Write-Host ""
              Write-Host "Configured 36 agents:" -ForegroundColor Green
             Write-Host "    - build (default) - Full-featured coding agent"
@@ -2008,6 +2012,37 @@ function Install-LocalMcpLaunchers {
         }
     } else {
         Write-LogWarn "pip install failed for markitdown-local-mcp (offline?). The launcher is opt-in (enabled: false) - OpenCode will work without it. Re-run setup when online to enable."
+    }
+}
+
+# Install docling-mcp (heavy ~3-4 GB) — only when --enable-pack docling is
+# requested. Unlike markitdown (local-dir pip install), docling-mcp comes from
+# PyPI. First convert downloads ~hundreds of MB of models from huggingface.co.
+# Mirrors install_docling() in setup.sh.
+function Install-Docling {
+    if (-not ($EnablePack -match '(^|,)docling(,|$)')) {
+        return
+    }
+
+    Write-Host ""
+    Write-LogInfo "Installing docling-mcp[local] (~3-4 GB with models)..."
+
+    # Prerequisite: python + pip
+    $pythonCmd = Get-Command python -ErrorAction SilentlyContinue
+    if (-not $pythonCmd) { $pythonCmd = Get-Command python3 -ErrorAction SilentlyContinue }
+    if (-not $pythonCmd) {
+        Write-LogWarn "python not found - cannot install docling-mcp. Install Python 3.10+ and re-run."
+        return
+    }
+    $python = if ($pythonCmd.Name -eq 'python') { 'python' } else { 'python3' }
+
+    Write-LogInfo "$python -m pip install --user docling-mcp[local]"
+    & $python -m pip install --user --no-warn-script-location "docling-mcp[local]" 2>&1 | Out-Null
+    if ($LASTEXITCODE -eq 0) {
+        Write-LogSuccess "docling-mcp installed"
+        Write-LogInfo "NOTE: first 'docling convert' will download ~hundreds of MB of models from huggingface.co (cached thereafter)."
+    } else {
+        Write-LogWarn "pip install failed for docling-mcp (offline or OOM?). The pack is opt-in - OpenCode will work without it. Re-run setup when online to enable."
     }
 }
 

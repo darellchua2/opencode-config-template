@@ -325,7 +325,7 @@ nvm install 24
 
 ## MCP Servers
 
-The configuration ships 13 MCP server entries. **6 are enabled by default:**
+The configuration ships 14 MCP server entries. **6 are enabled by default:**
 
 | Server | Type | Purpose |
 |--------|------|---------|

@@ -26,6 +26,7 @@
       "zai-vision-analysis-skill": "allow",
       "openapi-contract-adherence-skill": "allow",
       "markitdown-mcp-skill": "allow",
+      "docling-mcp-skill": "allow",
       "git-branch-workflow-setup-skill": "allow",
       "git-semantic-commits-skill": "allow",
       "documentation-sync-workflow-skill": "allow",
@@ -119,6 +120,7 @@
       "atlassian*": "allow",
       "mermaid*": "allow",
       "markitdown*": "deny",
+      "docling*": "deny",
       "zai-web-reader*": "allow",
       "zai-vision-mcp-server*": "deny",
       "zai-zread*": "deny",
@@ -260,6 +262,14 @@
       "command": ["markitdown-local-mcp"],
       "environment": {
         "MARKITDOWN_ENABLE_PLUGINS": "false"
+      },
+      "enabled": false
+    },
+    "docling": {
+      "type": "local",
+      "command": ["docling-mcp-server"],
+      "environment": {
+        "DOCLING_CONVERSION_MODE": "local"
       },
       "enabled": false
     }

@@ -16,6 +16,7 @@ permission:
     docx-creation-skill: allow
     xlsx-specialist-skill: allow
     markitdown-mcp-skill: allow
+    docling-mcp-skill: allow
 category: docs
 ---
 

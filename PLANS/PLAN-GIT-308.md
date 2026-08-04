@@ -86,30 +86,35 @@ Binary office docs (`.docx`, `.pptx`, `.xlsx`, born-digital `.pdf`) fail extract
 
 ## Phase 2 — docling MCP optional persistent tier + install path
 
-- [ ] **2.1** Add disabled `docling` MCP block + `permission.tool."docling*": "deny"` to `opencode_app/opencode.json`
+- [x] **2.1** Add disabled `docling` MCP block + `permission.tool."docling*": "deny"` to `opencode_app/opencode.json`
     — **Why:** The optional persistent MCP tier needs a config block (disabled) so `--enable-pack docling` can flip it via deep-merge; the tool deny mirrors markitdown's opt-in posture.
     — **Done when:** `mcp` block has `"docling": { "type": "local", "command": ["docling-mcp-server"], "environment": { "DOCLING_CONVERSION_MODE": "local" }, "enabled": false }` (structurally mirroring the markitdown block at L258-265); `permission.tool` block (singular — opencode.json:117, no top-level `tools`) has `"docling*": "deny"`. JSON validates with `jq .` (no `//` comments).
     — **Consumers affected:** `deploy/packs/pack-docling.json` (step 2.2 flips these), `office-document-primary-agent`.
+    — **Done:** Added docling MCP block (type:local, command:docling-mcp-server, DOCLING_CONVERSION_MODE:local, enabled:false) mirroring markitdown; added `docling*`: `deny` to permission.tool; `jq .` validates clean, no `//` comments; files: opencode_app/opencode.json; fixes: none
 
-- [ ] **2.2** Create `deploy/packs/pack-docling.json`
+- [x] **2.2** Create `deploy/packs/pack-docling.json`
     — **Why:** The deep-merge fragment that `--enable-pack docling` applies to flip `mcp.docling.enabled` → true and `permission.tool."docling*"` → true; mirrors `pack-markitdown.json`. Auto-discovered by `merge-packs.mjs:136` (`/^pack-(.+)\.json$/`) and `validate_enable_pack` (setup.sh:884) — **no validation/enum edit required**.
     — **Done when:** File exists with `$comment` documenting heavy install, `mcp.docling.enabled: true`, `permission.tool."docling*": true` (matching opencode.json's actual key structure).
     — **Consumers affected:** `deploy/merge-packs.mjs`, `deploy/setup.sh` validation (dynamic).
+    — **Done:** Created pack-docling.json with mcp.docling.enabled:true + permission.tool.docling*:true (correct nested structure, not markitdown's top-level `tools` key); $comment documents ~3-4 GB install + permission.tool rationale; files: deploy/packs/pack-docling.json; fixes: used permission.tool (correct) instead of top-level `tools` (markitdown's potentially-buggy pattern — deferred to step 4.3 verification)
 
-- [ ] **2.3** Add `install_docling()` to `deploy/setup.sh` (no enum change)
+- [x] **2.3** Add `install_docling()` to `deploy/setup.sh` (no enum change)
     — **Why:** Enabling the pack flips config but the `docling-mcp-server` binary is never installed, so the MCP won't start. **Validation needs NO change** — `validate_enable_pack` (setup.sh:884) and `Test-EnablePack` (setup.ps1:1850) discover packs dynamically. The only setup.sh edits are: (a) the substantive `install_docling()` function, (b) cosmetic help-text/banner/error strings for presentation consistency (moved to Phase 3.1).
     — **Done when:** New `install_docling()` function (sibling to `install_local_mcp_launchers` ~L2500) runs only when `docling` in `ENABLE_PACK`: **drops the `launcher_dir` existence check** (PyPI install, not local-dir), keeps python3/pip prerequisite guards, does `pip install --user "docling-mcp[local]"`, runs a smoke-test convert (documented as "first run downloads ~hundreds of MB of models from huggingface.co"), soft-fails offline with a warn (mirrors markitdown). Call site near L2415/2490 invokes it conditionally.
     — **Consumers affected:** end user running `--enable-pack docling`.
+    — **Done:** Added install_docling() function (gated on ENABLE_PACK grep -qw docling; python3/pip prereqs; pip install --user docling-mcp[local]; first-convert model download note; offline soft-fail); no launcher_dir check (PyPI not local-dir); call site added in setup_config after install_local_mcp_launchers; also added docling to MCP SERVERS (14) listing + bumped MCP count 13→14 in README/setup.sh to keep gate green; files: deploy/setup.sh, README.md; fixes: none
 
-- [ ] **2.4** Mirror 2.3 in `deploy/setup.ps1` (Windows parity)
+- [x] **2.4** Mirror 2.3 in `deploy/setup.ps1` (Windows parity)
     — **Why:** Repo convention requires setup.sh ⇔ setup.ps1 parity; a docling pack that only works on Linux breaks the Windows deploy path.
     — **Done when:** `setup.ps1` has the equivalent `Install-Docling` function (PyPI install, no local-dir guard, offline soft-fail) + conditional call site.
     — **Consumers affected:** Windows users.
+    — **Done:** Added Install-Docling function (gated on $EnablePack regex match docling; python/pip prereqs; pip install --user docling-mcp[local]; first-convert model download note; offline soft-fail); call site added in Setup-Config after Install-LocalMcpLaunchers; files: deploy/setup.ps1; fixes: none
 
-- [ ] **2.5** Add `docling-mcp-skill: allow` to primary `permission.skill` + `office-document-primary-agent` skill block
+- [x] **2.5** Add `docling-mcp-skill: allow` to primary `permission.skill` + `office-document-primary-agent` skill block
     — **Why:** Primary session uses a global skill allowlist; a new skill the primary should route to must be added or it stays hidden. `office-document-primary-agent` is the office router and needs the skill to delegate docling escalation. **Both adds are necessary** (not redundant): primary allowlist = `<available_skills>` visibility; agent skill block = loadability — per the discovery-specialist precedent (self-scope is independent of primary allowlist).
     — **Done when:** `opencode_app/opencode.json` `permission.skill` lists `docling-mcp-skill: allow` (after `markitdown-mcp-skill`, ~L28); `office-document-primary-agent.md` `skill:` block lists it.
     — **Consumers affected:** primary session skill visibility, `office-document-primary-agent`.
+    — **Done:** Added docling-mcp-skill:allow to primary permission.skill (after markitdown-mcp-skill) + office-document-primary-agent skill block; files: opencode_app/opencode.json, office-document-primary-agent.md; fixes: none
 
 > **DROPPED (phantom step):** original step 2.7 "add docling-mcp-skill to pdf-specialist-consuming subagents" — review found NO subagent scopes `pdf-specialist-skill` in any `permission.skill` block (only prose references in office-document-primary-agent.md). PDF escalation routes through the primary session + office-document-primary-agent, already covered by step 2.5.
 
