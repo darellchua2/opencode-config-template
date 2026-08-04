@@ -182,17 +182,19 @@ npx github:Simonmensi/opencode-config-template add solid-principles-skill
     — **Consumers affected:** `--remove` (Phase 3.5).
     — **Done:** Implemented in writeUserScopeInstall (Phase 3); manifest unions across multiple add calls; verified add/add/remove lifecycle with fake HOME; files: deploy/init.mjs; fixes: none.
 
-- [ ] **4.2** Document manifest-scoped `remove` behavior: safe no-op after `setup.sh` (no user-scope manifest entries to remove); document in `--help` output and README.
+- [x] **4.2** Document manifest-scoped `remove` behavior: safe no-op after `setup.sh` (no user-scope manifest entries to remove); document in `--help` output and README.
     — **Why:** Users who ran `setup.sh` first may expect `remove` to undo it; setting honest expectations prevents confusion.
     — **Done when:** `--help` and README explain the manifest boundary; error message on no-op is clear.
     — **Consumers affected:** users, docs.
+    — **Done:** --help output documents user/project scope + --permit/--no-deps; no-op message explains setup.sh boundary ("files installed by setup.sh are not tracked by opencode-skill"); README cross-ref deferred to Phase 7.1; files: deploy/init.mjs; fixes: none.
 
 ### Phase 5: Catalog site builder
 
-- [ ] **5.1** Create `deploy/build-site.mjs` (new, zero-dep, mirrors `build-registry.mjs` ethos): reads `deploy/registry.json` → emits a catalog page (38 agents + 126 skills, category filter + search, cards link to GitHub source paths) + serves `registry.json` as a static JSON API. Output to `/docs` for GitHub Pages.
+- [x] **5.1** Create `deploy/build-site.mjs` (new, zero-dep, mirrors `build-registry.mjs` ethos): reads `deploy/registry.json` → emits a catalog page (38 agents + 126 skills, category filter + search, cards link to GitHub source paths) + serves `registry.json` as a static JSON API. Output to `/docs` for GitHub Pages.
     — **Why:** A browsable catalog lets users discover skills/agents without reading source. Static JSON API enables future tooling. Zero-dep mirrors the repo's build-registry.mjs approach.
     — **Done when:** `node deploy/build-site.mjs` generates `/docs/index.html` with filterable cards + `/docs/registry.json`; page loads in a browser with working category filter + search.
     — **Consumers affected:** GitHub Pages, users.
+    — **Done:** Created build-site.mjs — server-side rendered HTML (progressive enhancement, works without JS), inline CSS (dark theme), search + category pill filter, 164 cards (38 agents + 126 skills), install snippet per card, links to GitHub source; copies registry.json to docs/ as static API; files: deploy/build-site.mjs, .github/workflows/release.yml (added to lint); fixes: none.
 
 ### Phase 6: GitHub Pages + CI
 
