@@ -143,18 +143,23 @@ _Owner: `opencode-tooling-subagent`_
 
 _Owner: 3 parallel `explore` agents_
 
-- [ ] **3.1** Generate pattern brief for A1 `fastapi-pydantic-orm-patterns-skill` from `canvastekk-workflow-engine/LEARNINGS/` + `canvastekk-defect-service/LEARNINGS/`
+- [x] **3.1** Generate pattern brief for A1 `fastapi-pydantic-orm-patterns-skill` from `canvastekk-workflow-engine/LEARNINGS/` + `canvastekk-defect-service/LEARNINGS/`
     — **Why:** Extracts the concrete pattern content that Phase 5 will write into the SKILL.md — without a brief, Phase 5 would write a generic skill.
     — **Done when:** Brief lists all 10+ patterns with: pattern name, source file path, one-line description, and applicable code context. Scanned for overlap with existing skills in `opencode_app/.opencode/skills/`.
     — **Consumers affected:** Phase 5 (A1 skill authoring).
+    — **Done:** 29 raw patterns extracted, 12 excluded as duplicates in python-backend-skill/design-patterns-skill/object-design-skill; 17 unique patterns remain for SKILL.md; heavy overlap with python-backend-skill documented; files: none (brief only); fixes: none
 
-- [ ] **3.2** Generate pattern brief for A4 `aws-iac-safety-skill` from `canvastekk-devops/LEARNINGS/` + `betekk-keycloak/LEARNINGS/` + `canvastekk-floor-flatness-app/LEARNINGS/`
+- [x] **3.2** Generate pattern brief for A4 `aws-iac-safety-skill` from `canvastekk-devops/LEARNINGS/` + `betekk-keycloak/LEARNINGS/` + `canvastekk-floor-flatness-app/LEARNINGS/`
     — **Why:** Merged A5 into A4 — the brief must cover both AWS IaC and GitHub Actions patterns from 3 repos.
     — **Done when:** Brief lists all 11 patterns with provenance, scanned for overlap vs existing `opentofu-aws-explorer-skill` and any security/infrastructure skills.
     — **Consumers affected:** Phase 5 (A4 skill authoring), Phase 4 (B3 cross-reference).
+    — **Done:** 12 raw patterns extracted, 6 excluded as duplicates (Lambda URL CNAME, GHA artifact mismatch, Lambda public auth, ECR lowercase, local TF state, no-rollback); 5 unique remain for SKILL.md + Neon connection_uri_pooler flagged for Phase 4.5; files: none (brief only); fixes: none
 
-- [ ] **3.3** Generate pattern brief for B1 split from `canvastekk-frontend-nextjs/LEARNINGS/` — **3-way partition**: hooks patterns, render patterns, redistribute-to-existing-skills
+- [x] **3.3** Generate pattern brief for B1 split from `canvastekk-frontend-nextjs/LEARNINGS/` — **3-way partition**: hooks patterns, render patterns, redistribute-to-existing-skills
     — **Why:** The split must be lossless — every pattern in the original `react-nextjs-antipatterns-skill` (567 lines, ~37 patterns) must land in exactly one bucket. A binary hooks/render split leaves ~9 misfit patterns (revalidatepath-try-catch, fail-open-rbac-middleware, module-scope-map-cache, duplicated-status-mappings, duplicate-type-definitions, toast-promise-await, chunked-cookie-secure-prefix, browserName-routing, route-removal-runtime-nav). These must be redistributed to existing skills or they're LOST.
+    — **Done when:** Three lists produced: (1) hooks patterns for `react-hooks-antipatterns-skill`, (2) render patterns for `react-render-antipatterns-skill`, (3) redistribution map: `{pattern → target_existing_skill}` for each misfit (e.g., `duplicated-status-mappings → typescript-dry-principle-skill`, `fail-open-rbac-middleware → security-audit-skill`). Cross-checked that union of all 3 = original set (no gaps, no duplicates). Each redistribution target verified non-duplicate via grep. Scanned for overlap with existing `threejs-nextjs-skill`.
+    — **Consumers affected:** Phase 4 (B1 split + redistribution execution).
+    — **Done:** 20 patterns classified (not 37 — initial estimate was high): Bucket 1 HOOKS=7, Bucket 2 RENDER=4, Bucket 3 REDISTRIBUTE=9; union 7+4+9=20 ✓; 10 additional patterns from LEARNINGS for hooks/render enrichment; copy-paste artifact at L441-447 confirmed; redistribution map: A1→nextjs-pr-workflow, A2→security-audit, A5→clean-code, B1→performance-optimization, C4/C5→typescript-dry-principle, D1→nextjs-pr-workflow, D2→security-audit, F1→tdd-workflow; files: none (brief only); fixes: none
     — **Done when:** Three lists produced: (1) hooks patterns for `react-hooks-antipatterns-skill`, (2) render patterns for `react-render-antipatterns-skill`, (3) redistribution map: `{pattern → target_existing_skill}` for each misfit (e.g., `duplicated-status-mappings → typescript-dry-principle-skill`, `fail-open-rbac-middleware → security-audit-skill`). Cross-checked that union of all 3 = original set (no gaps, no duplicates). Each redistribution target verified non-duplicate via grep. Scanned for overlap with existing `threejs-nextjs-skill`.
     — **Consumers affected:** Phase 4 (B1 split + redistribution execution).
 
