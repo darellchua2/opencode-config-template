@@ -211,3 +211,33 @@ Override by setting `PONYTAIL_SUBAGENT_OFF` to a custom regex.
 3. `command.execute.before` hook persists `/ponytail <level>` switches per session.
 
 The vendored ruleset + adapted instruction builder live in `opencode_app/.opencode/plugins/ponytail/`. MIT attribution: `opencode_app/.opencode/plugins/ATTRIBUTION.md`. The stock `@dietrichgebert/ponytail` npm package is deliberately NOT in `opencode.json` `plugin` array (double-injection guard).
+
+## Learnings Auto-Inject Plugin
+
+`opencode_app/.opencode/plugins/learnings-autoinject.ts` auto-injects a **compact manifest** of a project's `LEARNINGS/*.md` files into the system prompt at session start, so the model knows what learned knowledge exists without a `glob`+`read` round-trip. It injects only titles + paths + a one-line summary (~200-400 tokens); the model `read()`s full file bodies on demand. This closes the gap documented in `continuous-learning-skill` (*"OpenCode does NOT auto-scan LEARNINGS/ directories"*). Architecture mirrors `ponytail-scoped.ts` (same 4 hooks, same toggle pattern, same off-set).
+
+### Commands
+
+| Command | What it does |
+|---------|--------------|
+| `/learnings` | Report on/off state + file count for this session |
+| `/learnings-on` | Enable manifest injection for this session |
+| `/learnings-off` | Disable manifest injection for this session |
+| `/learnings-refresh` | Re-scan `LEARNINGS/` and rebuild the manifest on the next turn |
+
+### Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `LEARNINGS_AUTOINJECT_DEFAULT` | `on` | Global on/off |
+| `LEARNINGS_AUTOINJECT_USER` | `off` | Also scan `~/.config/opencode/learnings/` (user-level) |
+| `LEARNINGS_AUTOINJECT_OFF` | (built-in read-only agent set) | Regex of agent names that skip injection (mirrors ponytail) |
+| `LEARNINGS_AUTOINJECT_MAX` | `30` | Cap on files included in the manifest |
+
+### How It Works
+
+1. `chat.message` hook caches `sessionID → agent`.
+2. `experimental.chat.system.transform` hook resolves the agent, checks the toggle + off-set, and appends the cached manifest to the system prompt — once per turn (idempotent). The manifest is globbed once per session and cached (rebuilt on `/learnings-refresh`).
+3. `command.execute.before` hook persists `/learnings-on|off|refresh` per session.
+
+No `opencode.json` change required — local plugins are glob-discovered. No conflict with `opencode-superlocalmemory` (different store: markdown vs vectors; different hook: `experimental.chat.system.transform` vs `tui.prompt.append`). Reference: `opencode_app/.opencode/plugins/learnings-autoinject.README.md`.

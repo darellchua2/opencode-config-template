@@ -99,7 +99,7 @@ Additive signal fields (e.g., `NEEDS_GIT_BRANCH_SETUP: true`) are allowed beyond
 
 ## Project Learnings
 
-`LEARNINGS/` is a template in this repo. In target projects (where skills are deployed), check `LEARNINGS/` for existing patterns before reviewing or planning. Primary storage: `memory` tool (searchable). Secondary: `LEARNINGS/*.md` (git-committed).
+`LEARNINGS/` is a template in this repo. In target projects (where skills are deployed), check `LEARNINGS/` for existing patterns before reviewing or planning. Primary storage: `memory` tool (searchable). Secondary: `LEARNINGS/*.md` (git-committed). The `learnings-autoinject` plugin auto-surfaces a `LEARNINGS/*.md` manifest into the system prompt each session (on by default; `/learnings-off` to disable, `/learnings-refresh` after adding files mid-session), so manual `glob`+`read` is a fallback, not the primary discovery path.
 
 ## Extract-then-Delegate Pattern
 
