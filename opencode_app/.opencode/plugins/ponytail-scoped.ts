@@ -1,4 +1,4 @@
-// ponytail-scoped.mjs — OpenCode wrapper plugin for ponytail with agent-type-aware scoping.
+// ponytail-scoped.ts — OpenCode wrapper plugin for ponytail with agent-type-aware scoping.
 //
 // Wraps the vendored ponytail ruleset (./ponytail/) and adds what the stock
 // @dietrichgebert/ponytail OpenCode adapter cannot do:
@@ -7,7 +7,24 @@
 //      PONYTAIL_SUBAGENT_MATCHER is Claude-Code-only and a no-op on OpenCode.
 //   2. Per-agent default modes via PONYTAIL_AGENT_MODE_MAP (JSON env var).
 //
-// Agent-type resolution (Phase 0 spike, resolved via OpenCode plugin source):
+// ── Why .ts (NOT .mjs) ───────────────────────────────────────────────────────
+// OpenCode's local-plugin discovery (packages/opencode/src/config/plugin.ts,
+// verified identical at git tag v1.18.11) globs `{plugin,plugins}/*.{ts,js}`.
+// `.mjs` is NOT matched, so a `.mjs` plugin is silently never discovered — no
+// load, no error, no log line. The file MUST be `.ts` or `.js`. We use `.ts`
+// because Bun always treats `.ts` as ESM, whereas `.js` here resolves to
+// CommonJS (the config-dir package.json has no `"type": "module"`), which would
+// reject the ESM `export` syntax. See research/ponytail-load-fix.md.
+//
+// ── Valid hooks in OpenCode 1.18.11 ──────────────────────────────────────────
+// Confirmed against packages/plugin/src/index.ts @ v1.18.11 (Hooks interface).
+// All four hooks below are first-class members of that interface:
+//   - config(input: Config)                              — register slash commands
+//   - "chat.message"(input, output)                       — cache sessionID → agent
+//   - "experimental.chat.system.transform"(input, output) — CORE: append ruleset to system[]
+//   - "command.execute.before"(input, output)             — persist /ponytail <level> switches
+//
+// Agent-type resolution:
 //   - experimental.chat.system.transform input = { sessionID?, model }
 //   - chat.message input = { sessionID, agent?, ... }  → cache sessionID→agent
 //   - cache miss + sessionID present → client.session.get() fallback
@@ -133,9 +150,16 @@ const COMMANDS = {
 const PONYTAIL_MARKER = 'PONYTAIL MODE ACTIVE';
 
 // ── Plugin ──────────────────────────────────────────────────────────────────────
+//
+// NAMED export (matches the documented plugin pattern). OpenCode's plugin loader
+// (packages/opencode/src/plugin/index.ts → getLegacyPlugins) iterates the module's
+// exports (Object.values(mod)), so a named export is discovered and invoked as
+// `(input, options) => Promise<Hooks>`. A default-export function also works via
+// the same path, but named is the documented form. `client` is the only context
+// field this plugin uses (PluginInput also exposes project/directory/worktree/$).
 
-export default async ({ client } = {}) => {
-  const log = (level, message) => {
+export const PonytailScoped = async ({ client }: any = {}) => {
+  const log = (level: string, message: string) => {
     try {
       client && client.app && client.app.log({ body: { service: 'ponytail-scoped', level, message } });
     } catch (_) {}
@@ -145,7 +169,7 @@ export default async ({ client } = {}) => {
 
   return {
     // Register the 6 commands (non-destructive merge — preserves existing commands).
-    config: async (config) => {
+    config: async (config: any) => {
       if (!config.command) config.command = {};
       for (const [name, def] of Object.entries(COMMANDS)) {
         // Never overwrite a user-defined command of the same name.
@@ -155,14 +179,14 @@ export default async ({ client } = {}) => {
 
     // Cache sessionID → agent so the transform hook can scope by agent type.
     // chat.message fires before experimental.chat.system.transform on a normal turn.
-    'chat.message': async (input) => {
+    'chat.message': async (input: any) => {
       if (input && input.sessionID && input.agent) {
         sessionAgent.set(input.sessionID, input.agent);
       }
     },
 
     // Core: append the mode-filtered ruleset to the system prompt, scoped by agent type.
-    'experimental.chat.system.transform': async (input, output) => {
+    'experimental.chat.system.transform': async (input: any, output: any) => {
       if (!output || !Array.isArray(output.system)) return;
 
       const sessionID = input && input.sessionID;
@@ -207,11 +231,11 @@ export default async ({ client } = {}) => {
     },
 
     // Persist /ponytail <level> and /ponytail-<level> mode switches per session.
-    'command.execute.before': async (input) => {
+    'command.execute.before': async (input: any) => {
       if (!input) return;
       const cmd = input.command || '';
       const sessionID = input.sessionID;
-      let mode = null;
+      let mode: string | null = null;
 
       if (cmd === 'ponytail') {
         // /ponytail [level] — argument drives the switch; no arg = status query (no-op here)
