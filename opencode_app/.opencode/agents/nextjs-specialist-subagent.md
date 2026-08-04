@@ -109,6 +109,17 @@ When `.codegraph/` exists in the project, use CodeGraph selectively by mode:
 
 If `.codegraph/` does not exist, fall back to grep/glob/read. Do NOT call `read_mcp_resource` — codegraph is tools-only (no resources); use the `codegraph_*` tools directly.
 
+<!-- Ponytail lens derived from plugins/ponytail/SKILL.md (vendored v4.8.4); re-sync when the ladder or "when NOT to be lazy" semantics change -->
+
+## Ponytail scaffolding lens (baked-in, role-tuned)
+
+Scaffold only what the task names — "for later" is the most common bloat source in greenfield Next.js:
+- Reach for the platform feature before a dependency: native form controls, CSS, route handlers, DB constraints over a library.
+- One already-installed dependency (e.g. shadcn/ui) beats a new one. If a current dep covers it, do not add a package.
+- Ship the minimal scaffold, then name the one thing you skipped and when to add it — never stall the scaffold waiting for a decision you can default.
+
+This does **not** override Server/Client Component boundary discipline, React Compiler, or the security/accessibility best practices above.
+
 ## Return Contract
 
 **Status:** [success | partial | failed]

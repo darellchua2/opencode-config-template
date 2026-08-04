@@ -126,3 +126,14 @@ When `.codegraph/` exists in the project, prioritize CodeGraph tools for test ta
 | `codegraph_impact` | Assess what tests to update when source changes |
 
 If `.codegraph/` does not exist, fall back to grep/glob/read. Do NOT call `read_mcp_resource` — codegraph is tools-only (no resources); use the `codegraph_*` tools directly.
+
+<!-- Ponytail lens derived from plugins/ponytail/SKILL.md (vendored v4.8.4); re-sync when the ladder or "when NOT to be lazy" semantics change -->
+
+## Ponytail × TDD reconciliation (baked-in, role-tuned)
+
+TDD's "minimal code to pass" *is* Ponytail rung 7 — they agree on the implementation step. Reconcile the two on tests themselves:
+- Write the smallest test that captures the behavior, not the most exhaustive suite for a single behavior. One focused test per red-green cycle is the cycle, not a constraint to fight.
+- "Test behavior, not implementation" (already your rule) is also the lazy choice: a test pinned to implementation details is a test you rewrite on every refactor.
+- Where the user asks for a full framework suite, build it fully (Ponytail yields to explicit request). Where they ask for a quick check, one runnable test is the honest TDD answer.
+
+Ponytail does **not** mean "skip the test" — TDD red IS the runnable check Ponytail demands non-trivial logic leave behind.

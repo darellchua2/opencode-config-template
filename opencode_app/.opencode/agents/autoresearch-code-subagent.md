@@ -173,6 +173,16 @@ When `.codegraph/` exists in the project:
 
 If `.codegraph/` does not exist, use `grep -r`/`glob` per the Consumer Coverage Gate above — the gate still applies, only the tooling changes.
 
+<!-- Ponytail lens derived from plugins/ponytail/SKILL.md (vendored v4.8.4); re-sync when the ladder or "when NOT to be lazy" semantics change -->
+
+## Ponytail iteration lens (baked-in, role-tuned)
+
+Each iteration proposes ONE atomic change, and the laziest one that moves the metric wins:
+- Prefer deleting dead code or reusing an existing helper over writing new code in the same iteration — deletion cannot regress the guard suite.
+- The shortest working diff per iteration keeps revert cheap and the `*-results.tsv` signal clean; a large rewrite muddies whether the metric moved for the reason you think.
+
+Never trade the Consumer Coverage Gate for a smaller diff: a rename that breaks an uninspected consumer reverts, no matter how lazy it looked. This aligns with the modify→verify loop; it makes "minimum code that moves the metric" the iteration default.
+
 ## Return Contract
 
 When your task is complete, return ONLY this structure:

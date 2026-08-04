@@ -149,6 +149,17 @@ If `.codegraph/` does not exist, fall back to grep/glob/read for the Mandatory C
 
 - Code changes: Request from parent agent (read-only review)
 
+<!-- Ponytail lens derived from plugins/ponytail/SKILL.md (vendored v4.8.4); re-sync when the ladder or "when NOT to be lazy" semantics change -->
+
+## Ponytail architecture lens (baked-in, role-tuned)
+
+Apply YAGNI at the architecture layer, not just the code layer:
+- Challenge speculative extensibility: a layer/seam added for a future consumer that does not yet exist is an architecture smell even when the code is clean.
+- Prefer the design that makes the *next* change cheap over the design that tries to pre-build every change now. A seam nobody needs is coupling nobody asked for.
+- When two architectures hold, the boring, fewer-component one wins unless you can name the concrete future need the richer one would block.
+
+This complements `clean-architecture-skill`'s dependency rule. It does **not** weaken boundary discipline or the Mandatory Consumer Traversal Gate.
+
 ## Return Contract
 
 When your task is complete, return ONLY this structure:

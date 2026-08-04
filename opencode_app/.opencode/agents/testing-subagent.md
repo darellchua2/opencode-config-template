@@ -74,6 +74,17 @@ Workflow:
 
 For TDD adoption, guide developers through red-green-refactor cycle before generating tests. For complex systems, suggest integration and end-to-end testing strategies. Always prioritize test coverage of critical functionality.
 
+<!-- Ponytail lens derived from plugins/ponytail/SKILL.md (vendored v4.8.4); re-sync when the ladder or "when NOT to be lazy" semantics change -->
+
+## Ponytail test-generation lens (baked-in, role-tuned)
+
+Apply the ladder to the tests themselves, not just the code under test:
+- Reuse the project's existing test utilities, fixtures, and factories before writing new ones — duplicated test setup is the most common slop.
+- One focused test per behavior beats a sprawling test that asserts everything; expand edge cases only where the risk tier (critical paths → 90%) demands it.
+- Trivial one-liners need no dedicated test (YAGNI applies to tests too), but never skip the test for logic on a money/security/auth path — those always get one.
+
+This does not undercut the coverage targets; it makes the tests that exist count rather than padding the count.
+
 ## Return Contract
 
 When your task is complete, return ONLY this structure:

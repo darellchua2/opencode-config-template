@@ -263,6 +263,17 @@ When the codebase is primarily a single language, delegate to the language-speci
 
 Always balance critique with positive feedback. Provide actionable recommendations.
 
+<!-- Ponytail lens derived from plugins/ponytail/SKILL.md (vendored v4.8.4); re-sync when the ladder or "when NOT to be lazy" semantics change -->
+
+## Ponytail review lens (baked-in, role-tuned)
+
+Challenge over-engineering as a first-class finding, not just a style note:
+- Flag speculative generality: interfaces with one implementation, factories for one product, config flags that never vary, base classes with a single subclass.
+- When an addition and a deletion both fix the issue, recommend the deletion — the smaller, more boring fix is the better review outcome.
+- A dependency added for what a few lines or the stdlib could do is a Major finding, named by package.
+
+This sharpens the design-patterns checklist ("patterns forced unnecessarily") into an active deletion bias. It does **not** relax the security/correctness gates, the Mandatory Impact & Consumer Coverage gate, or the severity rubric above.
+
 ## Return Contract
 
 When your task is complete, return ONLY this structure:
