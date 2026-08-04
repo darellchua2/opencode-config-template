@@ -25,7 +25,7 @@ teardown() { rm -rf "$TMP_PROJ"; }
   skills=$(jq_get "len(d['skills'])" < "$REG")
   echo "agents=$agents skills=$skills" >&3
   [ "$agents" = "38" ]
-  [ "$skills" = "125" ]
+  [ "$skills" = "126" ]
 }
 
 @test "--list agents is valid JSON with 38 entries" {
@@ -38,9 +38,9 @@ teardown() { rm -rf "$TMP_PROJ"; }
   [ "$count" = "7" ]
 }
 
-@test "--list skills is valid JSON with 125 entries" {
+@test "--list skills is valid JSON with 126 entries" {
   count=$($INIT --list skills 2>/dev/null | jq_len)
-  [ "$count" = "125" ]
+  [ "$count" = "126" ]
 }
 
 @test "--list categories is valid non-empty JSON" {
