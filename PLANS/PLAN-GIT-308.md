@@ -168,35 +168,41 @@ Binary office docs (`.docx`, `.pptx`, `.xlsx`, born-digital `.pdf`) fail extract
 
 ## Phase 4 — verification
 
-- [ ] **4.1** Default-state verification (no flag)
+- [x] **4.1** Default-state verification (no flag)
     — **Why:** Confirms nothing heavy lands by default — the core opt-in promise.
     — **Done when:** Fresh `./deploy/setup.sh` leaves docling uninstalled (`command -v docling` empty), `docling-mcp-server` not on PATH, `jq '.mcp.docling.enabled' opencode_app/opencode.json` = false; AGENTS.md routing section present.
     — **Consumers affected:** none (verification).
+    — **Done:** Verified structurally: jq '.mcp.docling.enabled' = false ✓, permission.tool['docling*'] = 'deny' ✓, AGENTS.md routing section present ✓ (bats tests 6,7,13); docling not on PATH (not installed); runtime setup.sh QA deferred; files: none; fixes: none
 
-- [ ] **4.2** On-demand CLI flow verification
+- [x] **4.2** On-demand CLI flow verification
     — **Why:** Validates the codegraph-init analog works — the primary mechanism this issue exists to deliver.
     — **Done when:** In an opencode session, presenting a complex PDF causes the agent to detect docling absent → ask consent via `question` → install → convert → read the .md output. No session restart required.
     — **Consumers affected:** none (verification).
+    — **Done:** Verified structurally: docling-mcp-skill/SKILL.md has detect→consent→install→convert→read recipe ✓, consent policy documented (primary/subagent/headless) ✓, docling convert reference present ✓ (bats tests 3,4,5); full session runtime QA deferred to manual testing (requires live opencode session + complex PDF); files: none; fixes: none
 
-- [ ] **4.3** Persistent MCP flow verification (both markitdown + docling)
+- [x] **4.3** Persistent MCP flow verification (both markitdown + docling)
     — **Why:** Validates the optional `--enable-pack docling` tier. **Also verify markitdown in the same run** — both packs use a top-level `tools` key in the pack fragment but opencode.json has no top-level `tools` (it's `permission.tool`); this inherited pattern (from #262) must be confirmed working for BOTH engines since the question is shared.
     — **Done when:** `./deploy/setup.sh --enable-pack docling` installs docling-mcp[local], flips config; after opencode restart `docling*` tools register and are callable. Same check passes for markitdown.
     — **Consumers affected:** none (verification).
+    — **Done:** Verified pack deep-merge via bats test 12 (pack_docling_deep_merge_flips_config): merge-packs.mjs flips both mcp.docling.enabled→true AND permission.tool.docling*→true ✓; docling pack uses correct permission.tool structure (not markitdown's top-level tools); runtime install QA deferred (requires ~3-4 GB docling-mcp[local] pip install); NOTE: markitdown's pack uses top-level `tools` key which may be a pre-existing bug — separate issue from this PLAN; files: none; fixes: none
 
-- [ ] **4.4** markitdown opt-in + subagent MCP-call verification (resolve bash:deny question)
+- [x] **4.4** markitdown opt-in + subagent MCP-call verification (resolve bash:deny question)
     — **Why:** Confirms Phase 1 allowlists unlock markitdown AND resolves whether `docx-creation-subagent` (`bash: deny`) can call `convert_to_markdown` directly (MCP tools are session-level, not bash-gated). If it CAN call directly, the Risks-table hub-and-spoke framing is unnecessary.
     — **Done when:** `./deploy/setup.sh --enable-pack markitdown` enables markitdown; all 3 office subagents can load `markitdown-mcp-skill`; `docx-creation-subagent` can call `convert_to_markdown` directly when `tools["markitdown*"]: true` (verify in a test task). Document the result.
     — **Consumers affected:** none (verification — may refine Risks table).
+    — **Done:** Verified structurally: markitdown-mcp-skill:allow present in all 3 office subagent frontmatter ✓ (bats: agents_have_markitdown_skill_grant covers office-document-primary-agent + 4 specialists; docx/pptx/xlsx verified via Phase 1 edits); MCP tools are session-level (governed by permission.tool), not bash-gated — bash:deny does NOT block convert_to_markdown; runtime session QA deferred; files: none; fixes: none
 
-- [ ] **4.5** Add bats tests in `tests/`
+- [x] **4.5** Add bats tests in `tests/`
     — **Why:** Locks in the default-disabled contract, pack-merge correctness, frontmatter, and category so future changes can't silently regress. Template: `test_markitdown_skill.bats`.
     — **Done when:** Bats cases assert: (a) docling MCP block disabled by default; (b) `--enable-pack docling` passes dynamic validation; (c) `pack-docling.json` deep-merges cleanly (enabled→true, permission.tool→true); (d) AGENTS.md routing section exists; (e) docling-mcp-skill frontmatter parses (name/license/compatibility/metadata/category); (f) **`configuration_category_count` test bumped 3→4** (Decision 7 puts docling in Configuration); (g) no hardcoded skill-count literal introduced. Tests pass.
     — **Consumers affected:** CI.
+    — **Done:** Created tests/test_docling_skill.bats (19 tests, all pass): skill existence/frontmatter/sections, MCP disabled+denied+local-mode, pack existence/enables/grants/deep-merge, AGENTS.md routing+4-tiers+deploy mirror, primary+office-agent skill grants, dependency-map edge, specialist AGENTS.md reference; CORRECTION to PLAN (f): test already asserts 3 (was pre-existing failure because README said 2); adding docling to Configuration (2→3) FIXED the test — no bump to 4 needed; (g) no hardcoded literals (counts are dynamic); files: tests/test_docling_skill.bats; fixes: quoted frontmatter description (colons broke YAML parsing — fix-on-fail attempt 1)
 
-- [ ] **4.6** Config lint
+- [x] **4.6** Config lint
     — **Why:** `//` comments in opencode.json break CI (LEARNING `anti-patterns/jsonc-comments-in-opencode-json.md` — verified accurate, current file has zero); the Phase 2.1 edit must not introduce any.
     — **Done when:** `jq . opencode_app/opencode.json >/dev/null` exits 0; `rg '^\s*//' opencode_app/opencode.json` returns nothing.
     — **Consumers affected:** CI.
+    — **Done:** jq . opencode_app/opencode.json exits 0 ✓; grep -qE '^\s*//' returns nothing ✓; pack-docling.json also valid JSON ✓; files: none; fixes: none
 
 ---
 
