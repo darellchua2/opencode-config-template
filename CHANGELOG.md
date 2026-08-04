@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.14.1](https://github.com/darellchua2/opencode-config-template/compare/v4.14.0...v4.14.1) (2026-08-04)
+
+### Bug Fixes
+
+* **release:** pin semantic-release plugins + npm ci to restore release notes ([#306](https://github.com/darellchua2/opencode-config-template/issues/306)) ([666aef4](https://github.com/darellchua2/opencode-config-template/commit/666aef4417c4f09408e8f9bfa6166f2be34a8a90))
+
 ## [4.14.0](https://github.com/darellchua2/opencode-config-template/compare/v4.13.0...v4.14.0) (2026-08-04)
 
 ## [4.13.0](https://github.com/darellchua2/opencode-config-template/compare/v4.12.0...v4.13.0) (2026-08-04)
