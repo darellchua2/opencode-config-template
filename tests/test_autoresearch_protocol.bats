@@ -270,24 +270,7 @@ CORE_REFS_DIR="$SKILLS_DIR/autoresearch-core-skill/references"
   done
 }
 
-# --- react-nextjs-antipatterns (evaluator-contract + audit-trail) ---
-@test "tier2_react-nextjs-antipatterns_has_iteration_protocol_section" {
-  skill_md="$SKILLS_DIR/react-nextjs-antipatterns-skill/SKILL.md"
-  [ -f "$skill_md" ]
-  grep -q '^## Iteration Protocol (opt-in)' "$skill_md"
-}
-@test "tier2_react-nextjs-antipatterns_has_opt_in_metadata" {
-  skill_md="$SKILLS_DIR/react-nextjs-antipatterns-skill/SKILL.md"
-  [ -f "$skill_md" ]
-  python3 -c "import yaml; d=open('$skill_md').read(); fm=yaml.safe_load(d.split('---')[1]); assert fm['metadata'].get('protocol')=='autoresearch-opt-in'"
-}
-@test "tier2_react-nextjs-antipatterns_cites_expected_references" {
-  skill_md="$SKILLS_DIR/react-nextjs-antipatterns-skill/SKILL.md"
-  [ -f "$skill_md" ]
-  for ref in evaluator-contract audit-trail; do
-    grep -q "autoresearch-core-skill/references/${ref}.md" "$skill_md"
-  done
-}
+# --- react-nextjs-antipatterns REMOVED (PLAN-GIT-312: split into hooks + render skills) ---
 
 # --- playwright-responsive-audit (audit-trail + evaluator-contract) ---
 @test "tier2_playwright-responsive-audit_has_iteration_protocol_section" {

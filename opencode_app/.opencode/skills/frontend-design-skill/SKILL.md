@@ -404,7 +404,7 @@ You don't always need every stage. Typical sequences:
 | **uiux-review-skill** | Peer / inverse — this skill creates, that one reviews | After building: run `uiux-review-skill` to catch what self-review (Step 7) missed. Axis 13 of that skill mirrors our 3-cluster anti-pattern detection. |
 | **accessibility-a11y-skill** | Deep-dive delegation | This skill does surface WCAG AA checks only. For full WCAG 2.1 compliance (ARIA patterns, screen reader flows, keyboard nav), delegate to `accessibility-a11y-skill`. |
 | **wireframer-skill** | Upstream | Before committing to a visual direction, generate low-fi wireframes to validate layout and IA. |
-| **react-nextjs-antipatterns-skill** | Runtime guardrails | When building React/Next.js components, load this peer to avoid hydration mismatches, memory leaks, and RBAC issues that visual review won't catch. |
+| **react-hooks-antipatterns-skill** / **react-render-antipatterns-skill** | Runtime guardrails | When building React/Next.js components, load these peers to avoid hooks traps and render-time anti-patterns that visual review won't catch. |
 | **nextjs-image-usage-skill** | Framework-specific | For Next.js 16 projects — proper `Image` component usage, remote domains, responsive images. |
 | **responsive-audit-subagent** | Downstream fixer | After build, this subagent catches and fixes responsive defects mechanically (Playwright-driven, tier-based). |
 | **image-analyzer-subagent** | Verification helper | Text-only primary sessions delegate screenshot review here during self-review (Step 7) — never interpret pixels inline. |

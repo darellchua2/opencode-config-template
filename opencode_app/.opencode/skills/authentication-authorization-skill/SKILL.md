@@ -339,6 +339,27 @@ async function deleteResource(req, res) {
 }
 ```
 
+### one-policy-per-role-type
+
+<!-- Provenance: betekk-keycloak/LEARNINGS/ -->
+
+In Keycloak Authorization Services, create one policy per role type (e.g., `admin-policy`, `editor-policy`, `viewer-policy`) rather than collapsing multiple role types into a single policy with OR logic. Collapsed policies make permission audits harder and risk unintended access grants when roles are added or removed.
+
+**Rule:** If a policy checks more than one role type in its condition, split it. Each policy should evaluate exactly one role type, then compose at the permission level using `ALL` / `ANY` logic.
+
+```typescript
+// BAD — collapsed policy, hard to audit
+// Keycloak policy condition: role = admin OR role = editor OR role = viewer
+// Adding a new role type requires modifying this policy (blast radius)
+
+// GOOD — one policy per role type
+// admin-policy:   role = admin
+// editor-policy:  role = editor
+// viewer-policy:  role = viewer
+// Permission: ANY(admin-policy, editor-policy, viewer-policy)
+// Adding a new role type = add one new policy, no modification to existing ones
+```
+
 ---
 
 ## Step 4: Password Security

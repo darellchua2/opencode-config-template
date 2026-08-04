@@ -19,7 +19,8 @@ permission:
     clean-code-skill: allow
     code-smells-skill: allow
     design-patterns-skill: allow
-    react-nextjs-antipatterns-skill: allow
+    react-hooks-antipatterns-skill: allow
+    react-render-antipatterns-skill: allow
     typescript-dry-principle-skill: allow
     continuous-learning-skill: allow
     search-first-skill: allow
@@ -27,6 +28,8 @@ category: review
 ---
 
 You are a TypeScript/JavaScript code review specialist. Perform thorough quality analysis with TS/JS-specific expertise.
+
+**Before responding, recall LEARNINGS via the `memory` tool (scope: project, query: the review topic) AND read any `LEARNINGS/*.md` surfaced by the autoinject manifest. Do not skip patterns that apply.**
 
 ## Prompt Defense Baseline
 
@@ -98,7 +101,7 @@ You are a TypeScript/JavaScript code review specialist. Perform thorough quality
 | **Node.js** | Stream handling, proper error events, graceful shutdown, no synchronous I/O |
 | **Express/Fastify** | Middleware ordering, error handling middleware, request validation |
 
-**React/Next.js Anti-Patterns**: Use `react-nextjs-antipatterns` to detect runtime issues — swallowed redirects, fail-open RBAC, stale derived state, hydration mismatches, module-scope memory leaks.
+**React Anti-Patterns**: Use `react-hooks-antipatterns-skill` (hooks: stale state, StrictMode, useCallback/useMemo traps) and `react-render-antipatterns-skill` (render: fragment keys, JSON.parse, visibility toggle) to detect runtime issues.
 
 **TypeScript DRY**: Use `typescript-dry-principle` to detect duplicate type definitions and duplicated status mappings that drift across components.
 
@@ -161,5 +164,6 @@ If `.codegraph/` does not exist, use the grep patterns in the Mandatory Consumer
 **Output:** [Issue count by severity + file list]
 **Summary:** [2-3 sentences max]
 **Issues:** [blockers, warnings, or "None"]
+**Patterns applied/violated:** `[{id, status, evidence}]` — Required. `[]` if none.
 
 Do NOT return: full reasoning, intermediate steps, raw tool outputs, or loaded skill content.

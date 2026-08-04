@@ -102,6 +102,12 @@ All subagents return this structure to minimize context bloat:
 
 Additive signal fields (e.g., `NEEDS_GIT_BRANCH_SETUP: true`) are allowed beyond the required quartet but never replace the required fields.
 
+### Reviewer Additions (architecture, code, python, typescript, java, go, rust, uiux)
+
+**Patterns applied/violated:** `[{id: <LEARNINGS-slug>, status: applied|violated, evidence: <file:line or review-section ref>}]`
+- **Required** for all reviewer subagents on every review.
+- If no LEARNINGS pattern applied or was violated, emit `Patterns applied/violated: []` (empty list, never omit).
+
 ## Project Learnings
 
 `LEARNINGS/` is a template in this repo. In target projects (where skills are deployed), check `LEARNINGS/` for existing patterns before reviewing or planning. Primary storage: `memory` tool (searchable). Secondary: `LEARNINGS/*.md` (git-committed). The `learnings-autoinject` plugin auto-surfaces a `LEARNINGS/*.md` manifest into the system prompt each session (on by default; `/learnings-off` to disable, `/learnings-refresh` after adding files mid-session), so manual `glob`+`read` is a fallback, not the primary discovery path.

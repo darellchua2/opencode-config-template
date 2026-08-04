@@ -412,6 +412,11 @@ count_skills() {
     find "$1" -type f -name "SKILL.md" -not -path "*/_archived/*" 2>/dev/null | wc -l
 }
 
+count_agents() {
+    [ -d "$1" ] || { echo 0; return; }
+    find "$1" -maxdepth 1 -type f -name "*.md" -not -path "*/_archived/*" 2>/dev/null | wc -l
+}
+
 # Auto-derive per-category counts from skill frontmatter (category: field),
 # excluding _archived. Drift-proof replacement for the hand-maintained listings.
 # Prints "Category (N)" lines sorted by count desc. BT-157.
@@ -618,7 +623,7 @@ USAGE:
                          CONFIGURED FEATURES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-   AGENTS (38):
+   AGENTS ($(count_agents "${REPO_DIR}/opencode_app/.opencode/agents")):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
@@ -2400,13 +2405,13 @@ setup_config() {
             install_docling
 
             echo ""
-        echo "✓ Configured 36 agents:"
+        echo "✓ Configured $(count_agents "${REPO_DIR}/opencode_app/.opencode/agents") agents:"
         echo "    - build (default) - Full-featured coding agent"
         echo "    - plan - Planning agent (read-only)"
         echo "    - explore - Codebase exploration and analysis"
         echo "    - image-analyzer-subagent - Image/screenshot analysis"
         echo "    - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
-        echo "    - ... and 32 more agents"
+        echo "    - ... and $(($(count_agents "${REPO_DIR}/opencode_app/.opencode/agents") - 5)) more agents"
             echo ""
              echo "✓ Configured MCP servers:"
              echo "    Local (auto-start): atlassian, zai-vision-mcp-server, codegraph, mermaid"
@@ -3369,12 +3374,12 @@ print_summary() {
 
     # Agents configured
     if [ -f "$CONFIG_FILE" ]; then
-        echo "✓ Configured 36 agents:"
+        echo "✓ Configured $(count_agents "${REPO_DIR}/opencode_app/.opencode/agents") agents:"
         echo "    - build (default) - Full-featured coding agent"
         echo "    - plan - Planning agent (read-only)"
         echo "    - explore - Codebase exploration and analysis"
         echo "    - image-analyzer-subagent - Image/screenshot analysis"
-        echo "    - ... and 33 more agents"
+        echo "    - ... and $(($(count_agents "${REPO_DIR}/opencode_app/.opencode/agents") - 4)) more agents"
     fi
 
     # MCP servers configured
@@ -3454,7 +3459,7 @@ print_next_steps() {
     echo "  - explore - Fast codebase exploration and analysis"
     echo "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
     echo "  - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
-    echo "  - ... and 32 more agents"
+    echo "  - ... and $(($(count_agents "${REPO_DIR}/opencode_app/.opencode/agents") - 5)) more agents"
     echo ""
     echo "  Usage: opencode --agent <name> \"prompt\""
     echo "         opencode \"prompt\" (uses build)"

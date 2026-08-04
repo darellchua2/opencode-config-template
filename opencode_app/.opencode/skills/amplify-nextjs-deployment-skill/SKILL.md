@@ -312,6 +312,6 @@ rg 'process\.env\.[A-Z_]+' --type ts --type tsx -g '!*.test.*' -g '!*.spec.*'
 
 - **`nextjs-standard-setup-skill`** — scaffolds the Next.js project that this skill deploys
 - **`nextjs-image-usage-skill`** — configures `next.config.ts` `images.remotePatterns` (referenced by Rule 4)
-- **`react-nextjs-antipatterns-skill`** — catches SSR anti-patterns that fail at runtime (Rule 7)
+- **`react-hooks-antipatterns-skill`** + **`react-render-antipatterns-skill`** — catch SSR/runtime anti-patterns that fail at runtime (Rule 7)
 - **`opentofu-aws-explorer-skill`** — manages the OpenTofu/Terraform infra module for Amplify + S3 + CloudFront
 - **`opentofu-provisioning-workflow-skill`** — state management for the infra side of rollbacks

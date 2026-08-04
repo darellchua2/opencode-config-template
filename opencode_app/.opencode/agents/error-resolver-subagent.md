@@ -11,7 +11,8 @@ permission:
   bash: allow
   skill:
     error-resolver-workflow-skill: allow
-    react-nextjs-antipatterns-skill: allow
+    react-hooks-antipatterns-skill: allow
+    react-render-antipatterns-skill: allow
     continuous-learning-skill: allow
     agent-introspection-debugging-skill: allow
 category: meta
