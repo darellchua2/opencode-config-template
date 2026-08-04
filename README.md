@@ -1,9 +1,10 @@
 # OpenCode Configuration Template
 
-A dual-mode OpenCode configurator repository:
+A multi-mode OpenCode configurator repository:
 
 1. **User-Space Deploy** — Run `./deploy/setup.sh` to copy config, agents, and skills to `~/.config/opencode/` for global use
 2. **Docker Standalone** — Run `docker compose up -d` to launch OpenCode as a web endpoint
+3. **Individual Install (npx)** — Run `npx github:darellchua2/opencode-config-template add <name>` to pull a single skill or agent (shadcn-style copy model)
 
 > **v2.0.0 upgrade?** See [`MIGRATION.md`](./MIGRATION.md) for breaking changes (stale agent cleanup, zip backup format, new `--rollback` / `--no-zip-backup` flags) and rollback instructions.
 
@@ -22,7 +23,7 @@ opencode-config-template/
 │   ├── AGENTS.md                # Container-specific instructions
 │   ├── .dockerignore
 │   ├── .opencode/
-│   │       ├── agents/              # 39 subagent .md files
+│   │       ├── agents/              # 38 subagent .md files
 │   │       └── skills/              # 126 skill directories
 │   └── README.md                # Docker usage guide
 ├── docker-compose.yml           # Docker Compose service definition
@@ -323,40 +324,7 @@ nvm install 24
 # 4. Direct download: https://nodejs.org/
 ```
 
-## Configuration Overview
-
-This repository uses a **custom configuration schema** that differs from official Crush schema. It implements a skill system with per-agent permissions for fine-grained control.
-
-### Key Differences from Official Crush
-
-| Aspect | Custom Template | Official Crush |
-|---------|----------------|----------------|
-| **Skills** | Hardcoded in agent prompts | Discovered from SKILL.md files |
-| **Permissions** | Custom `permission` field per agent | Same (standardized) |
-| **Config Schema** | Custom (divergent) | Official Crush schema |
-| **Discovery** | Manual (must edit prompts) | Automatic (scans `skills_paths`) |
-| **Maintenance** | Edit agent prompts directly | Create/edit SKILL.md files |
-
-### Skill Permission System
-
-This template implements **skill permissions** to control which skills agents can access.
-
-**Current configuration:**
-- **Build agent**: Full access to all tools, skills, and subagents
-- **Plan agent**: Read-only access (`read`, `glob`, `grep`) + subagent delegation (`task`) - no `bash`, `write`, `edit`, or MCP tools
-- **Subagents**: Skill-restricted access based on specialization
-
-**Benefits of this approach:**
-- ✅ Predictable behavior - Skills always available in prompts
-- ✅ Explicit control - Per-agent permission management
-- ✅ Works with custom workflows - Designed for this skill set
-- ✅ Minimal discovery latency - No file scanning needed
-
-**Trade-offs:**
-- ⚠️ Not Crush-compatible - Uses custom schema
-- ⚠️ Manual maintenance required - Adding skills requires editing agent prompts
-
-### MCP Servers
+## MCP Servers
 
 The configuration ships 26 MCP server entries. **6 are enabled by default:**
 
@@ -557,7 +525,7 @@ This repository implements **skill modularization** with 126 skills organized ac
 
 ### Agents
 
-39 agent `.md` files (plus 4 config-builtin agents defined directly in `config.json`: `build`, `plan`, `explore`, `general`) provide specialized task handling. Note: the 2 `*-primary-agent` files (`startup-founder`, `office-document`) are routing hubs but are declared with `mode: subagent`.
+38 agent `.md` files (plus 4 config-builtin agents defined directly in `config.json`: `build`, `plan`, `explore`, `general`) provide specialized task handling. Note: the 2 `*-primary-agent` files (`startup-founder`, `office-document`) are routing hubs but are declared with `mode: subagent`.
 
 #### Primary Agents
 
@@ -726,52 +694,4 @@ The setup scripts automatically:
 ### Template Files
 
 This repository includes inline default configurations in all setup scripts. No external template files are required.
-
-## Code Quality Skills
-
-This repository includes 7 new code quality skills for writing senior-engineer quality code:
-
-### Foundation Skills
-| Skill | Description |
-|------|-------------|
-| `solid-principles` | Enforce SOLID principles (SRP, OCP, LSP, ISP, DIP) - language-agnostic |
-| `clean-code` | Naming, small functions, self-documenting code - language-agnostic |
-
-### Architecture Skills
-| Skill | Description |
-|------|-------------|
-| `clean-architecture` | Vertical slicing, dependency rule, layers - language-agnostic |
-| `design-patterns` | GoF patterns (Creational, Structural, Behavioral) - language-agnostic |
-| `object-design` | Object stereotypes, value objects, aggregates - language-agnostic |
-
-### Analysis Skills
-| Skill | Description |
-|------|-------------|
-| `code-smells` | Detection and refactoring of common smells - language-agnostic |
-| `complexity-management` | Essential vs accidental complexity - language-agnostic |
-
-### Code Quality Subagents
-2 subagents provide specialized code quality analysis:
-
-| Subagent | Purpose | Skills Used | Built-in Delegation |
-|----------|---------|-------------|---------------------|
-| `architecture-review-subagent` | Architecture review and design patterns | clean-architecture, design-patterns, complexity-management, continuous-learning, verification-loop | `explore` |
-| `code-review-subagent` | Comprehensive code review (all quality skills) | All 7 quality skills + continuous-learning, complexity-management | `explore`, `general` |
-
-### Enhanced Subagent
-The `repo-ops-specialist-subagent` is a git repository operations specialist with comprehensive git/gh skills and built-in subagent delegation:
-
-| Subagent | Key Skills | Built-in Delegation |
-|----------|------------|---------------------|
-| `repo-ops-specialist-subagent` | version-bump-standard, semantic-release-convention, pr-creation-workflow, pr-merge-workflow, git-issue-labeler | `explore`, `general` |
-
-### Related Existing Skills
-| New Skill | Related Existing Skills |
-|-----------|------------------------|
-| `solid-principles` | typescript-dry-principle |
-| `clean-code` | typescript-dry-principle, docstring-generator |
-| `code-smells` | linting-workflow, python-ruff-linter, javascript-eslint-linter |
-| `design-patterns` | code-review-subagent |
-| `object-design` | test-generator-framework (value objects) |
-| `complexity-management` | tdd-workflow |
 

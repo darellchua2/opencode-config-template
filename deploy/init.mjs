@@ -539,6 +539,8 @@ async function cmdAdd(args, opts, reg, depMap) {
 
   const project = opts.project === true ? process.cwd() : opts.project;
   if (project) {
+    if (opts.format && opts.format !== "opencode")
+      console.error(`note: --format ${opts.format} applies to user scope only; --project uses opencode format.`);
     opts.project = project;
     await writeInstall(sel, opts, reg, depMap);
     return;
@@ -549,6 +551,8 @@ async function cmdAdd(args, opts, reg, depMap) {
 async function writeUserScopeInstall(sel, opts, reg, depMap) {
   const dry = !!opts.dryRun;
   const format = opts.format || "opencode";
+  if (!["opencode", "claude", "both"].includes(format))
+    die(`invalid format '${format}'. Use: opencode, claude, or both.`, 2);
   const doOc = format === "opencode" || format === "both";
   const doClaude = format === "claude" || format === "both";
 
@@ -617,13 +621,26 @@ async function checkStrictAllowlist(sel, opts) {
   if (opts.permit) return; // --permit handles it — skip the warning
   const config = await readJsonMaybe(USER_CONFIG);
   if (!config) return;
+  // skills live in permission.skill
   const ps = config.permission?.skill;
-  if (!ps || ps["*"] !== "deny") return;
-  const hidden = [...sel.agents, ...sel.skills].filter((name) => ps[name] !== "allow");
-  if (!hidden.length) return;
-  console.error(`\n⚠  STRICT ALLOWLIST DETECTED — ${hidden.length} item(s) installed but HIDDEN.`);
-  console.error(`   Add to config.json permission.skill, or re-run with --permit:`);
-  for (const name of hidden) console.error(`     "${name}": "allow"`);
+  if (ps && ps["*"] === "deny") {
+    const hidden = sel.skills.filter((name) => ps[name] !== "allow");
+    if (hidden.length) {
+      console.error(`\n⚠  STRICT ALLOWLIST DETECTED — ${hidden.length} skill(s) installed but HIDDEN.`);
+      console.error(`   Add to config.json permission.skill, or re-run with --permit:`);
+      for (const name of hidden) console.error(`     "${name}": "allow"`);
+    }
+  }
+  // agents live in agent.build.permission.task
+  const task = config.agent?.build?.permission?.task;
+  if (task && task["*"] === "deny") {
+    const hiddenAgents = sel.agents.filter((stem) => task[stem] !== "allow");
+    if (hiddenAgents.length) {
+      console.error(`\n⚠  STRICT TASK ALLOWLIST — ${hiddenAgents.length} agent(s) installed but HIDDEN.`);
+      console.error(`   Add to agent.build.permission.task, or re-run with --permit:`);
+      for (const stem of hiddenAgents) console.error(`     "${stem}": "allow"`);
+    }
+  }
 }
 
 async function warnMCPs(sel, depMap) {
@@ -649,13 +666,19 @@ async function permitMerge(sel) {
     await copyFile(USER_CONFIG, `${USER_CONFIG}.bak-${ts}`);
     console.log(`  backup: config.json.bak-${ts}`);
   }
+  // skills → permission.skill
   if (!config.permission) config.permission = {};
   if (!config.permission.skill) config.permission.skill = {};
-  for (const stem of sel.agents) config.permission.skill[stem] = "allow";
   for (const sname of sel.skills) config.permission.skill[sname] = "allow";
+  // agents → agent.build.permission.task (if strict allowlist exists)
+  let agentCount = 0;
+  const task = config.agent?.build?.permission?.task;
+  if (task && task["*"] === "deny") {
+    for (const stem of sel.agents) { task[stem] = "allow"; agentCount++; }
+  }
   await mkdir(USER_OC, { recursive: true });
   await writeFile(USER_CONFIG, JSON.stringify(config, null, 2) + "\n", "utf8");
-  console.log(`  merged permission.skill (${sel.agents.length + sel.skills.length} entries)`);
+  console.log(`  merged permission.skill (${sel.skills.length} skill entries${agentCount ? `, permission.task (${agentCount} agent entries)` : ""})`);
 }
 
 // Claude Code uses the SAME SKILL.md format (Agent Skills open standard).
