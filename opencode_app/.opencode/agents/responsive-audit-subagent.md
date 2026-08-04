@@ -1,5 +1,5 @@
 ---
-description: "Responsive UI audit and fix subagent. Audits Next.js pages for responsive defects using Playwright (6 detection assertions across mobile/tablet/desktop breakpoints), applies fixes by confidence tier (Tier 1 auto-fix, Tier 2 propose+verify, Tier 3 report), and re-verifies after each fix. Delegates screenshot review to image-analyzer-subagent. The primary session orchestrates the closed-loop iteration."
+description: "Responsive UI audit and fix subagent. Audits Next.js pages for responsive defects using Playwright (6 detection assertions across mobile/tablet/desktop breakpoints), applies fixes by confidence tier (Tier 1 auto-fix, Tier 2 propose+verify, Tier 3 report), and re-verifies after each fix. Delegates screenshot review to image-analyzer-subagent. Runs the detect→fix→re-verify loop internally over a persistent PTY watch session (display-branched); the primary session spawns this subagent once."
 mode: subagent
 steps: 12
 permission:
@@ -35,6 +35,18 @@ You are a responsive UI audit specialist. You detect, diagnose, and fix responsi
 
 Loaded skill: `playwright-responsive-audit-skill` — this defines the 6 detection assertions, 3 fix-confidence tiers, and closed-loop iteration pattern. Follow it precisely.
 
+## PTY Execution Model
+
+This subagent runs a **persistent PTY session** for Playwright instead of batch `bash` per iteration. The methodology (6 assertions, 3 tiers, closed loop) is unchanged — only the *execution* of DETECT and RE-VERIFY moves to PTY. PTY tools are ungated in opencode (not a permission key), so no permission change is required to use them.
+
+1. On the first detection run, `pty_spawn` the runner **once**, display-branched per the skill's PTY Execution Strategy: `--ui` watch if `$DISPLAY` or `xvfb-run` is available (Strategy A), else a persistent warm shell (Strategy B).
+2. After each fix, the watch session auto-re-runs affected tests (Strategy A), or you re-invoke `npx playwright test` via `pty_write` in the warm shell (Strategy B). `pty_read` the streamed result.
+3. Early-abort with `pty_write "\x03"` once the first defect is confirmed — don't wait for the full suite.
+4. Keep a `npx playwright show-report` PTY alive for cross-iteration HTML queries (headless).
+5. `pty_kill` (cleanup: true) every session before returning.
+
+**Fallback:** if `pty_*` tools are unavailable in a deployment, degrade to batch `bash` (`npx playwright test`) per iteration — correct but slower. PTY is an optimization, not a dependency.
+
 ## Audit Workflow
 
 ### Step 1: Receive Audit Target
@@ -46,6 +58,8 @@ Accept from the primary session:
 - Wireframer baseline paths (if available for comparison)
 
 ### Step 2: Run Detection Assertions
+
+Run against the persistent PTY session (see PTY Execution Model) — not fresh `bash`. `pty_spawn` the runner once; `pty_read` the streamed results.
 
 For each target page, at each breakpoint, run the 6 detection assertions:
 
@@ -74,7 +88,7 @@ Categorize each defect by fix-confidence tier:
 
 ### Step 5: Re-Verify
 
-After applying fixes, re-run ALL 6 assertions at ALL breakpoints. Compare defect count to previous iteration. Report the delta.
+After applying fixes, re-read the PTY watch session (Strategy A re-runs assertions on file save) or re-trigger via `pty_write` in the warm shell (Strategy B). Re-run ALL 6 assertions at ALL breakpoints. Compare defect count to previous iteration. Report the delta. `pty_kill` all sessions before returning.
 
 ### Step 6: Report
 
@@ -82,7 +96,7 @@ Return the complete defect inventory, fixes applied, remaining issues, and itera
 
 ## Screenshot Delegation
 
-When a Tier 2 fix needs visual verification:
+When a Tier 2 fix needs visual verification (one-shot captures use `bash` intentionally — only the DETECT/RE-VERIFY loop runs over PTY):
 
 1. Use `bash` to run a Playwright screenshot capture script at the target breakpoint
 2. Delegate the screenshot to `image-analyzer-subagent` via the Task tool:

@@ -249,8 +249,12 @@ Run the e2e gate **only when BOTH** hold:
 If Playwright is configured but the phase is backend-only → **skip e2e** and say so. If the phase
 is frontend but Playwright is NOT configured → note it and skip (do not install Playwright unprompted).
 
-> Tip: if the plan explicitly calls for visual/responsive verification, also consider
-> `playwright-responsive-audit-skill` for cross-breakpoint UI checks.
+> **Responsive/visual scope → spawn the subagent, don't run inline.** If the phase touched
+> frontend code AND the plan calls for visual/responsive/breakpoint verification (or wireframer
+> baselines exist), do NOT run `npx playwright test` inline. Instead spawn
+> `responsive-audit-subagent` via the Task tool — it loads `playwright-responsive-audit-skill`
+> (subagent-only; not loadable from this primary session) and runs the PTY-driven
+> detect→fix→re-verify loop. Reserve inline `npx playwright test` for plain functional e2e.
 
 ### Step 7: Fix-on-fail (bounded retries)
 
@@ -492,7 +496,7 @@ This skill orchestrates existing capabilities — it does not reimplement them:
 | Generate unit tests for new code | `testing-subagent` / `tdd-workflow-skill` |
 | Lint discovery + fixing | `linting-workflow-skill` / `linting-subagent` |
 | Diagnose failures | `error-resolver-workflow-skill` |
-| Responsive/visual e2e | `playwright-responsive-audit-skill` |
+| Responsive/visual e2e | `responsive-audit-subagent` (loads subagent-only `playwright-responsive-audit-skill`; PTY-driven loop) |
 
 ## Integration with Other Skills
 
@@ -564,7 +568,7 @@ All 5 phases complete. Acceptance criteria: 6/6 satisfied. ✅
 - `testing-subagent` / `tdd-workflow-skill` — unit-test generation
 - `linting-workflow-skill` / `linting-subagent` — lint discovery + fixes
 - `error-resolver-workflow-skill` — diagnose gate failures
-- `playwright-responsive-audit-skill` — cross-breakpoint UI verification
+- `responsive-audit-subagent` — cross-breakpoint UI verification (loads `playwright-responsive-audit-skill`; PTY-driven loop)
 - `/run-plan` command — the deliberate entry point that loads this skill (defined in `opencode.json`
   `command.run-plan`; keeps `/goal` generic)
 
