@@ -1,7 +1,7 @@
 **Issue**: #297
 **Title**: Remediate verified opencode-config drift (skill-count, category table, deprecated `tools:` block)
 **Branch**: `fix/297-audit-remediation`
-**Status**: Complete (Phases 1-6). Tech-debt items 6.4/6.5 split to #299.
+**Status**: Complete (Phases 1-7). Tech-debt items 6.4/6.5 split to #299.
 **PR**: #298 (→ `dev`)
 
 > **Provenance note.** This PLAN supersedes the initial audit report that informed issue #297. A re-audit (grounded in verbatim command output) refuted 4 of the original 5 items: `zai-vision-analysis-skill` was already retired; the agent count is genuinely 39 (not 38); the fabricated `deploy/agent-tiers.json` and "long-context tier" do not exist; and `pptx-specialist` is correctly on `glm-5-turbo`. Only the `tools:` block survived. The re-audit additionally surfaced real skill-count drift (113→115) and a category table that omits 3 skills — those are the primary work here.
@@ -94,6 +94,26 @@
     — **Done (intentionally skipped):** after the 6.2 prune only the 2 active denies remain; the broader `server*` form (no underscore) is intentionally **kept** because it is a *safer* (more permissive) deny than `server_*` — it cannot accidentally let a tool slip through. Documented as a deliberate choice.
 - [x] **6.8** **[nit]** pre-1.1.1 backward-compat safety net — `opencode_app/opencode.json`
     — **Done (documented):** the forward-correct decision stands — `tools` fully removed, `permission` is authoritative. The template targets current opencode; the 2 affected servers are unused. No transition window retained (would re-introduce deprecated syntax).
+
+### Phase 7: Configurator frontmatter + deploy-quality (from the codegraph/read_mcp_resource/frontmatter investigation)
+
+> Driven by a follow-up investigation: (a) the `read_mcp_resource` symptom was traced to a **stale deployed `AGENTS.md`** — source was already clean, but `setup.sh` defaulted to NOT overwriting an existing file; (b) a skills-doc audit found `metadata` must be a **string-to-string map** but ~28 skill metadata values were arrays.
+
+- [x] **7.1** Convert array metadata values → quoted comma-separated strings across 27 skills (28 values)
+    — **Done:** `languages: [typescript, javascript]` → `languages: "typescript, javascript"`; `frameworks: [react, nextjs]` → `"react, nextjs"`. Verified: 0 non-string metadata remaining; all converted skills YAML-valid.
+- [x] **7.2** Fix `autoresearch-core-skill` `protocol-source: true` (boolean) → `"true"` (string)
+    — **Done:** metadata is now fully string-to-string conformant per https://opencode.ai/docs/skills/.
+- [x] **7.3** Enhance `deploy/setup.sh` AGENTS.md deploy to **detect staleness** (diff source vs dest) and warn loudly + default to overwrite
+    — **Done:** `diff -q` check; if identical → silent `log_info`; if stale → 2× `log_warn` (explains risk: stale shipped instructions cause incorrect agent behavior) + prompt default `y`. Fixes the root cause of the stale-deployed-AGENTS.md / `read_mcp_resource` symptom. `bash -n` clean.
+- [x] **7.4** Mirror 7.3 in `deploy/setup.ps1` (Get-FileHash comparison + stale warning + default `$true`)
+    — **Done:** PowerShell parity via `Get-FileHash` SHA256 comparison.
+- [ ] **7.5** **[flagged — pre-existing, NOT auto-fixed]** `git-compact-commits-skill` + `git-semantic-commits-skill` frontmatter `description` contains `says: "..."` (colon+space+quote) which breaks strict YAML (`ScannerError: mapping values are not allowed here`). opencode's parser may handle these leniently (skills load), but they are non-conformant. **Action deferred** — the fix (quote/block-scalar the description) touches skill content and warrants review; tracked here, not in #297 scope.
+
+### Phase 7 acceptance
+
+- [x] All shipped skill `metadata` is string-to-string (verified via `yaml.safe_load` across all SKILL.md; 0 non-string values).
+- [x] `setup.sh` / `setup.ps1` warn loudly + default to overwrite when deployed AGENTS.md is stale (diff/hash-detected); silent when up-to-date.
+- [ ] 7.5 — 2 pre-existing ScannerError descriptions (flagged, deferred).
 
 ## Acceptance Criteria
 
