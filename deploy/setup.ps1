@@ -2413,6 +2413,35 @@ function ar-disable { Remove-Item Env:\AUTORESEARCH_PROTOCOL -ErrorAction Silent
             }
         }
     }
+
+    # Register the PAYG `zai` provider in opencode's native auth store
+    # (~/.local/share/opencode/auth.json) so `opencode auth list` shows it and
+    # the built-in `zai` provider resolves. Mirrors the Docker entrypoint + the
+    # bash register_zai_auth helper. MERGES — never clobbers existing entries.
+    if (-not [string]::IsNullOrWhiteSpace($ZaiApiKey)) {
+        $authDir = Join-Path $HOME ".local\share\opencode"
+        $authFile = Join-Path $authDir "auth.json"
+        if ($DryRun) {
+            Write-Host "[DRY-RUN] Would register zai credential in $authFile"
+        } else {
+            if (-not (Test-Path $authDir)) {
+                New-Item -ItemType Directory -Path $authDir -Force | Out-Null
+            }
+            $auth = @{}
+            if (Test-Path $authFile) {
+                try {
+                    $obj = Get-Content $authFile -Raw | ConvertFrom-Json
+                    $obj.PSObject.Properties | ForEach-Object { $auth[$_.Name] = $_.Value }
+                } catch {
+                    $auth = @{}
+                }
+            }
+            $auth["zai"] = [PSCustomObject]@{ type = "api"; key = $ZaiApiKey }
+            ($auth | ConvertTo-Json -Depth 10) | Set-Content -Path $authFile -Encoding UTF8
+            Write-Host "  auth.json providers: $(($auth.Keys) -join ', ')"
+            Write-LogSuccess "Registered zai credential in $authFile (native opencode auth store)"
+        }
+    }
 }
 
 ################################################################################
