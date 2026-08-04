@@ -44,15 +44,19 @@ than reimplementing them.
 
 Use this skill when:
 
-- The user types **`/run-plan PLAN-*.md`** (the intended entry point).
-- The user wants the whole plan done hands-off with verification + commit + push per phase.
+- The user drives a plan run through **`/goal`** (the **primary** path): e.g.
+  `/goal "load plan-automation-loop-skill and implement PLAN-*.md" --max-turns 40 --budget 400k`.
+  This wraps the skill in the plugin's hard guardrails (auto-resume, token/duration budgets,
+  compaction-survival, evidence-gated completion).
+- The user types **`/run-plan PLAN-*.md`** (the **fallback** path — plain command, soft guardrails
+  only, no plugin runtime hooks; use for short/watched runs).
 - The user says "fully implement the plan", "run the plan to completion", "automation loop".
 
 **Trigger phrases:**
 
-- `run-plan` / `run plan` / `fully implement PLAN` / `implement PLAN-*.md`
-- `implement the plan` / `execute plan fully`
-- `implement plan and commit per phase` / `automation loop`
+- `implement PLAN-*.md` / `fully implement PLAN` / `implement the plan`
+- `run plan to completion` / `automation loop`
+- `implement plan and commit per phase`
 - "implement the plan with full automation"
 
 **Do NOT use me when:**
@@ -61,11 +65,13 @@ Use this skill when:
 - The user wants to plan/preview without committing → use `plan-execution-skill` (no push).
 - No PLAN file exists → create one first via `ticket-plan-workflow-skill`.
 
-> **`/goal` vs `/run-plan`.** `/goal` is the general-purpose "set a goal and auto-continue" command
-> and must stay generic. `/run-plan` is the **deliberate** trigger for THIS skill — its template
-> explicitly loads `plan-automation-loop-skill` and forwards `$ARGUMENTS` (the plan file) to the
-> `build` agent. Do not intercept generic `/goal` usage; only `/run-plan` (or an explicit plan-
-> execution request) loads this skill.
+> **`/goal` + skill (primary) vs `/run-plan` (fallback).** `/goal` is plugin-owned: it stores the
+> objective, auto-continues on idle, and only stops on an evidence-gated `[goal:complete]`/
+> `[goal:blocked]`. The objective text loads THIS skill (named explicitly, or via the trigger
+> phrases above). `/run-plan` is a plain command that loads the skill directly with no runtime
+> guardrails — keep it for short runs or when the plugin's experimental hooks are flaky on your
+> build. **When running under `/goal`, the skill MUST emit `[goal:*]` markers (see Guardrails) so
+> the plugin honors the terminal state.**
 
 ## Prerequisites
 
@@ -138,16 +144,22 @@ If on `main`/`master`, **stop and ask** — never auto-commit to a protected bra
 
 ### Step 4: The Phase Loop
 
+Enforce the **Guardrails & Budget** caps (see that section) across the whole run — check them
+before starting each phase and after each fix attempt.
+
 ```text
 for each phase in plan order (Phase 1, 2, … N):
+    [guardrail] if phases_done >= MAX_PHASES or total_fixes >= MAX_FIXES → HALT + [goal:blocked]
     4a. IMPLEMENT  — execute every atomic step in the phase (delegate per Step 4a matrix)
                      keep a per-step WORK LOG (what was done, files touched) for Step 8
+                     if functions/classes added or changed → documentation-subagent adds docstrings
     4b. TEST NEW CODE — ensure newly added code has unit tests (Step 5)
     4c. VERIFY     — run the Phase Verification Gate (Step 6): lint → build → unit → e2e
     4d. FIX-ON-FAIL — if any gate step fails, fix and re-run (max 3 attempts; Step 7)
                      append each applied fix to the failing step's WORK LOG
-    4e. ON GREEN   — mark checkbox [x] + write the `— Done:` traceability line under each
-                     completed step in the PLAN (Step 8)
+                     increment total_fixes; if total_fixes >= MAX_FIXES → HALT + [goal:blocked]
+    4e. ON GREEN   — tick ALL checkboxes (phase-level + every sub-step + satisfied acceptance
+                     criteria) + write the `— Done:` traceability line under each step (Step 8)
     4f. COMMIT     — one atomic phase commit (Step 9)
     4g. PUSH       — push the branch (Step 9)
     4h. REPORT     — one-line phase status, then continue to next phase
@@ -169,9 +181,16 @@ LOG** (what was implemented + files touched) — Step 8 turns this into the trac
 | Test generation | `testing-subagent` | Framework-aware test writing |
 | Refactor / DRY | `code-review-subagent` | SOLID + clean-code expertise |
 | Lint setup/fix | `linting-subagent` (or `linting-workflow-skill`) | Multi-language lint |
-| Documentation | `documentation-subagent` | Standards-compliant docs |
+| Docstrings for new/changed functions & classes | `documentation-subagent` | Language-specific docstrings (PEP 257 / Javadoc / JSDoc / XML docs) via `docstring-generator-skill` |
+| Other docs (README, ADRs, guides) | `documentation-subagent` | Standards-compliant docs |
 | Build/deploy/git | Handle directly | Needs full bash |
 | Simple implementation | Handle directly | Straightforward |
+
+**Docstring rule (mandatory for code phases):** if any step in the phase **adds or modifies a
+function, method, or class**, delegate docstring updates to `documentation-subagent` as part of
+implementation — *before* the gate — so doc coverage ships in the same phase commit. Skip only for
+pure-data/trivial changes (constants, type aliases with no logic). The gate does not enforce
+docstrings, but a code phase with undocumented public functions is incomplete.
 
 Verify each step's **`Done when`** signal passes before considering the step complete.
 
@@ -256,11 +275,25 @@ section instead.)
 
 **Never push red code. Never commit a half-passing gate.** A failing gate halts the loop.
 
-### Step 8: Mark checkbox + record traceability
+### Step 8: Tick every checkbox + record traceability
 
-Once the gate is green, update the PLAN for each completed atomic step **in two parts**: flip the
-checkbox AND add a `— Done:` sub-item under the step capturing what was done + fixes applied. Use
-`edit` (Read the PLAN first). This is the traceability record.
+Once the gate is green, update the PLAN for the completed phase. Tick **every** checkbox the phase
+owns, then add a `— Done:` traceability line under each atomic step. Use `edit` (Read the PLAN
+first). **A completed phase must leave zero unchecked boxes in its own section.**
+
+**Tick ALL of these (in order):**
+
+1. **The phase-level checkbox** — if the plan has one (e.g. `- [ ] Phase N`, or a `[ ]` on the
+   `### Phase N:` header line), flip it `- [ ]` → `- [x]`.
+2. **Every atomic sub-step** in the phase: `- [ ] **N.M** …` → `- [x] **N.M** …`. Do not skip any —
+   not even "trivial" ones. An unchecked box inside a "complete" phase breaks progress tracking and
+   breaks resume (the loop resumes at the first `- [ ]` it finds).
+3. **Any acceptance-criteria items** (in `## Acceptance Criteria`) that this phase satisfied:
+   `- [ ]` → `- [x]`. A criterion spanning multiple phases is ticked when the last contributing
+   phase lands.
+
+Sanity-check after editing: `grep -n "^- \[ \]" <PLAN>` inside the completed phase should return
+nothing. Then add the `— Done:` traceability line per step (below).
 
 **Before (the step as authored):**
 
@@ -336,15 +369,77 @@ Step 8 if you need the hash inside the Done lines.)
 
 ### Step 10: Final validation
 
-When the last phase completes, verify the plan's acceptance criteria:
+When the last phase completes, sweep the PLAN for any unchecked box — phases, sub-steps, and
+acceptance criteria should all be `[x]`:
 
 ```bash
-# acceptance items still unchecked?
-grep -n "^- \[ \]" "<PLAN file>"      # within the Acceptance Criteria section
+grep -n "^- \[ \]" "<PLAN file>"        # ANY unchecked box anywhere = incomplete
 ```
 
-If all acceptance criteria are satisfied → report success. If any remain unchecked but all phases
-are done → report which criteria are unmet and ask the user (don't fabricate completion).
+If the grep is empty → all phases, sub-steps, and acceptance criteria are complete → report
+success. If any `- [ ]` remains but all phases ran → report exactly which items are unmet and ask
+the user (don't fabricate completion, don't tick boxes whose `Done when` isn't satisfied).
+
+## Guardrails & Budget
+
+`/run-plan` runs on opencode's **native agent loop** — by default it has NO runtime guardrails
+(no idle auto-resume, no real token counting, no compaction-survival). To prevent runaway runs,
+enforce these **soft, instruction-level budgets**. The agent obeys them; they are not enforced by
+the runtime. Track each counter across the whole invocation.
+
+| Guardrail | Default | Override (in the arg) | On breach |
+|-----------|---------|-----------------------|-----------|
+| Max phases per run | 12 | `--max-phases N` | HALT: report progress, emit `[goal:blocked]`, do not start the next phase |
+| Max fix attempts PER gate step | 3 | — (Step 7) | HALT that phase (already in Step 7) |
+| Max TOTAL fix attempts across the run | 20 | `--max-fixes N` | HALT: `[goal:blocked] budget exhausted` |
+| Protected branch | `main`/`master` | — | HALT before the first commit (Step 3) |
+
+**Enforcement:**
+
+- Parse optional overrides from `$ARGUMENTS` first: `--max-phases N`, `--max-fixes N` (integers).
+  Unknown/garbage flags are ignored, not folded into the plan path.
+- Before each phase: `phases_done >= MAX_PHASES` → stop.
+- After each fix attempt: increment `total_fixes`; `total_fixes >= MAX_FIXES` → stop.
+- A HALT is terminal for the invocation — summarize what's done, what remains, the next concrete
+  step, and the resume command. `/run-plan <PLAN>` is idempotent (completed phases stay `[x]`).
+
+**Completion markers (structured terminal state):**
+
+The primary path is `/goal`, whose plugin **only** honors `[goal:complete]`/`[goal:blocked]` (with
+a preceding `[goal:evidence]` line) as the terminal state. Emitting `[plan:*]` under `/goal` would
+leave the plugin auto-continuing past completion. Always end the run with exactly one terminal
+block:
+
+```text
+# success — all phases done + acceptance criteria met
+[goal:evidence] <one-line summary: phases done, gate results, key files, commit range>
+[goal:complete]
+
+# halted / blocked
+[goal:blocked] <concrete reason — failing gate, budget exhausted, needs user input>
+```
+
+Rules:
+
+- `[goal:complete]` is only valid when immediately preceded by a non-empty `[goal:evidence]` line
+  (commands run + results). A bare `[goal:complete]` is rejected by the plugin and it keeps going.
+- `[goal:blocked]` must state the specific blocker on the line above / inline.
+- Markers go on their own final line(s) of the assistant response.
+- **Fallback (`/run-plan`, no plugin):** the same `[goal:*]` lines are harmless structured text
+  (nothing honors them, but the terminal state is still clear to the reader). `[plan:*]` aliases
+  are also acceptable there.
+
+> **Want HARD guardrails?** The soft budgets above are obeyed by the agent, not enforced by the
+> runtime. For runtime-enforced turn/token/duration limits, idle auto-resume, compaction-survival,
+> restart-recovery, and evidence-gated completion, drive the skill through `/goal` — the plugin
+> wraps it with all of those:
+> ```
+> /goal "load plan-automation-loop-skill and implement PLAN-x.md" \
+>   --max-turns 40 --budget 400k --success "all phases [x] and gate green"
+> ```
+> Tradeoff: that uses `/goal` (so it's no longer the "generic" path). **`/run-plan`** = simple,
+> deliberate, soft-guardrailed, self-contained. **`/goal` + skill** = runtime-guarded autonomy for
+> long hands-off runs. Pick per run; both load the same skill.
 
 ## Reporting format
 
@@ -373,6 +468,8 @@ On a halted phase:
 Stop the loop (do not advance) when any of these is true:
 
 - **Gate red after 3 fix attempts** → report blocker, ask user.
+- **Phase budget hit** (`phases_done >= MAX_PHASES`, default 12) → HALT, emit `[goal:blocked]`.
+- **Global fix budget hit** (`total_fixes >= MAX_FIXES`, default 20) → HALT, emit `[goal:blocked] budget exhausted`.
 - **Unrecoverable error** (missing dependency, env issue, permissions) → report, ask user.
 - **User intervention needed** (architectural decision, ambiguous step) → ask, then resume.
 - **User says pause/stop** ("stop", "pause", "halt") → stop cleanly at the current phase boundary.
