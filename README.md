@@ -352,15 +352,15 @@ Instead of editing 4–9 JSON entries to enable a logical group of MCP servers, 
 ```bash
 # User-space deploy (setup.sh)
 ./deploy/setup.sh --enable-pack autodesk              # one pack
-./deploy/setup.sh --enable-pack autodesk,microsoft    # multiple
-./deploy/setup.sh --enable-pack google --dry-run      # preview without writing
+./deploy/setup.sh --enable-pack autodesk,markitdown   # multiple
+./deploy/setup.sh --enable-pack markitdown --dry-run  # preview without writing
 ./deploy/setup.sh --quick --enable-pack markitdown    # combine with other modes
 
 # Windows (setup.ps1)
-./deploy/setup.ps1 -EnablePack autodesk,microsoft
+./deploy/setup.ps1 -EnablePack autodesk,markitdown
 
 # Docker (build-time)
-docker compose build --build-arg OPENCODE_PACKS=autodesk,microsoft
+docker compose build --build-arg OPENCODE_PACKS=autodesk,markitdown
 ```
 
 Default state of every pack is **OFF** — existing deployments are unaffected unless a pack is explicitly requested. Empty/omitted `--enable-pack` is a no-op. Unknown pack names exit non-zero with a clear error. See [`PLAN.md`](PLAN.md) (issue #268) for the full design and the opencode-tooling review that shaped it.
