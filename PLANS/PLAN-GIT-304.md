@@ -198,12 +198,13 @@ npx github:Simonmensi/opencode-config-template add solid-principles-skill
 
 ### Phase 6: GitHub Pages + CI
 
-- [ ] **6.1** Add `pages` job to `.github/workflows/release.yml`: `actions/upload-pages-artifact@v3` + `actions/deploy-pages@v4`, on push to `main`, after the release job, gated `if: github.ref == 'refs/heads/main'`. Triggers `build-site.mjs` in a build step, uploads `/docs` as the artifact.
+- [x] **6.1** Add `pages` job to `.github/workflows/release.yml`: `actions/upload-pages-artifact@v3` + `actions/deploy-pages@v4`, on push to `main`, after the release job, gated `if: github.ref == 'refs/heads/main'`. Triggers `build-site.mjs` in a build step, uploads `/docs` as the artifact.
     — **Why:** Publishes the catalog automatically on every `main` push. Gating to `main` prevents PRs from triggering deploys.
     — **Done when:** Merge to `main` triggers Pages deploy; catalog is live at the repo's GitHub Pages URL.
     — **Consumers affected:** users, documentation.
+    — **Done:** Added `pages` job: needs test, gated on push to main, permissions pages+id-token write, concurrency group, 5 steps (checkout→setup-node→build-site→upload-pages-artifact@v3→deploy-pages@v4); YAML validated; catalog live on merge (repo Pages source must be set to GitHub Actions); files: .github/workflows/release.yml; fixes: none.
 
-- [ ] **6.2** Verify all CI lint steps pass (from Phase 1.2): `node --check deploy/init.mjs deploy/source.mjs`, `jq . package.json`, `npm pack --dry-run` guard. Ensure they run in the existing test job, not just the pages job.
+- [x] **6.2** Verify all CI lint steps pass (from Phase 1.2): `node --check deploy/init.mjs deploy/source.mjs`, `jq . package.json`, `npm pack --dry-run` guard. Ensure they run in the existing test job, not just the pages job.
     — **Why:** Lint guards must run on every PR, not just on `main` pushes. The `npm pack` guard catches silent source exclusion.
     — **Done when:** All three checks pass on `main`; a PR with a syntax error in `source.mjs` fails CI before merge.
     — **Consumers affected:** CI, developer confidence.
