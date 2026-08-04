@@ -1,7 +1,8 @@
 **Issue**: #297
 **Title**: Remediate verified opencode-config drift (skill-count, category table, deprecated `tools:` block)
 **Branch**: `fix/297-audit-remediation`
-**Status**: Complete
+**Status**: Phases 1-5 complete; Phase 6 (post-review findings) — open
+**PR**: #298 (→ `dev`)
 
 > **Provenance note.** This PLAN supersedes the initial audit report that informed issue #297. A re-audit (grounded in verbatim command output) refuted 4 of the original 5 items: `zai-vision-analysis-skill` was already retired; the agent count is genuinely 39 (not 38); the fabricated `deploy/agent-tiers.json` and "long-context tier" do not exist; and `pptx-specialist` is correctly on `glm-5-turbo`. Only the `tools:` block survived. The re-audit additionally surfaced real skill-count drift (113→115) and a category table that omits 3 skills — those are the primary work here.
 
@@ -73,6 +74,37 @@
 - [x] **5.3** opencode.json VALID, no top-level `tools` key ✓
 - [x] **5.4** agent count == 39 (no regression) ✓
 
+### Phase 6: Post-Review Findings (PR #298 — architecture + opencode-tooling review)
+
+> Both reviewers returned **APPROVE WITH NITS**. No blockers; the migration is verified behavior-preserving and counts are correct end-to-end. The findings below are tracked for resolution. Disposition tags: **[apply]** safe to apply now · **[decision]** maintainer judgment needed · **[tech-debt]** systemic/pre-existing, separate scope · **[nit]** optional.
+
+- [ ] **6.1** **[apply]** Add `uiux-reviewer` + `startup-ceo` to tier table — `AGENTS.md:33-34`
+    — **Finding (opencode-tooling Minor-4, broadened audit):** `uiux-reviewer-subagent.md:4` = `glm-5.1` and `startup-ceo-subagent.md:4` = `glm-5-turbo`, but neither is named in its tier row. Same class as the `responsive-audit` fix (4.1).
+    — **Action:** append `uiux-reviewer` to the glm-5.1 row, `startup-ceo` to the glm-5-turbo row.
+    — **Done when:** both names appear in their tier rows; `grep -H "^model:" agents/*.md` cross-check shows no remaining unlisted subagent.
+- [ ] **6.2** **[decision]** Prune 92%-inert `permission` block — `opencode_app/opencode.json:245-271`
+    — **Finding (opencode-tooling Minor-1):** 23 of 25 entries are no-ops — 19 denies duplicate `mcp.*.enabled:false`; 4 allows restate the `allow` default. Only `zai-vision-mcp-server` + `zai-zread` denies are active (`enabled:true`, denied, no agent overrides). Migration was faithful; this is pre-existing redundancy.
+    — **Action (options):** (a) set those 2 servers to `enabled:false` + delete the entire `permission` block; (b) keep the 2 active denies, prune the 23 redundant; (c) keep the faithful migration as-is.
+    — **Decision needed:** option (a) disables 2 currently-enabled-but-unused ZAI servers (loaded into context, permanently unusable) — a behavior change, not just cleanup.
+- [ ] **6.3** **[apply]** Fix stale `permission.read` claim — `deploy/.AGENTS.md`
+    — **Finding (opencode-tooling Minor-3):** deployed AGENTS.md claims `permission.read: { "*": "allow", "mcp:*": "deny" }` exists in opencode.json; the actual `permission` block has **no `read` key**. Stale doc adjacent to the migration.
+    — **Action:** either remove the stale claim or add the `read` rule to `opencode.json`.
+- [ ] **6.4** **[tech-debt]** Verbose debug-echo contradiction — `deploy/setup.sh:2248+`, `deploy/setup.ps1:1250+`
+    — **Finding (architecture):** the deferred listing (PLAN §2.4 flag) prints a **correct dynamic headline** (`✓ skills: 115`) followed by a per-category breakdown summing to **90** (missing 6 categories). Internally contradictory diagnostic for anyone running `--status`.
+    — **Action:** rebuild the listing to include all 18 categories (separate task), OR at minimum update the PLAN flag to state the contradiction explicitly (not just "pre-existing broken").
+- [ ] **6.5** **[tech-debt]** Hardcoded-count anti-pattern root fix — `deploy/setup.sh`, `deploy/setup.ps1`
+    — **Finding (architecture):** 3rd remediation cycle of count drift (PLAN-GIT-237, now -297). `setup.sh:2246` already computes `skill_count` dynamically; the main banner heredoc (`:414`, unquoted) supports `${var}` interpolation, yet headlines hardcode `115` as a literal.
+    — **Action:** compute the total once at function entry and interpolate `${skill_count}` into all banner headlines. Per-category breakdowns stay hardcoded (categorization is a human-maintained mapping). Eliminates the total-count drift surface.
+- [ ] **6.6** **[apply]** Sync-rules table under-specifies count locations — `AGENTS.md` sync-rules table
+    — **Finding (opencode-tooling Minor-5):** the table names the right files but doesn't signal that each deploy script has **multiple** count surfaces (setup.sh alone has 3: main banner, summary banner, verbose debug-echo). This is why the PLAN missed 3 of 7 locations during scoping.
+    — **Action:** add a note that count changes must be propagated to **every** banner/summary occurrence (grep the old number across the file), not just the first found.
+- [ ] **6.7** **[nit]** Wildcard key style alignment — `opencode_app/opencode.json:246-270`
+    — **Finding (opencode-tooling Nit-1):** repo uses `codegraph*` (no underscore); the docs' canonical example is `mymcp_*` (with underscore). Both valid (`*` matches zero+ chars); no collision today.
+    — **Action:** optional — align to the `<server>_*` form to match the documented convention.
+- [ ] **6.8** **[nit]** pre-1.1.1 backward-compat safety net — `opencode_app/opencode.json`
+    — **Finding (architecture Nit):** removing `tools` entirely drops the safety net for opencode <1.1.1 (where `permission` tool-name patterns may not be recognized → denies default to `allow`). Low probability — the template targets current opencode, and the 2 affected servers are unused.
+    — **Action:** document the forward-correct decision, or temporarily keep both `tools` + `permission` during a transition window.
+
 ## Acceptance Criteria
 
 - [x] All skill-count references across `README.md`, `deploy/setup.sh`, `deploy/setup.ps1`, `opencode_app/README.md` read **115** (and `18 categories`).
@@ -80,6 +112,15 @@
 - [x] `opencode_app/opencode.json` has no top-level `tools` key; equivalent top-level `permission` object holds all 25 former entries; JSON parses.
 - [x] `AGENTS.md` tier table names `responsive-audit` under glm-5.1.
 - [x] Agent count remains 39 (unchanged) — no regression.
+
+### Phase 6 acceptance (post-review)
+
+- [ ] **[apply]** 6.1 — `uiux-reviewer` + `startup-ceo` added to tier table; no subagent model left unlisted.
+- [ ] **[decision]** 6.2 — maintainer decides on the inert `permission` block (prune / disable-2-servers / keep-as-is); decision recorded.
+- [ ] **[apply]** 6.3 — stale `permission.read` claim in `deploy/.AGENTS.md` reconciled (removed or rule added).
+- [ ] **[tech-debt]** 6.4 + 6.5 — either fixed here or split into a follow-up issue (the debug-echo rebuild + dynamic-count root fix).
+- [ ] **[apply]** 6.6 — sync-rules table notes multi-occurrence count propagation.
+- [ ] **[nit]** 6.7 + 6.8 — decision recorded (apply or explicitly skip).
 
 ## Out of Scope (explicitly NOT done — verified non-issues)
 
