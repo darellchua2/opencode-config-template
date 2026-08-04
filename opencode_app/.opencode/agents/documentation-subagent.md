@@ -39,12 +39,8 @@ Coverage Documentation:
   - Follows industry standards for coverage reporting
 
 Reading Source Documents:
-- When extracting text from binary office docs (PDF/DOCX/PPTX) for documentation cross-referencing,
-  prefer the `markitdown` MCP over `image-analyzer-subagent` (faster, preserves text fidelity,
-  no vision-token cost). Load `markitdown-mcp-skill` for the decision tree.
-- Note: `bash: deny` in this agent's permissions does NOT block MCP tool calls —
-  MCP tool access is session-inherited from `opencode.json` `tools["markitdown*"]`,
-  separate from bash permission.
+- For binary document extraction (PDF/DOCX/PPTX), follow the AGENTS.md → Office Document Extraction Routing rule (markitdown → docling → image-analyzer → pdf-specialist).
+- Note: `bash: deny` in this agent's permissions does NOT block MCP tool calls — MCP tool access is session-inherited from `opencode.json` `permission.tool`, separate from bash permission.
 
 Workflow:
 1. Identify the code elements needing documentation

@@ -24,7 +24,7 @@ opencode-config-template/
 │   ├── .dockerignore
 │   ├── .opencode/
 │   │       ├── agents/              # 36 subagent .md files
-│   │       └── skills/              # 125 skill directories
+│   │       └── skills/              # 126 skill directories
 │   └── README.md                # Docker usage guide
 ├── docker-compose.yml           # Docker Compose service definition
 ├── .env.example                 # Environment variable template
@@ -325,7 +325,7 @@ nvm install 24
 
 ## MCP Servers
 
-The configuration ships 13 MCP server entries. **6 are enabled by default:**
+The configuration ships 14 MCP server entries. **6 are enabled by default:**
 
 | Server | Type | Purpose |
 |--------|------|---------|
@@ -336,7 +336,7 @@ The configuration ships 13 MCP server entries. **6 are enabled by default:**
 | `zai-web-reader` | remote | Web page content extraction |
 | `zai-zread` | remote | GitHub repository search/reading |
 
-The remaining 7 (Autodesk, `next-devtools`, `web-search-prime`, `markitdown`) are `enabled: false` and opt-in. To enable one, set `"enabled": true` (and grant its tools in the `tools` block) in `config.json`.
+The remaining 8 (Autodesk, `next-devtools`, `web-search-prime`, `markitdown`, `docling`) are `enabled: false` and opt-in. To enable one, set `"enabled": true` (and grant its tools in the `permission.tool` block) in `config.json`.
 
 #### Provider Packs — deploy-time MCP toggle (#268)
 
@@ -346,6 +346,7 @@ Instead of editing 4–9 JSON entries to enable a logical group of MCP servers, 
 |------|----------------|----------|
 | `autodesk` | autodesk-revit, autodesk-model-data, autodesk-fusion, autodesk-help | `AUTODESK_API_KEY` |
 | `markitdown` | markitdown | Python launcher (auto-installed by `setup.sh`; baked into Docker image) |
+| `docling` | docling | Python + `docling-mcp[local]` (~3-4 GB; first convert downloads models from huggingface.co) |
 | `nextjs` | next-devtools | A running Next.js dev server |
 | `zai` | zai-web-search-prime | `ZAI_API_KEY` |
 
@@ -511,7 +512,7 @@ This repository implements **skill modularization** with 125 skills organized ac
 | **Agent Optimization** (7) | continuous-learning, eval-harness, strategic-compact, verification-loop, search-first, context-budget, agent-introspection-debugging | AI agent session optimization, research-first workflow, context auditing, and agent debugging |
 | **Autoresearch** (4) | autoresearch-core-skill, autoresearch-ml-skill, autoresearch-code-skill, autoresearch-research-skill | Autonomous research loops: 5-stage Understand→Hypothesize→Experiment→Evaluate→Log methodology. ML training (GPU), code optimization, literature review. Evaluated by mechanical `{"pass":bool,"score":N}` — no LLM self-judgment. Ported from uditgoenka/autoresearch + karpathy/autoresearch (MIT). |
 | **Startup/Business** (3) | startup-pitch-deck-skill, startup-business-docs-skill, construction-bd-skill | Startup pitch decks, business documentation, construction proposals |
-| **Configuration** (2) | codegraph-setup-skill, markitdown-mcp-skill | CodeGraph and markitdown MCP setup |
+| **Configuration** (3) | codegraph-setup-skill, markitdown-mcp-skill, docling-mcp-skill | CodeGraph, markitdown, and docling MCP setup |
 | **Security** (2) | security-audit-skill, authentication-authorization-skill | Security auditing, vulnerability scanning, and auth implementation |
 | **DevOps** (4) | docker-containerization-skill, monorepo-management-skill, database-migration-skill, logging-observability-skill | Containerization, monorepos, database migrations, and observability |
 | **Planning & Alignment** (4) | grilling-skill, domain-modeling-skill, grill-with-docs-skill, grill-me-skill | Relentless interview/grilling sessions and domain model (CONTEXT.md glossary + ADR) capture |

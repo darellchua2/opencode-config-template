@@ -126,7 +126,7 @@ Repeat until the client's direction is clear:
 ### Image routing
 If a client-shared screenshot/reference image must be interpreted, **delegate to `image-analyzer-subagent`** — do not attempt to interpret images inline.
 
-**Reading client-provided source docs (briefs, decks, vision inputs as PDF/DOCX/PPTX):** prefer the `markitdown` MCP (load `markitdown-mcp-skill` for the decision tree) over `image-analyzer-subagent` for text-heavy content — faster, preserves text fidelity, cheaper. Reserve `image-analyzer-subagent` for diagrams, charts, or scanned/image-only PDFs.
+**Reading client-provided source docs (briefs, decks, vision inputs as PDF/DOCX/PPTX):** follow the AGENTS.md → Office Document Extraction Routing rule (markitdown → docling → image-analyzer → pdf-specialist).
 
 ## What This Subagent Returns
 

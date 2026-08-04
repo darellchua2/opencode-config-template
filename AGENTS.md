@@ -109,3 +109,16 @@ Additive signal fields (e.g., `NEEDS_GIT_BRANCH_SETUP: true`) are allowed beyond
 ## Extract-then-Delegate Pattern
 
 When a subagent needs domain knowledge, the primary agent loads the skill, extracts relevant parameters, and passes ONLY those params to the subagent. This keeps heavy knowledge in the compactable primary context rather than the subagent's isolated context.
+
+## Office Document Extraction Routing
+
+Binary office docs (`.docx`, `.pptx`, `.xlsx`, born-digital `.pdf`) need an extraction engine — `Read` cannot parse them. Route by content type, escalating only when the cheaper tier is insufficient. **This section is the single source of truth** — skills and subagents reference it rather than duplicating the decision tree.
+
+| Tier | Engine | Best for | Enable |
+|------|--------|----------|--------|
+| 1 | **markitdown** (MCP) | Fast text dumps of born-digital docs (~1s/50 pages, no cloud calls) | `--enable-pack markitdown` |
+| 2 | **docling** (CLI-on-demand or MCP) | Layout-aware extraction: complex tables, multi-column, scanned PDFs where markitdown returns garbage | CLI: `pip install --user docling` (ask consent — ~3-4 GB); MCP: `--enable-pack docling` |
+| 3 | **image-analyzer-subagent** | Visual understanding: charts, diagrams, screenshots, "what does this look like" | always available (native multimodal) |
+| 4 | **pdf-specialist-skill** | Structured PDF data: forms, fillable fields, OCR-as-purpose, post-edit | load skill |
+
+**Default state:** markitdown and docling are both opt-in (disabled). When markitdown is disabled, tell the user to run `--enable-pack markitdown`. When markitdown output is insufficient (complex layout, scanned), escalate to docling — if absent, ask consent via `question` for the heavy install (never auto-install 3-4 GB). In headless/CI contexts, soft-fail to markitdown's best-effort output.

@@ -33,6 +33,8 @@ category: Configuration
 
 If any requirement is unmet, MCP tool calls return connection errors. Fall back to `pdftotext`, `image-analyzer-subagent`, or built-in `Read` (see **Fallback Strategy** below).
 
+**Privacy note:** markitdown is privacy-safe for local files — the `markitdown-local-mcp` fork's `pyproject.toml` trust boundary installs only `markitdown[pdf,docx,pptx,xlsx,xls,outlook]` (no azure/speech/youtube extras), so conversion is fully local with zero phone-home network calls. Opt-in (`enabled: false` by default per #262) is a choice of minimal default footprint, not a privacy concern.
+
 ## opencode.json Configuration
 
 The markitdown MCP server ships as opt-in (`enabled: false`) per [#262](https://github.com/darellchua2/opencode-config-template/issues/262). To enable:
@@ -123,6 +125,12 @@ Need to understand a binary/office document?
 │  or born-digital PDF (text-selectable, not scanned)?
 │  └─ YES → Use markitdown.convert_to_markdown(uri).
 │           Fast (~1s/50 pages), preserves text fidelity, no cloud calls.
+│
+├─ Did markitdown return EMPTY / GARBAGE / missing tables (complex layout,
+│  multi-column, heavy formatting)?
+│  └─ YES → Escalate to docling (layout-aware — see AGENTS.md routing rule
+│           + docling-mcp-skill). CLI-on-demand: detect → ask consent →
+│           pip install docling → docling convert. MCP: --enable-pack docling.
 │
 ├─ Is the PDF SCANNED / image-only (no selectable text)?
 │  └─ YES → pdftoppm (bash, if available) → image-analyzer-subagent.

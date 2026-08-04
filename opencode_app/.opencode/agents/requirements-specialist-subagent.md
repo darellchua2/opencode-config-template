@@ -154,7 +154,7 @@ For SRS, after Part 3/4, ask: "Will the Requirements Traceability Matrix / data 
 ### Image routing
 If a referenced diagram/screenshot must be interpreted, **delegate to `image-analyzer-subagent`** — do not interpret inline.
 
-**Reading source PDFs/DOCX provided by stakeholders:** prefer the `markitdown` MCP (load `markitdown-mcp-skill` for the decision tree) over `image-analyzer-subagent` for text-heavy content — faster, preserves text fidelity, cheaper. Reserve `image-analyzer-subagent` for diagrams, charts, or scanned/image-only PDFs.
+**Reading source PDFs/DOCX provided by stakeholders:** follow the AGENTS.md → Office Document Extraction Routing rule (markitdown → docling → image-analyzer → pdf-specialist).
 
 ## What This Subagent Returns
 
