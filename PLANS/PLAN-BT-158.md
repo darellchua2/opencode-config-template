@@ -30,7 +30,7 @@ The `@semantic-release/release-notes-generator` silently produces empty notes fo
 ## Technical Notes
 
 - The 8 packages to pin: `semantic-release`, `@semantic-release/commit-analyzer`, `@semantic-release/release-notes-generator`, `@semantic-release/changelog`, `@semantic-release/exec`, `@semantic-release/git`, `@semantic-release/github`, `conventional-changelog-conventionalcommits`
-- `conventional-changelog-conventionalcommits` pinned to `^9.0.0` — v9 is the last major using Handlebars string templates; v10+ switched to function-based templates via `@conventional-changelog/template`, incompatible with `conventional-changelog-writer` v8's Handlebars API
+- `conventional-changelog-conventionalcommits` pinned to `^9.3.1` — v9 is the last major using Handlebars string templates; v10+ switched to function-based templates via `@conventional-changelog/template`, incompatible with `conventional-changelog-writer` v8's Handlebars API
 - devDependencies are never packed by npm (`node_modules/` is never included in a tarball; `package-lock.json` is excluded from `npm pack` by default); no `dependencies` and no `prepare` script means no transitive install during npx resolution
 - `node_modules/` is gitignored; `package-lock.json` is NOT gitignored
 - Release job runs on Node.js 24 (`actions/setup-node` line 97)
@@ -53,7 +53,7 @@ The `@semantic-release/release-notes-generator` silently produces empty notes fo
 
 ### Phase 1: Pin Plugins and Generate Lockfile
 
-- [x] **1.1** Install the 8 semantic-release packages as devDependencies via `npm install --save-dev semantic-release @semantic-release/commit-analyzer @semantic-release/release-notes-generator @semantic-release/changelog @semantic-release/exec @semantic-release/git @semantic-release/github conventional-changelog-conventionalcommits@^9.0.0`
+- [x] **1.1** Install the 8 semantic-release packages as devDependencies via `npm install --save-dev semantic-release @semantic-release/commit-analyzer @semantic-release/release-notes-generator @semantic-release/changelog @semantic-release/exec @semantic-release/git @semantic-release/github conventional-changelog-conventionalcommits@^9.3.1`
     — **Why:** Locking versions eliminates the version drift that caused the generator to silently emit empty notes. Using `--save-dev` is safe for the npx flow: npm never packs `node_modules/` or `package-lock.json`, and there are no `dependencies` or `prepare` script to trigger transitive installs.
     — **Done when:** `package.json` contains all 8 packages in `devDependencies` and `package-lock.json` exists in the repo root.
     — **Consumers affected:** `release.yml` (will switch to `npm ci` in Phase 2; test job `jq` lint at line 57).
@@ -66,7 +66,7 @@ The `@semantic-release/release-notes-generator` silently produces empty notes fo
     — **Done:** JSON valid; 748 `opencode_app/.opencode/` files in tarball; zero `node_modules/` or root `package-lock.json` packed; files: none changed; fixes: none.
 
 - [x] **1.3** Run a local dry-run of semantic-release to confirm the generator now produces non-empty notes (`npx semantic-release --dry-run --branches main` with a `GH_TOKEN` set, inspect output for `nextRelease.notes` containing commit listings)
-    — **Why:** This is the verification gate — if the latest-resolved plugin set still yields empty notes, we need the contingency path (pin `conventional-changelog-conventionalcommits` to `^9.0.0` or drop the generator preset).
+    — **Why:** This is the verification gate — if the latest-resolved plugin set still yields empty notes, we need the contingency path (pin `conventional-changelog-conventionalcommits` to `^9.3.1` or drop the generator preset).
     — **Done when:** `nextRelease.notes` output contains `### Features` and/or `### Bug Fixes` sections with commit messages. If empty, apply contingency and re-verify.
     — **Note:** This is the ONLY pre-merge gate for the `npm ci` switch — the PR test job never installs dependencies, so a broken lockfile/CI pairing would only surface post-merge. Do not skip this step.
     — **Consumers affected:** None (local-only verification).
@@ -109,7 +109,7 @@ The `@semantic-release/release-notes-generator` silently produces empty notes fo
 
 | Risk | Likelihood | Mitigation |
 |------|-----------|------------|
-| `conventional-changelog-conventionalcommits` v10+ slips in via `^9.0.0` range resolution | None — `^9.0.0` caps at `9.x` | Lockfile freezes at 9.3.1 |
+| `conventional-changelog-conventionalcommits` v10+ slips in via `^9.3.1` range resolution | None — `^9.3.1` caps at `9.x` | Lockfile freezes at 9.3.1 |
 | `npm ci` fails in CI if `package-lock.json` not committed | None — we commit it in 1.1 | N/A |
 | devDependencies bloat the npx tarball | None — npm never packs `node_modules/` or `package-lock.json` by default | Verified empirically in 1.2 |
 | Node.js 24 incompatibility with pinned packages | Low | Pin at latest compatible; `npm install --save-dev` on Node 24 resolves correct versions |
