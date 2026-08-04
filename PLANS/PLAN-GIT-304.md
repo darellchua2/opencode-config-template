@@ -241,6 +241,26 @@ npx github:Simonmensi/opencode-config-template add solid-principles-skill
     — **Consumers affected:** CI.
     — **Done:** `node deploy/build-registry.mjs --check` → "registry OK (agents=38, skills=126, no drift)" exit 0; files: none (verification only); fixes: none.
 
+### Phase 8: Claude format compatibility (`--format` flag)
+
+- [x] **8.1** Add `--format opencode|claude|both` flag (default: `opencode`). When format includes `claude`, write skills/agents to `~/.claude/skills/<name>/SKILL.md` with Claude-compatible frontmatter (description only, opencode-specific fields stripped). The body is identical — markdown is tool-agnostic.
+    — **Why:** Claude Code discovers commands from `~/.claude/commands/`; the SKILL.md body works as-is but the discovery path and frontmatter differ. `--format both` enables cross-tool install in one command.
+    — **Done when:** `add <skill> --format claude` writes `~/.claude/commands/<skill>.md` with `description`-only frontmatter; `--format both` writes to both paths.
+    — **Consumers affected:** end users using Claude Code or multiple AI tools.
+    — **Done:** Researched Claude Code docs — skills follow the Agent Skills open standard (SAME SKILL.md format); discovery path is `~/.claude/skills/<name>/SKILL.md` (directory, NOT single-file `.claude/commands/`); unknown frontmatter fields safely ignored EXCEPT `model:` (Claude recognizes it — strips it to avoid non-Claude model IDs like glm-5.2); agents become skills (directory + SKILL.md, no model injection); added `stripModelLine()` + `writeClaudeFormat()`; verified E2E with fake HOME; files: deploy/init.mjs; fixes: manifest dir creation for claude-only installs.
+
+- [x] **8.2** Update `remove` to also check and clean `~/.claude/commands/<name>.md` (safe no-op if file not found). No manifest format tracking needed — check both locations.
+    — **Why:** Uninstall must clean up all installed locations regardless of which format was used.
+    — **Done when:** `add X --format both` then `remove X` removes from both `~/.config/opencode/` and `~/.claude/commands/`.
+    — **Consumers affected:** users who installed with `--format claude` or `--format both`.
+    — **Done:** cmdRemove cleans `~/.claude/skills/<name>/` (directory, not single file); verified: `add --format claude` then `remove` cleans claude path only; `add --format both` then `remove` cleans both; files: deploy/init.mjs; fixes: none.
+
+- [x] **8.3** Document `--format` in `printHelp`, README UX flows, and AGENTS.md Repository Purpose.
+    — **Why:** Users need to discover the cross-tool capability.
+    — **Done when:** `--format` appears in `--help`; README has a Claude compat example; AGENTS.md mentions multi-tool framing.
+    — **Consumers affected:** users.
+    — **Done:** Added `--format <f>` to printHelp FLAGS section; README Claude compat example + UX flow G added; AGENTS.md item 3 updated to mention Claude Code compat; files: deploy/init.mjs, README.md, AGENTS.md; fixes: none.
+
 ---
 
 ## UX Flows (spec)
@@ -287,6 +307,9 @@ $ npx github:Simonmensi/opencode-config-template add nextjs-specialist-subagent 
 - [x] `node deploy/build-registry.mjs --check` passes (no drift).
 - [x] GitHub Pages deploys a catalog of all agents+skills; `registry.json` served as static API.
 - [x] CI lint steps (`node --check`, `jq . package.json`, `npm pack --dry-run` guard) pass.
+- [x] `add <skill> --format claude` writes `~/.claude/commands/<name>.md` with Claude frontmatter (description only).
+- [x] `add <skill> --format both` writes to both `~/.config/opencode/` and `~/.claude/commands/`.
+- [x] `remove <name>` cleans both opencode and Claude paths.
 
 ## Out of Scope (follow-ups)
 

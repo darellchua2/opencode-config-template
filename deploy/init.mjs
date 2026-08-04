@@ -55,6 +55,7 @@ const USER_AGENTS = join(USER_OC, "agents");
 const USER_SKILLS = join(USER_OC, "skills");
 const USER_CONFIG = join(USER_OC, "config.json");
 const USER_MANIFEST = join(USER_OC, ".skill-manifest.json");
+const USER_CLAUDE_SKILLS = join(os.homedir(), ".claude/skills");
 
 // ─────────────────────────── arg parsing ────────────────────────────────
 const BOOL_FLAGS = new Set(["yes", "dryRun", "force", "prune", "help", "verbose", "permit", "noDeps"]);
@@ -547,12 +548,16 @@ async function cmdAdd(args, opts, reg, depMap) {
 
 async function writeUserScopeInstall(sel, opts, reg, depMap) {
   const dry = !!opts.dryRun;
+  const format = opts.format || "opencode";
+  const doOc = format === "opencode" || format === "both";
+  const doClaude = format === "claude" || format === "both";
 
   if (dry) {
     process.stdout.write(JSON.stringify({
       dryRun: true,
       scope: "user",
-      destination: USER_OC,
+      format,
+      destination: doOc ? USER_OC : USER_CLAUDE_SKILLS,
       agents: sel.agents,
       skills: sel.skills,
       mcps: sel.mcps,
@@ -561,25 +566,29 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
     return;
   }
 
-  // write agents (via source.mjs)
-  await mkdir(USER_AGENTS, { recursive: true });
-  const tierModels = {};
-  for (const stem of sel.agents) {
-    const agent = await readAgent(stem);
-    const tier = reg.agents.find((a) => a.stem === stem)?.tier || "unassigned";
-    if (!tierModels[tier]) tierModels[tier] = await tierToModel(tier, opts.provider);
-    const content = injectModelLine(agent.content, tierModels[tier]);
-    await writeFile(join(USER_AGENTS, `${stem}.md`), content, "utf8");
+  // write to opencode paths
+  if (doOc) {
+    await mkdir(USER_AGENTS, { recursive: true });
+    const tierModels = {};
+    for (const stem of sel.agents) {
+      const agent = await readAgent(stem);
+      const tier = reg.agents.find((a) => a.stem === stem)?.tier || "unassigned";
+      if (!tierModels[tier]) tierModels[tier] = await tierToModel(tier, opts.provider);
+      const content = injectModelLine(agent.content, tierModels[tier]);
+      await writeFile(join(USER_AGENTS, `${stem}.md`), content, "utf8");
+    }
+    await mkdir(USER_SKILLS, { recursive: true });
+    for (const sname of sel.skills) {
+      const skill = await readSkill(sname);
+      await cp(skill.dir, join(USER_SKILLS, sname), { recursive: true, force: true });
+    }
   }
 
-  // write skills
-  await mkdir(USER_SKILLS, { recursive: true });
-  for (const sname of sel.skills) {
-    const skill = await readSkill(sname);
-    await cp(skill.dir, join(USER_SKILLS, sname), { recursive: true, force: true });
-  }
+  // write to Claude paths (same SKILL.md format — straight directory copy)
+  if (doClaude) await writeClaudeFormat(sel);
 
-  // update user-scope manifest
+  // update user-scope manifest (tracks ALL formats for uninstall)
+  await mkdir(USER_OC, { recursive: true });
   const prevManifest = (await readJsonMaybe(USER_MANIFEST)) || { agents: [], skills: [] };
   const manifest = {
     generatedAt: new Date().toISOString(),
@@ -589,14 +598,19 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
   };
   await writeFile(USER_MANIFEST, JSON.stringify(manifest, null, 2) + "\n", "utf8");
 
-  console.log(`installed into ${USER_OC}:`);
-  console.log(`  agents:  ${sel.agents.length}  -> ~/.config/opencode/agents/`);
-  console.log(`  skills:  ${sel.skills.length}  -> ~/.config/opencode/skills/`);
+  if (doOc) {
+    console.log(`installed (opencode) → ${USER_OC}:`);
+    console.log(`  agents:  ${sel.agents.length}  -> ~/.config/opencode/agents/`);
+    console.log(`  skills:  ${sel.skills.length}  -> ~/.config/opencode/skills/`);
+  }
   if (sel.warnings.length) for (const w of sel.warnings) console.log(`  - ${w}`);
 
-  await checkStrictAllowlist(sel, opts);
-  await warnMCPs(sel, depMap);
-  if (opts.permit) await permitMerge(sel);
+  // opencode-specific checks (skip for claude-only)
+  if (doOc) {
+    await checkStrictAllowlist(sel, opts);
+    await warnMCPs(sel, depMap);
+    if (opts.permit) await permitMerge(sel);
+  }
 }
 
 async function checkStrictAllowlist(sel, opts) {
@@ -644,6 +658,47 @@ async function permitMerge(sel) {
   console.log(`  merged permission.skill (${sel.agents.length + sel.skills.length} entries)`);
 }
 
+// Claude Code uses the SAME SKILL.md format (Agent Skills open standard).
+// Skills are directories under ~/.claude/skills/<name>/ — straight copy, no
+// frontmatter manipulation needed EXCEPT stripping `model:` (Claude Code
+// recognizes it and would try to use non-Claude model IDs like glm-5.2).
+// Other unknown frontmatter fields (tier, permission, category) are safely ignored.
+function stripModelLine(content) {
+  const lines = content.split(/\r?\n/);
+  if (lines.length === 0 || lines[0].trim() !== "---") return content;
+  let closeIdx = -1;
+  for (let i = 1; i < lines.length; i++) {
+    if (lines[i].trim() === "---") { closeIdx = i; break; }
+  }
+  if (closeIdx === -1) return content;
+  const fmBody = lines.slice(1, closeIdx).filter((l) => !/^model\s*:/.test(l));
+  return [...lines.slice(0, 1), ...fmBody, ...lines.slice(closeIdx)].join("\n");
+}
+
+async function writeClaudeFormat(sel) {
+  await mkdir(USER_CLAUDE_SKILLS, { recursive: true });
+  let count = 0;
+  for (const stem of sel.agents) {
+    const agent = await readAgent(stem);
+    const dir = join(USER_CLAUDE_SKILLS, stem);
+    await mkdir(dir, { recursive: true });
+    await writeFile(join(dir, "SKILL.md"), stripModelLine(agent.content), "utf8");
+    count++;
+  }
+  for (const sname of sel.skills) {
+    const skill = await readSkill(sname);
+    const dst = join(USER_CLAUDE_SKILLS, sname);
+    await cp(skill.dir, dst, { recursive: true, force: true });
+    // strip model: from SKILL.md for Claude compat (one source skill has it)
+    const skillMd = join(dst, "SKILL.md");
+    if (existsSync(skillMd)) {
+      await writeFile(skillMd, stripModelLine(await readFile(skillMd, "utf8")), "utf8");
+    }
+    count++;
+  }
+  console.log(`  claude:  ${count}  -> ~/.claude/skills/`);
+}
+
 async function cmdRemove(args, opts) {
   const name = args[0];
   if (!name) die("remove: specify a skill or agent name.", 2);
@@ -671,6 +726,9 @@ async function cmdRemove(args, opts) {
     const d = join(USER_SKILLS, name);
     if (existsSync(d)) await rm(d, { recursive: true, force: true });
   }
+  // also clean Claude format if present (~/.claude/skills/<name>/)
+  const claudeDir = join(USER_CLAUDE_SKILLS, name);
+  if (existsSync(claudeDir)) await rm(claudeDir, { recursive: true, force: true });
   prev.agents = (prev.agents || []).filter((a) => a !== name);
   prev.skills = (prev.skills || []).filter((s) => s !== name);
   await writeFile(USER_MANIFEST, JSON.stringify(prev, null, 2) + "\n", "utf8");
@@ -843,6 +901,7 @@ FLAGS
   --prune              remove opencode-init-owned entries absent from the new set
   --permit             (user scope) backup config.json + merge permission entries only
   --no-deps            (add) skip transitive dependency resolution
+  --format <f>         (add) target format: opencode (default), claude, or both
 
 CONFIG MERGE SEMANTICS
   opencode MERGES config and UNIONS agents/skills across ~/.config/opencode and

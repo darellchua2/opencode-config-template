@@ -7,7 +7,7 @@ Project-specific behavioral rules for agents working in this repository. Usage d
 `opencode-config-template` is a **multi-mode OpenCode configurator**:
 1. **User-space deploy** — `./deploy/setup.sh` copies config, agents, and skills to `~/.config/opencode/`
 2. **Docker standalone** — `docker compose up -d` launches OpenCode as a web endpoint via `opencode_app/`
-3. **Individual install (npx)** — `npx github:darellchua2/opencode-config-template add <name>` pulls a single skill or agent into your config (shadcn-style copy model). Default target is `~/.config/opencode/` (auto-discovered, no config touch); `--project` opts into `./.opencode/`. See [issue #304](https://github.com/darellchua2/opencode-config-template/issues/304).
+3. **Individual install (npx)** — `npx github:darellchua2/opencode-config-template add <name>` pulls a single skill or agent into your config (shadcn-style copy model). Default target is `~/.config/opencode/` (auto-discovered, no config touch); `--project` opts into `./.opencode/`; `--format claude|both` writes to `~/.claude/skills/` for Claude Code compat (same Agent Skills open standard). See [issue #304](https://github.com/darellchua2/opencode-config-template/issues/304).
 
 This repo-level `AGENTS.md` defines repo-specific conventions. User-level routing (subagent/skill selection, MCP tool routing) is in `deploy/.AGENTS.md` (deployed to `~/.config/opencode/AGENTS.md`).
 

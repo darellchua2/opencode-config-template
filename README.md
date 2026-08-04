@@ -213,6 +213,24 @@ npx github:darellchua2/opencode-config-template add nextjs-specialist-subagent -
 npx github:darellchua2/opencode-config-template remove solid-principles-skill
 ```
 
+### Claude Code compatibility (`--format`)
+
+Skills follow the [Agent Skills](https://agentskills.io) open standard — the same `SKILL.md` format works in both opencode and Claude Code. Use `--format` to control the install target:
+
+```bash
+# G. Install to Claude Code (~/.claude/skills/<name>/SKILL.md)
+npx github:darellchua2/opencode-config-template add solid-principles-skill --format claude
+
+# Install to both opencode and Claude Code
+npx github:darellchua2/opencode-config-template add tdd-subagent --format both
+```
+
+| Format | Destination | Notes |
+|--------|-------------|-------|
+| `opencode` (default) | `~/.config/opencode/{skills,agents}/` | Full opencode compat (model injection, strict-allowlist detection) |
+| `claude` | `~/.claude/skills/<name>/` | Claude Code auto-discovers; `model:` lines stripped (Claude uses its own model selection) |
+| `both` | Both paths above | Cross-tool install in one command |
+
 ### Browsing the catalog
 
 Run `opencode-init --list agents` or `--list skills` to browse in JSON, or visit the [GitHub Pages catalog](https://darellchua2.github.io/opencode-config-template/) (deployed on every `main` push).
