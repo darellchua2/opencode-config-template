@@ -704,7 +704,7 @@ async def sync_engine_to_cds() -> None:
 toast.promise(apiCall(), {
   error: "Failed",  // User sees toast, but caller's await never throws
 })
-await apiCall() // Unhandled rejection if no catch — see react-nextjs-antipatterns
+await apiCall() // Unhandled rejection if no catch — see react-hooks-antipatterns
 
 // GOOD — single consumer; error propagates
 try {

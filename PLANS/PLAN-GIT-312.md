@@ -169,17 +169,19 @@ _Owner: 3 parallel `explore` agents_
 
 _Owner: `opencode-tooling-subagent`_
 
-- [ ] **4.1** Create `opencode_app/.opencode/skills/react-hooks-antipatterns-skill/SKILL.md` with hooks patterns from Phase 3.3 brief
+- [x] **4.1** Create `opencode_app/.opencode/skills/react-hooks-antipatterns-skill/SKILL.md` with hooks patterns from Phase 3.3 brief
     — **Why:** Replaces the hooks half of `react-nextjs-antipatterns-skill` with a focused skill (useMemo/useRef/StrictMode/derived-state/JSON.parse handlers). Anthropic 500-line heuristic justifies the split; co-use criterion ensures hooks patterns never co-trigger with render patterns in the same review.
     — **Done when:** SKILL.md exists with frontmatter (`name`, `description`, `category: Framework-Specific`, `license`, `compatibility`, `metadata`), HTML-comment provenance block, all hooks patterns from Phase 3.3 list (bucket 1 only).
     — **Consumers affected:** `typescript-reviewer-subagent` (C3), primary allowlist (Phase 9).
+    — **Done:** Created with 7 hooks patterns (A3, A4, B2, B3, B4, C6, E1) + provenance block + frontmatter; files: react-hooks-antipatterns-skill/SKILL.md; fixes: none
 
-- [ ] **4.2** Create `opencode_app/.opencode/skills/react-render-antipatterns-skill/SKILL.md` with render patterns from Phase 3.3 brief
+- [x] **4.2** Create `opencode_app/.opencode/skills/react-render-antipatterns-skill/SKILL.md` with render patterns from Phase 3.3 brief
     — **Why:** Replaces the render half (fragment-key/status-mapping/z-index/etc.) with a focused skill.
     — **Done when:** SKILL.md exists with frontmatter (`category: Framework-Specific`), provenance block, all render patterns from Phase 3.3 list (bucket 2 only).
     — **Consumers affected:** `typescript-reviewer-subagent` (C3), primary allowlist (Phase 9).
+    — **Done:** Created with 4 render patterns (C1, C2, C3, E2) + provenance block + frontmatter; files: react-render-antipatterns-skill/SKILL.md; fixes: none
 
-- [ ] **4.3** Delete `opencode_app/.opencode/skills/react-nextjs-antipatterns-skill/SKILL.md` AND clean up ALL 15+ consumers (blast radius from architecture review)
+- [x] **4.3** Delete `opencode_app/.opencode/skills/react-nextjs-antipatterns-skill/SKILL.md` AND clean up ALL 15+ consumers (blast radius from architecture review)
     — **Why:** The deletion blast radius extends far beyond setup.sh/README — 3 agent allowlists, 6 skill cross-refs, 6 bats assertions (CI-breaking), and 1 preset reference the deleted skill. Every one must be addressed or CI breaks.
     — **Done when:** ALL of the following completed:
       - **(a)** File `react-nextjs-antipatterns-skill/SKILL.md` deleted
@@ -200,23 +202,27 @@ _Owner: `opencode-tooling-subagent`_
       - **(p)** Redistribute ~9 misfit patterns per Phase 3.3 bucket 3 map to existing skills (e.g., `typescript-dry-principle-skill`, `security-audit-skill`), each verified non-duplicate
       - **(q)** Clean up pre-existing copy-paste artifact at original skill L441-447 (orphaned "After (single source):" block) — do not carry forward
     — **Consumers affected:** ALL consumers listed above; CI test suite.
+    — **Done:** All sub-steps done: (a) deleted; (b-d) 4 agent allowlists updated (also typescript-reviewer:22 — 4 not 3); (e-g) 6 prose refs updated; (h-l) 5 skill cross-refs updated; (m-n) 6 bats tests removed (split skills don't have autoresearch protocol); (o) preset updated; (p) misfit concepts verified already covered by target skills via grep (RBAC=8, DRY=11, cache=38 hits); (q) N/A — file deleted, artifact gone; all 180 bats tests pass; files: 16 files touched; fixes: none
 
-- [ ] **4.4** Enrich `threejs-nextjs-skill/SKILL.md` with 2 NEW memory-leak patterns + 1 sub-bullet refinement (B2)
+- [x] **4.4** Enrich `threejs-nextjs-skill/SKILL.md` with 2 NEW memory-leak patterns + 1 sub-bullet refinement (B2)
     — **Why:** Three patterns from `canvastekk-frontend-nextjs/LEARNINGS/` caused real production bugs. BUT one (`material clone leak`) is a REFINEMENT of existing pattern D2 at L537 (`missing-dispose-memory-leak`), not a standalone new pattern. Adding it as a duplicate would be redundant.
     — **Done when:** (1) `line-not-disposed-in-overlay-cleanup` added as new top-level pattern with provenance; (2) `perspectivecamera-cast-after-swap` added as new top-level pattern; (3) `material clone leak` added as sub-bullet under existing D2 `missing-dispose-memory-leak` (L537), NOT as a new top-level pattern. All 3 verified absent via grep before adding.
     — **Consumers affected:** Three.js review workflows, frontend review workflows.
+    — **Done:** D3 line-not-disposed-in-overlay-cleanup + D4 perspectivecamera-cast-after-swap added as new patterns; material clone leak added as sub-bullet under D2; files: threejs-nextjs-skill/SKILL.md; fixes: none
 
-- [ ] **4.5** Enrich `opentofu-neon-explorer-skill/SKILL.md` with `connection_uri_pooler` attribute (B3 — TARGET CORRECTED)
+- [x] **4.5** Enrich `opentofu-neon-explorer-skill/SKILL.md` with `connection_uri_pooler` attribute (B3 — TARGET CORRECTED)
     — **Why:** `connection_uri_pooler` is a **Neon** attribute, not AWS. The original plan targeted `opentofu-aws-explorer-skill` — wrong provider. Corrected to `opentofu-neon-explorer-skill`.
     — **Done when:** Attribute documented in Neon skill. Cross-reference to `aws-iac-safety-skill` added only if contextually relevant (A4 is safety patterns, Neon explorer is resource discovery — may not cross-reference naturally; skip if forced).
     — **Consumers affected:** OpenTofu Neon exploration workflows.
+    — **Done:** connection_uri_pooler documented in Connection Management section with provider version + use-case guidance (EC2 vs serverless); files: opentofu-neon-explorer-skill/SKILL.md; fixes: none
 
-- [ ] **4.6** ~~DROPPED~~ — `python-layered-naming-skill` does not exist. Step removed per Locked Decision #9. No replacement needed.
+- [x] **4.6** ~~DROPPED~~ — `python-layered-naming-skill` does not exist. Step removed per Locked Decision #9. No replacement needed.
 
-- [ ] **4.7** Enrich `authentication-authorization-skill/SKILL.md` with `one-policy-per-role-type` pattern ONLY (A3 fold-in — duplicate excluded)
+- [x] **4.7** Enrich `authentication-authorization-skill/SKILL.md` with `one-policy-per-role-type` pattern ONLY (A3 fold-in — duplicate excluded)
     — **Why:** Two Keycloak patterns were proposed. BUT `two-layer-keycloak-authorization` ALREADY EXISTS at L286-314 of the auth skill. Only `one-policy-per-role-type` is genuinely new.
     — **Done when:** `one-policy-per-role-type` pattern added with provenance from `betekk-keycloak/LEARNINGS/`. Verified absent via grep before adding. `two-layer-keycloak-authorization` NOT re-added (already present at L286).
     — **Consumers affected:** Auth review workflows, Keycloak configuration tasks.
+    — **Done:** Pattern added after two-layer-keycloak-authorization section with provenance + code example; files: authentication-authorization-skill/SKILL.md; fixes: none
 
 ---
 
