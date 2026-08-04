@@ -52,91 +52,91 @@ The review caught 3 critical defects + major gaps in v1. Corrected here:
 ## Implementation Phases
 
 ### Phase 1: `setup.sh` — `count_skills` helper + wire 3 consumers (source vs deployed)
-- [ ] **1.1** Add a `count_skills()` helper near the other utility functions (after `REPO_DIR` is defined, ~`:85`): `count_skills() { find "$1" -type f -name "SKILL.md" -not -path "*/_archived/*" 2>/dev/null | wc -l; }`.
+- [x] **1.1** Add a `count_skills()` helper near the other utility functions (after `REPO_DIR` is defined, ~`:85`): `count_skills() { find "$1" -type f -name "SKILL.md" -not -path "*/_archived/*" 2>/dev/null | wc -l; }`.
     — **Why:** the 3 consumers are in 3 different functions (`show_help`, `print_summary`, `print_next_steps`); a `local` can't span them. A helper is the DRY, scope-safe way to share one computation. `-not -path "*/_archived/*"` matches the deploy's `rsync --exclude='_archived'` so the count reflects **active** skills only.
     — **Done when:** `grep -nE "^count_skills\(\)" deploy/setup.sh` finds the helper; calling `count_skills "${REPO_DIR}/opencode_app/.opencode/skills"` returns 126.
     — **Consumers affected:** 1.2, 1.3, 1.4, Phase 3.
-- [ ] **1.2** In `show_help()` replace `SKILLS (126):` at `:685` with `SKILLS ($(count_skills "${REPO_DIR}/opencode_app/.opencode/skills")):` — **SOURCE** count (banner shown on `--help` before any deploy, must advertise what's shipped, not what's deployed).
+- [x] **1.2** In `show_help()` replace `SKILLS (126):` at `:685` with `SKILLS ($(count_skills "${REPO_DIR}/opencode_app/.opencode/skills")):` — **SOURCE** count (banner shown on `--help` before any deploy, must advertise what's shipped, not what's deployed).
     — **Why:** `show_help` runs pre-deploy; using the DEPLOYED dir would show `0` on a fresh machine. Source count is the advertising number.
     — **Done when:** `grep -nE "SKILLS \([0-9]+\)" deploy/setup.sh` returns no literal; `--help` shows the active source count.
     — **Consumers affected:** every `setup.sh --help` user.
-- [ ] **1.3** In `print_next_steps()` replace `📦 123 Skills Available` at `:3629` with `📦 $(count_skills "${REPO_DIR}/opencode_app/.opencode/skills") Skills Available` — SOURCE count.
+- [x] **1.3** In `print_next_steps()` replace `📦 123 Skills Available` at `:3629` with `📦 $(count_skills "${REPO_DIR}/opencode_app/.opencode/skills") Skills Available` — SOURCE count.
     — **Why:** post-deploy summary advertises what's available; source count is stable regardless of deploy success. Fixes the stale `123` (−3).
     — **Done when:** `grep -nE "[0-9]+ Skills Available" deploy/setup.sh` returns no literal.
     — **Consumers affected:** post-deploy summary output.
-- [ ] **1.4** Refactor `print_summary()` `:3447` to use the helper: replace `local skill_count=$(find "${SKILLS_DIR}" -type f -name "SKILL.md" ...)` with `local skill_count=$(count_skills "${SKILLS_DIR}")` — **DEPLOYED** count.
+- [x] **1.4** Refactor `print_summary()` `:3447` to use the helper: replace `local skill_count=$(find "${SKILLS_DIR}" -type f -name "SKILL.md" ...)` with `local skill_count=$(count_skills "${SKILLS_DIR}")` — **DEPLOYED** count.
     — **Why:** dedupe the computation into the helper; `--status` legitimately reports the DEPLOYED state (what the user actually has), which differs from source if a deploy is partial. Deployed dir already excludes `_archived` (rsync), so the helper's `-not -path` is harmless here.
     — **Done when:** `:3447` calls `count_skills`; no standalone `find ... SKILL.md | wc -l` remains outside the helper.
     — **Consumers affected:** `--status` headline (unchanged value, cleaner source).
 
 ### Phase 2: `setup.ps1` — parity helpers + wire consumers
-- [ ] **2.1** Add a `Get-SkillCount` function near the other utilities: `function Get-SkillCount { param([string]$Path) if (-not (Test-Path $Path)) { return 0 }; return @(Get-ChildItem -Path $Path -Recurse -Filter "SKILL.md" -ErrorAction SilentlyContinue | Where-Object { $_.FullName -notmatch "[\\/​]_archived[\\/​]" }).Count }`.
+- [x] **2.1** Add a `Get-SkillCount` function near the other utilities: `function Get-SkillCount { param([string]$Path) if (-not (Test-Path $Path)) { return 0 }; return @(Get-ChildItem -Path $Path -Recurse -Filter "SKILL.md" -ErrorAction SilentlyContinue | Where-Object { $_.FullName -notmatch "[\\/​]_archived[\\/​]" }).Count }`.
     — **Why:** Windows parity with 1.1; `setup.ps1` currently has NO correct SKILL.md-file count (its `:1811`/`:2649` count *directories* including non-skill subdirs — a different, wrong metric). Excludes `_archived` to match deploy (`:1802`).
     — **Done when:** `grep -nE "function Get-SkillCount" deploy/setup.ps1` finds it; `Get-SkillCount (Join-Path $RepoDir "opencode_app\.opencode\skills")` returns 126.
     — **Consumers affected:** 2.2, 2.3, 2.4.
-- [ ] **2.2** Replace `SKILLS (126):` at `:924` with `SKILLS ($(Get-SkillCount (Join-Path $RepoDir 'opencode_app\.opencode\skills'))):` — SOURCE count.
+- [x] **2.2** Replace `SKILLS (126):` at `:924` with `SKILLS ($(Get-SkillCount (Join-Path $RepoDir 'opencode_app\.opencode\skills'))):` — SOURCE count.
     — **Why:** Windows parity with 1.2.
     — **Done when:** `grep -nE "SKILLS \([0-9]+\)" deploy/setup.ps1` returns no literal.
     — **Consumers affected:** Windows `--help` users.
-- [ ] **2.3** Replace `123 Skills Available` at `:2707` with `$(Get-SkillCount (Join-Path $RepoDir 'opencode_app\.opencode\skills')) Skills Available` — SOURCE count.
+- [x] **2.3** Replace `123 Skills Available` at `:2707` with `$(Get-SkillCount (Join-Path $RepoDir 'opencode_app\.opencode\skills')) Skills Available` — SOURCE count.
     — **Why:** Windows parity with 1.3.
     — **Done when:** `grep -nE "[0-9]+ Skills Available" deploy/setup.ps1` returns no literal.
     — **Consumers affected:** Windows post-deploy summary.
-- [ ] **2.4** Wire `Get-SkillCount` into the ps1 `--status` total (find the ps1 equivalent of `:3447`'s dir-count) — DEPLOYED count.
+- [x] **2.4** Wire `Get-SkillCount` into the ps1 `--status` total (find the ps1 equivalent of `:3447`'s dir-count) — DEPLOYED count.
     — **Why:** parity with 1.4; replace the directory-count metric with the correct SKILL.md-file count.
     — **Done when:** ps1 `--status` headline uses `Get-SkillCount $SkillsDir` (deployed).
     — **Consumers affected:** Windows `--status`.
 
 ### Phase 3: Auto-derive category breakdown (REVERSES v1's "hand-maintain" — categories ARE disk-derivable)
-- [ ] **3.1** Add a `print_skill_categories()` helper (bash) that auto-derives per-category counts from frontmatter and prints them: `find "$1" -type f -name "SKILL.md" -not -path "*/_archived/*" -exec grep -hE '^[[:space:]]*category:' {} + 2>/dev/null | sed -E 's/^[[:space:]]*category:[[:space:]]*//' | sort | uniq -c | sort -rn | while read n c; do echo "    - $c ($n)"; done`.
+- [x] **3.1** Add a `print_skill_categories()` helper (bash) that auto-derives per-category counts from frontmatter and prints them: `find "$1" -type f -name "SKILL.md" -not -path "*/_archived/*" -exec grep -hE '^[[:space:]]*category:' {} + 2>/dev/null | sed -E 's/^[[:space:]]*category:[[:space:]]*//' | sort | uniq -c | sort -rn | while read n c; do echo "    - $c ($n)"; done`.
     — **Why:** v1 Phase 3.3 claimed categories aren't disk-derivable — **FALSE**: 126/126 active skills carry a `category:` field (21 categories). Auto-derive is drift-proof; hand-maintenance is the bug we're fixing. One pipeline replaces two stale hardcoded listings.
     — **Done when:** `grep -nE "^print_skill_categories\(\)" deploy/setup.sh` finds the helper; running it on the source dir prints 21 categories summing to 126.
     — **Consumers affected:** 3.2, 3.3.
-- [ ] **3.2** Replace the hardcoded `--status` category listing at `setup.sh:3449+` with a call `print_skill_categories "${SKILLS_DIR}"` (DEPLOYED) — removes ~115 lines of stale echo.
+- [x] **3.2** Replace the hardcoded `--status` category listing at `setup.sh:3449+` with a call `print_skill_categories "${SKILLS_DIR}"` (DEPLOYED) — removes ~115 lines of stale echo.
     — **Why:** the listing omits 6 categories and sums to 102 vs the 126 headline — internally contradictory. Auto-derive fixes both the omissions and the sum.
     — **Done when:** the `--status` listing sums to the `--status` headline total; `grep -cE "Framework \(19\)|Language-Specific \(8\)" setup.sh` drops (those literals removed).
     — **Consumers affected:** operators running `--status`.
-- [ ] **3.3** Replace the hardcoded `print_next_steps` category listing at `setup.sh:3632-3637` with `print_skill_categories "${REPO_DIR}/opencode_app/.opencode/skills"` (SOURCE).
+- [x] **3.3** Replace the hardcoded `print_next_steps` category listing at `setup.sh:3632-3637` with `print_skill_categories "${REPO_DIR}/opencode_app/.opencode/skills"` (SOURCE).
     — **Why:** this second listing (sums 109) was missed by v1; it re-drifts immediately after 1.3 fixes the total. SOURCE dir because it advertises what's shipped.
     — **Done when:** `print_next_steps` category section is a single helper call; no hardcoded `Framework (N)` literals remain.
     — **Consumers affected:** post-deploy summary.
-- [ ] **3.4** Mirror `Get-SkillCategories` + the two call sites in `setup.ps1` (Windows parity for 3.1-3.3).
+- [x] **3.4** Mirror `Get-SkillCategories` + the two call sites in `setup.ps1` (Windows parity for 3.1-3.3).
     — **Why:** keep both scripts' diagnostics consistent.
     — **Done when:** ps1 `--status` and post-deploy listings auto-derive and sum to 126.
     — **Consumers affected:** Windows operators.
 
 ### Phase 4: README.md + registry.json + init.bats (sync-rule targets v1 missed)
-- [ ] **4.1** Update `README.md:175` ("126 skills") and `:459` ("126 skills organized across 21 categories") — README is markdown (no interpolation), so update the literal to the current active count **and add a `<!-- count: hand-maintained, see BT-157 -->` comment** flagging it as a known sync target.
+- [x] **4.1** Update `README.md:175` ("126 skills") and `:459` ("126 skills organized across 21 categories") — README is markdown (no interpolation), so update the literal to the current active count **and add a `<!-- count: hand-maintained, see BT-157 -->` comment** flagging it as a known sync target.
     — **Why:** the repo's own sync rule (AGENTS.md "Sync Rules") lists README.md as mandatory; v1 omitted it entirely. Markdown can't interpolate, so a flag comment is the laziest way to surface it for the next sync.
     — **Done when:** both literals match the active count; a comment marks them.
     — **Consumers affected:** README readers, documentation-sync-workflow.
-- [ ] **4.2** Regenerate `deploy/registry.json` skill list from disk (excluding `_archived`) so it stays at 126/active; verify `jq '.skills | length' deploy/registry.json` = 126 and each entry resolves to a real skill dir.
+- [x] **4.2** Regenerate `deploy/registry.json` skill list from disk (excluding `_archived`) so it stays at 126/active; verify `jq '.skills | length' deploy/registry.json` = 126 and each entry resolves to a real skill dir.
     — **Why:** registry.json is the opencode-init source-of-truth; it's currently correct (126) but was hand-built. A regeneration guarantees no orphans/stale entries. If a generator script exists, run it; else diff-current and only fix discrepancies.
     — **Done when:** `jq '.skills|length' deploy/registry.json` = active count; no entry points to a missing/nonexistent skill.
     — **Consumers affected:** opencode-init CLI.
-- [ ] **4.3** Make `tests/init.bats:28,43` count-agnostic: assert against the registry's own length (`[ "$skills" = "$(jq '.skills|length' "$REG")" ]`) instead of the literal `"126"`.
+- [x] **4.3** Make `tests/init.bats:28,43` count-agnostic: assert against the registry's own length (`[ "$skills" = "$(jq '.skills|length' "$REG")" ]`) instead of the literal `"126"`.
     — **Why:** the current `126` is correct, but pinning a literal means the test silently rots on the next skill add (the exact drift cycle this ticket kills). Asserting against the registry's own length makes the test self-healing. Note `:43`'s line has no "skill" word, so v1's grep missed it.
     — **Done when:** `grep -nE '"126"|"123"' tests/init.bats` returns no literal count assertions (both :28 and :43 dynamic).
     — **Consumers affected:** CI Release workflow.
 
 ### Phase 5: Verification gate
-- [ ] **5.1** Run the full gate: `bash -n deploy/setup.sh`; `pwsh -nop -c '…parse setup.ps1…'` or manual brace check; `python3 -m json.tool deploy/registry.json >/dev/null`; `python3 -m json.tool opencode_app/opencode.json >/dev/null`; all skill frontmatter parses; `bats tests/` green (if installed).
+- [x] **5.1** Run the full gate: `bash -n deploy/setup.sh`; `pwsh -nop -c '…parse setup.ps1…'` or manual brace check; `python3 -m json.tool deploy/registry.json >/dev/null`; `python3 -m json.tool opencode_app/opencode.json >/dev/null`; all skill frontmatter parses; `bats tests/` green (if installed).
     — **Why:** every prior change ships through this gate; green = done.
     — **Done when:** all commands exit 0; `bats tests/` shows 0 failures.
     — **Consumers affected:** PR merge / Release workflow.
-- [ ] **5.2** Confirm the drift surface is eliminated: `grep -rnE "SKILLS \([0-9]+\)|[0-9]+ Skills Available" deploy/setup.sh deploy/setup.ps1` → **zero** matches; `grep -rnE "Framework \(19\)|Language-Specific \(8\)|CAD & Hardware Design \(14\)" deploy/setup.sh deploy/setup.ps1` → **zero** (no hardcoded category literals).
+- [x] **5.2** Confirm the drift surface is eliminated: `grep -rnE "SKILLS \([0-9]+\)|[0-9]+ Skills Available" deploy/setup.sh deploy/setup.ps1` → **zero** matches; `grep -rnE "Framework \(19\)|Language-Specific \(8\)|CAD & Hardware Design \(14\)" deploy/setup.sh deploy/setup.ps1` → **zero** (no hardcoded category literals).
     — **Why:** this is the acceptance signal — no hardcoded count literals remain in either deploy script.
     — **Done when:** both greps return zero.
     — **Consumers affected:** future skill-add cycles (the drift can't recur).
 
 ## Acceptance Criteria (summary)
 
-- [ ] No hardcoded total skill-count literals in `setup.sh`/`setup.ps1` — all via `count_skills`/`Get-SkillCount` (excluding `_archived`).
-- [ ] `grep -rnE "SKILLS \([0-9]+\)|[0-9]+ Skills Available" deploy/setup.sh deploy/setup.ps1` → **zero**.
-- [ ] No hardcoded category literals — both listings auto-derive from frontmatter; sums match totals.
-- [ ] Source-vs-deployed semantics correct: `show_help`/`print_next_steps` = SOURCE; `--status` = DEPLOYED.
-- [ ] `README.md` literals current + flagged; `registry.json` regenerated; `init.bats` count-agnostic.
-- [ ] `bash -n` clean; bats green; JSON valid.
+- [x] No hardcoded total skill-count literals in `setup.sh`/`setup.ps1` — all via `count_skills`/`Get-SkillCount` (excluding `_archived`).
+- [x] `grep -rnE "SKILLS \([0-9]+\)|[0-9]+ Skills Available" deploy/setup.sh deploy/setup.ps1` → **zero**.
+- [x] No hardcoded category literals — both listings auto-derive from frontmatter; sums match totals.
+- [x] Source-vs-deployed semantics correct: `show_help`/`print_next_steps` = SOURCE; `--status` = DEPLOYED.
+- [x] `README.md` literals current + flagged; `registry.json` regenerated; `init.bats` count-agnostic.
+- [x] `bash -n` clean; bats green; JSON valid.
 
 ## Risks & Mitigation
 

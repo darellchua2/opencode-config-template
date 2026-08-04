@@ -172,7 +172,7 @@ docker compose build --no-cache
 
 ## Project-Scoped Install (`opencode-init`)
 
-Not every project needs all 38 agents + 126 skills. `opencode-init` installs a **curated subset** into a target project's `.opencode/` and writes a project `opencode.json` configuring just that subset — chosen interactively (TUI) or via flags (LLM/CI). It is the project-scoped companion to the global `setup.sh` deploy, and is symlinked onto PATH as `opencode-init` by `setup.sh`.
+Not every project needs all 38 agents + 126 skills. <!-- count: hand-maintained — sync on skill/agent add (BT-157) --> `opencode-init` installs a **curated subset** into a target project's `.opencode/` and writes a project `opencode.json` configuring just that subset — chosen interactively (TUI) or via flags (LLM/CI). It is the project-scoped companion to the global `setup.sh` deploy, and is symlinked onto PATH as `opencode-init` by `setup.sh`.
 
 > **Mutually exclusive with global deploy for isolation.** OpenCode **merges** config and **unions** agents/skills across `~/.config/opencode` and `<project>/.opencode`. A project subset only yields an *isolated* curated experience on a **clean slate** (no global deploy). If `~/.config/opencode/agents/` is non-empty, the project install is **additive** — `opencode-init` detects this and warns. `permission.task` (scoped subagent-spawn allowlist) still restricts auto-spawning even with a global deploy; `@`-mention still bypasses it. See [issue #286](https://github.com/darellchua2/opencode-config-template/issues/286) and `PLANS/PLAN-GIT-286.md`.
 
@@ -456,7 +456,7 @@ TypeScript, JavaScript, Python, Go, Rust, Java, C#, PHP, Ruby, C, C++, Swift, Ko
 
 ## Skill Modularization
 
-This repository implements **skill modularization** with 126 skills organized across 21 categories. Skills are designed with clear separation of concerns and explicit dependencies.
+This repository implements **skill modularization** with 126 skills organized across 21 categories. <!-- count: hand-maintained — sync on skill add (BT-157) --> Skills are designed with clear separation of concerns and explicit dependencies.
 
 > **Registry-derived (PLAN-GIT-286):** every skill + agent now carries a `category:` frontmatter field, which `deploy/build-registry.mjs` reads to emit `deploy/registry.json` — the single source of truth consumed by the `opencode-init` project-scoped installer and (regenerable into) this category table. To refresh after editing frontmatter: `node deploy/build-registry.mjs` (CI fails on drift via `--check`).
 

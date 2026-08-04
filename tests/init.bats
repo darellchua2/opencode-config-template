@@ -24,13 +24,16 @@ teardown() { rm -rf "$TMP_PROJ"; }
   agents=$(jq_get "len(d['agents'])" < "$REG")
   skills=$(jq_get "len(d['skills'])" < "$REG")
   echo "agents=$agents skills=$skills" >&3
-  [ "$agents" = "38" ]
-  [ "$skills" = "126" ]
+  # Count-agnostic: registry must match disk (excludes _archived). BT-157.
+  disk_agents=$(find "${REPO}/opencode_app/.opencode/agents" -name '*.md' 2>/dev/null | wc -l | tr -d ' ')
+  disk_skills=$(find "${REPO}/opencode_app/.opencode/skills" -name 'SKILL.md' -not -path '*/_archived/*' 2>/dev/null | wc -l | tr -d ' ')
+  [ "$agents" = "$disk_agents" ]
+  [ "$skills" = "$disk_skills" ]
 }
 
-@test "--list agents is valid JSON with 38 entries" {
+@test "--list agents is valid JSON matching registry count" {
   count=$($INIT --list agents 2>/dev/null | jq_len)
-  [ "$count" = "38" ]
+  [ "$count" = "$(jq_get "len(d['agents'])" < "$REG")" ]
 }
 
 @test "--list agents --category review filters to reviewers" {
@@ -38,9 +41,9 @@ teardown() { rm -rf "$TMP_PROJ"; }
   [ "$count" = "7" ]
 }
 
-@test "--list skills is valid JSON with 126 entries" {
+@test "--list skills is valid JSON matching registry count" {
   count=$($INIT --list skills 2>/dev/null | jq_len)
-  [ "$count" = "126" ]
+  [ "$count" = "$(jq_get "len(d['skills'])" < "$REG")" ]
 }
 
 @test "--list categories is valid non-empty JSON" {
