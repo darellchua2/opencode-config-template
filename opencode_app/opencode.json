@@ -243,31 +243,8 @@
     }
   },
   "permission": {
-    "codegraph*": "allow",
-    "atlassian*": "allow",
-    "mermaid*": "allow",
-    "zai-web-reader*": "allow",
     "zai-vision-mcp-server*": "deny",
-    "zai-zread*": "deny",
-    "google-bigquery*": "deny",
-    "google-maps*": "deny",
-    "google-gce*": "deny",
-    "google-gke*": "deny",
-    "autodesk-revit*": "deny",
-    "autodesk-model-data*": "deny",
-    "autodesk-fusion*": "deny",
-    "autodesk-help*": "deny",
-    "next-devtools*": "deny",
-    "filesystem*": "deny",
-    "microsoft-teams*": "deny",
-    "microsoft-mail*": "deny",
-    "microsoft-calendar*": "deny",
-    "microsoft-sharepoint*": "deny",
-    "microsoft-onedrive*": "deny",
-    "microsoft-user*": "deny",
-    "microsoft-word*": "deny",
-    "microsoft-copilot*": "deny",
-    "microsoft-dataverse*": "deny"
+    "zai-zread*": "deny"
   },
   "agent": {
     "build": {
