@@ -54,10 +54,12 @@ const {
 
 const PONYTAIL_DEFAULT_MODE = normalizeMode(process.env.PONYTAIL_DEFAULT_MODE) || DEFAULT_MODE;
 
-// Default off-set: agents that should NOT receive Ponytail injection —
-// read-only/research agents (Ponytail N/A) + non-coding agents (docs,
-// business, integrations, vision) where the lazy-code ruleset is irrelevant
-// and only adds context weight. Coding agents stay in the injection set.
+// Default off-set: agents that should NOT receive runtime Ponytail injection —
+// read-only/research agents (Ponytail N/A), non-coding agents (docs, business,
+// integrations, vision), and the 8 high-value coding agents that carry a baked-in
+// role-tuned lens (see each agent's "Ponytail <X> lens" section + provenance tag).
+// All other coding/meta agents get runtime injection. Grep 'Ponytail lens derived'
+// to find the 8 baked agents on re-vendor.
 const DEFAULT_OFF_PATTERN =
   '^(explore|general|autoresearch-research-subagent|explorer-subagent|' +
   'requirements-specialist-subagent|discovery-specialist-subagent|' +
@@ -66,7 +68,10 @@ const DEFAULT_OFF_PATTERN =
   'pptx-specialist-subagent|xlsx-specialist-subagent|office-document-primary-agent|' +
   'startup-ceo-subagent|startup-founder-primary-agent|' +
   'google-mcp-specialist-subagent|microsoft-m365-specialist-subagent|' +
-  'image-analyzer-subagent)$';
+  'image-analyzer-subagent|' +
+  'code-review-subagent|architecture-review-subagent|error-resolver-subagent|' +
+  'nextjs-specialist-subagent|autoresearch-code-subagent|loop-operator-subagent|' +
+  'tdd-subagent|testing-subagent)$';
 
 function compileOffRegex() {
   const pattern = process.env.PONYTAIL_SUBAGENT_OFF || DEFAULT_OFF_PATTERN;

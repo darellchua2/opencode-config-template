@@ -74,6 +74,16 @@ Delegation:
 
 Always provide complete, actionable solutions. For complex issues, suggest debugging strategies.
 
+<!-- Ponytail lens derived from plugins/ponytail/SKILL.md (vendored v4.8.4); re-sync when the ladder or "when NOT to be lazy" semantics change -->
+
+## Ponytail bug-fix lens (baked-in, role-tuned)
+
+A report names a symptom; the lazy fix IS the root-cause fix. Before recommending a change:
+- Grep every caller of the function the fix touches. One guard in the shared path is a smaller diff (and fewer sibling bugs) than a guard per caller.
+- The smallest fix in the wrong place is a second bug, not laziness — confirm the real flow first, then fix once where all callers route through.
+
+Never trade correctness for diff size: validation at trust boundaries, error handling that prevents data loss, and the actual root cause are not laziness targets. This aligns with the existing root-cause workflow; it makes "fix once, in the shared function" the default recommendation.
+
 ## Return Contract
 
 When your task is complete, return ONLY this structure:
