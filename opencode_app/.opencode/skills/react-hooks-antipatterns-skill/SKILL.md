@@ -146,9 +146,11 @@ const sorted = useMemo(() => sortItems(effectiveItems), [effectiveItems])
 
 **Before (buggy):**
 ```tsx
+const counter = useRef(0)
+
 useEffect(() => {
-  const counter = useRef(0)
-  counter.current++ // Carries stale value on re-mount
+  counter.current++ // Carries stale value from previous lifecycle — not reset
+  doWork(counter.current)
 }, [dependency])
 ```
 
@@ -158,7 +160,8 @@ const counter = useRef(0)
 
 useEffect(() => {
   counter.current = 0 // Reset at TOP of effect body
-  // ... then use counter
+  counter.current++
+  doWork(counter.current)
 }, [dependency])
 ```
 

@@ -1,6 +1,6 @@
 ---
 name: react-render-antipatterns-skill
-description: Detect and fix React render-time anti-patterns — missing fragment keys in .map(), unsafe JSON.parse in event handlers, inconsistent visibility toggle strategies, and theme-driven component design with CSS custom properties
+description: Detect and fix React render-time anti-patterns — missing fragment keys in .map(), unsafe JSON.parse in event handlers, inconsistent visibility toggle strategies, theme-driven component design, Next.js revalidatePath/redirect swallowing, ssr:false hydration elimination, and Playwright browserName vs project routing
 license: Apache-2.0
 compatibility: opencode
 metadata:
@@ -136,4 +136,63 @@ CSS custom properties only — no hardcoded colors, automatic light/dark mode.
 /* Theme switch is automatic via :root[data-theme] */
 :root[data-theme="dark"] { --color-primary: #6366f1; }
 :root[data-theme="light"] { --color-primary: #4f46e5; }
+```
+
+---
+
+## D. Next.js Runtime Patterns
+
+Patterns specific to Next.js that affect render-time behavior. Redistributed from the original `react-nextjs-antipatterns-skill` (PLAN-GIT-312).
+
+### D1. `revalidatepath-inside-generic-try-catch` — Swallowed Redirects
+
+`revalidatePath()` and `redirect()` throw non-Error objects with a `digest` property. Generic try/catch swallows them silently.
+
+```tsx
+// BAD — swallows redirect signal
+try {
+  revalidatePath('/dashboard')
+} catch (e) {
+  console.error('Failed to revalidate') // page never refreshes
+}
+
+// GOOD — re-throw Next.js internal signals
+try {
+  revalidatePath('/dashboard')
+} catch (e) {
+  if (e && typeof e === 'object' && 'digest' in e) {
+    const digest = e.digest as string
+    if (digest.startsWith('NEXT_REDIRECT') || digest.startsWith('NEXT_REVALIDATE')) {
+      throw e
+    }
+  }
+  console.error('Revalidation failed', e)
+}
+```
+
+### D2. `ssr-false-eliminates-hydration-mismatch` — No More `typeof window` Guards
+
+Wrap browser-API components in `next/dynamic({ ssr: false })` to eliminate hydration mismatches.
+
+```tsx
+import dynamic from 'next/dynamic'
+
+const MapComponent = dynamic(() => import('./Map'), { ssr: false })
+// No need for: if (typeof window === 'undefined') return null
+```
+
+### D3. `browserName-playwright-project-routing` — Project vs Browser
+
+`browserName` is the browser engine, not the project name. Use `testInfo.project.name` for multi-project routing.
+
+```ts
+// BAD — matches all chromium-based projects, not the specific one
+test('works in all projects', ({ browserName }) => {
+  if (browserName === 'chromium') { /* ... */ }
+})
+
+// GOOD — correctly matches specific project config
+test('works in all projects', ({}, testInfo) => {
+  if (testInfo.project.name === 'desktop-chrome') { /* ... */ }
+})
 ```

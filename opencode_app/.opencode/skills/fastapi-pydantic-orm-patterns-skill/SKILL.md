@@ -46,7 +46,7 @@ Use V2 APIs exclusively — the V1 compatibility layer is deprecated and hides b
 | Config | `model_config = ConfigDict(...)` | `class Config:` |
 | Extra fields | `extra="forbid"` on API boundary, `"ignore"` on embedded spec | `Extra.ignore` |
 | Validators | `@field_validator`, `@model_validator` | `@validator` |
- Serialization | `.model_dump()`, `.model_validate()` | `.dict()`, `.parse_obj()` |
+| Serialization | `.model_dump()`, `.model_validate()` | `.dict()`, `.parse_obj()` |
 | Computed | `@computed_field` | `@property` only |
 | Immutable | `model_config = ConfigDict(frozen=True)` | custom `__setattr__` |
 | Serializer | `@field_serializer` / `@model_serializer` | `json_encoders` |
@@ -147,7 +147,7 @@ if not definition:
     # Step 2: slug + is_latest=True fallback
     definition = await session.scalar(
         select(Definition).where(
-            Definition.slug == slug, Definition.is_latest == True
+            Definition.slug == slug, Definition.is_latest.is_(True)
         )
     )
 ```
@@ -202,7 +202,8 @@ key = base64.b64decode(settings.encryption_key_b64)
 
 # GOOD — validate decoded length at startup
 key = base64.b64decode(settings.encryption_key_b64)
-assert len(key) == 32, f"Expected 32-byte AES-256 key, got {len(key)}"
+if len(key) != 32:
+    raise ValueError(f"Expected 32-byte AES-256 key, got {len(key)}")
 ```
 
 ### D4. Fail-Closed/Fail-Open via Single Config Toggle
@@ -259,6 +260,8 @@ def claim_secret(claim_id: str) -> bytes | None:
         return entry[0]
     return None
 ```
+
+**Caveat:** `_secret_cache` is not thread-safe. For multi-worker deployments, wrap access in `threading.Lock` or use a TTL'd Redis key.
 
 ### F2. Placeholder Swap for Transport Value Validation
 

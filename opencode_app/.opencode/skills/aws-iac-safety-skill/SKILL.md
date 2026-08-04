@@ -28,10 +28,10 @@ Use this skill when:
 
 ## Related Skills
 
-- **opentofu-aws-explorer-skill**: AWS resource discovery (Lambda Function URL CNAME at L1158).
-- **opentofu-ecr-provision-skill**: ECR provisioning (lowercase naming at L687).
-- **security-audit-skill**: Security auditing (Lambda public without auth at L499, local TF state at L526).
-- **docker-containerization-skill**: Docker patterns (no-rollback-on-deploy at L352).
+- **opentofu-aws-explorer-skill**: AWS resource discovery (Lambda Function URL CNAME pattern).
+- **opentofu-ecr-provision-skill**: ECR provisioning (lowercase-safe naming pattern).
+- **security-audit-skill**: Security auditing (Lambda public-without-auth, local Terraform state patterns).
+- **docker-containerization-skill**: Docker patterns (no-rollback-on-deploy pattern).
 
 ---
 
