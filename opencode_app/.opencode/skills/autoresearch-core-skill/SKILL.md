@@ -6,7 +6,7 @@ compatibility: opencode
 metadata:
   audience: developers
   workflow: autonomous-iteration
-  protocol-source: true
+  protocol-source: "true"
 category: Autoresearch
 ---
 

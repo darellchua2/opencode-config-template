@@ -2424,11 +2424,18 @@ setup_config() {
     # Copy AGENTS.md from project to global config
     if [ -f "${SCRIPT_DIR}/.AGENTS.md" ]; then
         if [ -f "${CONFIG_DIR}/AGENTS.md" ]; then
-            log_warn "AGENTS.md already exists at ${CONFIG_DIR}/AGENTS.md"
-            if prompt_yes_no "Do you want to overwrite it?" "n"; then
-                create_backup "${CONFIG_DIR}/AGENTS.md"
-                run_cmd cp "${SCRIPT_DIR}/.AGENTS.md" "${CONFIG_DIR}/AGENTS.md"
-                log_success "AGENTS.md copied successfully (renamed from .AGENTS.md)"
+            if diff -q "${SCRIPT_DIR}/.AGENTS.md" "${CONFIG_DIR}/AGENTS.md" >/dev/null 2>&1; then
+                log_info "AGENTS.md already up to date at ${CONFIG_DIR}/AGENTS.md"
+            else
+                log_warn "AGENTS.md at ${CONFIG_DIR}/AGENTS.md is STALE — it differs from the source ${SCRIPT_DIR}/.AGENTS.md"
+                log_warn "Stale shipped instructions can cause incorrect agent behavior. Recommend overwriting."
+                if prompt_yes_no "Overwrite with the current source version?" "y"; then
+                    create_backup "${CONFIG_DIR}/AGENTS.md"
+                    run_cmd cp "${SCRIPT_DIR}/.AGENTS.md" "${CONFIG_DIR}/AGENTS.md"
+                    log_success "AGENTS.md updated successfully (renamed from .AGENTS.md)"
+                else
+                    log_warn "Kept stale AGENTS.md — shipped agent instructions may be out of date."
+                fi
             fi
         else
             run_cmd cp "${SCRIPT_DIR}/.AGENTS.md" "${CONFIG_DIR}/AGENTS.md"
