@@ -3010,6 +3010,46 @@ setx_env() {
     fi
 }
 
+# Register the PAYG `zai` provider credential in opencode's native auth store
+# (~/.local/share/opencode/auth.json) so `opencode auth list` shows it and the
+# built-in `zai` provider resolves (e.g. zai/glm-5v-turbo). Mirrors the Docker
+# entrypoint's auth["zai"] write. MERGES — never clobbers existing entries
+# (zai-coding-plan, gemini, ...). Idempotent. MCP servers still read
+# {env:ZAI_API_KEY} independently — this only authenticates the model provider.
+register_zai_auth() {
+    [ -z "$ZAI_API_KEY" ] && return 0
+    if [ "$DRY_RUN" = true ]; then
+        echo "[DRY-RUN] Would register zai credential in ~/.local/share/opencode/auth.json"
+        return 0
+    fi
+    if ! command_exists python3; then
+        log_warn "python3 not found — skipping auth.json registration for zai (model provider stays unauthenticated)"
+        return 0
+    fi
+    local auth_dir="${XDG_DATA_HOME:-$HOME/.local/share}/opencode"
+    local auth_file="${auth_dir}/auth.json"
+    ZAI_API_KEY="$ZAI_API_KEY" python3 - "$auth_file" "$auth_dir" <<'PYEOF'
+import json, os, sys
+auth_file, auth_dir = sys.argv[1], sys.argv[2]
+key = os.environ.get("ZAI_API_KEY", "").strip()
+if not key:
+    sys.exit(0)
+auth = {}
+try:
+    with open(auth_file) as f:
+        loaded = json.load(f)
+        auth = loaded if isinstance(loaded, dict) else {}
+except (FileNotFoundError, ValueError):
+    pass
+auth["zai"] = {"type": "api", "key": key}
+os.makedirs(auth_dir, exist_ok=True)
+with open(auth_file, "w") as f:
+    json.dump(auth, f, indent=2)
+print("  auth.json providers: " + ", ".join(auth.keys()))
+PYEOF
+    log_success "Registered zai credential in ${auth_file} (native opencode auth store)"
+}
+
 # Setup environment variables in shell config (bashrc, zshrc, etc.)
 setup_shell_vars() {
     echo ""
@@ -3049,6 +3089,10 @@ setup_shell_vars() {
             fi
         fi
     fi
+
+    # Register the PAYG `zai` provider in opencode's native auth store so it
+    # resolves identically to the Docker path (single credential mechanism).
+    register_zai_auth
 
     # Offer to install autoresearch protocol helpers (ar-enable / ar-disable)
     # into existing bashrc / zshrc. Prompted — never silent.
