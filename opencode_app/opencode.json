@@ -114,6 +114,33 @@
       "frontend-design-skill": "allow",
       "accessibility-a11y-skill": "allow",
       "changelog-python-cliff-skill": "allow"
+    },
+    "tool": {
+      "codegraph*": "allow",
+      "atlassian*": "allow",
+      "mermaid*": "allow",
+      "markitdown*": "deny",
+      "zai-web-reader*": "allow",
+      "zai-vision-mcp-server*": "deny",
+      "zai-zread*": "deny",
+      "google-bigquery*": "deny",
+      "google-maps*": "deny",
+      "google-gce*": "deny",
+      "google-gke*": "deny",
+      "autodesk-revit*": "deny",
+      "autodesk-model-data*": "deny",
+      "autodesk-fusion*": "deny",
+      "autodesk-help*": "deny",
+      "next-devtools*": "deny",
+      "microsoft-teams*": "deny",
+      "microsoft-mail*": "deny",
+      "microsoft-calendar*": "deny",
+      "microsoft-sharepoint*": "deny",
+      "microsoft-onedrive*": "deny",
+      "microsoft-user*": "deny",
+      "microsoft-word*": "deny",
+      "microsoft-copilot*": "deny",
+      "microsoft-dataverse*": "deny"
     }
   },
   "command": {
@@ -350,33 +377,6 @@
       },
       "enabled": false
     }
-  },
-  "tools": {
-    "codegraph*": true,
-    "atlassian*": true,
-    "mermaid*": true,
-    "markitdown*": false,
-    "zai-web-reader*": true,
-    "zai-vision-mcp-server*": false,
-    "zai-zread*": false,
-    "google-bigquery*": false,
-    "google-maps*": false,
-    "google-gce*": false,
-    "google-gke*": false,
-    "autodesk-revit*": false,
-    "autodesk-model-data*": false,
-    "autodesk-fusion*": false,
-    "autodesk-help*": false,
-    "next-devtools*": false,
-    "microsoft-teams*": false,
-    "microsoft-mail*": false,
-    "microsoft-calendar*": false,
-    "microsoft-sharepoint*": false,
-    "microsoft-onedrive*": false,
-    "microsoft-user*": false,
-    "microsoft-word*": false,
-    "microsoft-copilot*": false,
-    "microsoft-dataverse*": false
   },
   "agent": {
     "build": {
