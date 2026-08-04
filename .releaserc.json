@@ -124,8 +124,12 @@
           "README.md",
           "AGENTS.md",
           "LICENSE",
+          "package.json",
           "deploy/setup.sh",
           "deploy/setup.ps1",
+          "deploy/init.mjs",
+          "deploy/source.mjs",
+          "deploy/build-site.mjs",
           "opencode_app/opencode.json",
           "opencode_app/.opencode/agents/**/*",
           "opencode_app/.opencode/skills/**/*"

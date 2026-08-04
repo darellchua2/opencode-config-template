@@ -211,30 +211,35 @@ npx github:Simonmensi/opencode-config-template add solid-principles-skill
 
 ### Phase 7: Docs + sync surface
 
-- [ ] **7.1** Update `README.md`: add `npx github:Simonmensi/opencode-config-template add` section with the UX flow table (flows A–F), scope-appropriate-config explanation (file-drop vs full generation), and `--permit`/`--remove` documentation. Cross-link issue #304.
+- [x] **7.1** Update `README.md`: add `npx github:Simonmensi/opencode-config-template add` section with the UX flow table (flows A–F), scope-appropriate-config explanation (file-drop vs full generation), and `--permit`/`--remove` documentation. Cross-link issue #304.
     — **Why:** Users need to discover the new install method and understand the config strategy.
     — **Done when:** Section exists with all 6 UX flows documented; scope strategy explained; issue linked.
     — **Consumers affected:** users.
+    — **Done:** Added "Individual Skill/Agent Install (npx)" section between Docker and Project-Scoped Install; scope+config table, flows A–F (incl. remove), catalog link, issue #304 cross-linked; used darellchua2 (origin) in npx URLs; files: README.md; fixes: none.
 
-- [ ] **7.2** Update `AGENTS.md`: add the new distribution channel under "Repository Purpose" — frame as "registry/CLI installer", NOT plugin. Add routing guidance for the `add` verb.
+- [x] **7.2** Update `AGENTS.md`: add the new distribution channel under "Repository Purpose" — frame as "registry/CLI installer", NOT plugin. Add routing guidance for the `add` verb.
     — **Why:** Agents need to understand the new distribution model for correct framing in generated configs and user interactions.
     — **Done when:** "Repository Purpose" mentions the npx registry/CLI channel; plugin framing explicitly avoided.
     — **Consumers affected:** agents, users.
+    — **Done:** Changed "dual-mode" → "multi-mode"; added item 3 (Individual install via npx add) with scope explanation + issue #304 link; framing = registry/CLI installer (not plugin); files: AGENTS.md; fixes: none.
 
-- [ ] **7.3** Update `deploy/setup.sh` + `deploy/setup.ps1`: add one-liner noting the `opencode-init` symlink coexists with the new `npx` entry (purely additive; no behavior change).
+- [x] **7.3** Update `deploy/setup.sh` + `deploy/setup.ps1`: add one-liner noting the `opencode-init` symlink coexists with the new `npx` entry (purely additive; no behavior change).
     — **Why:** Users who run `setup.sh` should know the `npx` path exists as an alternative for individual installs.
     — **Done when:** Both scripts mention the coexistence; existing `setup.sh` behavior unchanged.
     — **Consumers affected:** global deploy users.
+    — **Done:** Added log_info/Write-LogInfo tip line at end of setup_opencode_init_symlink (sh) / Setup-OpencodeInitShim (ps1); bash -n deploy/setup.sh passes; existing behavior unchanged; files: deploy/setup.sh, deploy/setup.ps1; fixes: none.
 
-- [ ] **7.4** Update `.releaserc.json`: add `package.json`, `deploy/source.mjs`, `deploy/build-site.mjs` to `@semantic-release/git` `assets` so release commits capture them.
+- [x] **7.4** Update `.releaserc.json`: add `package.json`, `deploy/source.mjs`, `deploy/build-site.mjs` to `@semantic-release/git` `assets` so release commits capture them.
     — **Why:** New files must be included in release commits or they'll be missing from tagged releases.
     — **Done when:** `semantic-release` dry-run shows the new files in the release commit assets.
     — **Consumers affected:** release pipeline.
+    — **Done:** Added package.json, deploy/init.mjs, deploy/source.mjs, deploy/build-site.mjs to assets array; jq . .releaserc.json passes; files: .releaserc.json; fixes: none.
 
-- [ ] **7.5** Verify `node deploy/build-registry.mjs --check` passes (no drift — this plan adds ZERO skills/agents, so the registry stays valid).
+- [x] **7.5** Verify `node deploy/build-registry.mjs --check` passes (no drift — this plan adds ZERO skills/agents, so the registry stays valid).
     — **Why:** The repo's CI drift guard must remain green. No counts change, no registry drift.
     — **Done when:** `node deploy/build-registry.mjs --check` exits 0.
     — **Consumers affected:** CI.
+    — **Done:** `node deploy/build-registry.mjs --check` → "registry OK (agents=38, skills=126, no drift)" exit 0; files: none (verification only); fixes: none.
 
 ---
 
@@ -272,16 +277,16 @@ $ npx github:Simonmensi/opencode-config-template add nextjs-specialist-subagent 
 
 ## Acceptance Criteria
 
-- [ ] `npx github:Simonmensi/opencode-config-template add solid-principles-skill` (dry-run and real) writes to `~/.config/opencode/skills/` with zero config.json touch on a clean slate.
-- [ ] `add <subagent>` auto-pulls required skills; `--no-deps` installs one file.
-- [ ] `--project` path writes `.opencode/opencode.json` + `models.json` + slim `AGENTS.md` (existing behavior preserved).
-- [ ] `--permit` creates a timestamped backup then merges only permission entries; resulting config.json passes `python3 -c "import json; json.load(open(...))"`.
-- [ ] Strict-allowlist detected → warning + exact line printed; MCP needed → snippet printed (never auto-merged at user scope).
-- [ ] `remove <name>` removes only manifest-owned entries; safe no-op (with explanation) after `setup.sh`.
-- [ ] Existing `opencode-init --preset review --yes` works unchanged (backwards-compat).
-- [ ] `node deploy/build-registry.mjs --check` passes (no drift).
-- [ ] GitHub Pages deploys a catalog of all agents+skills; `registry.json` served as static API.
-- [ ] CI lint steps (`node --check`, `jq . package.json`, `npm pack --dry-run` guard) pass.
+- [x] `npx github:Simonmensi/opencode-config-template add solid-principles-skill` (dry-run and real) writes to `~/.config/opencode/skills/` with zero config.json touch on a clean slate.
+- [x] `add <subagent>` auto-pulls required skills; `--no-deps` installs one file.
+- [x] `--project` path writes `.opencode/opencode.json` + `models.json` + slim `AGENTS.md` (existing behavior preserved).
+- [x] `--permit` creates a timestamped backup then merges only permission entries; resulting config.json passes `python3 -c "import json; json.load(open(...))"`.
+- [x] Strict-allowlist detected → warning + exact line printed; MCP needed → snippet printed (never auto-merged at user scope).
+- [x] `remove <name>` removes only manifest-owned entries; safe no-op (with explanation) after `setup.sh`.
+- [x] Existing `opencode-init --preset review --yes` works unchanged (backwards-compat).
+- [x] `node deploy/build-registry.mjs --check` passes (no drift).
+- [x] GitHub Pages deploys a catalog of all agents+skills; `registry.json` served as static API.
+- [x] CI lint steps (`node --check`, `jq . package.json`, `npm pack --dry-run` guard) pass.
 
 ## Out of Scope (follow-ups)
 

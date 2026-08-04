@@ -170,6 +170,53 @@ docker compose down
 docker compose build --no-cache
 ```
 
+## Individual Skill/Agent Install (npx)
+
+Install a single skill or agent without cloning the repo — the shadcn/ui model (copy source into your config). See [issue #304](https://github.com/darellchua2/opencode-config-template/issues/304).
+
+```bash
+npx github:darellchua2/opencode-config-template add solid-principles-skill
+```
+
+### Scope & config strategy
+
+| Scope | Flag | Destination | Config touch |
+|-------|------|-------------|--------------|
+| **User** (default) | *(none)* | `~/.config/opencode/{skills,agents}/` | None — opencode auto-discovers. `--permit` opts into backup+merge of `permission.skill` entries only. |
+| **Project** | `--project [dir]` | `./.opencode/{skills,agents}/` | Full generation: `opencode.json` + `models.json` + `AGENTS.md` (existing `opencode-init` behavior). |
+
+MCPs are **never auto-merged** at user scope — the installer prints the snippet for manual paste (or use `--project` for full-service generation).
+
+### UX flows
+
+```bash
+# A. Clean-slate user — zero config touch
+npx github:darellchua2/opencode-config-template add solid-principles-skill
+
+# B. Subagent (pulls required skills by default; --no-deps for just the file)
+npx github:darellchua2/opencode-config-template add tdd-subagent
+npx github:darellchua2/opencode-config-template add tdd-subagent --no-deps
+
+# C. Strict-allowlist detected (setup.sh was run) — warns about hidden items
+npx github:darellchua2/opencode-config-template add my-custom-skill
+
+# D. --permit — backup config.json + merge permission entries only
+npx github:darellchua2/opencode-config-template add my-custom-skill --permit
+
+# E. Skill needs an MCP — prints snippet, never auto-merges
+npx github:darellchua2/opencode-config-template add markitdown-mcp-skill
+
+# F. Project scope (full-service)
+npx github:darellchua2/opencode-config-template add nextjs-specialist-subagent --project
+
+# Remove (user scope only; manifest-scoped — safe no-op after setup.sh)
+npx github:darellchua2/opencode-config-template remove solid-principles-skill
+```
+
+### Browsing the catalog
+
+Run `opencode-init --list agents` or `--list skills` to browse in JSON, or visit the [GitHub Pages catalog](https://darellchua2.github.io/opencode-config-template/) (deployed on every `main` push).
+
 ## Project-Scoped Install (`opencode-init`)
 
 Not every project needs all 38 agents + 126 skills. <!-- count: hand-maintained — sync on skill/agent add (BT-157) --> `opencode-init` installs a **curated subset** into a target project's `.opencode/` and writes a project `opencode.json` configuring just that subset — chosen interactively (TUI) or via flags (LLM/CI). It is the project-scoped companion to the global `setup.sh` deploy, and is symlinked onto PATH as `opencode-init` by `setup.sh`.

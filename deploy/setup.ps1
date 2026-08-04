@@ -2049,6 +2049,7 @@ function Setup-OpencodeInitShim {
     if ($pathDirs -notcontains $userBin) {
         Write-LogWarn "$userBin is not on your PATH. Add it to use opencode-init."
     }
+    Write-LogInfo "Tip: individual skills/agents can also be installed via: npx github:darellchua2/opencode-config-template add <name>"
 }
 
 function Deploy-Plugins {
