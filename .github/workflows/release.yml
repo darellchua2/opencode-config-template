@@ -49,6 +49,17 @@ jobs:
           echo "Checking deploy/registry.json is in sync with agent/skill frontmatter..."
           node deploy/build-registry.mjs --check
 
+      - name: Lint .mjs + package.json + npx tarball guard
+        run: |
+          echo "Syntax-checking .mjs files..."
+          node --check deploy/init.mjs deploy/source.mjs deploy/build-site.mjs
+          echo "Validating package.json..."
+          jq . package.json
+          echo "Checking npx tarball includes source tree..."
+          npm pack --dry-run 2>&1 | grep -q "opencode_app/.opencode/" \
+            && echo "source tree in tarball ✓" \
+            || { echo "FAIL: opencode_app/.opencode/ missing from tarball"; exit 1; }
+
       - name: Run tests
         run: |
           export PATH="$PWD/tests/lib/bats-core/bin:$PATH"
@@ -118,3 +129,40 @@ jobs:
           name: CHANGELOG
           path: CHANGELOG.md
           retention-days: 30
+
+  pages:
+    name: Deploy catalog to Pages
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: pages
+      cancel-in-progress: true
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build catalog site
+        run: node deploy/build-site.mjs
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
