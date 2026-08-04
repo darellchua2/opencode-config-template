@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.16.0](https://github.com/darellchua2/opencode-config-template/compare/v4.15.0...v4.16.0) (2026-08-04)
+
+### Features
+
+* improve skills & subagents from cross-repo LEARNINGS (PLAN-GIT-312) ([#313](https://github.com/darellchua2/opencode-config-template/issues/313)) ([e494d5b](https://github.com/darellchua2/opencode-config-template/commit/e494d5b47b4e51b414238c97159abaa78fc2ff0a))
+
+### Bug Fixes
+
+* **ci:** rebuild registry after review fixes (PLAN-GIT-312) ([#314](https://github.com/darellchua2/opencode-config-template/issues/314)) ([c81b1d4](https://github.com/darellchua2/opencode-config-template/commit/c81b1d4cef9bfe768a84c9f4e0c7a9721a54bf8f))
+
 ## [4.15.0](https://github.com/darellchua2/opencode-config-template/compare/v4.14.1...v4.15.0) (2026-08-04)
 
 ### Features
