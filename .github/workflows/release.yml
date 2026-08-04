@@ -49,6 +49,17 @@ jobs:
           echo "Checking deploy/registry.json is in sync with agent/skill frontmatter..."
           node deploy/build-registry.mjs --check
 
+      - name: Lint .mjs + package.json + npx tarball guard
+        run: |
+          echo "Syntax-checking .mjs files..."
+          node --check deploy/init.mjs
+          echo "Validating package.json..."
+          jq . package.json
+          echo "Checking npx tarball includes source tree..."
+          npm pack --dry-run 2>&1 | grep -q "opencode_app/.opencode/" \
+            && echo "source tree in tarball ✓" \
+            || { echo "FAIL: opencode_app/.opencode/ missing from tarball"; exit 1; }
+
       - name: Run tests
         run: |
           export PATH="$PWD/tests/lib/bats-core/bin:$PATH"

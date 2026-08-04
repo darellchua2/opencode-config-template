@@ -110,15 +110,17 @@ npx github:Simonmensi/opencode-config-template add solid-principles-skill
 
 ### Phase 1: Root `package.json` + CI lint guards
 
-- [ ] **1.1** Create root `package.json` (new, minimal): `{"type":"module","bin":{"opencode-skill":"./deploy/init.mjs"}}`, zero deps, NOT published to npm.
+- [x] **1.1** Create root `package.json` (new, minimal): `{"type":"module","bin":{"opencode-skill":"./deploy/init.mjs"}}`, zero deps, NOT published to npm.
     — **Why:** npx requires a `bin` entry to resolve a binary. Zero deps keeps the clone lean.
     — **Done when:** `node -e "import('./package.json', {with:{type:'json'}}).then(d=>console.log(d.bin))"` prints `{"opencode-skill":"./deploy/init.mjs"}`; `jq .type package.json` prints `"module"`.
     — **Consumers affected:** npx resolution, all downstream phases.
+    — **Done:** Created minimal package.json (name/version/private/type/bin); no `files` array — npm packs everything not gitignored, CI guard catches future regressions; files: package.json; fixes: none.
 
-- [ ] **1.2** Add CI lint guards to `.github/workflows/release.yml`: `node --check deploy/init.mjs deploy/source.mjs`, `jq . package.json`, and `npm pack --dry-run` asserting `opencode_app/.opencode/` is included in the tarball. These are ADDITIVE — no conflict with existing semantic-release job.
+- [x] **1.2** Add CI lint guards to `.github/workflows/release.yml`: `node --check deploy/init.mjs deploy/source.mjs`, `jq . package.json`, and `npm pack --dry-run` asserting `opencode_app/.opencode/` is included in the tarball. These are ADDITIVE — no conflict with existing semantic-release job.
     — **Why:** Prevents syntax errors in .mjs files and catches silent breakage if a `files`/`.npmignore` excludes the source tree.
     — **Done when:** All three checks pass on `main`; a PR with a broken `init.mjs` fails CI.
     — **Consumers affected:** CI, developer confidence.
+    — **Done:** Added "Lint .mjs + package.json + npx tarball guard" step to `test` job (after drift guard); currently checks `node --check deploy/init.mjs` only (source.mjs added in Phase 2); also regenerated registry.json to fix pre-existing drift (responsive-audit-subagent description from dab6ab5); files: .github/workflows/release.yml, deploy/registry.json; fixes: none.
 
 ### Phase 2: Source isolation module
 
