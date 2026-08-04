@@ -22,8 +22,8 @@ opencode_app/
 ├── AGENTS.md              # Agent instructions for container mode
 ├── .dockerignore          # Excludes _archived, .env, node_modules
 └── .opencode/
-    ├── agents/            # 39 agent .md files (single source of truth)
-    └── skills/            # 126 skill directories + _common/ shared + _archived/ legacy
+    ├── agents/            # 36 agent .md files (single source of truth)
+    └── skills/            # 125 skill directories + _common/ shared + _archived/ legacy
 ```
 
 ## How It Works
@@ -65,22 +65,20 @@ docker run --rm --entrypoint whoami opencode_app-opencode
 
 ## Provider Packs — Docker build-time MCP toggle (#268)
 
-The 20 opt-in MCP servers (Autodesk, Microsoft 365, Google Cloud, `next-devtools`, `web-search-prime`, `markitdown`) can be enabled as **groups** at image build time via the `OPENCODE_PACKS` build-arg, instead of editing `opencode.json` by hand. Packs are JSON partials in `deploy/packs/`; `deploy/merge-packs.mjs` deep-merges them into `/app/opencode.json` right after the model-resolver step.
+The 7 opt-in MCP servers (Autodesk, `next-devtools`, `web-search-prime`, `markitdown`) can be enabled as **groups** at image build time via the `OPENCODE_PACKS` build-arg, instead of editing `opencode.json` by hand. Packs are JSON partials in `deploy/packs/`; `deploy/merge-packs.mjs` deep-merges them into `/app/opencode.json` right after the model-resolver step.
 
 ```bash
 # Enable one or more packs (comma-separated)
-docker compose build --build-arg OPENCODE_PACKS=autodesk,microsoft
+docker compose build --build-arg OPENCODE_PACKS=autodesk
 docker compose up -d
 
-# Available packs: autodesk, microsoft, google, markitdown, nextjs, zai
+# Available packs: autodesk, markitdown, nextjs, zai
 # Empty/omitted = no-op (default OFF; existing images unaffected)
 ```
 
 | Pack | Servers | Build-arg example |
 |------|---------|-------------------|
 | `autodesk` | autodesk-revit, -model-data, -fusion, -help (4) | `--build-arg OPENCODE_PACKS=autodesk` |
-| `microsoft` | microsoft-teams, -mail, -calendar, -sharepoint, -onedrive, -user, -word, -copilot, -dataverse (9) | `--build-arg OPENCODE_PACKS=microsoft` |
-| `google` | google-bigquery, -maps, -gce, -gke (4) | `--build-arg OPENCODE_PACKS=google` |
 | `markitdown` | markitdown (1) | `--build-arg OPENCODE_PACKS=markitdown` |
 | `nextjs` | next-devtools (1) | `--build-arg OPENCODE_PACKS=nextjs` |
 | `zai` | zai-web-search-prime (1) | `--build-arg OPENCODE_PACKS=zai` |
@@ -88,7 +86,7 @@ docker compose up -d
 The merge runs **after** `resolve-models.mjs` and only flips `mcp.<server>.enabled` + `tools.<ns>*` to `true` — it never turns an already-on server off, never touches the `plugin` array or `agent` block. Verify post-build:
 
 ```bash
-docker compose run --rm opencode node -e "const c=require('/app/opencode.json');console.log(c.mcp['google-bigquery'].enabled)"
+docker compose run --rm opencode node -e "const c=require('/app/opencode.json');console.log(c.mcp['autodesk-revit'].enabled)"
 # Expected: true
 ```
 
@@ -169,7 +167,7 @@ OpenCode supports subagent-to-subagent delegation via the Task tool, controlled 
 - Agent name = filename minus `.md` (e.g., `code-review-subagent.md` -> `code-review-subagent`)
 - Each spawned subagent gets its own session, context window, and step budget
 - Hub-and-spoke (primary agent -> subagent) remains the recommended pattern
-- 26 of 39 agents have explicit `task` permissions; the remaining 13 default to full access
+- 24 of 36 agents have explicit `task` permissions; the remaining 12 default to full access
 
 ## Ponytail Plugin (scoped wrapper)
 

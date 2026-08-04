@@ -26,8 +26,6 @@
     "cad-specialist-subagent": "fast",
     "docx-creation-subagent": "fast",
     "explorer-subagent": "fast",
-    "google-mcp-specialist-subagent": "fast",
-    "microsoft-m365-specialist-subagent": "fast",
     "nextjs-specialist-subagent": "fast",
     "office-document-primary-agent": "fast",
     "pptx-specialist-subagent": "reasoning",

@@ -340,7 +340,7 @@ MODELS_ONLY=false        # --models-only (provider + resolve only)
 FORCE_RESOLVE=false      # --force (ignore preserve-edits)
 MIGRATE_ONLY=false       # --migrate (migration + resolve only)
 MIX_MODE=false           # --mix (per-category provider/model editor)
-ENABLE_PACK=""           # --enable-pack <csv> (provider packs: autodesk,microsoft,google,markitdown,nextjs,zai)
+ENABLE_PACK=""           # --enable-pack <csv> (provider packs: autodesk,markitdown,nextjs,zai)
 
 # API Keys (initialize to empty to avoid unbound variable errors)
 # Capture from environment if they exist
@@ -568,8 +568,8 @@ USAGE:
   PROVIDER PACKS (deploy-time MCP toggle):
     --enable-pack <csv>   Enable provider pack(s) — flips mcp.<server>.enabled
                           and tools.<ns>* flags ON for the named packs. Available
-                          packs: autodesk, microsoft, google, markitdown, nextjs, zai
-                          (comma-separated, e.g. --enable-pack autodesk,microsoft).
+                          packs: autodesk, markitdown, nextjs, zai
+                          (comma-separated, e.g. --enable-pack autodesk,markitdown).
                           No-op if omitted; default state of every pack is OFF.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -587,8 +587,7 @@ USAGE:
 
   Provider packs (deploy-time MCP toggle):
     ./setup.sh --enable-pack autodesk             # Enable all 4 Autodesk MCP servers
-    ./setup.sh --enable-pack autodesk,microsoft   # Enable multiple packs
-    ./setup.sh --enable-pack google --dry-run     # Preview without writing
+    ./setup.sh --enable-pack autodesk,markitdown   # Enable multiple packs
     ./setup.sh --quick --enable-pack markitdown   # Combine with other modes
 
   Preview and update:
@@ -650,8 +649,6 @@ USAGE:
     startup-founder      Startup founder business operations agent
     startup-ceo          Investor-ready pitch decks and board updates
     office-document      Office document specialist: Word, PowerPoint, Excel
-    google-mcp           Google Cloud MCP (BigQuery, Maps, GCE, GKE)
-    microsoft-m365       Microsoft 365 MCP (Teams, Mail, Calendar, SharePoint, etc.)
      nextjs-specialist  Next.js scaffolding + runtime MCP diagnosis
     opentofu-explorer    OpenTofu/Terraform infrastructure management
     cad-specialist       CAD, robotics, hardware design orchestration
@@ -662,7 +659,7 @@ USAGE:
     Usage: opencode --agent build "implement auth feature"
            opencode --agent explore "find all API routes"
 
-  MCP SERVERS (26):
+  MCP SERVERS (13):
     Auto-start (local npx servers):
       codegraph           Pre-indexed code knowledge graph (100% local)
       atlassian          JIRA and Confluence integration
@@ -678,28 +675,11 @@ USAGE:
       web-search-prime   Web search capabilities
       zread              GitHub repository search and file reading
 
-    Microsoft 365 (requires M365 Copilot license):
-      microsoft-teams    Teams chats, channels, messages
-      microsoft-mail     Outlook email operations
-      microsoft-calendar Calendar event management
-      microsoft-sharepoint SharePoint files and lists
-      microsoft-onedrive Personal file management
-      microsoft-word     Word document operations
-      microsoft-user     User profile and org info
-      microsoft-copilot  M365 Copilot conversations
-      microsoft-dataverse Business data (Dynamics 365)
-
     Autodesk (requires Autodesk access token):
       autodesk-revit     Revit model data and APIs
       autodesk-fusion    Fusion 360 integration
       autodesk-model-data  Autodesk Model Data API
       autodesk-help      Autodesk Help knowledge base
-
-    Google Cloud (requires Google auth):
-      google-bigquery    BigQuery analytics queries
-      google-maps        Google Maps geocoding/routes
-      google-gce         Google Compute Engine management
-      google-gke         Google Kubernetes Engine management
 
     SKILLS ($(count_skills "${REPO_DIR}/opencode_app/.opencode/skills")):
 
@@ -870,7 +850,7 @@ parse_arguments() {
                 # Accept any value including "" (empty = no-op, handled by
                 # merge-packs.mjs). Only error if no following token at all.
                 if [ $# -lt 2 ]; then
-                    log_error "--enable-pack requires an argument (csv: autodesk,microsoft,google,markitdown,nextjs,zai)"
+                    log_error "--enable-pack requires an argument (csv: autodesk,markitdown,nextjs,zai)"
                     exit 1
                 fi
                 ENABLE_PACK="$2"
@@ -2415,20 +2395,19 @@ setup_config() {
             install_local_mcp_launchers
 
             echo ""
-        echo "✓ Configured 38 agents:"
+        echo "✓ Configured 36 agents:"
         echo "    - build (default) - Full-featured coding agent"
         echo "    - plan - Planning agent (read-only)"
         echo "    - explore - Codebase exploration and analysis"
         echo "    - image-analyzer-subagent - Image/screenshot analysis"
         echo "    - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
-        echo "    - ... and 34 more agents"
+        echo "    - ... and 32 more agents"
             echo ""
              echo "✓ Configured MCP servers:"
              echo "    Local (auto-start): atlassian, zai-vision-mcp-server, codegraph, mermaid"
              echo "    Remote (needs key): web-reader, web-search-prime, zread"
-             echo "    Available but disabled (opt-in): next-devtools, markitdown, autodesk-*,"
-             echo "                                      microsoft-*, google-*"
-             echo "    Enable a group with: ./setup.sh --enable-pack <autodesk|microsoft|google|markitdown|nextjs|zai>"
+             echo "    Available but disabled (opt-in): next-devtools, markitdown, autodesk-*"
+             echo "    Enable a group with: ./setup.sh --enable-pack <autodesk|markitdown|nextjs|zai>"
             echo ""
         else
             log_error "config.json source not found: ${SOURCE_CONFIG}"
@@ -3355,12 +3334,12 @@ print_summary() {
 
     # Agents configured
     if [ -f "$CONFIG_FILE" ]; then
-        echo "✓ Configured 38 agents:"
+        echo "✓ Configured 36 agents:"
         echo "    - build (default) - Full-featured coding agent"
         echo "    - plan - Planning agent (read-only)"
         echo "    - explore - Codebase exploration and analysis"
         echo "    - image-analyzer-subagent - Image/screenshot analysis"
-        echo "    - ... and 35 more agents"
+        echo "    - ... and 33 more agents"
     fi
 
     # MCP servers configured
@@ -3434,13 +3413,13 @@ print_next_steps() {
     echo "                        🚀 Quick Start"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "🤖 Agents (38):"
+    echo "🤖 Agents (36):"
     echo "  - build (default) - Full-featured coding agent"
     echo "  - plan - Planning agent (read-only)"
     echo "  - explore - Fast codebase exploration and analysis"
     echo "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
     echo "  - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
-    echo "  - ... and 34 more agents"
+    echo "  - ... and 32 more agents"
     echo ""
     echo "  Usage: opencode --agent <name> \"prompt\""
     echo "         opencode \"prompt\" (uses build)"

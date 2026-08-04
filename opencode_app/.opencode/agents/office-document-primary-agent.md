@@ -9,7 +9,6 @@ permission:
     docx-creation-subagent: allow
     startup-ceo-subagent: allow
     xlsx-specialist-subagent: allow
-    microsoft-m365-specialist-subagent: allow
   skill:
     pptx-generate-slide-skill: allow
     pptx-generate-template-skill: allow
@@ -50,7 +49,6 @@ Activate when user mentions:
 | `.pptx` startup/pitch/investor | `startup-ceo-subagent` |
 | `.docx` creation/edit | `docx-creation-subagent` + `docx-creation-skill` |
 | `.xlsx` / `.csv` | `xlsx-specialist-subagent` |
-| M365 cloud operations | `microsoft-m365-specialist-subagent` |
 | READ/EXTRACT text from `.docx`/`.pptx`/`.xlsx` (born-digital) | Load `markitdown-mcp-skill` → call `markitdown` MCP |
 
 > **MCP tool access is session-inherited** from `opencode.json` `tools["markitdown*"]` — do NOT add `markitdown*` to this agent's `permission` block (no precedent; decided in #262). To enable markitdown calls, the user must flip both `mcp.markitdown.enabled` and `tools["markitdown*"]` to `true` in their deployed `opencode.json`.

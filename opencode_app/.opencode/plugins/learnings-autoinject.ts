@@ -63,7 +63,6 @@ const DEFAULT_OFF_PATTERN =
   'coverage-subagent|documentation-subagent|docx-creation-subagent|' +
   'pptx-specialist-subagent|xlsx-specialist-subagent|office-document-primary-agent|' +
   'startup-ceo-subagent|startup-founder-primary-agent|' +
-  'google-mcp-specialist-subagent|microsoft-m365-specialist-subagent|' +
   'image-analyzer-subagent|' +
   'code-review-subagent|architecture-review-subagent|error-resolver-subagent|' +
   'nextjs-specialist-subagent|autoresearch-code-subagent|loop-operator-subagent|' +
