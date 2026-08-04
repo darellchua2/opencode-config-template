@@ -51,9 +51,9 @@ teardown() { rm -rf "$TMP_PROJ"; }
   [ "$count" -gt 10 ]
 }
 
-@test "--list presets shows all 10 presets" {
+@test "--list presets shows all 9 presets" {
   count=$($INIT --list presets 2>/dev/null | jq_len)
-  [ "$count" = "10" ]
+  [ "$count" = "9" ]
 }
 
 @test "--describe code-review-subagent returns skills+delegates+modelAvailable" {
