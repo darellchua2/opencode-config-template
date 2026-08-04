@@ -15,8 +15,8 @@ The `@semantic-release/release-notes-generator` silently produces empty notes fo
 - [x] All 8 semantic-release plugins pinned as devDependencies in `package.json` with a committed `package-lock.json`
 - [x] `.github/workflows/release.yml` release job uses `npm ci` instead of unpinned `npm install --no-save`
 - [x] `npx semantic-release --dry-run` (or local equivalent) produces non-empty `nextRelease.notes`
-- [ ] Next release to `main` has a populated GitHub release body with `### Features` / `### Bug Fixes` sections
-- [ ] Next release to `main` has a populated `CHANGELOG.md` entry
+- [x] Next release to `main` has a populated GitHub release body with `### Features` / `### Bug Fixes` sections
+- [x] Next release to `main` has a populated `CHANGELOG.md` entry
 - [x] `package.json` remains `private: true` and the npx flow is unaffected
 
 ## Scope
@@ -100,10 +100,11 @@ The `@semantic-release/release-notes-generator` silently produces empty notes fo
     — **Consumers affected:** PR workflow, CI.
     — **Done:** Branch pushed; files: none; fixes: none.
 
-- [ ] **3.3** After merge to `main`, verify the next GitHub release has a non-empty body and the new CHANGELOG.md entry contains `### Features` and/or `### Bug Fixes`
+- [x] **3.3** After merge to `main`, verify the next GitHub release has a non-empty body and the new CHANGELOG.md entry contains `### Features` and/or `### Bug Fixes`
     — **Why:** This is the ultimate acceptance test — the fix is only complete when the next release actually produces notes.
     — **Done when:** GitHub release page shows release notes content, and `CHANGELOG.md` latest entry has commit listings under section headers.
     — **Consumers affected:** All consumers of the CHANGELOG and GitHub releases.
+    — **Done:** v4.14.1 released with `### Bug Fixes` section containing the fix commit; GitHub release body and CHANGELOG.md both populated; CI run 30921222724 all green; files: none changed; fixes: none.
 
 ## Risks & Mitigation
 
