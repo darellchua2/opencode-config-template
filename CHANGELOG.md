@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.15.0](https://github.com/darellchua2/opencode-config-template/compare/v4.14.1...v4.15.0) (2026-08-04)
+
+### Features
+
+* **docling:** office document extraction routing + docling CLI-on-demand ([#308](https://github.com/darellchua2/opencode-config-template/issues/308)) ([#310](https://github.com/darellchua2/opencode-config-template/issues/310)) ([1be58ce](https://github.com/darellchua2/opencode-config-template/commit/1be58ced6e564510ec5c7c31ca9be0dd18827d6f))
+
+### Bug Fixes
+
+* **ci:** update preset count 10→9 (google/microsoft removed in [#309](https://github.com/darellchua2/opencode-config-template/issues/309)) ([#311](https://github.com/darellchua2/opencode-config-template/issues/311)) ([6fba3aa](https://github.com/darellchua2/opencode-config-template/commit/6fba3aaf1f2cab84140536be3e32f3dd76ef0433))
+* **docs:** replace stale microsoft/google pack examples with valid packs ([b7a719b](https://github.com/darellchua2/opencode-config-template/commit/b7a719ba881a353305a1f9879a9ccffa9cd88dac))
+
+### Code Refactoring
+
+* **mcp:** remove Google Cloud + Microsoft 365 MCP integrations ([65d156b](https://github.com/darellchua2/opencode-config-template/commit/65d156b15bb89d2f4bb305431ed2999c21fa15f8))
+
+### Documentation
+
+* **plan:** add PLAN-GIT-307.md for chore/remove-google-microsoft-mcp ([24ef880](https://github.com/darellchua2/opencode-config-template/commit/24ef88052a3dcf1301b55d0cd2e6bb434a149330))
+* **plan:** add PLAN-GIT-308 for [#308](https://github.com/darellchua2/opencode-config-template/issues/308) ([496ca73](https://github.com/darellchua2/opencode-config-template/commit/496ca7394b886c7804320caf9fa4344af666cafa))
+* **plan:** tick final 3 checkboxes — v4.14.1 release verified ([e163aef](https://github.com/darellchua2/opencode-config-template/commit/e163aeff71ac78f815ca71ddd4da9cf5bdeb77ee))
+
 ## [4.14.1](https://github.com/darellchua2/opencode-config-template/compare/v4.14.0...v4.14.1) (2026-08-04)
 
 ### Bug Fixes
