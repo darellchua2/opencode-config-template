@@ -59,20 +59,23 @@ Extract cross-repo patterns from `LEARNINGS/` directories across 15 `~/VSCODE/*`
 
 _Owner: `general` delegate_
 
-- [ ] **1.1** Capture baseline skill count: `find opencode_app/.opencode/skills -name SKILL.md | wc -l`
+- [x] **1.1** Capture baseline skill count: `find opencode_app/.opencode/skills -name SKILL.md | wc -l`
     — **Why:** Establishes the "before" number for D1 verification and Phase 9 doc-sync; any drift between this number and the setup.sh banner is a bug.
     — **Done when:** Baseline count recorded in PLAN Phase 1 completion comment (or worklog).
     — **Consumers affected:** Phase 2 (D1 verification), Phase 9 (doc-sync target), Phase 10 (dry-run comparison).
+    — **Done:** Baseline = 132 skills; files: none (read-only); fixes: none
 
-- [ ] **1.2** Capture baseline agent count: `ls opencode_app/.opencode/agents/*.md | wc -l`
+- [x] **1.2** Capture baseline agent count: `ls opencode_app/.opencode/agents/*.md | wc -l`
     — **Why:** Establishes the "before" number for D1 — the current hardcoded `36`/`38` mismatch in setup.sh vs setup.ps1 is the bug D1 fixes.
     — **Done when:** Baseline count recorded alongside Phase 1 completion.
     — **Consumers affected:** Phase 2 (D1 — dynamic function target), Phase 10 (verification).
+    — **Done:** Baseline = 36 agents; files: none (read-only); fixes: none
 
-- [ ] **1.3** Capture current banner values: grep the hardcoded agent/skill counts in setup.sh (lines ~621, ~2403, ~3372) and setup.ps1 (lines ~909, ~1697).
+- [x] **1.3** Capture current banner values: grep the hardcoded agent/skill counts in setup.sh (lines ~621, ~2403, ~3372) and setup.ps1 (lines ~909, ~1697).
     — **Why:** Documents the exact drift that D1 must correct; without this, Phase 2 can't verify the fix is correct.
     — **Done when:** All 5 hardcoded locations logged with their current literal values.
     — **Consumers affected:** Phase 2 (D1 — what to replace), Phase 10 (verification).
+    — **Done:** Drift confirmed: setup.sh:621=38(wrong!), :2403=36, :3372=36, :2409=32more, :3377=33more(drift!), :3457=32more; setup.ps1:909=36, :1697=36, :2604=32more; files: none; fixes: none
 
 ---
 
