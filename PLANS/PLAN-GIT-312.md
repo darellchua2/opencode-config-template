@@ -83,50 +83,59 @@ _Owner: `general` delegate_
 
 _Owner: `opencode-tooling-subagent`_
 
-- [ ] **2.1** Add `count_agents()` function to `deploy/setup.sh` mirroring existing `count_skills()` (lines 410–413)
+- [x] **2.1** Add `count_agents()` function to `deploy/setup.sh` mirroring existing `count_skills()` (lines 410–413)
     — **Why:** `count_skills()` is already dynamic; agent count is still hardcoded at 3 locations causing drift (36 vs 38 mismatch with setup.ps1). A matching function eliminates manual updates forever.
     — **Done when:** Function exists, counts `*.md` files in `agents/` directory (excluding non-agent files), and returns the count. Matches `count_skills()` style (recursive find or ls + wc).
     — **Consumers affected:** setup.sh banner (step 2.2), runtime echo (step 2.3), print_summary (step 2.4).
+    — **Done:** Added count_agents() at L415 with -maxdepth 1 for agents (flat dir, no nesting); files: deploy/setup.sh; fixes: none
 
-- [ ] **2.2** Interpolate `count_agents()` into setup.sh banner heredoc (line ~621, currently `AGENTS (38):`)
+- [x] **2.2** Interpolate `count_agents()` into setup.sh banner heredoc (line ~621, currently `AGENTS (38):`)
     — **Why:** Replaces hardcoded `38` with `$(count_agents ...)` so the banner always matches reality.
     — **Done when:** Banner line reads `AGENTS ($(count_agents ...)):` instead of a literal number.
     — **Consumers affected:** Setup banner output, Phase 10 `--dry-run` check.
+    — **Done:** Banner L626 now uses $(count_agents ...); files: deploy/setup.sh; fixes: none
 
-- [ ] **2.3** Interpolate `count_agents()` into setup.sh runtime echo (line ~2403, currently `✓ Configured 36 agents:`)
+- [x] **2.3** Interpolate `count_agents()` into setup.sh runtime echo (line ~2403, currently `✓ Configured 36 agents:`)
     — **Why:** Same drift — hardcoded `36` doesn't match the actual count; dynamic interpolation fixes it.
     — **Done when:** Echo reads `✓ Configured $(count_agents ...) agents:` instead of literal.
     — **Consumers affected:** Runtime setup output, Phase 10 verification.
+    — **Done:** Runtime echo L2408 now dynamic; files: deploy/setup.sh; fixes: none
 
-- [ ] **2.4** Interpolate `count_agents()` into setup.sh print_summary echo (line ~3372, currently `✓ Configured 36 agents:`)
+- [x] **2.4** Interpolate `count_agents()` into setup.sh print_summary echo (line ~3372, currently `✓ Configured 36 agents:`)
     — **Why:** Third hardcoded location — all three must be dynamic to prevent future drift.
     — **Done when:** Summary echo uses `$(count_agents ...)` instead of literal.
     — **Consumers affected:** Summary output, Phase 10 verification.
+    — **Done:** Summary echo L3377 now dynamic; files: deploy/setup.sh; fixes: none
 
-- [ ] **2.5** Add `Get-AgentCount` PowerShell function to `deploy/setup.ps1` mirroring `Get-SkillCount`
+- [x] **2.5** Add `Get-AgentCount` PowerShell function to `deploy/setup.ps1` mirroring `Get-SkillCount`
     — **Why:** Windows parity — setup.ps1 currently hardcodes `36` at 2 locations AND mismatches setup.sh's `38`. A matching function eliminates manual updates.
     — **Done when:** Function exists, counts `*.md` files in agents directory, returns integer. Matches `Get-SkillCount` style.
     — **Consumers affected:** setup.ps1 banner (step 2.6), runtime echo (step 2.7).
+    — **Done:** Added Get-AgentCount at L183; files: deploy/setup.ps1; fixes: none
 
-- [ ] **2.6** Interpolate `Get-AgentCount` into setup.ps1 banner (line ~909, currently `AGENTS (36):`)
+- [x] **2.6** Interpolate `Get-AgentCount` into setup.ps1 banner (line ~909, currently `AGENTS (36):`)
     — **Why:** Replaces hardcoded `36` (which already mismatches setup.sh's `38`) with dynamic count.
     — **Done when:** Banner uses `$(Get-AgentCount)` instead of literal.
     — **Consumers affected:** Windows setup banner, Phase 10 cross-platform verification.
+    — **Done:** Banner L916 now uses Get-AgentCount; files: deploy/setup.ps1; fixes: none
 
-- [ ] **2.7** Interpolate `Get-AgentCount` into setup.ps1 runtime echo (line ~1697, currently `Write-Host "Configured 36 agents:"`)
+- [x] **2.7** Interpolate `Get-AgentCount` into setup.ps1 runtime echo (line ~1697, currently `Write-Host "Configured 36 agents:"`)
     — **Why:** Second hardcoded location in setup.ps1 — must be dynamic for consistency.
     — **Done when:** Echo uses `Get-AgentCount` instead of literal.
     — **Consumers affected:** Windows runtime output, Phase 10 verification.
+    — **Done:** Runtime echo L1704 now dynamic; files: deploy/setup.ps1; fixes: none
 
-- [ ] **2.8** Create `tests/test_count_drift.bats` asserting banner skill/agent counts match directory counts
+- [x] **2.8** Create `tests/test_count_drift.bats` asserting banner skill/agent counts match directory counts
     — **Why:** Without a gate test, future drift will go undetected until a user notices the mismatch. This test catches count drift at CI time. EXTENDS existing `test_markitdown_skill.bats:70-87` skill-count coverage to agents.
     — **Done when:** Bats test exists that: (1) counts `SKILL.md` files in skills dir, (2) counts `*.md` files in agents dir, (3) runs setup.sh banner generation or greps the interpolated values, (4) asserts counts match. Follows existing bats test conventions in `tests/` (see `test_mcp_count_consistency.bats` as analog).
     — **Consumers affected:** CI bats suite, Phase 10 verification.
+    — **Done:** 5 tests: agent_count_matches_disk, no_stale_hardcoded (sh+ps1), get_agentcount_exists, skill_count regression; all pass; files: tests/test_count_drift.bats; fixes: none
 
-- [ ] **2.9** Interpolate `count_agents()` into 4 derived "and N more agents" lines (setup.sh:2409, 3377, 3457; setup.ps1:2604)
+- [x] **2.9** Interpolate `count_agents()` into 4 derived "and N more agents" lines (setup.sh:2409, 3377, 3457; setup.ps1:2604)
     — **Why:** These lines compute `total - displayed = "and N more"` and are hardcoded (`32`/`33` — note: setup.sh:3377 already drifts, says 33 not 32). Making `count_agents()` dynamic does NOT auto-fix derived counts — they need explicit arithmetic interpolation: `$(($(count_agents ...) - <displayed_count>))`.
     — **Done when:** All 4 lines use derived arithmetic from `count_agents()`/`Get-AgentCount` instead of literal numbers. setup.sh:3377 drift (33 vs 32) corrected.
     — **Consumers affected:** Setup banner detail output, Phase 10 verification.
+    — **Done:** All 4 lines now use $(($(count_agents ...) - N)) arithmetic; drift at L3382 (33→31) corrected; files: deploy/setup.sh, deploy/setup.ps1; fixes: none
 
 ---
 

@@ -180,6 +180,13 @@ function Get-SkillCount {
              Where-Object { $_.FullName -notmatch "[\\/]_archived[\\/]" }).Count
 }
 
+function Get-AgentCount {
+    param([string]$Path)
+    if (-not (Test-Path $Path)) { return 0 }
+    return @(Get-ChildItem -Path $Path -Filter "*.md" -File -ErrorAction SilentlyContinue |
+             Where-Object { $_.FullName -notmatch "[\\/]_archived[\\/]" }).Count
+}
+
 # Auto-derive per-category counts from skill frontmatter (category: field),
 # excluding _archived. Prints "Category (N)" lines sorted by count desc. BT-157.
 function Get-SkillCategories {
@@ -906,7 +913,7 @@ USAGE:
                          CONFIGURED FEATURES
 =======================================================================
 
-    AGENTS (36):
+    AGENTS ($(Get-AgentCount (Join-Path $RepoDir 'opencode_app\.opencode\agents'))):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
@@ -1694,7 +1701,7 @@ function Set-Configuration {
             Install-Docling
 
             Write-Host ""
-             Write-Host "Configured 36 agents:" -ForegroundColor Green
+             Write-Host "Configured $(Get-AgentCount (Join-Path $RepoDir 'opencode_app\.opencode\agents')) agents:" -ForegroundColor Green
             Write-Host "    - build (default) - Full-featured coding agent"
             Write-Host "    - plan - Planning agent (read-only)"
             Write-Host "    - explore - Codebase exploration and analysis"
@@ -2601,7 +2608,7 @@ function Show-NextSteps {
     Write-Host "  - explore - Codebase exploration and analysis"
     Write-Host "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
     Write-Host "  - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
-    Write-Host "  - ... and 32 more agents"
+    Write-Host "  - ... and $((Get-AgentCount (Join-Path $RepoDir 'opencode_app\.opencode\agents')) - 5) more agents"
     Write-Host ""
     Write-Host "  Usage: opencode --agent <name> `"prompt`""
     Write-Host "         opencode `"prompt`" (uses build)"
