@@ -13,6 +13,7 @@ permission:
     pptx-template-modifier-skill: allow
     ooxml-editing-skill: allow
     office-thumbnail-skill: allow
+    markitdown-mcp-skill: allow
   task:
     "image-analyzer-subagent": allow
 category: docs

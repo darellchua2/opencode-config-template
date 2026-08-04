@@ -24,7 +24,7 @@ opencode-config-template/
 │   ├── .dockerignore
 │   ├── .opencode/
 │   │       ├── agents/              # 36 subagent .md files
-│   │       └── skills/              # 125 skill directories
+│   │       └── skills/              # 126 skill directories
 │   └── README.md                # Docker usage guide
 ├── docker-compose.yml           # Docker Compose service definition
 ├── .env.example                 # Environment variable template

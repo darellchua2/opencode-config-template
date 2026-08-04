@@ -11,6 +11,7 @@ permission:
   bash: allow
   skill:
     xlsx-specialist-skill: allow
+    markitdown-mcp-skill: allow
 category: docs
 ---
 

@@ -46,35 +46,41 @@ Binary office docs (`.docx`, `.pptx`, `.xlsx`, born-digital `.pdf`) fail extract
 
 ## Phase 1 — routing rule + docling skill + allowlists + drift fix (zero footprint)
 
-- [ ] **1.1** Add "Office Document Extraction Routing" section to `AGENTS.md` (repo root)
+- [x] **1.1** Add "Office Document Extraction Routing" section to `AGENTS.md` (repo root)
     — **Why:** The build/general agent has no hint that read/extract of binary office docs should route to markitdown → docling → image-analyzer → pdf-specialist; without this it hand-rolls python-docx or fails on a binary zip. This section is the **single source of truth** — skills and subagents reference it rather than duplicating the tree.
     — **Done when:** Section present with the 4 tiers and the explicit `--enable-pack markitdown` / `--enable-pack docling` enable hints for denied cases. Compact routing list only (NOT a full duplicated decision tree).
     — **Consumers affected:** build agent, general agent, any primary-session extraction task, all 4 inline-prose subagents (step 1.5).
+    — **Done:** Added "Office Document Extraction Routing" section after "Extract-then-Delegate Pattern" with 4-tier table (markitdown/docling/image-analyzer/pdf-specialist) + default-state consent guidance; files: AGENTS.md; fixes: none
 
-- [ ] **1.2** Update existing routing text in `deploy/.AGENTS.md`
+- [x] **1.2** Update existing routing text in `deploy/.AGENTS.md`
     — **Why:** `deploy/.AGENTS.md` deploys to `~/.config/opencode/AGENTS.md` (user-space) and is the source the primary session reads; repo-root `AGENTS.md` is project-scoped. `deploy/.AGENTS.md:43` already has a routing sentence ("load `markitdown-mcp-skill` for the decision tree (markitdown vs pdf-specialist vs image-analyzer vs pdftotext)") — this is an UPDATE to insert the docling tier, not a new section.
     — **Done when:** `deploy/.AGENTS.md` routing text matches the repo-root 4-tier rule (markitdown → docling → image-analyzer → pdf-specialist).
     — **Consumers affected:** all user-space-deployed sessions.
+    — **Done:** Updated L43 routing bullet to name all 4 tiers + point to AGENTS.md routing rule as single source; files: deploy/.AGENTS.md; fixes: none
 
-- [ ] **1.3** Create `opencode_app/.opencode/skills/docling-mcp-skill/SKILL.md`
+- [x] **1.3** Create `opencode_app/.opencode/skills/docling-mcp-skill/SKILL.md`
     — **Why:** Core artifact — carries the on-demand CLI recipe the LLM triggers mid-session (codegraph-init analog), the optional MCP pack path, and the honest trust-boundary note. Moved to Phase 1 (from original Phase 2) because step 1.6's docling escalation reference depends on it; creating a skill is zero-footprint.
     — **Done when:** SKILL.md exists with: (a) **frontmatter** — `name`, `description`, `license: Apache-2.0`, `compatibility: opencode`, `metadata: { audience: developers, workflow: document-conversion, scope: binary-doc-layout-extraction, pattern: cli-on-demand }`, `category: Configuration` (Decision 7); (b) on-demand CLI recipe (detect `command -v docling` → ask consent via `question` → `pip install --user docling` → `docling convert <file> -o <out.md>` → read output); (c) persistent MCP recipe (`--enable-pack docling` + restart); (d) trust-boundary section stating models download from huggingface.co (breaks markitdown's "zero TCP" guarantee) mitigated by one-time download + cache, with `DOCLING_CONVERSION_MODE=local` hard-set; (e) consent policy (primary asks; headless/subagent soft-fails; never silent 3-4 GB install); (f) **decision tree that REFERENCES AGENTS.md** routing rule rather than re-deriving the full markitdown/pdf-specialist columns (single-source, minimizes drift).
     — **Consumers affected:** primary session, `office-document-primary-agent`, `markitdown-mcp-skill` (step 1.6 escalation reference).
+    — **Done:** Created SKILL.md with full frontmatter (category Configuration), CLI-on-demand recipe (5-step detect→consent→install→convert→read), persistent MCP recipe, trust-boundary section (huggingface.co honesty + DOCLING_CONVERSION_MODE=local mitigation), consent policy table (primary/subagent/headless), version pinning doc, fallback strategy; decision tree REFERENCES AGENTS.md rule (no re-derivation); files: opencode_app/.opencode/skills/docling-mcp-skill/SKILL.md; fixes: none
 
-- [ ] **1.4** Add `markitdown-mcp-skill: allow` to the 3 office subagents (consolidated)
+- [x] **1.4** Add `markitdown-mcp-skill: allow` to the 3 office subagents (consolidated)
     — **Why:** The 3 create-focused subagents cannot currently load markitdown. Mechanically identical edit across 3 frontmatter blocks — consolidated into one step (was 1.3+1.4+1.5, over-granular). Note: `docx-creation-subagent` has `bash: deny` but MCP tool calls (`convert_to_markdown`) are governed by `tools["markitdown*"]` at session level, NOT bash — so once the pack is enabled the subagent should call the MCP directly; hub-and-spoke is fallback only (verified step 4.4).
     — **Done when:** `permission.skill` block in each of `docx-creation-subagent.md`, `pptx-specialist-subagent.md`, `xlsx-specialist-subagent.md` lists `markitdown-mcp-skill: allow`.
     — **Consumers affected:** the 3 office subagents, `office-document-primary-agent`.
+    — **Done:** Added `markitdown-mcp-skill: allow` to the `permission.skill` block of all 3 subagents (docx after docx-creation-skill, pptx after office-thumbnail-skill, xlsx after xlsx-specialist-skill); files: docx-creation-subagent.md, pptx-specialist-subagent.md, xlsx-specialist-subagent.md; fixes: none
 
-- [ ] **1.5** Replace inline routing prose in 4 specialist subagents with pointer to AGENTS.md
+- [x] **1.5** Replace inline routing prose in 4 specialist subagents with pointer to AGENTS.md
     — **Why:** `requirements-specialist-subagent.md:157`, `technical-design-specialist-subagent.md:138`, `documentation-subagent.md:43-46`, `discovery-specialist-subagent.md:129` each carry ~2 lines of "prefer markitdown over image-analyzer" prose that **skips the docling tier**. After this PLAN ships they'd give stale routing contradicting the AGENTS.md 4-tier rule. Replacing with a pointer both fixes the drift AND establishes AGENTS.md as single source of truth.
     — **Done when:** Each of the 4 subagents' inline prose replaced with: "For binary document extraction, follow the AGENTS.md → Office Document Extraction Routing rule." (1 line).
     — **Consumers affected:** the 4 specialist subagents.
+    — **Done:** Replaced markitdown-preference prose with 1-line AGENTS.md routing pointer in all 4 subagents; documentation-subagent also fixed stale `tools["markitdown*"]` → `permission.tool` reference; files: requirements-specialist-subagent.md, technical-design-specialist-subagent.md, documentation-subagent.md, discovery-specialist-subagent.md; fixes: none
 
-- [ ] **1.6** Update `markitdown-mcp-skill/SKILL.md` Requirements table + decision tree
+- [x] **1.6** Update `markitdown-mcp-skill/SKILL.md` Requirements table + decision tree
     — **Why:** Requirements table (lines 27-34) frames opt-in as a limitation; the `pyproject.toml` trust boundary proves local conversion is phone-home-safe, so the skill should say so. Decision Tree (lines 112-149) needs a docling escalation branch. Depends on step 1.3 (docling-mcp-skill exists) — satisfied in same phase.
     — **Done when:** Requirements table notes "privacy-safe for local files (no phone-home — see pyproject.toml trust boundary)"; Decision Tree's "markitdown output insufficient" branch points to docling (REFERENCE the AGENTS.md rule + docling-mcp-skill, do not re-derive the full tree).
     — **Consumers affected:** anyone reading the skill to decide whether to enable markitdown.
+    — **Done:** Added privacy-note paragraph after Requirements table (pyproject.toml trust boundary → zero phone-home); added docling escalation branch to Decision Tree (markitdown empty/garbage → docling via AGENTS.md rule + CLI-on-demand/MCP hints); files: markitdown-mcp-skill/SKILL.md; fixes: none
 
 ---
 
