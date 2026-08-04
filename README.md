@@ -604,6 +604,23 @@ When enabled, retrofitted skills emit mechanical evaluator output `{"pass":bool,
 
 Switch mode per session: `/ponytail lite|full|ultra|off`, `/ponytail-help`. See `opencode_app/README.md` § Ponytail Plugin and `opencode_app/.opencode/plugins/ATTRIBUTION.md` for the MIT attribution.
 
+### Learnings Auto-Inject (local plugin)
+
+`opencode_app/.opencode/plugins/learnings-autoinject.ts` closes the gap documented in `continuous-learning-skill`: *"OpenCode does NOT auto-scan LEARNINGS/ directories."* The `opencode-superlocalmemory` plugin auto-injects its **vector store**, but the git-committed `LEARNINGS/*.md` markdown files were never surfaced automatically — agents had to manually `glob`+`read`. This plugin injects a **compact manifest** (titles + paths + one-line summaries, ~200-400 tokens) into the system prompt at session start; the model `read()`s full bodies on demand.
+
+- **Same architecture as ponytail-scoped** — 4 hooks (`config`, `chat.message`, `experimental.chat.system.transform`, `command.execute.before`), same toggle pattern.
+- **Same off-set** — read-only/research agents skip injection (reuses ponytail's regex).
+- **No `opencode.json` change** — local plugins are glob-discovered. No conflict with `opencode-superlocalmemory` (different store: markdown vs vectors; different hook: `system.transform` vs `tui.prompt.append`).
+
+| Env var | Default | Purpose |
+|---------|---------|---------|
+| `LEARNINGS_AUTOINJECT_DEFAULT` | `on` | Global on/off |
+| `LEARNINGS_AUTOINJECT_USER` | `off` | Also scan `~/.config/opencode/learnings/` (user-level) |
+| `LEARNINGS_AUTOINJECT_OFF` | (read-only agents) | Regex of agent names to exclude |
+| `LEARNINGS_AUTOINJECT_MAX` | `30` | Cap on files in the manifest |
+
+Toggle per session: `/learnings`, `/learnings-on`, `/learnings-off`, `/learnings-refresh`. See `opencode_app/.opencode/plugins/learnings-autoinject.README.md`.
+
 ### Skill Architecture
 
 Skills follow a modular architecture:

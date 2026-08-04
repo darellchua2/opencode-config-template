@@ -2064,9 +2064,11 @@ function Deploy-Plugins {
         New-Item -ItemType Directory -Path $PluginsDestDir -Force | Out-Null
     }
 
-    # Copy each plugin subdirectory (skip dotfiles, _archived, node_modules).
+    # Copy each plugin file/subdirectory (skip dotfiles, _archived, node_modules).
+    # Mirrors setup.sh which copies BOTH top-level .ts plugin files (e.g.
+    # ponytail-scoped.ts, learnings-autoinject.ts) AND plugin subdirectories.
     $count = 0
-    Get-ChildItem -Path $PluginsSrcDir -Directory -ErrorAction SilentlyContinue | ForEach-Object {
+    Get-ChildItem -Path $PluginsSrcDir -ErrorAction SilentlyContinue | ForEach-Object {
         if ($_.Name -match '^\.|_archived|^node_modules$') { return }
         Copy-Item $_.FullName $PluginsDestDir -Recurse -Force
         $count++
