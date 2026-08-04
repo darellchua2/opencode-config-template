@@ -100,6 +100,17 @@ User-space equivalent: `./deploy/setup.sh --enable-pack <csv>` (see root `README
 - `.dockerignore` excludes `.env`, `_archived/`, and dev files
 - Health check: `GET /global/health` every 30s
 
+### Secret Masking (vibeguard)
+
+The image ships with `vibeguard.config.json` baked into `.opencode/` — secret masking is **active by default**. Vibeguard masks secrets in provider-bound traffic (LLM requests) using regex patterns and restores real values at tool-execution time.
+
+**Per-project overlay:** mount a `./vibeguard.config.json` to override the global config (first match wins, no merge — re-include regex patterns if you need both global + project keywords).
+
+**Residual risks:**
+- `/share` exports plaintext tool I/O — never share sessions that processed `.env` secrets.
+- If vibeguard fails to load, masking silently disappears (bash/grep/MCP exposed).
+- Session DB stores plaintext locally.
+
 ## Updating Agents and Skills
 
 Agents and skills live in `.opencode/agents/` and `.opencode/skills/`. These are the **single source of truth** shared with the user-space deployment (`setup.sh` copies from these same directories).

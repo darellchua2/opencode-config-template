@@ -20,7 +20,9 @@ venv/
 Thumbs.db
 
 # Docker
-.env
+.env*
+# Per-project vibeguard config with literal keywords — never commit
+/vibeguard.config.json
 
 # Node
 node_modules/

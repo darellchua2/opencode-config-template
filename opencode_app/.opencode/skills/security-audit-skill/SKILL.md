@@ -1,6 +1,6 @@
 ---
 name: security-audit-skill
-description: Audit code and dependencies for security vulnerabilities — OWASP Top 10, dependency scanning (npm audit, pip-audit), secret detection, input validation, XSS/CSRF prevention, security headers, and HTTPS enforcement
+description: Audit code and dependencies for security vulnerabilities — OWASP Top 10, dependency scanning (npm audit, pip-audit), secret detection, input validation, XSS/CSRF prevention, security headers, HTTPS enforcement, and runtime secret masking (vibeguard)
 license: Apache-2.0
 compatibility: opencode
 metadata:
@@ -684,6 +684,63 @@ When completing a security audit, report:
 3. **Medium**: Fix within sprint (misconfigurations, missing headers)
 4. **Low**: Backlog items (logging gaps, minor hardening)
 5. **Info**: Best practice recommendations
+
+## Runtime Secret Masking (vibeguard)
+
+Vibeguard (`opencode-vibeguard@0.1.0`) is a plugin that masks secrets in provider-bound traffic (LLM requests) using regex patterns and builtin detectors. It intercepts three hooks: `experimental.chat.messages.transform` (outbound messages), `experimental.text.complete` (text completion), and `tool.execute.before` (tool arguments). Masked values are replaced with `__VG_<CATEGORY>_xxxxxxxxxxxx__` placeholders; a per-session map restores real values at tool-execution time.
+
+### How masking works
+
+1. **Upstream (provider-bound):** secrets in tool output, file reads, and conversation history are replaced with `__VG_…__` placeholders before the LLM sees them.
+2. **At exec time:** `tool.execute.before` restores placeholders back to real values so tools (bash, write, etc.) receive the actual data.
+3. **Historical redaction:** previous tool I/O in conversation history is also redacted on subsequent turns.
+
+### Config locations (first match wins, no merge)
+
+| Slot | Path | Scope |
+|------|------|-------|
+| 1 | `$OPENCODE_VIBEGUARD_CONFIG` (env) | Explicit override |
+| 2 | `<cwd>/vibeguard.config.json` | Project root |
+| 3 | `<cwd>/.opencode/vibeguard.config.json` | Project .opencode |
+| 4 | `~/.config/opencode/vibeguard.config.json` | Global (deployed by setup.sh) |
+
+**IMPORTANT:** the first existing config wins entirely — there is **no merge**. A per-project config completely overrides the global one. If you need both global regex + project keywords, re-include the regex patterns in your project config.
+
+### Verification steps
+
+1. **Smoke test:** `OPENCODE_VIBEGUARD_DEBUG=1 opencode` with a test `.env.local` containing known secrets. Check debug output for replace-counts > 0.
+2. **Transcript check:** prompt "show DATABASE_URL from .env.local" → confirm transcript shows `__VG_…__`, never plaintext.
+3. **Tool-exec check:** prompt "write a script using DATABASE_URL" → confirm output uses `$DATABASE_URL` or vibeguard restores at exec; provider transcript is clean.
+4. **Case-sensitivity:** with `PASSWORD=secret` and `STRIPE_SECRET_KEY=sk_test_...` in `.env.local`, confirm both are redacted. The global config uses `flags: "i"` on SECRET_ASSIGNMENT.
+
+### Per-project keyword setup
+
+To catch exact-match secrets the regex patterns miss (e.g. a proprietary API key format):
+
+1. Create `./vibeguard.config.json` at the project root (**uncommitted** — add to `.gitignore`).
+2. Include literal `keywords`: `[{"value": "my-proprietary-key", "category": "CUSTOM_KEY"}]`.
+3. **Re-include the global regex patterns** (no merge — see above) or accept regex-only coverage for that project.
+
+### `$VAR` usage pattern
+
+Always prefer `$VAR` env references over inlining secret literals in scripts, configs, and commands. This is defense-in-depth: even if masking fails, the literal never enters the code.
+
+### Fallback when vibeguard is disabled
+
+If vibeguard is no-op (config missing, malformed, `enabled:false`), bash/grep/MCP paths are fully unprotected. `permission.read` `.env` denies protect only the primary `build` agent (subagents override with `{"*":"allow"}`). Treat any `.env` value as exposed and avoid processing it.
+
+### Residual risks (documented, not eliminated)
+
+| Risk | Detail | Mitigation |
+|------|--------|------------|
+| R1 — `/share` leaks plaintext | vibeguard has no `/share` hook; shared links contain plaintext tool I/O | Advisory: never `/share` sessions that processed `.env` secrets. Upstream feature request filed. |
+| R2 — No fail-closed | Missing/malformed config = silent no-op; bash/grep/MCP fully exposed | Run debug smoke test; document in deploy banner. |
+| R3 — Session DB stores plaintext | Local session database stores tool I/O in plaintext | Acceptable for "never expose to provider"; document so users don't assume DB dumps are safe. |
+| R4 — MCP structured output | vibeguard redacts only `typeof output === "string"`; structured JSON objects bypass redaction | Check MCP tool output type; if structured, document as additional residual risk. |
+
+### Phase-2 future: `shell.env` injection
+
+A planned enhancement would inject `.env` values directly into the shell environment at exec time (via `shell.env` plugin), so agents never need to `read` `.env` files at all. This is deferred — current vibeguard + `$VAR` pattern covers the use case without the complexity.
 
 ## Iteration Protocol (opt-in)
 
