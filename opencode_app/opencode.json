@@ -5,9 +5,9 @@
   "subagent_depth": 3,
   "plugin": [
     "@franlol/opencode-md-table-formatter@latest",
-    "opencode-dynamic-context-pruning",
+    "@tarquinen/opencode-dcp@latest",
     "opencode-superlocalmemory",
-    "opencode-notificator",
+    "@mohak34/opencode-notifier@latest",
     "opencode-pty",
     "opencode-vibeguard",
     "opencode-gemini-auth@latest",
