@@ -230,15 +230,17 @@ _Owner: `opencode-tooling-subagent`_
 
 _Owner: `opencode-tooling-subagent`_
 
-- [ ] **5.1** Create `opencode_app/.opencode/skills/fastapi-pydantic-orm-patterns-skill/SKILL.md` with all patterns from Phase 3.1 brief
+- [x] **5.1** Create `opencode_app/.opencode/skills/fastapi-pydantic-orm-patterns-skill/SKILL.md` with all patterns from Phase 3.1 brief
     — **Why:** 10+ cross-repo patterns (Pydantic-on-JSONB, detached ORM, Alembic JSONB+asyncpg, enum strategy, instance check, defensive enum mapping, Pydantic v2 idioms, inline imports, broad except) need a permanent home in the skill ecosystem. Currently scattered across 2 repos' LEARNINGS only.
     — **Done when:** SKILL.md exists with: (a) frontmatter with `name`, `description`, `category: Language-Specific`, `license`, `compatibility`, `metadata: { audience: developers, workflow: backend-api-development }`; (b) HTML-comment provenance block listing source LEARNINGS files per pattern; (c) all patterns from Phase 3.1 brief with code examples and context; (d) skill is under 500 lines (Anthropic heuristic).
     — **Consumers affected:** `python-reviewer-subagent` (C2), primary allowlist (Phase 9), Phase 10 verification.
+    — **Done:** 329 lines, 17 patterns (7 sections: Pydantic v2, FastAPI Architecture, ORM/Migration, Defensive Coding, Multi-Tenant, Concurrency/Caching, Operational); 12 patterns excluded as duplicates in python-backend-skill/design-patterns-skill; provenance block lists all source LEARNINGS files; files: fastapi-pydantic-orm-patterns-skill/SKILL.md; fixes: none
 
-- [ ] **5.2** Create `opencode_app/.opencode/skills/aws-iac-safety-skill/SKILL.md` with all patterns from Phase 3.2 brief (merged A5)
+- [x] **5.2** Create `opencode_app/.opencode/skills/aws-iac-safety-skill/SKILL.md` with all patterns from Phase 3.2 brief (merged A5)
     — **Why:** 10 cross-repo patterns need a home (was 11 — `Lambda Function URL CNAME` EXCLUDED as duplicate; already at `opentofu-aws-explorer-skill:1158`). Remaining: ECR lowercase, cross-module ECR lifecycle, GHA resources gating, public Lambda posture reversal, Lambda Web Adapter vs Mangum, local state for prod, GHA artifact mismatch, SSM parameter doc convention, hardcoded dev SSM paths, + any non-duplicate additions. Merges A5 GitHub Actions patterns into a single IaC safety skill.
     — **Done when:** SKILL.md exists with frontmatter (`category: DevOps`), provenance block, all non-duplicate patterns with examples. Verify skill stays under 500 lines (A4 merges two domains — if it exceeds 500, split GHA patterns into a separate skill `github-actions-safety-skill`). Exclude `Lambda Function URL CNAME` (reference `opentofu-aws-explorer-skill:1158` instead of re-documenting).
     — **Consumers affected:** primary allowlist (Phase 9), Phase 10 verification.
+    — **Done:** 170 lines, 5 unique patterns (6 excluded as duplicates in other skills); Lambda CNAME excluded per plan; under 500 lines — no split needed; provenance block lists all sources + exclusions; files: aws-iac-safety-skill/SKILL.md; fixes: none
 
 ---
 
