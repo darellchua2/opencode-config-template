@@ -52,7 +52,7 @@ jobs:
       - name: Lint .mjs + package.json + npx tarball guard
         run: |
           echo "Syntax-checking .mjs files..."
-          node --check deploy/init.mjs
+          node --check deploy/init.mjs deploy/source.mjs
           echo "Validating package.json..."
           jq . package.json
           echo "Checking npx tarball includes source tree..."

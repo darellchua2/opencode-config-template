@@ -124,10 +124,11 @@ npx github:Simonmensi/opencode-config-template add solid-principles-skill
 
 ### Phase 2: Source isolation module
 
-- [ ] **2.1** Create `deploy/source.mjs` (new): exports `readSkill(name)`, `readAgent(stem)`, `listAvailable(type)` — all reading from `opencode_app/.opencode/{skills,agents}/` via a parametrized `sourceRoot` (default `path.resolve(import.meta.dirname, '..')`). Return `{ content, frontmatter, path }`. This is the future-proofing seam — single module the eventual HTTP fetch path swaps in behind.
+- [x] **2.1** Create `deploy/source.mjs` (new): exports `readSkill(name)`, `readAgent(stem)`, `listAvailable(type)` — all reading from `opencode_app/.opencode/{skills,agents}/` via a parametrized `sourceRoot` (default `path.resolve(import.meta.dirname, '..')`). Return `{ content, frontmatter, path }`. This is the future-proofing seam — single module the eventual HTTP fetch path swaps in behind.
     — **Why:** When per-skill HTTP fetch is needed later, only this file changes. Everything else calls `source.readSkill("tdd-workflow-skill")` regardless of transport.
     — **Done when:** `source.listAvailable('skills')` returns all skill names; `source.readSkill('tdd-workflow-skill')` returns `{ content, frontmatter, path }`; `sourceRoot` parametrization tested with a custom path.
     — **Consumers affected:** `init.mjs` (all read operations).
+    — **Done:** Created deploy/source.mjs with readSkill/readAgent/listAvailable; used `dirname(fileURLToPath(import.meta.url))` instead of `import.meta.dirname` for Node 20 CI compat (matches init.mjs/build-registry.mjs); readSkill returns extra `dir` field for cp; added self-check via `node deploy/source.mjs`; files: deploy/source.mjs, .github/workflows/release.yml (added source.mjs to lint check); fixes: none.
 
 ### Phase 3: Refactor `deploy/init.mjs` — add `add` verb + new flags
 
