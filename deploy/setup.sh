@@ -583,11 +583,12 @@ USAGE:
       google-gce         Google Compute Engine management
       google-gke         Google Kubernetes Engine management
 
-   SKILLS (113):
-             Framework (20):       test-generator-framework, linting-workflow,
+   SKILLS (115):
+             Framework (22):       test-generator-framework, linting-workflow,
                                       pr-creation-workflow, pr-merge-workflow,
                                       error-resolver-workflow, tdd-workflow,
                                       docx-creation, pptx-specialist,
+                                      pptx-generate-slide-skill, pptx-template-modifier-skill,
                                       xlsx-specialist, pdf-specialist, frontend-design,
                                       uiux-review-skill,
                                       api-design-skill, openapi-contract-adherence-skill,
@@ -626,14 +627,17 @@ USAGE:
 
           JIRA (3):             jira-status-updater, jira-git-integration, jira-ticket-labeler
 
-         Code Quality (7):     solid-principles-skill, clean-code-skill, clean-architecture-skill,
+         Code Quality (8):     solid-principles-skill, clean-code-skill, clean-architecture-skill,
                                design-patterns-skill, object-design-skill, code-smells-skill,
-                               complexity-management-skill
+                               complexity-management-skill, deprecated-code-cleanup-skill
 
       Agent Optimization (7):  continuous-learning-skill, eval-harness-skill,
                                 strategic-compact-skill, verification-loop-skill,
                                 search-first-skill, context-budget-skill,
                                 agent-introspection-debugging-skill
+
+            Autoresearch (4):    autoresearch-core-skill, autoresearch-ml-skill,
+                                  autoresearch-code-skill, autoresearch-research-skill
 
             Startup/Business (3): startup-pitch-deck-skill, startup-business-docs-skill,
                                   construction-bd-skill
@@ -2422,14 +2426,15 @@ print_next_steps() {
     echo "         opencode \"prompt\" (uses build)"
      echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-     echo "                     📦 113 Skills Available"
+     echo "                     📦 115 Skills Available"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "  Framework (20) • Language-Specific (6) • Framework-Specific (8)"
+    echo "  Framework (22) • Language-Specific (6) • Framework-Specific (8)"
     echo "  OpenCode Meta (4) • OpenTofu (7) • Git/Workflow (12)"
-    echo "  Documentation (3) • JIRA (3) • Code Quality (7)"
-    echo "  Agent Optimization (7) • Planning & Alignment (4)"
-    echo "  Responsive & Visual Testing (2)"
+    echo "  Documentation (3) • JIRA (3) • Code Quality (8)"
+    echo "  Agent Optimization (7) • Autoresearch (4) • Planning & Alignment (4)"
+    echo "  Startup/Business (3) • Configuration (2) • Security (2)"
+    echo "  DevOps (4) • Responsive & Visual Testing (2)"
     echo "  CAD & Hardware Design (14)"
     echo ""
     echo "  Run 'opencode --list-skills' for detailed descriptions"

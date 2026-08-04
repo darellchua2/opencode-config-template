@@ -379,11 +379,12 @@ USAGE:
     Usage: opencode --agent build 'implement auth feature'
             opencode --agent explore 'find all API routes'
  
-           SKILLS (113):
-              Framework (20):       test-generator-framework, linting-workflow,
+            SKILLS (115):
+              Framework (22):       test-generator-framework, linting-workflow,
                                       pr-creation-workflow, pr-merge-workflow,
                                       error-resolver-workflow, tdd-workflow,
                                       docx-creation, pptx-specialist,
+                                      pptx-generate-slide-skill, pptx-template-modifier-skill,
                                       xlsx-specialist, pdf-specialist, frontend-design,
                                       uiux-review-skill,
                                       api-design-skill, openapi-contract-adherence-skill,
@@ -417,14 +418,17 @@ USAGE:
                                  documentation-sync-workflow
 
           JIRA (3):             jira-status-updater, jira-git-integration, jira-ticket-labeler
-          Code Quality (7):     solid-principles, clean-code, clean-architecture,
+          Code Quality (8):     solid-principles, clean-code, clean-architecture,
                                 design-patterns, object-design, code-smells,
-                                complexity-management
+                                complexity-management, deprecated-code-cleanup
 
       Agent Optimization (7):  continuous-learning, eval-harness,
                                  strategic-compact, verification-loop,
                                  search-first, context-budget,
                                  agent-introspection-debugging
+
+            Autoresearch (4):    autoresearch-core-skill, autoresearch-ml-skill,
+                                  autoresearch-code-skill, autoresearch-research-skill
 
             Startup/Business (3): startup-pitch-deck-skill, startup-business-docs-skill,
                                   construction-bd-skill
@@ -1778,14 +1782,15 @@ function Show-NextSteps {
     Write-Host "         opencode `"prompt`" (uses build)"
      Write-Host ""
     Write-Host "=====================================================================" -ForegroundColor White
-      Write-Host "                     113 Skills Available" -ForegroundColor White
+      Write-Host "                     115 Skills Available" -ForegroundColor White
      Write-Host "=====================================================================" -ForegroundColor White
      Write-Host ""
-     Write-Host "  Framework (20) • Language-Specific (6) • Framework-Specific (8)"
+     Write-Host "  Framework (22) • Language-Specific (6) • Framework-Specific (8)"
       Write-Host "  OpenCode Meta (4) • OpenTofu (7) • Git/Workflow (12)"
-     Write-Host "  Documentation (3) • JIRA (3) • Code Quality (7)"
-      Write-Host "  Agent Optimization (7) • Planning & Alignment (4)"
-     Write-Host "  Responsive & Visual Testing (2)"
+     Write-Host "  Documentation (3) • JIRA (3) • Code Quality (8)"
+      Write-Host "  Agent Optimization (7) • Autoresearch (4) • Planning & Alignment (4)"
+     Write-Host "  Startup/Business (3) • Configuration (2) • Security (2)"
+      Write-Host "  DevOps (4) • Responsive & Visual Testing (2)"
      Write-Host "  CAD & Hardware Design (14)"
     Write-Host ""
     Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
