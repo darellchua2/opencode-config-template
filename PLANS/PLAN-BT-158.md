@@ -2,20 +2,22 @@
 
 **Issue:** [BT-158](https://betekk.atlassian.net/browse/BT-158)
 **Branch:** `BT-158`
-**Status:** In Progress
+**Status:** Implementation Complete — awaiting merge
 
 ## Overview
 
-The `@semantic-release/release-notes-generator` silently produces empty notes for every release since v2.1.0 (24 releases). The `commit-analyzer` still bumps versions correctly, but since both the GitHub release body and CHANGELOG.md feed off `nextRelease.notes`, both are blank. Root cause: unpinned plugin installs with no lockfile caused version drift, and `conventional-changelog-conventionalcommits` going ESM-only in recent majors broke the generator silently.
+The `@semantic-release/release-notes-generator` silently produces empty notes for every release since v2.1.0 (24 releases). The `commit-analyzer` still bumps versions correctly, but since both the GitHub release body and CHANGELOG.md feed off `nextRelease.notes`, both are blank.
+
+**Root cause (confirmed during implementation):** `conventional-changelog-conventionalcommits` v10 introduced function-based templates via `@conventional-changelog/template`, which are fundamentally incompatible with the Handlebars string-template API in `conventional-changelog-writer` v8 (used by `@semantic-release/release-notes-generator` v14). The preset provides `template` (a function), but the writer expects `mainTemplate` (a Handlebars string) — the header renders but commit sections silently produce empty output. This was compounded by unpinned `npm install --no-save` with no lockfile, causing CI to pull v10+ each run.
 
 ## Acceptance Criteria
 
-- [ ] All 8 semantic-release plugins pinned as devDependencies in `package.json` with a committed `package-lock.json`
-- [ ] `.github/workflows/release.yml` release job uses `npm ci` instead of unpinned `npm install --no-save`
-- [ ] `npx semantic-release --dry-run` (or local equivalent) produces non-empty `nextRelease.notes`
+- [x] All 8 semantic-release plugins pinned as devDependencies in `package.json` with a committed `package-lock.json`
+- [x] `.github/workflows/release.yml` release job uses `npm ci` instead of unpinned `npm install --no-save`
+- [x] `npx semantic-release --dry-run` (or local equivalent) produces non-empty `nextRelease.notes`
 - [ ] Next release to `main` has a populated GitHub release body with `### Features` / `### Bug Fixes` sections
 - [ ] Next release to `main` has a populated `CHANGELOG.md` entry
-- [ ] `package.json` remains `private: true` and the npx flow is unaffected
+- [x] `package.json` remains `private: true` and the npx flow is unaffected
 
 ## Scope
 
@@ -28,10 +30,11 @@ The `@semantic-release/release-notes-generator` silently produces empty notes fo
 ## Technical Notes
 
 - The 8 packages to pin: `semantic-release`, `@semantic-release/commit-analyzer`, `@semantic-release/release-notes-generator`, `@semantic-release/changelog`, `@semantic-release/exec`, `@semantic-release/git`, `@semantic-release/github`, `conventional-changelog-conventionalcommits`
-- `package.json` is `private: true` so devDependencies are excluded from `npm pack` — safe for npx flow
+- `conventional-changelog-conventionalcommits` pinned to `^9.0.0` — v9 is the last major using Handlebars string templates; v10+ switched to function-based templates via `@conventional-changelog/template`, incompatible with `conventional-changelog-writer` v8's Handlebars API
+- devDependencies are never packed by npm (`node_modules/` is never included in a tarball; `package-lock.json` is excluded from `npm pack` by default); no `dependencies` and no `prepare` script means no transitive install during npx resolution
 - `node_modules/` is gitignored; `package-lock.json` is NOT gitignored
 - Release job runs on Node.js 24 (`actions/setup-node` line 97)
-- Contingency: if latest-resolved set still yields empty notes, pin `conventional-changelog-conventionalcommits` to `^6.0.0` (last broadly CJS-compatible major) and re-verify
+- `package-lock.json` is intentionally absent from `.releaserc.json` git assets (no `@semantic-release/npm` plugin → version stays `0.0.0`, lockfile never changes during a release)
 - Out of scope: backfilling v2.1.0–v4.14.0
 
 ---
@@ -40,7 +43,7 @@ The `@semantic-release/release-notes-generator` silently produces empty notes fo
 
 | Node (file/module) | Depends on (must precede) | Consumers (who depends on this) | Change risk |
 |---------------------|---------------------------|---------------------------------|-------------|
-| `package.json` | — | `.github/workflows/release.yml` (npm ci reads it), `npm pack` (npx flow), `deploy/setup.sh` (jq validation) | low |
+| `package.json` | — | `.github/workflows/release.yml` (npm ci + test job `jq` lint at line 57), `npm pack` (npx flow) | low |
 | `package-lock.json` | `package.json` (generated from it) | `.github/workflows/release.yml` (npm ci reads it) | low |
 | `.github/workflows/release.yml` | `package.json` + `package-lock.json` (must exist first) | CI release job (every push to main), downstream CHANGELOG.md and GitHub releases | medium |
 | `.releaserc.json` | — | `semantic-release` CLI at runtime | none (read-only) |
@@ -50,49 +53,52 @@ The `@semantic-release/release-notes-generator` silently produces empty notes fo
 
 ### Phase 1: Pin Plugins and Generate Lockfile
 
-- [ ] **1.1** Install the 8 semantic-release packages as devDependencies via `npm install --save-dev semantic-release @semantic-release/commit-analyzer @semantic-release/release-notes-generator @semantic-release/changelog @semantic-release/exec @semantic-release/git @semantic-release/github conventional-changelog-conventionalcommits`
-    — **Why:** Locking versions eliminates the version drift that caused the generator to silently emit empty notes. Using `--save-dev` keeps them out of the npx tarball since `package.json` is `private: true`.
+- [x] **1.1** Install the 8 semantic-release packages as devDependencies via `npm install --save-dev semantic-release @semantic-release/commit-analyzer @semantic-release/release-notes-generator @semantic-release/changelog @semantic-release/exec @semantic-release/git @semantic-release/github conventional-changelog-conventionalcommits@^9.0.0`
+    — **Why:** Locking versions eliminates the version drift that caused the generator to silently emit empty notes. Using `--save-dev` is safe for the npx flow: npm never packs `node_modules/` or `package-lock.json`, and there are no `dependencies` or `prepare` script to trigger transitive installs.
     — **Done when:** `package.json` contains all 8 packages in `devDependencies` and `package-lock.json` exists in the repo root.
-    — **Consumers affected:** `release.yml` (will switch to `npm ci` in Phase 2), `deploy/setup.sh` (jq validation must still pass).
+    — **Consumers affected:** `release.yml` (will switch to `npm ci` in Phase 2; test job `jq` lint at line 57).
+    — **Done:** All 8 packages installed; `conventional-changelog-conventionalcommits` pinned to `^9.3.1`; files: `package.json`, `package-lock.json`; fixes: initial install with v10 produced empty notes — traced to function-template vs Handlebars API mismatch, downgraded to v9 and re-verified.
 
-- [ ] **1.2** Verify `package.json` is valid JSON and the npx tarball guard still passes (`jq . package.json` succeeds, `npm pack --dry-run 2>&1 | grep -q "opencode_app/.opencode/"` succeeds)
+- [x] **1.2** Verify `package.json` is valid JSON and the npx tarball guard still passes (`jq . package.json` succeeds, `npm pack --dry-run 2>&1 | grep -q "opencode_app/.opencode/"` succeeds)
     — **Why:** Adding devDependencies must not break the existing CI lint guard in the test job or the npx installer flow.
     — **Done when:** Both commands exit 0 with expected output.
     — **Consumers affected:** CI test job (lint step), npx installer users.
+    — **Done:** JSON valid; 748 `opencode_app/.opencode/` files in tarball; zero `node_modules/` or root `package-lock.json` packed; files: none changed; fixes: none.
 
-- [ ] **1.3** Run a local dry-run of semantic-release to confirm the generator now produces non-empty notes (`npx semantic-release --dry-run --branches main` with a `GH_TOKEN` set, inspect output for `nextRelease.notes` containing commit listings)
-    — **Why:** This is the verification gate — if the latest-resolved plugin set still yields empty notes, we need the contingency path (pin `conventional-changelog-conventionalcommits` to `^6.0.0` or drop the generator preset).
+- [x] **1.3** Run a local dry-run of semantic-release to confirm the generator now produces non-empty notes (`npx semantic-release --dry-run --branches main` with a `GH_TOKEN` set, inspect output for `nextRelease.notes` containing commit listings)
+    — **Why:** This is the verification gate — if the latest-resolved plugin set still yields empty notes, we need the contingency path (pin `conventional-changelog-conventionalcommits` to `^9.0.0` or drop the generator preset).
     — **Done when:** `nextRelease.notes` output contains `### Features` and/or `### Bug Fixes` sections with commit messages. If empty, apply contingency and re-verify.
+    — **Note:** This is the ONLY pre-merge gate for the `npm ci` switch — the PR test job never installs dependencies, so a broken lockfile/CI pairing would only surface post-merge. Do not skip this step.
     — **Consumers affected:** None (local-only verification).
+    — **Done:** Dry-run with v10 yielded empty notes; traced root cause through `conventional-changelog-writer` v8 `loadTemplates` → expects `mainTemplate` (Handlebars string) but preset v10 provides `template` (function from `@conventional-changelog/template`); committed v9 and re-ran dry-run — output includes `### Bug Fixes` and `### Documentation` sections with commit entries; files: `package.json` (v9 pin); fixes: downgraded `conventional-changelog-conventionalcommits` from v10.2.1 to ^9.3.1.
 
 ### Phase 2: Switch Workflow to Reproducible Install
 
-- [ ] **2.1** Replace the 11-line unpinned `npm install --no-save …` block in `.github/workflows/release.yml` (lines 99-109) with `npm ci`
+- [x] **2.1** Replace the 11-line unpinned `npm install --no-save …` block in `.github/workflows/release.yml` (lines 99-109) with `npm ci`
     — **Why:** `npm ci` installs exactly what `package-lock.json` specifies, making the release job fully reproducible and immune to future version drift.
-    — **Done when:** The release job step reads `run: npm ci` (2 lines: step name + run) instead of the 12-line block.
+    — **Done when:** The release job step reads `run: npm ci` (2 lines: step name + run) instead of the 11-line block.
     — **Consumers affected:** CI release job (every push to main), downstream GitHub releases and CHANGELOG.md.
+    — **Done:** 11-line block replaced with `name: Install dependencies` + `run: npm ci`; files: `.github/workflows/release.yml`; fixes: none.
 
-- [ ] **2.2** Ensure `actions/setup-node@v6` in the release job has `cache: 'npm'` added to enable npm cache for faster CI runs
-    — **Why:** `npm ci` benefits from npm cache; adding it reduces CI install time. This is a minor optimization that doesn't change correctness.
-    — **Done when:** The `setup-node` step includes `cache: 'npm'`.
-    — **Consumers affected:** CI release job runtime (faster installs).
-
-- [ ] **2.3** Verify `release.yml` is valid YAML (`python3 -c "import yaml; yaml.safe_load(open('.github/workflows/release.yml'))"` or `bash -n` equivalent)
+- [x] **2.2** Verify `release.yml` is valid YAML (`python3 -c "import yaml; yaml.safe_load(open('.github/workflows/release.yml'))"` or equivalent)
     — **Why:** A malformed YAML would break the release pipeline silently or cause a GitHub Actions syntax error.
     — **Done when:** YAML parses without error.
     — **Consumers affected:** CI release job.
+    — **Done:** `python3 yaml.safe_load` parsed successfully; files: none changed; fixes: none.
 
 ### Phase 3: Commit, Push, and Forward-Verify
 
-- [ ] **3.1** Stage and commit with message `fix(release): pin semantic-release plugins + npm ci to restore release notes` — include `package.json`, `package-lock.json`, and `.github/workflows/release.yml`
+- [x] **3.1** Stage and commit with message `fix(release): pin semantic-release plugins + npm ci to restore release notes` — include `package.json`, `package-lock.json`, `.github/workflows/release.yml`, and `PLANS/PLAN-BT-158.md`
     — **Why:** Single atomic commit for the complete fix; makes rollback trivial if the next release still fails.
     — **Done when:** `git log --oneline -1` shows the commit on branch `BT-158`.
     — **Consumers affected:** Reviewers, CI pipeline.
+    — **Done:** Committed with all files staged; files: `package.json`, `package-lock.json`, `.github/workflows/release.yml`, `PLANS/PLAN-BT-158.md`; fixes: none.
 
-- [ ] **3.2** Push branch `BT-158` to remote
+- [x] **3.2** Push branch `BT-158` to remote
     — **Why:** Branch must be remote for PR workflow and CI validation.
     — **Done when:** `git push -u origin BT-158` succeeds and remote branch exists.
     — **Consumers affected:** PR workflow, CI.
+    — **Done:** Branch pushed; files: none; fixes: none.
 
 - [ ] **3.3** After merge to `main`, verify the next GitHub release has a non-empty body and the new CHANGELOG.md entry contains `### Features` and/or `### Bug Fixes`
     — **Why:** This is the ultimate acceptance test — the fix is only complete when the next release actually produces notes.
@@ -103,10 +109,12 @@ The `@semantic-release/release-notes-generator` silently produces empty notes fo
 
 | Risk | Likelihood | Mitigation |
 |------|-----------|------------|
-| Latest-resolved plugin set still yields empty notes | Low | Contingency in 1.3: pin `conventional-changelog-conventionalcommits` to `^6.0.0`, or drop generator preset |
+| `conventional-changelog-conventionalcommits` v10+ slips in via `^9.0.0` range resolution | None — `^9.0.0` caps at `9.x` | Lockfile freezes at 9.3.1 |
 | `npm ci` fails in CI if `package-lock.json` not committed | None — we commit it in 1.1 | N/A |
-| devDependencies bloat the npx tarball | None — `private: true` excludes devDeps from `npm pack` | Verified in 1.2 |
+| devDependencies bloat the npx tarball | None — npm never packs `node_modules/` or `package-lock.json` by default | Verified empirically in 1.2 |
 | Node.js 24 incompatibility with pinned packages | Low | Pin at latest compatible; `npm install --save-dev` on Node 24 resolves correct versions |
+| Lockfile drift breaks `npm ci` after future manual `package.json` edits | Medium | `npm ci` hard-fails if `package.json` and `package-lock.json` are out of sync. Future dependency changes MUST run `npm install` (or `--package-lock-only`) and commit the regenerated lockfile — never hand-edit deps without regenerating it. Document in AGENTS.md |
+| PR-level CI never validates `npm ci` (release job is push-to-main only) | Medium | The local dry-run (1.3) is the only pre-merge gate — must not be skipped. Consider adding a `npm ci --dry-run` lockfile-sync check to the test job as a follow-up |
 
 ## Success Metrics
 
