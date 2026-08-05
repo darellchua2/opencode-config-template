@@ -1687,6 +1687,12 @@ check_dependencies() {
         log_warn "git is not installed (recommended but not required)"
     fi
 
+    # Check for rg (optional but recommended)
+    if ! command_exists rg; then
+        log_warn "rg (ripgrep) is not installed (recommended but not required)"
+        log_warn "  Install with: apt install ripgrep (Debian/Ubuntu) | brew install ripgrep (macOS) | pacman -S ripgrep (Arch)"
+    fi
+
     if [ ${#missing_deps[@]} -gt 0 ]; then
         log_error "Missing required dependencies: ${missing_deps[*]}"
         log_info "Please install missing dependencies and try again"
