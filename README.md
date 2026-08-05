@@ -432,6 +432,24 @@ Skills like `continuous-learning` persist knowledge across sessions using a dual
 - Review agents (architecture-review, code-review) save findings to both memory tool and markdown files
 - Agents discover learnings via AGENTS.md instructions (auto-loaded) + explicit file reads
 
+## Secret Masking (vibeguard)
+
+Vibeguard (`opencode-vibeguard@0.1.0`) masks `.env` secrets in provider-bound traffic — the LLM provider never sees plaintext secret values, but tools (bash, write, etc.) receive real values at execution time. It is the **universal masking layer** covering all agents (primary + subagents), regardless of individual `permission.read` overrides.
+
+**How it works:** regex patterns in `vibeguard.config.json` match known secret shapes (API keys, tokens, passwords, connection strings, PEM blocks, JWTs). Matched values are replaced with `__VG_…__` placeholders in LLM requests and restored at tool-execution time via a per-session map.
+
+**Per-project keywords:** to catch exact-match secrets the regex misses, create an **uncommitted** `./vibeguard.config.json` at the project root with literal `keywords`. Note: first config found wins (no merge) — re-include the regex patterns from the global config if you need both.
+
+**`$VAR` best practice:** always prefer `$ENV_VAR` references over inlining secret literals in scripts and configs. This is defense-in-depth: even if masking fails, the literal never enters the code.
+
+**Residual risks (documented honestly):**
+- **`/share` exports plaintext** — vibeguard has no `/share` hook. Never `/share` sessions that processed `.env` secrets.
+- **No fail-closed** — if vibeguard is no-op (config missing/malformed), masking silently disappears. Run `OPENCODE_VIBEGUARD_DEBUG=1 opencode` to verify replace-counts > 0.
+- **Session DB stores plaintext locally** — acceptable for "never expose to provider"; don't assume DB dumps are safe.
+- **MCP structured output** — vibeguard redacts tool output only when it's a string; structured JSON objects bypass redaction (narrow risk — most MCP tools serialize to string).
+
+For verification steps and detailed procedure, load `security-audit-skill` (now covers runtime secret masking).
+
 ## CodeGraph
 
 [CodeGraph](https://github.com/colbymchenry/codegraph) is a pre-indexed code knowledge graph MCP server that enables agents to query symbol relationships, call graphs, and code structure instantly instead of scanning files with grep/glob/Read.

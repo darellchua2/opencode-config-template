@@ -15,6 +15,10 @@ This repo-level `AGENTS.md` defines repo-specific conventions. User-level routin
 
 `opencode_app/.opencode/` is the **single source** for agents and skills. Never edit deployed `~/.config/opencode/` copies directly — edit the source, then redeploy.
 
+## Secret Masking
+
+Vibeguard (`opencode-vibeguard@0.1.0`) masks `.env` secrets in provider-bound traffic via regex patterns (`opencode_app/.opencode/vibeguard.config.json`). Behavioral rules for all agents are in `deploy/.AGENTS.md` §Secret Hygiene; verification + per-project overlay procedure is in `security-audit-skill`. Residual risks (`/share` plaintext, no fail-closed, session DB stores plaintext) are documented there.
+
 ## Dependency Management
 
 `package-lock.json` is committed. Dependency changes MUST run `npm install` and commit the regenerated lockfile — `npm ci` hard-fails on drift.
