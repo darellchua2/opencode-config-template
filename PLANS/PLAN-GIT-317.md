@@ -43,12 +43,12 @@ All phases are independent (one logical commit each, except Phase 1 + 1b which s
 
 **Commit:** `feat(deploy): warn when rg missing in setup.sh`
 
-- [ ] **1.1** Add `rg` optional-dependency check in `check_dependencies()` after the existing `git` check (~line 1688)
+- [x] **1.1** Add `rg` optional-dependency check in `check_dependencies()` after the existing `git` check (~line 1688)
     — **Why:** Matches the existing "optional but recommended" pattern for `git`; users need to know `rg` is preferred without blocking setup
     — **Done when:** `setup.sh` prints a warning with install hints when `command_exists rg` returns false
     — **Consumers affected:** Users running `./deploy/setup.sh` (informational only)
 
-- [ ] **1.2** Include one-line install hints in the warning message for Debian/Ubuntu (`apt install ripgrep`), macOS (`brew install ripgrep`), and Arch (`pacman -S ripgrep`)
+- [x] **1.2** Include one-line install hints in the warning message for Debian/Ubuntu (`apt install ripgrep`), macOS (`brew install ripgrep`), and Arch (`pacman -S ripgrep`)
     — **Why:** Reduces friction — users can copy-paste the install command instead of searching
     — **Done when:** Warning output contains all three package-manager hints
     — **Consumers affected:** Users running `./deploy/setup.sh`
@@ -71,7 +71,7 @@ All phases are independent (one logical commit each, except Phase 1 + 1b which s
 
 **Commit:** `feat(deploy): warn when rg missing in setup scripts` (same commit as Phase 1)
 
-- [ ] **1b.1** Add `rg` optional-dependency check in `Test-Dependencies` (after the existing `git` check, ~line 1017), mirroring Phase 1's logic.
+- [x] **1b.1** Add `rg` optional-dependency check in `Test-Dependencies` (after the existing `git` check, ~line 1017), mirroring Phase 1's logic.
     - Use `Write-LogWarn` for the warning (matching the existing `git` warn pattern at line 1016).
     - Include Windows package-manager install hints: `winget install BurntSushi.ripgrep.MSVC`, `scoop install ripgrep`, `choco install ripgrep`.
     — **Why:** Repo AGENTS.md mandates `setup.ps1` = "Mirror of setup.sh (Windows parity)". Omitting creates platform asymmetry — macOS/Linux users see the warning, Windows users do not.
@@ -91,7 +91,7 @@ Test-Dependencies *>&1 | Select-String 'ripgrep|winget|scoop|choco'
 
 **Commit:** `docs(readme): add rg to prerequisites`
 
-- [ ] **2.1** Add one bullet to the Prerequisites section (~line 292, after the GitHub CLI line), matching the existing bold-label format of the other bullets:
+- [x] **2.1** Add one bullet to the Prerequisites section (~line 292, after the GitHub CLI line), matching the existing bold-label format of the other bullets:
     `- **ripgrep (`rg`)** (recommended for faster content search; falls back to `grep` if absent)`
     — **Why:** README is the first place new contributors look for setup requirements; surfacing `rg` here sets expectations early. Bold-label format matches the surrounding style (e.g., `**Node.js v20+**`, `**GitHub CLI**`); a leading `>` would render as a blockquote.
     — **Done when:** The bullet appears in the rendered Prerequisites section between the GitHub CLI entry and the "Install GitHub CLI" subsection, using the bold-label format
@@ -107,7 +107,7 @@ grep -n 'ripgrep' README.md
 
 **Commit:** `docs(agents): add built-in tool preferences section for rg`
 
-- [ ] **3.1** Insert a new `## Built-in Tool Preferences` section between `## MCP Tool Routing` (ends at line 43) and `## CodeGraph` (line 45). Place the new section header at line 45 (pushing CodeGraph down). Section content:
+- [x] **3.1** Insert a new `## Built-in Tool Preferences` section between `## MCP Tool Routing` (ends at line 43) and `## CodeGraph` (line 45). Place the new section header at line 45 (pushing CodeGraph down). Section content:
     ```
     ## Built-in Tool Preferences
 
@@ -128,6 +128,24 @@ sed -n '/## MCP Tool Routing/,/## Built-in Tool Preferences/p' deploy/.AGENTS.md
 # Expected: 0
 ```
 
+### Phase 4: `opencode_app/Dockerfile` — Install `ripgrep` in standalone image
+
+**Commit:** `feat(docker): install ripgrep in standalone image`
+
+- [x] **4.1** Add `ripgrep` to the `apt-get install` list (line 18, after `git`).
+    — **Why:** Docker-mode sessions bake `~/.config/opencode/AGENTS.md` into the image (line 49 copies `deploy/`), so the new Built-in Tool Preferences bullet telling agents to prefer `rg` would be moot without the binary present. Without this, Docker users get the preference rule but never the speedup.
+    — **Done when:** `ripgrep` appears in the apt-get install block; `docker build` succeeds; `rg --version` works in the resulting image.
+    — **Consumers affected:** All Docker standalone mode users (`docker compose up -d`)
+
+**Verification:**
+```bash
+grep -n 'ripgrep' opencode_app/Dockerfile
+# Expected: one match at ~line 19 (after git)
+
+# Full verification requires a docker build (slow); the grep above is the
+# pre-build gate. Post-build: docker run --rm <image> rg --version
+```
+
 ---
 
 ## Risks & Mitigation
@@ -138,7 +156,7 @@ sed -n '/## MCP Tool Routing/,/## Built-in Tool Preferences/p' deploy/.AGENTS.md
 | README Prerequisites section layout shifts | Low | Insert immediately after the GitHub CLI line; verify with `grep` |
 | Windows/macOS parity drift between setup.sh and setup.ps1 | Low | Both scripts updated in lockstep (Phase 1 + 1b, same commit) |
 | Section placement dilutes MCP Tool Routing cohesion | Mitigated | Use a dedicated `## Built-in Tool Preferences` section instead of inserting under MCP Tool Routing |
-| Docker-mode sessions lack `rg` (Dockerfile doesn't install it) | Accepted | Agents auto-fallback to `grep`. Follow-up (out of scope): optionally add `ripgrep` to Dockerfile `apt-get` list. |
+| Docker-mode sessions lack `rg` (Dockerfile doesn't install it) | Resolved | Phase 4 adds `ripgrep` to the Dockerfile apt-get install list. |
 
 ## Success Metrics
 
@@ -146,3 +164,4 @@ sed -n '/## MCP Tool Routing/,/## Built-in Tool Preferences/p' deploy/.AGENTS.md
 - `setup.ps1` runs successfully (returns `$true`) with and without `rg` installed
 - README renders correctly with the new Prerequisite entry
 - `deploy/.AGENTS.md` deploys cleanly via `setup.sh` (new `## Built-in Tool Preferences` section present)
+- Docker standalone image includes `rg` (Phase 4)

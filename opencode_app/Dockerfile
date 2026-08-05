@@ -16,6 +16,7 @@ RUN apt-get update \
         ca-certificates \
         curl \
         git \
+        ripgrep \
         openssh-client \
         chromium \
         fonts-liberation \
