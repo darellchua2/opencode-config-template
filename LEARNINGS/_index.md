@@ -44,6 +44,24 @@
 - **Summary**: opencode-goal-plugin requires BOTH plugin array entry AND command.goal config block — removing either breaks /goal
 - **Date**: 2026-07-26
 
+### Redocly `operation-description` is OFF by default in `recommended`
+
+- **Category**: solution
+- **File**: `solutions/redocly-operation-description-off-by-default.md`
+- **Confidence**: 0.95
+- **Scope**: project
+- **Summary**: redocly's `recommended` ruleset does NOT enable `operation-description` (off by default); a per-field description mandate is load-bearing until `redocly.yaml` sets `operation-description: error`
+- **Date**: 2026-08-05
+
+### tsoa response examples use `@Example()` decorator, not `@example` JSDoc
+
+- **Category**: solution
+- **File**: `solutions/tsoa-response-example-decorator-not-jsdoc.md`
+- **Confidence**: 0.95
+- **Scope**: project
+- **Summary**: tsoa response-body examples require the `@Example()`/`@Response()` TypeScript decorators; `@example` JSDoc only covers params/model props
+- **Date**: 2026-08-05
+
 ---
 
 **Storage paths:**
