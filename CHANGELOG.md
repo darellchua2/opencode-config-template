@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.19.0](https://github.com/darellchua2/opencode-config-template/compare/v4.18.0...v4.19.0) (2026-08-05)
+
+### Features
+
+* **openapi:** route authoring signals to api-design-skill with Authoring Quality Gate ([5dc455e](https://github.com/darellchua2/opencode-config-template/commit/5dc455e942520f04979b4d3539b65d479adea87c)), closes [#319](https://github.com/darellchua2/opencode-config-template/issues/319)
+
+### Bug Fixes
+
+* **api-design:** correct Authoring Quality Gate per code review ([8fbe070](https://github.com/darellchua2/opencode-config-template/commit/8fbe0703c8de41d44fe9f97e4c56f7c581c78174)), closes [#319](https://github.com/darellchua2/opencode-config-template/issues/319)
+
+### Documentation
+
+* **plan:** add PLAN-GIT-319 for openapi authoring enforcement redesign ([8a9da55](https://github.com/darellchua2/opencode-config-template/commit/8a9da55acb99b706d146b960d99237ccbe25d690)), closes [#320](https://github.com/darellchua2/opencode-config-template/issues/320) [#319](https://github.com/darellchua2/opencode-config-template/issues/319)
+* **plan:** trace PLAN-GIT-319 phases + close acceptance criteria ([0e18a71](https://github.com/darellchua2/opencode-config-template/commit/0e18a715d27f0f6cb2526dd6459bed65974f1dd3)), closes [#320](https://github.com/darellchua2/opencode-config-template/issues/320)
+
 ## [4.18.0](https://github.com/darellchua2/opencode-config-template/compare/v4.17.0...v4.18.0) (2026-08-05)
 
 ### Features
