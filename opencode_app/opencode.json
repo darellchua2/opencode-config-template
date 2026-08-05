@@ -18,7 +18,6 @@
   "instructions": ["AGENTS.md"],
   "permission": {
     "read": {
-      "*": "allow",
       "mcp:*": "deny",
       "*.env": "deny",
       "*.env.*": "deny",

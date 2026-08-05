@@ -2412,6 +2412,7 @@ setup_config() {
             if [ -f "$vg_src" ]; then
                 run_cmd cp "$vg_src" "${CONFIG_DIR}/vibeguard.config.json"
                 log_success "vibeguard.config.json deployed (secret masking active)"
+                echo "✓ Secret masking: active (vibeguard)"
             fi
 
             echo ""
@@ -2428,7 +2429,6 @@ setup_config() {
              echo "    Remote (needs key): web-reader, web-search-prime, zread"
              echo "    Available but disabled (opt-in): next-devtools, markitdown, autodesk-*, docling"
              echo "    Enable a group with: ./setup.sh --enable-pack <autodesk|markitdown|nextjs|zai|docling>"
-             echo "✓ Secret masking: active (vibeguard)"
             echo ""
         else
             log_error "config.json source not found: ${SOURCE_CONFIG}"

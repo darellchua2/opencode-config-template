@@ -1702,8 +1702,8 @@ function Set-Configuration {
                 $vgDest = Join-Path $ConfigDir "vibeguard.config.json"
                 if (-not $DryRun) { Copy-Item $vgSrc $vgDest -Force }
                 Write-LogSuccess "vibeguard.config.json deployed (secret masking active)"
+                $script:vgDeployed = $true
             }
-
             # Install local Python MCP launchers (PLAN-GIT-262: markitdown-local-mcp).
             # Best-effort — non-fatal on offline/pip-missing.
             Install-LocalMcpLaunchers
@@ -1724,7 +1724,9 @@ function Set-Configuration {
             Write-Host "    - Local (auto-start): atlassian, zai-vision-mcp-server, codegraph, mermaid"
             Write-Host "    - Remote (needs key): web-reader, zread"
             Write-Host "    - Available but disabled (opt-in): web-search-prime, next-devtools, markitdown, docling"
-            Write-Host "Secret masking: active (vibeguard)" -ForegroundColor Green
+            if ($script:vgDeployed) {
+                Write-Host "Secret masking: active (vibeguard)" -ForegroundColor Green
+            }
             Write-Host ""
         } else {
             Write-LogError "config.json source not found: $SourceConfig"
@@ -2576,6 +2578,13 @@ function Show-Summary {
         Write-Host "  [OK] skills: $skillCount skills deployed to $SkillsDir\" -ForegroundColor Green
     } else {
         Write-Host "  [X] skills: Not deployed"
+    }
+
+    $vgSummary = Join-Path $ConfigDir "vibeguard.config.json"
+    if (Test-Path $vgSummary) {
+        Write-Host "  [OK] Secret masking: active (vibeguard)" -ForegroundColor Green
+    } else {
+        Write-Host "  [X] Secret masking: vibeguard.config.json not deployed"
     }
 
     Write-Host ""

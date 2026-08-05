@@ -110,6 +110,7 @@ The image ships with `vibeguard.config.json` baked into `.opencode/` — secret 
 - `/share` exports plaintext tool I/O — never share sessions that processed `.env` secrets.
 - If vibeguard fails to load, masking silently disappears (bash/grep/MCP exposed).
 - Session DB stores plaintext locally.
+- MCP structured output bypasses redaction (narrow — most tools serialize to string).
 
 ## Updating Agents and Skills
 

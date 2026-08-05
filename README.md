@@ -446,6 +446,7 @@ Vibeguard (`opencode-vibeguard@0.1.0`) masks `.env` secrets in provider-bound tr
 - **`/share` exports plaintext** — vibeguard has no `/share` hook. Never `/share` sessions that processed `.env` secrets.
 - **No fail-closed** — if vibeguard is no-op (config missing/malformed), masking silently disappears. Run `OPENCODE_VIBEGUARD_DEBUG=1 opencode` to verify replace-counts > 0.
 - **Session DB stores plaintext locally** — acceptable for "never expose to provider"; don't assume DB dumps are safe.
+- **MCP structured output** — vibeguard redacts tool output only when it's a string; structured JSON objects bypass redaction (narrow risk — most MCP tools serialize to string).
 
 For verification steps and detailed procedure, load `security-audit-skill` (now covers runtime secret masking).
 

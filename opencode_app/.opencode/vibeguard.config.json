@@ -13,7 +13,7 @@
       { "pattern": "(ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]+", "category": "GITHUB_TOKEN" },
       { "pattern": "AIza[0-9A-Za-z_-]{35}", "category": "GOOGLE_KEY" },
       { "pattern": "xox[bpoas]-[A-Za-z0-9-]+", "category": "SLACK_TOKEN" },
-      { "pattern": "://[^:\\s]+:[^@\\s]+@", "category": "DB_CONNECTION_STRING" },
+      { "pattern": "://[^:\\s]+:[^@\\s/]+@", "category": "DB_CONNECTION_STRING" },
       { "pattern": "-----BEGIN [A-Z ]*PRIVATE KEY-----", "category": "PRIVATE_KEY" },
       { "pattern": "\\w*(password|passwd|pwd|secret|token|api[_-]?key|apikey|access[_-]?key|private[_-]?key|credential|connection[_-]?string)\\w*\\s*[:=]\\s*[\"']?[^\"'\\s]+", "flags": "i", "category": "SECRET_ASSIGNMENT" },
       { "pattern": "eyJ[A-Za-z0-9_-]+\\.eyJ[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+", "category": "JWT" }
