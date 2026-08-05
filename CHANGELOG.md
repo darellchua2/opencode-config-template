@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.18.0](https://github.com/darellchua2/opencode-config-template/compare/v4.17.0...v4.18.0) (2026-08-05)
+
+### Features
+
+* **tooling:** recommend ripgrep as optional dependency ([#317](https://github.com/darellchua2/opencode-config-template/issues/317)) ([#318](https://github.com/darellchua2/opencode-config-template/issues/318)) ([c3ac0dc](https://github.com/darellchua2/opencode-config-template/commit/c3ac0dc15751496aafd22f377084992b148c3b3b))
+
 ## [4.17.0](https://github.com/darellchua2/opencode-config-template/compare/v4.16.0...v4.17.0) (2026-08-05)
 
 ### Features
