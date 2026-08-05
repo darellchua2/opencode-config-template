@@ -1016,6 +1016,11 @@ function Test-Dependencies {
         Write-LogWarn "git is not installed (recommended but not required)"
     }
 
+    if (-not (Test-CommandExists "rg")) {
+        Write-LogWarn "rg (ripgrep) is not installed (recommended but not required)"
+        Write-LogWarn "  Install with: winget install BurntSushi.ripgrep.MSVC | scoop install ripgrep | choco install ripgrep"
+    }
+
     if ($missing.Count -gt 0) {
         Write-LogError "Missing required dependencies: $($missing -join ', ')"
         Write-LogInfo "Please install missing dependencies and try again"
