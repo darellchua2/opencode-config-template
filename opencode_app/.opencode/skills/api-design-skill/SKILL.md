@@ -264,6 +264,52 @@ const createUserRoute = createRoute({
 })
 ```
 
+## Step 4.5: Authoring Quality Gate
+
+**Applies at write time, all languages/frameworks.** When authoring or editing an
+OpenAPI spec — directly (`openapi.yaml`/`openapi.json`/`swagger.yaml`) or via code that
+generates one (FastAPI, NestJS+`nestjs/swagger`, tsoa, `@asteasolutions/zod-to-openapi`,
+Spring+springdoc-openapi, Django DRF+`drf-spectacular`/`drf-yasg`) — every operation AND
+every schema MUST carry a human-readable `description` and at least one `example`. This is
+what makes a spec teach end users how to consume the API; a schema without a description is
+a type, not a contract.
+
+### Per-framework mapping (where the description/example lives)
+
+For code-gen frameworks the spec's `description`/`example` come from source annotations:
+
+| Framework | Description source | Example source |
+|-----------|--------------------|----------------|
+| FastAPI (Python) | route docstring + `summary=`; Pydantic `Field(description=...)` | `Field(examples=[...])`; `@app.post(..., responses={...})` |
+| NestJS (TS) | `@ApiOperation({description})`; `@ApiProperty({description})` | `@ApiProperty({example})`; `@ApiResponse({content:{...example}})` |
+| tsoa (TS) | JSDoc on controller method | `@example` JSDoc tag |
+| zod-to-openapi / hono zod-openapi | `.open({description})` / `.meta()` | `.open({example})` |
+| Spring + springdoc (Java) | `@Operation(description)` / `@Schema(description)` | `@Schema(example)` / `@Parameter(example)` |
+| Django DRF + drf-spectacular | `@extend_schema(description=)` / serializer field `help_text` | `@extend_schema(responses=...)` with examples; `OpenApiExample` |
+
+For hand-written specs, put `description` and `example` directly in the YAML/JSON node.
+
+### Lint gate
+
+Run `redocly lint` (or `spectral lint`) on the resulting spec before declaring the task
+done; fix all `error`-level findings. Note: redocly's default `recommended` ruleset already
+enforces `operation-description` as an error, so the lint gate is the real net — the
+per-field mandate above is the write-time primer that keeps the lint gate green on the first
+pass rather than a load-bearing duplicate.
+
+**Missing ruleset:** if the repo has no `redocly.yaml`/`.spectral.yaml`, flag it to the user
+— do not silently skip the gate. Default rulesets still apply, but a committed ruleset is how
+project-specific rules (e.g. requiring `example` on request bodies) become deterministic.
+
+### Authoring vs review classification
+
+This gate mandates presence of `description`/`example` *at authoring time*. It does not
+change how *changes* to descriptions are classified during contract review —
+`openapi-contract-adherence-skill` classifies "description/summary updated" as **Cosmetic /
+Patch** (a change to an existing description), which is orthogonal to "description must
+exist" (a quality requirement on new/edited ops). The two are consistent: a field can be
+required to exist while edits to it remain cosmetic.
+
 ## Step 5: GraphQL Schema Design
 
 ### Schema Conventions
