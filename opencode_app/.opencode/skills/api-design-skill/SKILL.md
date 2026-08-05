@@ -41,6 +41,7 @@ Use this skill when:
 - **design-patterns-skill**: Structural patterns (Repository, Facade) useful in API design
 - **authentication-authorization-skill**: Auth middleware and token handling for APIs
 - **performance-optimization-skill**: Query optimization and caching for API endpoints
+- **openapi-contract-adherence-skill**: Reactive counterpart — breaking-change detection and consumer-impact review after a spec changes (§4.5 covers authoring-time quality; that skill covers evolution-time impact)
 
 ---
 
@@ -263,6 +264,62 @@ const createUserRoute = createRoute({
   },
 })
 ```
+
+## Step 4.5: Authoring Quality Gate
+
+**Applies at write time, all languages/frameworks.** When authoring or editing an
+OpenAPI spec — directly (`openapi.yaml`/`openapi.json`/`swagger.yaml`) or via code that
+generates one (FastAPI, NestJS+`nestjs/swagger`, tsoa, `@asteasolutions/zod-to-openapi` /
+`@hono/zod-openapi`, Spring+springdoc-openapi, Django DRF+`drf-spectacular`/`drf-yasg`) — every operation AND
+every schema MUST carry a human-readable `description` and at least one `example`. This is
+what makes a spec teach end users how to consume the API; a schema without a description is
+a type, not a contract.
+
+### Per-framework mapping (where the description/example lives)
+
+For code-gen frameworks the spec's `description`/`example` come from source annotations:
+
+| Framework | Description source | Example source |
+|-----------|--------------------|----------------|
+| FastAPI (Python) | route docstring + `summary=`; Pydantic `Field(description=...)` | `Field(examples=[...])`; `@app.post(..., responses={...})` |
+| NestJS (TS) | `@ApiOperation({description})`; `@ApiProperty({description})` | `@ApiProperty({example})`; `@ApiResponse({content:{...example}})` |
+| tsoa (TS) | JSDoc on controller method | `@Example()` / `@Response()` decorators (responses); `@example` JSDoc tag (params/props) |
+| zod-to-openapi / hono zod-openapi | `.open({description})` / `.meta()` | `.open({example})` / `.meta({example})` |
+| Spring + springdoc (Java) | `@Operation(description)` / `@Schema(description)` | `@Schema(example)` / `@Parameter(example)` |
+| Django DRF (drf-spectacular / drf-yasg) | `@extend_schema(description=)` / `@swagger_auto_schema` / serializer `help_text` | `@extend_schema(examples=[OpenApiExample(...)])`; `@swagger_auto_schema(...)` examples |
+
+For hand-written specs, put `description` and `example` directly in the YAML/JSON node.
+
+### Lint gate
+
+Run `redocly lint` (or `spectral lint`) on the resulting spec before declaring the task
+done; fix all `error`-level findings. **Caveat — the description rule is OFF by default:**
+redocly's `recommended` ruleset does NOT enable `operation-description` (the rule is `off`
+in `recommended`; only `operation-summary` is an error and `tag-description` a warning). So
+out of the box the lint gate will NOT catch a missing description, which makes the per-field
+mandate above **load-bearing**, not redundant. To make the lint gate enforce descriptions
+deterministically, commit a `redocly.yaml` that opts the rule in:
+
+```yaml
+rules:
+  operation-description: error
+```
+
+Until that ruleset exists, the write-time mandate above is the only net — treat it as required.
+
+**Missing ruleset:** if the repo has no `redocly.yaml`/`.spectral.yaml`, flag it to the user
+— do not silently skip the gate. A committed ruleset is how project-specific rules (e.g.
+`operation-description: error`, requiring `example` on request bodies) become deterministic;
+without one, lint passes even when descriptions are missing.
+
+### Authoring vs review classification
+
+This gate mandates presence of `description`/`example` *at authoring time*. It does not
+change how *changes* to descriptions are classified during contract review —
+`openapi-contract-adherence-skill` classifies "description/summary updated" as **Cosmetic /
+Patch** (a change to an existing description), which is orthogonal to "description must
+exist" (a quality requirement on new/edited ops). The two are consistent: a field can be
+required to exist while edits to it remain cosmetic.
 
 ## Step 5: GraphQL Schema Design
 
