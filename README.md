@@ -290,6 +290,7 @@ What lands in the target project: `<project>/.opencode/opencode.json` (scoped `p
 - **LM Studio** running locally on port 1234 (for local LLM)
 - **Z.AI API Key** (required for Z.AI MCP services)
 - **GitHub CLI** (recommended for GitHub MCP authentication)
+- **ripgrep (`rg`)** (recommended for faster content search; falls back to `grep` if absent)
 
 ### Install GitHub CLI
 
