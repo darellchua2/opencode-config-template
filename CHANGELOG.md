@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.19.1](https://github.com/darellchua2/opencode-config-template/compare/v4.19.0...v4.19.1) (2026-08-05)
+
+### Bug Fixes
+
+* **learnings:** capture redocly + tsoa factual corrections from [#319](https://github.com/darellchua2/opencode-config-template/issues/319) review ([c195011](https://github.com/darellchua2/opencode-config-template/commit/c195011b7ca5fdc19662319c7e2ba9c709aa7cbf))
+
 ## [4.19.0](https://github.com/darellchua2/opencode-config-template/compare/v4.18.0...v4.19.0) (2026-08-05)
 
 ### Features
