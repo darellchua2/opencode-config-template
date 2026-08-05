@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.17.0](https://github.com/darellchua2/opencode-config-template/compare/v4.16.0...v4.17.0) (2026-08-05)
+
+### Features
+
+* **security:** integrate vibeguard secret masking for .env safety ([#315](https://github.com/darellchua2/opencode-config-template/issues/315)) ([#316](https://github.com/darellchua2/opencode-config-template/issues/316)) ([cd05707](https://github.com/darellchua2/opencode-config-template/commit/cd05707bd5b855234571da4fb1504d69b2fb605f)), closes [inkdust2021/opencode-vibeguard#6](https://github.com/inkdust2021/opencode-vibeguard/issues/6)
+
 ## [4.16.0](https://github.com/darellchua2/opencode-config-template/compare/v4.15.0...v4.16.0) (2026-08-04)
 
 ### Features
