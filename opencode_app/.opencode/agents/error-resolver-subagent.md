@@ -84,7 +84,7 @@ Delegation:
 - System commands: Delegate to parent agent (no bash access)
 - File operations: Delegate to parent agent
 
-Always provide complete, actionable solutions. For complex issues, suggest debugging strategies.
+Provide actionable solutions where the root cause is established; for complex or uncertain issues, provide the debugging strategy and explicitly mark unverified hypotheses rather than fabricating a "complete" answer.
 
 <!-- Ponytail lens derived from plugins/ponytail/SKILL.md (vendored v4.8.4); re-sync when the ladder or "when NOT to be lazy" semantics change -->
 
