@@ -78,7 +78,7 @@ For live URLs, run the Playwright capture protocol from `uiux-review-skill` §2:
 - Screenshot at each requested breakpoint (default: 1440x900, 768x1024, 375x812)
 - Capture full-page screenshots for long pages
 - Capture a11y tree snapshot
-- Extract computed styles (design tokens: colors, fonts, spacing, radii, shadows)
+- Extract computed styles (design system fonts, spacing, radii, shadows)
 
 For source-only reviews, capture the file contents and any referenced CSS/Tailwind config.
 
