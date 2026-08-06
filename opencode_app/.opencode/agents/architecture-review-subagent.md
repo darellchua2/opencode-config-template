@@ -10,6 +10,8 @@ permission:
   glob: allow
   grep: allow
   bash: deny
+  webfetch: allow
+  websearch: allow
   task:
     "*": deny
     explore: allow
@@ -161,6 +163,10 @@ Apply YAGNI at the architecture layer, not just the code layer:
 - When two architectures hold, the boring, fewer-component one wins unless you can name the concrete future need the richer one would block.
 
 This complements `clean-architecture-skill`'s dependency rule. It does **not** weaken boundary discipline or the Mandatory Consumer Traversal Gate.
+
+## Web lookups
+
+You have `websearch`/`webfetch` access. When the code under review uses a framework or package and you want to confirm correct/current usage, whether a dependency is the right choice, or version-specific behavior, you MAY look it up (prefer official docs). Keep it to a few lookups and skip what you already know.
 
 ## Return Contract
 
