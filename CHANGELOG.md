@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.21.0](https://github.com/darellchua2/opencode-config-template/compare/v4.20.0...v4.21.0) (2026-08-06)
+
+### Features
+
+* **agents:** grant web access + lookup guidance to reviewers ([01ab540](https://github.com/darellchua2/opencode-config-template/commit/01ab5407719846ba0a931f5148912cd7fb9a7211))
+
+### Documentation
+
+* **plan:** add PLAN-GIT-323.md for [#323](https://github.com/darellchua2/opencode-config-template/issues/323) ([d510249](https://github.com/darellchua2/opencode-config-template/commit/d510249377ce9c9a1c798be9036be1eb38b2cb56))
+* **plan:** revise PLAN-GIT-323 to minimal web-lookup scope ([ff1cd2e](https://github.com/darellchua2/opencode-config-template/commit/ff1cd2e9d1a0093533b836122094afd2cd6b02c2))
+
 ## [4.20.0](https://github.com/darellchua2/opencode-config-template/compare/v4.19.2...v4.20.0) (2026-08-06)
 
 ### Features
