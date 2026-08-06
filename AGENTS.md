@@ -54,10 +54,11 @@ default a subagent to the `primary` tier.**
 
 > **Image / screenshot analysis:** `image-analyzer-subagent` and `error-resolver-subagent` are
 > **native multimodal** — they run on `zai/glm-5v-turbo` (vision tier) and perceive images directly.
-> Neither calls `zai-vision-analysis-skill` or the free `glm-4.6v-flash` endpoint anymore (retired
-> due to rate-limiting). As a result **nothing consumes `glm-4.6v-flash`**, and
-> `zai-vision-analysis-skill` is now orphaned (candidate for removal). Requires Z.AI auth /
-> `ZAI_API_KEY`.
+> When native perception is unavailable (vision MCP server not connected, "model does not support
+> image input", or a text-only session), they fall back to a **direct Z.AI vision API call** to the
+> same `glm-5v-turbo` model via `zai-vision-analysis-skill` (coding-plan endpoint preferred, PAAS
+> fallback). Requires Z.AI auth / `ZAI_API_KEY`. The free `glm-4.6v-flash` endpoint remains
+> available as a cost-constrained option but is no longer the default.
 
 ### Resolution precedence (highest wins)
 1. `<project>/.opencode/agent-overrides.json` (per-agent, project-local)

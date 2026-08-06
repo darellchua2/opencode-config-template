@@ -163,6 +163,13 @@
           "name": "GPT-OSS 20B (local)"
         }
       }
+    },
+    "zai-coding-plan": {
+      "models": {
+        "glm-5v-turbo": {
+          "name": "GLM-5V Turbo (vision)"
+        }
+      }
     }
   },
   "mcp": {
