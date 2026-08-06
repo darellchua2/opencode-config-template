@@ -12,6 +12,8 @@ permission:
   glob: allow
   grep: allow
   bash: deny
+  webfetch: allow
+  websearch: allow
   task:
     "*": deny
     explore: allow
@@ -277,6 +279,10 @@ Challenge over-engineering as a first-class finding, not just a style note:
 - A dependency added for what a few lines or the stdlib could do is a Major finding, named by package.
 
 This sharpens the design-patterns checklist ("patterns forced unnecessarily") into an active deletion bias. It does **not** relax the security/correctness gates, the Mandatory Impact & Consumer Coverage gate, or the severity rubric above.
+
+## Web lookups
+
+You have `websearch`/`webfetch` access. When the code under review uses a framework or package and you want to confirm correct/current usage, whether a dependency is the right choice, or version-specific behavior, you MAY look it up (prefer official docs). Keep it to a few lookups and skip what you already know.
 
 ## Return Contract
 

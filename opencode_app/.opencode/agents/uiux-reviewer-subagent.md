@@ -12,6 +12,8 @@ permission:
   glob: allow
   grep: allow
   bash: allow
+  webfetch: allow
+  websearch: allow
   task:
     "*": deny
     explore: allow
@@ -207,6 +209,10 @@ Tally saved entries by category and surface them in the Return Contract `Output`
 ## Recommended Actions (Priority Order)
 1. ...
 2. ...
+
+## Web lookups
+
+You have `websearch`/`webfetch` access. When the design/code under review uses a framework or package and you want to confirm correct/current usage, whether a dependency is the right choice, or version-specific behavior, you MAY look it up (prefer official docs). Keep it to a few lookups and skip what you already know.
 
 ## Return Contract
 
