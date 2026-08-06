@@ -1,4 +1,4 @@
-# PLAN-GIT-323 — Add web-search-backed references to reviewer subagents
+# PLAN-GIT-323 — Give reviewer subagents web access for package/framework lookups
 
 **Issue:** https://github.com/darellchua2/opencode-config-template/issues/323
 **Branch:** `feat/323-reviewer-web-references`
@@ -6,23 +6,19 @@
 
 ## Overview
 
-Reviewer subagents make findings that sometimes hinge on time-sensitive or version-specific external facts (CVE/CWE numbers, deprecations, framework behavior, contested best-practice claims) but cannot cite authoritative sources, so findings risk being stale or uncorroborated. `webfetch`/`websearch` are built-in opencode tools (default `allow`) that reviewers never use because their prompts never mention them. This change makes the capability explicit in frontmatter and instructs reviewers to back external-authority claims with **fetched** references, with a hard-required rule for CVE/CWE and deprecation findings.
+Reviewer subagents review code that uses frameworks and packages whose correct usage or version-specific behavior they may not know precisely, but they have no way to look anything up. `webfetch`/`websearch` are built-in opencode tools (default `allow`) that the reviewers never use because their prompts never mention them. This change makes the capability explicit in frontmatter and tells reviewers they may check the web when it would genuinely help a review — verifying current/correct API usage or whether a dependency is the right choice.
 
-Approach: direct, gated access — no new agent (no README/setup.sh agent-count sync), no MCP changes (built-in tools only).
+No citation regime, no references output, no new agent, no MCP changes. Reviewers search directly.
 
 ## Acceptance Criteria
 
 - All 8 reviewers have explicit `webfetch: allow` + `websearch: allow` in frontmatter.
-- Each reviewer has a gated "Authoritative References" section (search only for CVE/CWE, deprecation/EOL, documented framework behavior, contested best-practice claims; never for stable fundamentals).
-- Hard-required rule: CVE/CWE or deprecation claim MUST carry a fetched reference, else downgraded to `unverified (no source found as of YYYY-MM-DD)`.
-- Integrity rule: references only for URLs the reviewer `webfetch`-ed and copied verbatim; ~3–5 lookup cap; deeper sweeps delegate to `autoresearch-research-subagent`.
-- Each reviewer Return Contract has `References:` `[{claim, url, retrieved}]`; `code-review-subagent` instructs delegated reviewers to return + aggregate it.
-- Repo `AGENTS.md` "Return Contract Convention → Reviewer Additions" documents the new field.
+- Each reviewer has a short "Web lookups" note: you may `websearch`/`webfetch` when the code under review uses a framework/package and you want to confirm correct/current usage, whether a dependency is appropriate, or version-specific behavior — prefer official docs, keep it to a few lookups, skip what you already know.
+- No change to any Return Contract, no new output field, no AGENTS.md change.
 
 ## Scope
 
 - `opencode_app/.opencode/agents/{architecture-review,code-review,python-reviewer,typescript-reviewer,java-reviewer,go-reviewer,rust-reviewer,uiux-reviewer}-subagent.md` (8 files)
-- `AGENTS.md` (Return Contract convention block)
 
 ## Dependency & Consumer Map
 
@@ -30,9 +26,7 @@ _Blast radius before steps. Agent `.md` files are prompts — no application cod
 
 | Node (file) | Depends on (must precede) | Consumers (who depends on this) | Change risk |
 |---|---|---|---|
-| 7 leaf reviewers (`architecture/python/typescript/java/go/rust/uiux`) | — | primary session; `code-review-subagent` (delegates to the 5 language reviewers) | low — additive (new permission + prompt section + return field) |
-| `code-review-subagent.md` | — | primary session; delegates to language reviewers | med — orchestrator; gains aggregation note |
-| `AGENTS.md` (Return Contract convention) | reviewer Return Contracts exist (Phase 3) | all agents (documents the convention) | low — additive doc line |
+| 8 reviewers (frontmatter + note) | — | primary session; `code-review-subagent` (delegates to 5 language reviewers) | low — additive permission + short prompt note |
 
 ## Implementation Phases
 
@@ -45,36 +39,18 @@ _Every step is atomic (one reversible concern) and carries Why / Done when / Con
     — **Done when:** `rg -n "webfetch: allow|websearch: allow" opencode_app/.opencode/agents/*review*.md` shows both keys present in all 8 files (16+ matches).
     — **Consumers affected:** none at runtime (default already allow); benefits future readers + survives config tightening.
 
-### Phase 2: Authoritative References prompt section (gated search policy)
+### Phase 2: Web lookups prompt note
 
-- [ ] **2.1** Add an "Authoritative References" section (before each Return Contract) to all 8 reviewers defining: (a) **search only when** a finding cites a CVE/CWE/advisory, a deprecation/removal/EOL, documented or version-specific framework behavior, or a contested/recent best-practice claim; (b) **never search** for stable fundamentals already known (SOLID, clean-code, syntax, GoF names); (c) **cap** ~3–5 lookups/review, deeper sweeps delegate to `autoresearch-research-subagent`; (d) **integrity** — list a reference only for a URL the reviewer `webfetch`-ed and copied verbatim (no bare `websearch` suggestions), prefer official sources (MDN, framework docs, RFC, CWE/OWASP, CVE DB, upstream changelog), always include retrieval date; (e) **hard-required** — a CVE/CWE-number or deprecation claim MUST carry a fetched reference, else downgrade to `unverified (no source found as of YYYY-MM-DD)` rather than asserting at full severity.
-    — **Why:** permission alone changes nothing — the prompt must instruct when/whether to search; the gate bounds cost and the integrity rule prevents hallucinated citations.
-    — **Done when:** each of the 8 reviewers contains an "Authoritative References" heading and `rg -n "Authoritative References" opencode_app/.opencode/agents/*review*.md` returns 8 matches.
-    — **Consumers affected:** the primary session reading reviewer output (now gets corroborated claims); reviewers themselves.
+- [ ] **2.1** Add a short "Web lookups" section (before each Return Contract) to all 8 reviewers: you MAY `websearch`/`webfetch` when the code under review uses a framework/package and you want to confirm correct/current usage, whether a dependency is the right choice, or version-specific behavior — prefer official docs, keep it to a few lookups, skip what you already know.
+    — **Why:** permission alone changes nothing — the prompt must invite the lookup and bound it lightly.
+    — **Done when:** `rg -n "Web lookups" opencode_app/.opencode/agents/*review*.md` returns 8 matches.
+    — **Consumers affected:** the primary session reading reviewer output (better-informed findings); reviewers themselves.
 
-### Phase 3: Return Contract — References field
+### Phase 3: Verification
 
-- [ ] **3.1** Add a `**References:** \`[{claim, url, retrieved}]\`` field (required when external-authority claims were made; `[]` otherwise) to the Return Contract of the 7 leaf reviewers (`architecture`, `python`, `typescript`, `java`, `go`, `rust`, `uiux`), placed immediately after `Patterns applied/violated`.
-    — **Why:** makes the citation requirement machine-visible + consistent across the leaf reviewers that the primary + code-review consume.
-    — **Done when:** `rg -n "^\*\*References:\*\*" opencode_app/.opencode/agents/*review*.md` returns ≥8 matches (7 leaves + code-review from 3.2).
-    — **Consumers affected:** primary session + `code-review-subagent` (aggregates delegated findings).
-- [ ] **3.2** Add the same `References:` field to `code-review-subagent` Return Contract, plus a one-line delegation note: when delegating to a language reviewer, instruct it to return `References:` and aggregate them into code-review's own report.
-    — **Why:** code-review is the orchestrator for language-specific reviews; without the aggregation note, delegated citations would be lost.
-    — **Done when:** `code-review-subagent.md` Return Contract has `References:` and its delegation section references returning/merging `References:`.
-    — **Consumers affected:** primary session (receives one merged citation set).
-
-### Phase 4: Repo docs — AGENTS.md convention
-
-- [ ] **4.1** Update `AGENTS.md` "Return Contract Convention → Reviewer Additions" to document the new `References:` field alongside the existing `Patterns applied/violated` requirement (required when external-authority claims made; `[]` otherwise).
-    — **Why:** AGENTS.md is the single source for the return-contract convention; the new field must be discoverable there or it drifts from practice.
-    — **Done when:** the "Reviewer Additions" block in `AGENTS.md` mentions `References:`; `rg -n "References:" AGENTS.md` matches within the Return Contract section.
-    — **Consumers affected:** all reviewer agents + anyone authoring a new reviewer.
-
-### Phase 5: Verification
-
-- [ ] **5.1** Run a documentation-consistency check (`documentation-consistency-skill` or equivalent) confirming: no agent added/removed (README/setup.sh agent counts unchanged), the 8 reviewer frontmatter blocks are valid YAML, and every "Authoritative References" section + `References:` field is present.
-    — **Why:** catches YAML breakage (which would hide the agent from opencode) and count drift before push.
-    — **Done when:** consistency check passes; `rg` counts match expectations; spot-check one reviewer renders valid frontmatter.
+- [ ] **3.1** Confirm no agent added/removed (README/setup.sh agent counts unchanged), the 8 reviewer frontmatter blocks are valid YAML, and every "Web lookups" section is present. Use `rg`/shell for glob checks (the `glob` tool skips the `.opencode` dot-directory and would false-negative).
+    — **Why:** catches YAML breakage (which would hide the agent from opencode) and count drift.
+    — **Done when:** `rg` counts match expectations; spot-check one reviewer renders valid frontmatter.
     — **Consumers affected:** none (verification only).
 
 ## Step Authoring Rules
@@ -87,7 +63,8 @@ _Every step is atomic (one reversible concern) and carries Why / Done when / Con
 ## Technical Notes
 
 - `webfetch`/`websearch` are built-in opencode permissions (default `allow`); explicit `allow` documents intent. Convention established by `nextjs-specialist`, `cad-specialist`, `pptx`, `startup-ceo`, `startup-founder`, `opencode-tooling`, `autoresearch-research-subagent`.
-- No new agent → no README/setup.sh agent-count sync; no MCP changes (built-in tools, not `zai-web-reader`/`zai-web-search-prime`).
+- Reviewers search directly — no delegation to other subagents.
+- No new agent → no README/setup.sh agent-count sync; no MCP changes; no Return Contract / AGENTS.md changes.
 - `.releaserc.json` exists + `.opencode/branch-workflow-skipped` present → no branch-workflow setup.
 
 ## Dependencies
@@ -98,13 +75,10 @@ None external. Built on existing built-in `webfetch`/`websearch` tooling.
 
 | Risk | Mitigation |
 |---|---|
-| Hallucinated URLs | Integrity rule: cite only URLs actually `webfetch`-ed + copied verbatim + retrieval date |
-| Cost / latency of web calls per review | ~3–5 lookup cap + "external-authority only" trigger; deeper sweeps delegate |
-| Stale references | Retrieval date makes staleness explicit; reviewers note "as of retrieved date" |
-| Frontmatter YAML breakage hides agent | Phase 5 YAML validity check before push |
+| Cost / latency of web calls per review | "a few lookups" + "skip what you already know"; opportunistic, not mandatory |
+| Frontmatter YAML breakage hides agent | Phase 3 YAML validity check (using `rg`/shell, not the `glob` tool) |
 
 ## Success Metrics
 
-- All 8 reviewers can produce web-backed references for external-authority findings.
-- CVE/CWE and deprecation findings never asserted at full severity without a fetched source.
-- No increase in agent count; README/setup.sh counts unchanged.
+- All 8 reviewers can look up package/framework usage when it helps a review.
+- No increase in agent count; README/setup.sh counts unchanged; no Return Contract changes.
