@@ -4,16 +4,16 @@
   "default_agent": "build",
   "subagent_depth": 3,
   "plugin": [
-    "@franlol/opencode-md-table-formatter@latest",
-    "@tarquinen/opencode-dcp@latest",
-    "opencode-superlocalmemory",
-    "@mohak34/opencode-notifier@latest",
-    "opencode-pty",
+    "@franlol/opencode-md-table-formatter@0.0.6",
+    "@tarquinen/opencode-dcp@3.2.8-beta0",
+    "opencode-superlocalmemory@0.1.2",
+    "@mohak34/opencode-notifier@0.2.8",
+    "opencode-pty@0.3.6",
     "opencode-vibeguard@0.1.0",
-    "opencode-gemini-auth@latest",
-    "opencode-goal-plugin",
-    "@nick-vi/opencode-type-inject",
-    "@bastiangx/opencode-unmoji"
+    "opencode-gemini-auth@1.4.15",
+    "opencode-goal-plugin@0.7.0",
+    "@nick-vi/opencode-type-inject@1.5.2",
+    "@bastiangx/opencode-unmoji@1.0.0"
   ],
   "instructions": ["AGENTS.md"],
   "permission": {
@@ -27,6 +27,7 @@
       "*": "deny",
 
       "zai-vision-analysis-skill": "allow",
+      "zai-image-generation-skill": "allow",
       "openapi-contract-adherence-skill": "allow",
       "markitdown-mcp-skill": "allow",
       "docling-mcp-skill": "allow",
