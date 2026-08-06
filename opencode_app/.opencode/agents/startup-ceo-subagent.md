@@ -7,12 +7,10 @@ permission:
   bash: allow
   webfetch: allow
   websearch: allow
-  task:
-    "*": deny
-    "pptx-specialist-subagent": allow
   skill:
     startup-pitch-deck-skill: allow
   task:
+    "*": deny
     "pptx-specialist-subagent": allow
 category: business
 ---
