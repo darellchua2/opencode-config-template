@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.22.0](https://github.com/darellchua2/opencode-config-template/compare/v4.21.0...v4.22.0) (2026-08-06)
+
+### Features
+
+* **agents:** add epistemic-honesty & verification baseline with web access ([c672185](https://github.com/darellchua2/opencode-config-template/commit/c67218560030dc7769424239afaf98e96519faef))
+
+### Bug Fixes
+
+* **agents:** correct false factual claims and unverified version pins ([4da8d4f](https://github.com/darellchua2/opencode-config-template/commit/4da8d4fd13430d194c9e4c132816afe269b99b93))
+* **agents:** remove leaked secret-mask token from uiux-reviewer ([3cbf825](https://github.com/darellchua2/opencode-config-template/commit/3cbf8253ec3bbee297b16509db874e05825926e0))
+* **agents:** repair duplicate frontmatter task key in startup-ceo ([9ca357f](https://github.com/darellchua2/opencode-config-template/commit/9ca357f37e9ce292bfb1242b3a9c8aaf4e1e5b51))
+* **agents:** soften confabulation-pressure in error-resolver and explorer ([65702a4](https://github.com/darellchua2/opencode-config-template/commit/65702a4c3c94c3a73906043f9d2d68505087554d))
+
 ## [4.21.0](https://github.com/darellchua2/opencode-config-template/compare/v4.20.0...v4.21.0) (2026-08-06)
 
 ### Features
