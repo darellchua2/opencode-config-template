@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.20.0](https://github.com/darellchua2/opencode-config-template/compare/v4.19.2...v4.20.0) (2026-08-06)
+
+### Features
+
+* **skills:** add zai-image-generation-skill (Z.AI GLM-Image text→PNG) ([73ab708](https://github.com/darellchua2/opencode-config-template/commit/73ab7087fd4312df0eb79fc6f6e17dcd819b9f86))
+
+### Bug Fixes
+
+* **plugins:** pin exact versions to resolve DCP peer conflict ([164af01](https://github.com/darellchua2/opencode-config-template/commit/164af01ba0a6c6652b5dd2fa6de8e4e5460f4ac9))
+
 ## [4.19.2](https://github.com/darellchua2/opencode-config-template/compare/v4.19.1...v4.19.2) (2026-08-06)
 
 ### Bug Fixes
