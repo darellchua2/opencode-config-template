@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.23.0](https://github.com/darellchua2/opencode-config-template/compare/v4.22.0...v4.23.0) (2026-08-06)
+
+### Features
+
+* **vision:** route glm-5v-turbo through coding-plan endpoint with API fallback ([#326](https://github.com/darellchua2/opencode-config-template/issues/326)) ([226f740](https://github.com/darellchua2/opencode-config-template/commit/226f7409a259eaaf55fff7670db8683f9f68d1b4))
+
 ## [4.22.0](https://github.com/darellchua2/opencode-config-template/compare/v4.21.0...v4.22.0) (2026-08-06)
 
 ### Features
