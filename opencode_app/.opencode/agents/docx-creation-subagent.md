@@ -65,7 +65,7 @@ Workflow for Editing:
 5. Validate
 
 Critical Rules:
-- docx-js defaults to A4 - always set page size
+- verify docx-js default page size for the installed version (historically A4) — always set page size explicitly
 - Tables: use WidthType.DXA, never PERCENTAGE
 - PageBreak must be inside Paragraph
 - Tracked changes: use proper author and timestamps

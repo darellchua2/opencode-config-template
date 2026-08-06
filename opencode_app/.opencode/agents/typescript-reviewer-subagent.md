@@ -108,8 +108,8 @@ You are a TypeScript/JavaScript code review specialist. Perform thorough quality
 
 | Framework | Key Patterns to Check |
 |-----------|----------------------|
-| **Next.js 16** | App Router patterns, Server Actions, metadata API, proper `"use client"` directives |
-| **React 19** | Server Components, Suspense boundaries, use() hook, transition patterns |
+| **Next.js** (verify current major version) | App Router patterns, Server Actions, metadata API, proper `"use client"` directives |
+| **React** (verify current major version) | Server Components, Suspense boundaries, use() hook, transition patterns |
 | **Node.js** | Stream handling, proper error events, graceful shutdown, no synchronous I/O |
 | **Express/Fastify** | Middleware ordering, error handling middleware, request validation |
 

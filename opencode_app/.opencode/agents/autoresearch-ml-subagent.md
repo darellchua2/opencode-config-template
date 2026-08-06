@@ -46,7 +46,7 @@ nvidia-smi --query-gpu=name --format=csv,noheader
   **Status:** failed
   **Output:** GPU preflight failed — no NVIDIA GPU detected
   **Summary:** torch.cuda.is_available()=False and nvidia-smi unavailable. Cannot run ML training loop.
-  **Issues:** No NVIDIA GPU. Reroute options: (1) see `autoresearch-ml-skill/templates/CPU-FORKS.md` for CPU/macOS/Windows/AMD forks (miolini/autoresearch-macos, trevin-creator/autoresearch-mlx, jsegov/autoresearch-win-rtx, andyluo7/autoresearch); (2) if the underlying task is code optimization rather than model training, reroute to `autoresearch-code-subagent`.
+  **Issues:** No NVIDIA GPU. Reroute options: (1) see `autoresearch-ml-skill/templates/CPU-FORKS.md` for CPU/macOS/Windows/AMD forks (verify these forks exist and are current before recommending: miolini/autoresearch-macos, trevin-creator/autoresearch-mlx, jsegov/autoresearch-win-rtx, andyluo7/autoresearch); (2) if the underlying task is code optimization rather than model training, reroute to `autoresearch-code-subagent`.
 
   Do NOT proceed to the loop. Do NOT attempt CPU fallback training.
 
@@ -92,7 +92,7 @@ overnight loop on a single NVIDIA GPU:
   enforced by the permission map. Do not attempt to edit anything else.
 - **No new dependencies.** Do not modify `pyproject.toml`; do not `pip install`.
 - **Do not modify the eval harness.** `evaluate_bpb` in `prepare.py` is the ground truth.
-- **Fixed time budget = 5 minutes.** Kill any run exceeding 10 minutes and treat as crash.
+- **Fixed time budget = 5 minutes.** (a run that has not produced a parseable val_bpb within the budget is killed; see kill threshold below) Kill any run exceeding 10 minutes and treat as crash.
 - **VRAM is a soft constraint.** Some increase is OK for meaningful val_bpb gains.
 
 ## Simplicity Criterion

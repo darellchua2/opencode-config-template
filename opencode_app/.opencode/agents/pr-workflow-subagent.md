@@ -89,8 +89,8 @@ JIRA Integration:
 - Add PR screenshots/images as attachments
 
 JIRA MCP Tools:
-- atlassian_jira_add_comment: Add PR link to ticket
-- atlassian_jira_transitions: Transition ticket to "In Review" / "Done"
+- atlassian_addCommentToJiraIssue: Add PR link to ticket
+- atlassian_transitionJiraIssue: Transition ticket to "In Review" / "Done" (use atlassian_getTransitionsForJiraIssue to find the transition id)
 
 Built-in Subagent Delegation:
 - Delegate to `explore` for project analysis:

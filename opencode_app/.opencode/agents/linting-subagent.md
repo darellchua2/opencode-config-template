@@ -149,13 +149,13 @@ dotnet format --verify-no-changes --report report.json
 **StyleCop Analyzers** (style rules):
 ```xml
 <!-- In .csproj or Directory.Build.props -->
-<PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556" PrivateAssets="all" />
+<PackageReference Include="StyleCop.Analyzers" Version="<verify-latest-stable>" PrivateAssets="all" />
 <AdditionalFiles Include="stylecop.json" />
 ```
 
 **Roslyn Analyzers** (code quality):
 ```xml
-<PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0" PrivateAssets="all" />
+<PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="<verify-latest>" PrivateAssets="all" />
 <!-- Enable .NET 10 analyzers -->
 <AnalysisLevel>latest-recommended</AnalysisLevel>
 <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
