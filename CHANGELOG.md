@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.19.2](https://github.com/darellchua2/opencode-config-template/compare/v4.19.1...v4.19.2) (2026-08-06)
+
+### Bug Fixes
+
+* **mcp:** correct env var syntax in zai-vision-mcp-server ([bdbcdbd](https://github.com/darellchua2/opencode-config-template/commit/bdbcdbd9514cb81975875eccbacfb2b4d5f96e9c))
+
 ## [4.19.1](https://github.com/darellchua2/opencode-config-template/compare/v4.19.0...v4.19.1) (2026-08-05)
 
 ### Bug Fixes
