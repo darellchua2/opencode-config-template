@@ -118,10 +118,11 @@ _Every step is atomic (one reversible concern) and carries Why / Done when / Con
 
 ### Phase 4: setup.ps1 — Windows parity mirror
 
-- [ ] **4.1** Update the `deploy/setup.ps1` allowlist comment (line ~62: `# (autodesk,markitdown,nextjs,zai,docling). Empty = no-op.`) to include `chrome-devtools`, and mirror the banner count/listing if setup.ps1 enumerates MCP servers.
+- [x] **4.1** Update the `deploy/setup.ps1` allowlist comment (line ~62: `# (autodesk,markitdown,nextjs,zai,docling). Empty = no-op.`) to include `chrome-devtools`, and mirror the banner count/listing if setup.ps1 enumerates MCP servers.
     — **Why:** repo convention — setup.sh and setup.ps1 must stay in sync (AGENTS.md).
     — **Done when:** `rg -n 'chrome-devtools' deploy/setup.ps1` matches the allowlist (and banner if present).
     — **Consumers affected:** Windows users.
+    — **Done:** updated 3 stale spots mirroring setup.sh — allowlist comment (62), help-text packs list (912), status echo opt-in list (1731); setup.ps1 has no `MCP SERVERS (N)` count banner so no count bump; pwsh absent so syntax relied on string-edit verification (pure additions); files: deploy/setup.ps1; fixes: none
 
 ### Phase 5: README doc sync
 
