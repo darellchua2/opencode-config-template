@@ -154,15 +154,17 @@ _Every step is atomic (one reversible concern) and carries Why / Done when / Con
 
 ### Phase 7: Verification
 
-- [ ] **7.1** Run `./setup.sh --dry-run` — completes cleanly, no errors. Run `./setup.sh --enable-pack chrome-devtools --dry-run` — pack validates, deep-merge preview shows `mcp.chrome-devtools.enabled: true` and `tools."chrome-devtools*": true`. Run `./setup.sh --enable-pack bogus --dry-run` — still fails fast with the unknown-pack message.
+- [x] **7.1** Run `./setup.sh --dry-run` — completes cleanly, no errors. Run `./setup.sh --enable-pack chrome-devtools --dry-run` — pack validates, deep-merge preview shows `mcp.chrome-devtools.enabled: true` and `tools."chrome-devtools*": true`. Run `./setup.sh --enable-pack bogus --dry-run` — still fails fast with the unknown-pack message.
     — **Why:** the dry-run is the non-destructive gate that the pack mechanism + banner edits are internally consistent.
     — **Done when:** all three commands behave as specified.
     — **Consumers affected:** none (verification only).
+    — **Done:** all 3 commands behave as specified — bogus pack fails fast (exit 1, "unknown pack(s): bogus"); chrome-devtools pack validates + "Merged 1 pack(s)"; staged dry-run-preview opencode.json shows mcp.chrome-devtools.enabled=true, tools."chrome-devtools*"=true, all 3 privacy flags preserved; plain --dry-run exits 0; files: (verification only); fixes: none
 
-- [ ] **7.2** Confirm no agent/skill count drift: agent and skill counts in README/setup.sh unchanged from `main`. Confirm JSON validity of `opencode.json` and `pack-chrome-devtools.json` (`python3 -m json.tool` or `node -e` parse). Confirm frontmatter of both edited agents is still valid YAML.
+- [x] **7.2** Confirm no agent/skill count drift: agent and skill counts in README/setup.sh unchanged from `main`. Confirm JSON validity of `opencode.json` and `pack-chrome-devtools.json` (`python3 -m json.tool` or `node -e` parse). Confirm frontmatter of both edited agents is still valid YAML.
     — **Why:** catches malformed JSON (which would break opencode load), YAML breakage (which would hide an agent), and count drift.
     — **Done when:** counts match `main`; both JSON files parse; both agent frontmatter blocks parse as valid YAML.
     — **Consumers affected:** none.
+    — **Done:** agent count 36=36 (HEAD vs main), skill count 130=130 (excl _archived, identical git method) — no drift; opencode.json + pack-chrome-devtools.json both parse as valid JSON; both edited agents' frontmatter parse as valid YAML (Phase 6 check); files: (verification only); fixes: none
 
 ## Step Authoring Rules
 
