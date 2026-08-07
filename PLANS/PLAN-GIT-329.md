@@ -85,7 +85,7 @@ _Every step is atomic (one reversible concern) and carries Why / Done when / Con
 
 ### Phase 2: Provider pack
 
-- [ ] **2.1** Create `deploy/packs/pack-chrome-devtools.json` mirroring `deploy/packs/pack-nextjs.json`:
+- [x] **2.1** Create `deploy/packs/pack-chrome-devtools.json` mirroring `deploy/packs/pack-nextjs.json`:
 ```json
 {
   "$comment": "Provider pack: Chrome DevTools MCP server for frontend agents. Deep-merged by deploy/merge-packs.mjs when --enable-pack chrome-devtools. Privacy flags (no telemetry, no CrUX, isolated profile) are baked into the source opencode.json command array, so this pack only flips enabled + tools. Requires Chrome stable installed locally.",
@@ -96,6 +96,7 @@ _Every step is atomic (one reversible concern) and carries Why / Done when / Con
     — **Why:** `--enable-pack <name>` is the repo's existing automation for flipping opt-in MCP servers on/off at deploy time. A pack keeps the toggle consistent with `autodesk`/`markitdown`/`nextjs`/`zai`/`docling` and requires zero new CLI flag.
     — **Done when:** the file exists; `./setup.sh --enable-pack chrome-devtools` does not fail validation; `ls deploy/packs/pack-chrome-devtools.json` succeeds.
     — **Consumers affected:** `merge-packs.mjs` (deep-merges it), `validate_enable_pack()` in setup.sh.
+    — **Done:** created pack with `mcp.chrome-devtools.enabled: true` + `tools."chrome-devtools*": true`; top-level keys match `pack-nextjs.json` (`$comment`/`mcp`/`tools`); file discoverable in `deploy/packs/`; files: deploy/packs/pack-chrome-devtools.json; fixes: none
 
 ### Phase 3: setup.sh — allowlist, help, count, banner
 
