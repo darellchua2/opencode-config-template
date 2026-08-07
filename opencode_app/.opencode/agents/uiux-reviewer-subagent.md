@@ -106,6 +106,17 @@ Skip axis 9 (Conversion & trust) for internal tools and non-marketing surfaces.
 
 Merge findings from screenshot delegation and source review. Deduplicate. Apply the severity rubric. Produce the final report using the finding schema. Run the post-review learning gate.
 
+## Complementary Live-Site Diagnostics (chrome-devtools MCP)
+
+Playwright stays the capture/screenshot engine per `uiux-review-skill` §2. When the `chrome-devtools*` tool namespace is enabled (via `./deploy/setup.sh --enable-pack chrome-devtools`), for live URLs you MAY enrich two rubric axes with objective runtime data Playwright cannot expose:
+
+- **Axis 10 (Accessibility basics)** and **axis 11 (Performance perception)** — back them with `lighthouse_audit` (a11y/perf/SEO scores) instead of markup inference.
+- Corroborate visual findings with `list_console_messages` (JS errors) and `list_network_requests` (failed/4xx/5xx requests) for the live URL.
+
+Use these to **strengthen** a finding with verified runtime scores, not to replace the Playwright capture protocol or the `image-analyzer-subagent` delegation rule.
+
+**MCP dependency:** these tools require `chrome-devtools*` set to `true` in the `tools` block of `opencode.json` (flipped on by `--enable-pack chrome-devtools`). No frontmatter `permission` change is required for this agent — its `read."mcp:*": deny` blocks only MCP *resource* reads, and `chrome-devtools-mcp` is tools-only (no resources), so access is gated solely by the global `tools` map, mirroring the `nextjs-specialist-subagent` pattern.
+
 ## Screenshot Delegation Rule (Hard Constraint)
 
 **NEVER interpret screenshot content inline.** This subagent runs in a text-only model context. Any attempt to describe what's "in" a screenshot will hallucinate details. Always delegate to `image-analyzer-subagent`. If `image-analyzer-subagent` is unavailable, report `Status: partial` with `Issues: image-analyzer-subagent unavailable; visual findings omitted` — do not fabricate visual findings from code alone.

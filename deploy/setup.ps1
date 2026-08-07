@@ -59,7 +59,7 @@ param(
     [switch]$Migrate,
     [switch]$Mix,
     # Provider packs (#268): deploy-time MCP toggle. CSV of pack names
-    # (autodesk,markitdown,nextjs,zai,docling). Empty = no-op.
+    # (autodesk,markitdown,nextjs,zai,docling,chrome-devtools). Empty = no-op.
     [string]$EnablePack = ""
 )
 
@@ -909,7 +909,7 @@ USAGE:
   PROVIDER PACKS (deploy-time MCP toggle):
     -EnablePack <csv>    Enable provider pack(s) — flips mcp.<server>.enabled
                          and tools.<ns>* flags ON. Available packs:
-                         autodesk, markitdown, nextjs, zai, docling
+                         autodesk, markitdown, nextjs, zai, docling, chrome-devtools
                          (comma-separated). No-op if omitted; default OFF.
                          Example: -EnablePack autodesk,markitdown
 
@@ -1728,7 +1728,7 @@ function Set-Configuration {
             Write-Host "Configured MCP servers:" -ForegroundColor Green
             Write-Host "    - Local (auto-start): atlassian, zai-vision-mcp-server, codegraph, mermaid"
             Write-Host "    - Remote (needs key): web-reader, zread"
-            Write-Host "    - Available but disabled (opt-in): web-search-prime, next-devtools, markitdown, docling"
+            Write-Host "    - Available but disabled (opt-in): web-search-prime, next-devtools, markitdown, docling, chrome-devtools"
             if ($script:vgDeployed) {
                 Write-Host "Secret masking: active (vibeguard)" -ForegroundColor Green
             }

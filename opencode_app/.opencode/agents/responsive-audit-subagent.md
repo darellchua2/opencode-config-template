@@ -118,6 +118,19 @@ When a Tier 2 fix needs visual verification (one-shot captures use `bash` intent
 
 **Never** attempt to interpret screenshot content inline — delegate to the vision model.
 
+## Complementary Live-Site Diagnostics (chrome-devtools MCP)
+
+Playwright remains the engine for the 6 detection assertions. When the `chrome-devtools*` tool namespace is enabled (via `./deploy/setup.sh --enable-pack chrome-devtools`), you MAY also use chrome-devtools MCP tools to enrich each defect with live-site data Playwright cannot expose:
+
+- `list_console_messages` — JS errors/warnings thrown during a breakpoint flow (a layout bug may throw on resize).
+- `list_network_requests` — failed requests / 4xx / 5xx / blocked assets (e.g., a breakpoint-specific stylesheet 404) affecting layout.
+- `lighthouse_audit` — a11y/perf/SEO scores at the target breakpoint.
+- `performance_start_trace` / `performance_stop_trace` — CLS/LCP deltas that corroborate assertion #6 (layout-shift) with hard numbers.
+
+Use them to **cross-corroborate** a Playwright finding, not to replace it — e.g. "element clipped at 375px AND 2 console errors + a 404 on the breakpoint stylesheet." Do NOT duplicate screenshot capture in chrome-devtools MCP: Playwright is the capture engine, and screenshot interpretation stays delegated to `image-analyzer-subagent`.
+
+**MCP dependency:** these tools require `chrome-devtools*` set to `true` in the `tools` block of `opencode.json` (flipped on by `--enable-pack chrome-devtools`). No frontmatter `permission` change is required for this agent — its `read."mcp:*": deny` blocks only MCP *resource* reads, and `chrome-devtools-mcp` is tools-only (no resources), so access is gated solely by the global `tools` map, mirroring the `nextjs-specialist-subagent` pattern.
+
 ## CodeGraph Integration
 
 When `.codegraph/` exists in the target project:

@@ -340,7 +340,7 @@ MODELS_ONLY=false        # --models-only (provider + resolve only)
 FORCE_RESOLVE=false      # --force (ignore preserve-edits)
 MIGRATE_ONLY=false       # --migrate (migration + resolve only)
 MIX_MODE=false           # --mix (per-category provider/model editor)
-ENABLE_PACK=""           # --enable-pack <csv> (provider packs: autodesk,markitdown,nextjs,zai,docling)
+ENABLE_PACK=""           # --enable-pack <csv> (provider packs: autodesk,markitdown,nextjs,zai,docling,chrome-devtools)
 
 # API Keys (initialize to empty to avoid unbound variable errors)
 # Capture from environment if they exist
@@ -573,7 +573,7 @@ USAGE:
   PROVIDER PACKS (deploy-time MCP toggle):
     --enable-pack <csv>   Enable provider pack(s) — flips mcp.<server>.enabled
                           and tools.<ns>* flags ON for the named packs. Available
-                          packs: autodesk, markitdown, nextjs, zai, docling
+                          packs: autodesk, markitdown, nextjs, zai, docling, chrome-devtools
                           (comma-separated, e.g. --enable-pack autodesk,markitdown).
                           No-op if omitted; default state of every pack is OFF.
 
@@ -664,7 +664,7 @@ USAGE:
     Usage: opencode --agent build "implement auth feature"
            opencode --agent explore "find all API routes"
 
-  MCP SERVERS (14):
+  MCP SERVERS (15):
     Auto-start (local npx servers):
       codegraph           Pre-indexed code knowledge graph (100% local)
       atlassian          JIRA and Confluence integration
@@ -675,6 +675,8 @@ USAGE:
       next-devtools      Next.js DevTools integration
       markitdown         Document-to-Markdown (local-only, privacy-hardened)
       docling            Layout-aware document extraction (heavy ~3-4 GB)
+      chrome-devtools    Live Chrome automation: perf traces, network/console, Lighthouse, heap snapshots
+                          (privacy-hardened: telemetry + CrUX OFF; throwaway profile; enable via --enable-pack chrome-devtools)
 
     Remote (requires ZAI_API_KEY):
       web-reader         Web page content extraction
@@ -856,7 +858,7 @@ parse_arguments() {
                 # Accept any value including "" (empty = no-op, handled by
                 # merge-packs.mjs). Only error if no following token at all.
                 if [ $# -lt 2 ]; then
-                    log_error "--enable-pack requires an argument (csv: autodesk,markitdown,nextjs,zai,docling)"
+                    log_error "--enable-pack requires an argument (csv: autodesk,markitdown,nextjs,zai,docling,chrome-devtools)"
                     exit 1
                 fi
                 ENABLE_PACK="$2"
@@ -2433,8 +2435,8 @@ setup_config() {
              echo "✓ Configured MCP servers:"
              echo "    Local (auto-start): atlassian, zai-vision-mcp-server, codegraph, mermaid"
              echo "    Remote (needs key): web-reader, web-search-prime, zread"
-             echo "    Available but disabled (opt-in): next-devtools, markitdown, autodesk-*, docling"
-             echo "    Enable a group with: ./setup.sh --enable-pack <autodesk|markitdown|nextjs|zai|docling>"
+              echo "    Available but disabled (opt-in): next-devtools, markitdown, autodesk-*, docling, chrome-devtools"
+              echo "    Enable a group with: ./setup.sh --enable-pack <autodesk|markitdown|nextjs|zai|docling|chrome-devtools>"
             echo ""
         else
             log_error "config.json source not found: ${SOURCE_CONFIG}"
