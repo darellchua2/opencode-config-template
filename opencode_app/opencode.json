@@ -287,6 +287,18 @@
         "DOCLING_CONVERSION_MODE": "local"
       },
       "enabled": false
+    },
+    "chrome-devtools": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "chrome-devtools-mcp@latest",
+        "--no-usage-statistics",
+        "--no-performance-crux",
+        "--isolated"
+      ],
+      "enabled": false
     }
   },
   "agent": {

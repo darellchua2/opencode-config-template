@@ -65,7 +65,7 @@ _Every step is atomic (one reversible concern) and carries Why / Done when / Con
 
 ### Phase 1: Source config — mcp block (privacy flags baked in)
 
-- [ ] **1.1** Add to `opencode_app/opencode.json` mcp block, placed after `docling` (end of the opt-in cluster), disabled by default:
+- [x] **1.1** Add to `opencode_app/opencode.json` mcp block, placed after `docling` (end of the opt-in cluster), disabled by default:
 ```json
 "chrome-devtools": {
   "type": "local",
@@ -81,6 +81,7 @@ _Every step is atomic (one reversible concern) and carries Why / Done when / Con
     — **Why:** the three flags ARE the privacy guarantee: `--no-usage-statistics` stops Google telemetry, `--no-performance-crux` stops page URLs being sent to the CrUX API, `--isolated` uses a throwaway temp profile so no real browsing state (cookies/session) is exposed to the MCP client. Baking them into the source command array (not setup.sh env logic) makes the guarantee self-contained and visible at a glance. `enabled: false` matches the opt-in convention of `next-devtools`/`markitdown`/`docling`.
     — **Done when:** `rg -n '"chrome-devtools"' opencode_app/opencode.json` finds the key; the `command` array contains all three flags; `"enabled": false` is set.
     — **Consumers affected:** opencode loads it (disabled); `--enable-pack` (Phase 2) flips it on; the 2 frontend agents (Phase 6) reference it conditionally.
+    — **Done:** added `mcp.chrome-devtools` block after `docling` with multi-line `command` array (`npx -y chrome-devtools-mcp@latest --no-usage-statistics --no-performance-crux --isolated`), `enabled: false`; files: opencode_app/opencode.json; fixes: none
 
 ### Phase 2: Provider pack
 
