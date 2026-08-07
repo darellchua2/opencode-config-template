@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.24.0](https://github.com/darellchua2/opencode-config-template/compare/v4.23.0...v4.24.0) (2026-08-07)
+
+### Features
+
+* **mcp:** add privacy-hardened chrome-devtools MCP for frontend agents ([#329](https://github.com/darellchua2/opencode-config-template/issues/329)) ([#330](https://github.com/darellchua2/opencode-config-template/issues/330)) ([67c4d49](https://github.com/darellchua2/opencode-config-template/commit/67c4d493efe2fd8e08b17fc30d010b0d6e3bfee0))
+
 ## [4.23.0](https://github.com/darellchua2/opencode-config-template/compare/v4.22.0...v4.23.0) (2026-08-06)
 
 ### Features
