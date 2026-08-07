@@ -126,10 +126,11 @@ _Every step is atomic (one reversible concern) and carries Why / Done when / Con
 
 ### Phase 5: README doc sync
 
-- [ ] **5.1** Update `README.md` MCP servers table/subagents section to list `chrome-devtools` (opt-in, privacy-hardened), and `opencode_app/README.md` Docker docs if it enumerates MCP servers.
+- [x] **5.1** Update `README.md` MCP servers table/subagents section to list `chrome-devtools` (opt-in, privacy-hardened), and `opencode_app/README.md` Docker docs if it enumerates MCP servers.
     — **Why:** AGENTS.md sync rule — README MCP listings must match deployed config.
     — **Done when:** `rg -n 'chrome-devtools' README.md` matches; `rg -n 'chrome-devtools' opencode_app/README.md` matches if that file enumerates servers (skip if it does not).
     — **Consumers affected:** readers.
+    — **Done:** README.md — count 14→15, opt-in list 8→9 (added chrome-devtools), packs table row added, frontend preset MCP list gained chrome-devtools; opencode_app/README.md — opt-in 8→9, available-packs comment, packs table row added; no stale MCP counts remain; files: README.md, opencode_app/README.md; fixes: none
 
 ### Phase 6: Frontend agent prompt wiring — complementary live-site diagnostics
 

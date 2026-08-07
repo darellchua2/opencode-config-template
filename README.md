@@ -248,7 +248,7 @@ Not every project needs all 36 agents + 130 skills. <!-- count: hand-maintained 
 |--------|--------|--------|------|---------|
 | `core` | explorer | git-semantic-commits, continuous-learning | codegraph, mermaid | Minimal baseline |
 | `review` | code-review + architecture + 5 language reviewers | 9 Code Quality | codegraph | Code quality gates |
-| `frontend` | nextjs-specialist + uiux-reviewer + responsive-audit | 14 (Next.js/React/Three.js/a11y) | next-devtools, codegraph, mermaid | Web frontend |
+| `frontend` | nextjs-specialist + uiux-reviewer + responsive-audit | 14 (Next.js/React/Three.js/a11y) | next-devtools, chrome-devtools, codegraph, mermaid | Web frontend |
 | `backend` | python-reviewer | 10 (Python/DB/API/security/docker) | codegraph | Server / devops-lite |
 | `docs` | documentation + coverage + docx/pptx/xlsx + office-doc | 15 (document ladder) | mermaid | Document generation |
 | `devops` | repo-ops + opentofu-explorer | 26 (release/IaC/JIRA) | codegraph | Git / infra / release |
@@ -326,7 +326,7 @@ nvm install 24
 
 ## MCP Servers
 
-The configuration ships 14 MCP server entries. **6 are enabled by default:**
+The configuration ships 15 MCP server entries. **6 are enabled by default:**
 
 | Server | Type | Purpose |
 |--------|------|---------|
@@ -337,7 +337,7 @@ The configuration ships 14 MCP server entries. **6 are enabled by default:**
 | `zai-web-reader` | remote | Web page content extraction |
 | `zai-zread` | remote | GitHub repository search/reading |
 
-The remaining 8 (Autodesk, `next-devtools`, `web-search-prime`, `markitdown`, `docling`) are `enabled: false` and opt-in. To enable one, set `"enabled": true` (and grant its tools in the `permission.tool` block) in `config.json`.
+The remaining 9 (Autodesk, `next-devtools`, `web-search-prime`, `markitdown`, `docling`, `chrome-devtools`) are `enabled: false` and opt-in. To enable one, set `"enabled": true` (and grant its tools in the `permission.tool` block) in `config.json`.
 
 #### Provider Packs — deploy-time MCP toggle (#268)
 
@@ -350,6 +350,7 @@ Instead of editing 4–9 JSON entries to enable a logical group of MCP servers, 
 | `docling` | docling | Python + `docling-mcp[local]` (~3-4 GB; first convert downloads models from huggingface.co) |
 | `nextjs` | next-devtools | A running Next.js dev server |
 | `zai` | zai-web-search-prime | `ZAI_API_KEY` |
+| `chrome-devtools` | chrome-devtools | Chrome stable installed locally (privacy-hardened: telemetry + CrUX OFF by default) |
 
 ```bash
 # User-space deploy (setup.sh)

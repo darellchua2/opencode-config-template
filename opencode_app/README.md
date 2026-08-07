@@ -65,14 +65,14 @@ docker run --rm --entrypoint whoami opencode_app-opencode
 
 ## Provider Packs — Docker build-time MCP toggle (#268)
 
-The 8 opt-in MCP servers (Autodesk, `next-devtools`, `web-search-prime`, `markitdown`, `docling`) can be enabled as **groups** at image build time via the `OPENCODE_PACKS` build-arg, instead of editing `opencode.json` by hand. Packs are JSON partials in `deploy/packs/`; `deploy/merge-packs.mjs` deep-merges them into `/app/opencode.json` right after the model-resolver step.
+The 9 opt-in MCP servers (Autodesk, `next-devtools`, `web-search-prime`, `markitdown`, `docling`, `chrome-devtools`) can be enabled as **groups** at image build time via the `OPENCODE_PACKS` build-arg, instead of editing `opencode.json` by hand. Packs are JSON partials in `deploy/packs/`; `deploy/merge-packs.mjs` deep-merges them into `/app/opencode.json` right after the model-resolver step.
 
 ```bash
 # Enable one or more packs (comma-separated)
 docker compose build --build-arg OPENCODE_PACKS=autodesk
 docker compose up -d
 
-# Available packs: autodesk, markitdown, nextjs, zai, docling
+# Available packs: autodesk, markitdown, nextjs, zai, docling, chrome-devtools
 # Empty/omitted = no-op (default OFF; existing images unaffected)
 ```
 
@@ -83,6 +83,7 @@ docker compose up -d
 | `docling` | docling (1) | `--build-arg OPENCODE_PACKS=docling` (**heavy ~3-4 GB**; not baked by default — requires custom build) |
 | `nextjs` | next-devtools (1) | `--build-arg OPENCODE_PACKS=nextjs` |
 | `zai` | zai-web-search-prime (1) | `--build-arg OPENCODE_PACKS=zai` |
+| `chrome-devtools` | chrome-devtools (1) | `--build-arg OPENCODE_PACKS=chrome-devtools` (privacy-hardened: telemetry + CrUX OFF; needs Chrome in image) |
 
 The merge runs **after** `resolve-models.mjs` and only flips `mcp.<server>.enabled` + `tools.<ns>*` to `true` — it never turns an already-on server off, never touches the `plugin` array or `agent` block. Verify post-build:
 
