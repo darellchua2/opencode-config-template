@@ -100,12 +100,13 @@ _Every step is atomic (one reversible concern) and carries Why / Done when / Con
 
 ### Phase 3: setup.sh — allowlist, help, count, banner
 
-- [ ] **3.1** Update the two `autodesk,markitdown,nextjs,zai,docling` occurrences in `deploy/setup.sh` (line ~343 comment + line ~859 error message) to include `chrome-devtools`.
+- [x] **3.1** Update the two `autodesk,markitdown,nextjs,zai,docling` occurrences in `deploy/setup.sh` (line ~343 comment + line ~859 error message) to include `chrome-devtools`.
     — **Why:** `validate_enable_pack()` fail-fast checks pack names against `deploy/packs/`; the help/error strings must match or users get a misleading "unknown pack" message for a pack that exists.
     — **Done when:** `rg -n 'chrome-devtools' deploy/setup.sh` matches the allowlist comment + the error message (2 spots minimum, plus banner from 3.2).
     — **Consumers affected:** users running `--enable-pack`.
+    — **Done:** appended `,chrome-devtools` to the 2 scoped occurrences (comment + error msg); also fixed 2 stale status-echo lines (2438 opt-in list + 2439 enable-pack group syntax) and the help-text packs line (576) found during the sweep; files: deploy/setup.sh; fixes: none
 
-- [ ] **3.2** Bump the banner MCP count `MCP SERVERS (14):` → `MCP SERVERS (15):` (line ~667) and add under the "Available but disabled (opt-in)" block:
+- [x] **3.2** Bump the banner MCP count `MCP SERVERS (14):` → `MCP SERVERS (15):` (line ~667) and add under the "Available but disabled (opt-in)" block:
 ```
       chrome-devtools    Live Chrome automation: perf traces, network/console, Lighthouse, heap snapshots
                           (privacy-hardened: telemetry + CrUX OFF; throwaway profile; enable via --enable-pack chrome-devtools)
@@ -113,6 +114,7 @@ _Every step is atomic (one reversible concern) and carries Why / Done when / Con
     — **Why:** the banner is the source of truth users read for what's configured; counts must not drift from the actual mcp block (AGENTS.md §Adding Skills or Subagents sync rule).
     — **Done when:** `rg -n 'MCP SERVERS \(15\)' deploy/setup.sh` matches; `rg -n 'chrome-devtools' deploy/setup.sh` shows the banner line + allowlist lines.
     — **Consumers affected:** readers of `./setup.sh -h` / status output.
+    — **Done:** banner `MCP SERVERS (14)` → `(15)`; added 2-line chrome-devtools entry under opt-in (description + privacy note); files: deploy/setup.sh; fixes: none
 
 ### Phase 4: setup.ps1 — Windows parity mirror
 
