@@ -262,6 +262,9 @@
     "next-devtools": {
       "type": "local",
       "command": ["npx", "-y", "next-devtools-mcp@latest"],
+      "environment": {
+        "NEXT_TELEMETRY_DISABLED": "1"
+      },
       "enabled": false
     },
     "mermaid": {
@@ -296,8 +299,12 @@
         "chrome-devtools-mcp@latest",
         "--no-usage-statistics",
         "--no-performance-crux",
+        "--redact-network-headers",
         "--isolated"
       ],
+      "environment": {
+        "CHROME_DEVTOOLS_MCP_NO_UPDATE_CHECKS": "1"
+      },
       "enabled": false
     }
   },

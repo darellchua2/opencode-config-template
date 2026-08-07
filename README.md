@@ -372,6 +372,13 @@ Default state of every pack is **OFF** — existing deployments are unaffected u
 
 > **Note — `filesystem` MCP server has been permanently removed.** OpenCode's built-in `read`/`write`/`edit`/`glob`/`grep`/`bash` tools already provide full file I/O, so `@modelcontextprotocol/server-filesystem` was redundant and caused tool-selection ambiguity (the model would call `read_mcp_resource` instead of the built-in `Read` tool). Do not re-add it to project `opencode.json` files.
 
+> **Note — opt-in MCP servers ship with telemetry pre-disabled.** Two of the disabled-by-default servers phone home analytics when naively enabled; both are hardened in `opencode.json` so flipping `enabled: true` is safe without further edits:
+>
+> - **`chrome-devtools`** — Google's `chrome-devtools-mcp` sends usage statistics and Chrome UX Report (CrUX) trace URLs to Google **by default**, plus polls the npm registry for updates. Hardened with `--no-usage-statistics`, `--no-performance-crux`, `--redact-network-headers` (strips sensitive request headers before they reach the LLM), and `CHROME_DEVTOOLS_MCP_NO_UPDATE_CHECKS=1` (kills the update poll).
+> - **`next-devtools`** — Vercel's `next-devtools-mcp` collects anonymous telemetry (tool names, error events, session metadata) by default, storing a local client ID in `~/.next-devtools-mcp/`. Hardened with `NEXT_TELEMETRY_DISABLED=1`.
+>
+> The enabled remote/`zai-*` servers send data **by design** (that is their function, not telemetry); `codegraph` and `mermaid` are purely local with no telemetry layer. `markitdown` and `docling` are already pinned to local-only conversion (`MARKITDOWN_ENABLE_PLUGINS=false`, `DOCLING_CONVERSION_MODE=local`). One unavoidable residual: every `npx -y <pkg>` first run hits the npm registry to download — not telemetry, but it is a phone-home; pre-install packages globally (`npm i -g`) and drop `npx` to avoid it.
+
 ## Language Server Protocol (LSP)
 
 OpenCode ships **native LSP support** (~30 built-in language servers) that feeds real-time diagnostics back into the agent loop so the agent can fix type/lint errors as it edits. See the [official LSP docs](https://opencode.ai/docs/lsp/).

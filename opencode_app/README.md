@@ -94,6 +94,8 @@ docker compose run --rm opencode node -e "const c=require('/app/opencode.json');
 
 User-space equivalent: `./deploy/setup.sh --enable-pack <csv>` (see root `README.md` § Provider Packs).
 
+> **Telemetry hardening — opt-in MCP servers ship with analytics pre-disabled.** `chrome-devtools` (`--no-usage-statistics`, `--no-performance-crux`, `--redact-network-headers`, `CHROME_DEVTOOLS_MCP_NO_UPDATE_CHECKS=1`) and `next-devtools` (`NEXT_TELEMETRY_DISABLED=1`) are hardened in `opencode.json` so `enabled: true` is safe without further edits. See root `README.md` § MCP Servers for the full rationale.
+
 ## Security
 
 - Container runs as non-root `opencode` user
