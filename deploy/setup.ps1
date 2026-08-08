@@ -1695,7 +1695,9 @@ function Set-Configuration {
         # Copy config.json from the single source of truth (opencode_app/opencode.json).
         # Historically this copied deploy/config.json, but maintaining a duplicate
         # caused drift (see PLAN-BT-74 Phase 12.2). The resolver (run later in
-        # Deploy-Agents) patches this file in-place for primary/explore/general models.
+        # Deploy-Agents) patches this file in-place for explore/general models (and
+        # primary only if a provider/mix was chosen — local deploys ship no
+        # baked-in primary; the end user picks at runtime).
         $configSrc = $SourceConfig
         if (Test-Path $configSrc) {
             if (-not $DryRun) { Copy-Item $configSrc $ConfigFile -Force }
@@ -1808,7 +1810,8 @@ function Deploy-Skills {
 # ─────────────────────────────────────────────────────────────────────────────
 
 # Run the model resolver: injects concrete models into deployed agent .md files
-# and patches config.json (primary + explore + general). Sets $LASTEXITCODE.
+# and patches config.json (explore + general always; primary only if a
+# provider/mix chosen — local deploys omit a baked-in primary). Sets $LASTEXITCODE.
 function Invoke-Resolver {
     if (-not (Test-Path $ResolverScript)) {
         Write-LogError "Resolver not found: $ResolverScript"

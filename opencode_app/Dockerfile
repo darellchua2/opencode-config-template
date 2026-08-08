@@ -50,7 +50,9 @@ COPY opencode_app/ /app/
 COPY deploy/ /app/deploy/
 
 # Bake resolved models into the image at build time (default z.ai unless
-# OPENCODE_PROVIDER build-arg swaps the provider preset).
+# OPENCODE_PROVIDER build-arg swaps the provider preset). --inject-primary is
+# Docker-only: the default primary is baked in so the web endpoint has a model
+# to serve with. Local (setup.sh) deploys omit it so the user picks at runtime.
 RUN node /app/deploy/resolve-models.mjs \
         --agents-src /app/.opencode/agents \
         --agents-dest /app/.opencode/agents \
@@ -58,6 +60,7 @@ RUN node /app/deploy/resolve-models.mjs \
         --default-map /app/deploy/models.default.json \
         --provider-models /app/deploy/provider-models.json \
         --presets /app/deploy/provider-presets.json \
+        --inject-primary \
         $([ -n "$OPENCODE_PROVIDER" ] && echo "--provider $OPENCODE_PROVIDER") \
         --config-dest /app/opencode.json \
         --state /tmp/.resolved-models.json \
