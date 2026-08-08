@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.25.0](https://github.com/darellchua2/opencode-config-template/compare/v4.24.0...v4.25.0) (2026-08-08)
+
+### Features
+
+* **deploy:** make primary model injection opt-in via --inject-primary ([5e69bb4](https://github.com/darellchua2/opencode-config-template/commit/5e69bb455fd5e485c3ec7772ae51bc99554c842a))
+
 ## [4.24.0](https://github.com/darellchua2/opencode-config-template/compare/v4.23.0...v4.24.0) (2026-08-07)
 
 ### Features
