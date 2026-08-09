@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.25.2](https://github.com/darellchua2/opencode-config-template/compare/v4.25.1...v4.25.2) (2026-08-09)
+
+### Bug Fixes
+
+* **config:** rename kimi-k3 to kimi-k3-vision for variant differentiation ([aa8e7c5](https://github.com/darellchua2/opencode-config-template/commit/aa8e7c55dde93d049d90b12c1c82ef80a309839f))
+
 ## [4.25.1](https://github.com/darellchua2/opencode-config-template/compare/v4.25.0...v4.25.1) (2026-08-09)
 
 ### Bug Fixes
