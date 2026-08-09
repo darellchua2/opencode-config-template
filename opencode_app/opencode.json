@@ -172,6 +172,20 @@
           }
         }
       }
+    },
+    "moonshot": {
+      "models": {
+        "kimi-k3": {
+          "name": "Kimi K3"
+        },
+        "kimi-k3-vision": {
+          "name": "Kimi K3 (vision)",
+          "id": "kimi-k3",
+          "modalities": {
+            "input": ["text", "image"]
+          }
+        }
+      }
     }
   },
   "mcp": {
