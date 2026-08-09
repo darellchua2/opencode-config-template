@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.26.0](https://github.com/darellchua2/opencode-config-template/compare/v4.25.3...v4.26.0) (2026-08-09)
+
+### Features
+
+* **config:** add moonshot provider with kimi-k3 vision support ([cb79f31](https://github.com/darellchua2/opencode-config-template/commit/cb79f3122ff4673ba41f113223cf4710a9d576b7))
+
 ## [4.25.3](https://github.com/darellchua2/opencode-config-template/compare/v4.25.2...v4.25.3) (2026-08-09)
 
 ### Bug Fixes
