@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.25.1](https://github.com/darellchua2/opencode-config-template/compare/v4.25.0...v4.25.1) (2026-08-09)
+
+### Bug Fixes
+
+* **config:** add modalities for vision support on zai-coding-plan models ([f497e82](https://github.com/darellchua2/opencode-config-template/commit/f497e822d0d955dce6dcdd10cf7a162334cdda27))
+
 ## [4.25.0](https://github.com/darellchua2/opencode-config-template/compare/v4.24.0...v4.25.0) (2026-08-08)
 
 ### Features
