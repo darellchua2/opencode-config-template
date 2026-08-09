@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.25.3](https://github.com/darellchua2/opencode-config-template/compare/v4.25.2...v4.25.3) (2026-08-09)
+
+### Bug Fixes
+
+* **config:** remove kimi-k3-vision from zai-coding-plan provider ([b135781](https://github.com/darellchua2/opencode-config-template/commit/b13578119f0f4c67c57e0ddcbc7e92f571e09cfd))
+
 ## [4.25.2](https://github.com/darellchua2/opencode-config-template/compare/v4.25.1...v4.25.2) (2026-08-09)
 
 ### Bug Fixes
