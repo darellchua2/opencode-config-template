@@ -166,7 +166,16 @@
     "zai-coding-plan": {
       "models": {
         "glm-5v-turbo": {
-          "name": "GLM-5V Turbo (vision)"
+          "name": "GLM-5V Turbo (vision)",
+          "modalities": {
+            "input": ["text", "image"]
+          }
+        },
+        "kimi-k3": {
+          "name": "Kimi K3",
+          "modalities": {
+            "input": ["text", "image"]
+          }
         }
       }
     }
