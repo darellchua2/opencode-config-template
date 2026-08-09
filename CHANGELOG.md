@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.26.1](https://github.com/darellchua2/opencode-config-template/compare/v4.26.0...v4.26.1) (2026-08-09)
+
+### Bug Fixes
+
+* **config:** remove moonshot provider (incorrect setup) ([088b260](https://github.com/darellchua2/opencode-config-template/commit/088b260f25dcf3f075e37b9e8a3e6f3ab63bf7f4))
+
 ## [4.26.0](https://github.com/darellchua2/opencode-config-template/compare/v4.25.3...v4.26.0) (2026-08-09)
 
 ### Features
