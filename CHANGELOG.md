@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.26.2](https://github.com/darellchua2/opencode-config-template/compare/v4.26.1...v4.26.2) (2026-08-10)
+
+### Bug Fixes
+
+* **deploy:** use $HOME instead of hard-coded silentx path ([2a99a06](https://github.com/darellchua2/opencode-config-template/commit/2a99a069cb9974e8a683779e851ab1ff164d8ffd))
+
 ## [4.26.1](https://github.com/darellchua2/opencode-config-template/compare/v4.26.0...v4.26.1) (2026-08-09)
 
 ### Bug Fixes
