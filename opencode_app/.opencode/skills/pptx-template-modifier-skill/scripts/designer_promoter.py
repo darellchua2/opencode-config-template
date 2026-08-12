@@ -643,6 +643,12 @@ def _promote_slide_to_layout(
     if bg_hex:
         _inject_layout_background(new_element, bg_hex)
 
+    # 3. Wrap in a new SlideLayoutPart with a fresh partname.
+    #    Created BEFORE the shape copy so copied shapes can have their
+    #    relationships recreated on this part (see _remap_shape_rels).
+    new_partname = package.next_partname("/ppt/slideLayouts/slideLayout%d.xml")
+    new_part = SlideLayoutPart(new_partname, CT.PML_SLIDE_LAYOUT, package, new_element)
+
     # 2. Copy each shape from the source slide into the new layout's spTree,
     #    converting clustered shapes to placeholders in-place.
     spTree = new_element.find(qn("p:cSld")).find(qn("p:spTree"))
@@ -655,6 +661,7 @@ def _promote_slide_to_layout(
             continue
         sr = role_by_shape_id.get(sid)
         new_elem = deepcopy(shp._element)
+        _remap_shape_rels(slide.part, new_part, new_elem)
         if (
             sr
             and sr.role in ("title", "body", "picture", "table")
@@ -665,10 +672,6 @@ def _promote_slide_to_layout(
             promoted.append(sr)
         spTree.append(new_elem)
 
-    # 3. Wrap in a new SlideLayoutPart with a fresh partname.
-    new_partname = package.next_partname("/ppt/slideLayouts/slideLayout%d.xml")
-    new_part = SlideLayoutPart(new_partname, CT.PML_SLIDE_LAYOUT, package, new_element)
-
     # 4. Master → layout relationship.
     rId = master_part.relate_to(new_part, RT.SLIDE_LAYOUT)
 
@@ -676,7 +679,7 @@ def _promote_slide_to_layout(
     #    up in the Slide Master's layout gallery).
     sld_layout_id_lst = master_element.get_or_add_sldLayoutIdLst()
     entry = sld_layout_id_lst._add_sldLayoutId(rId=rId)
-    entry.set("id", str(_max_layout_id(sld_layout_id_lst)))
+    entry.set("id", str(_max_layout_id(package)))
 
     # 6. Layout → master relationship (the layout's only structural rel).
     new_part.relate_to(master_part, RT.SLIDE_MASTER)
@@ -703,16 +706,67 @@ def _promote_slide_to_layout(
     return new_layout, promoted
 
 
-def _max_layout_id(sld_layout_id_lst) -> int:
-    """Next unique <p:sldLayoutId id> (ECMA-376 min 2147483648)."""
+_R_NS = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+
+
+def _remap_shape_rels(source_part, new_part, element) -> None:
+    """Recreate on ``new_part`` every relationship referenced by copied shape XML.
+
+    ``deepcopy`` carries r:embed / r:link / r:id values verbatim, but rIds are
+    scoped to the SOURCE part's .rels. In the new layout they either dangle or,
+    worse, collide with the layout's own rels (e.g. rId1 = slideMaster while the
+    copied p14:media expects a media rel) — both make PowerPoint flag the file
+    for repair. Empty r:id="" (leftover ppaction://media hlinks) is invalid and
+    is dropped.
+    """
+    for el in element.iter():
+        for attr in list(el.attrib):
+            if not attr.startswith("{" + _R_NS + "}"):
+                continue
+            val = el.attrib[attr]
+            if not val:
+                del el.attrib[attr]
+                continue
+            try:
+                rel = source_part.rels[val]
+            except KeyError:
+                continue
+            if rel.is_external:
+                new_rId = new_part.rels.get_or_add_ext_rel(rel.reltype, rel.target_ref)
+            else:
+                new_rId = new_part.relate_to(rel.target_part, rel.reltype)
+            el.attrib[attr] = new_rId
+
+
+def _max_layout_id(package) -> int:
+    """Next unique <p:sldLayoutId id> (ECMA-376 min 2147483648).
+
+    PowerPoint treats sldMasterId and sldLayoutId ids as ONE presentation-wide
+    uniqueness space. Scanning a single master's list (the old behaviour)
+    produced ids already used by another master on multi-master decks, and
+    PowerPoint flagged the file for repair. Scan every master + sldMasterIdLst.
+    """
     max_id = 2147483647
-    for entry in sld_layout_id_lst.sldLayoutId_lst:
+
+    def _bump(e) -> None:
+        nonlocal max_id
         try:
-            id_val = int(entry.get("id", "0"))
-            if id_val > max_id:
-                max_id = id_val
+            max_id = max(max_id, int(e.get("id", "0")))
         except (TypeError, ValueError):
-            continue
+            pass
+
+    pres_elem = package.main_document_part._element
+    lst = pres_elem.find(qn("p:sldMasterIdLst"))
+    if lst is not None:
+        for e in lst:
+            _bump(e)
+    for part in package.iter_parts():
+        pn = str(part.partname)
+        if pn.startswith("/ppt/slideMasters/slideMaster") and pn.endswith(".xml"):
+            l = part._element.find(qn("p:sldLayoutIdLst"))
+            if l is not None:
+                for e in l:
+                    _bump(e)
     return max_id + 1
 
 
@@ -723,10 +777,20 @@ def _max_layout_id(sld_layout_id_lst) -> int:
 def _strip_slides(prs) -> int:
     """Remove every slide from ``prs`` (template ≠ deck). Returns count removed."""
     # python-pptx has no public drop_slides; manipulate the sldIdLst.
+    # Also drop the presentation→slide relationships: parts left reachable in
+    # the rel graph are serialized as orphan slide parts (bloat + they carry
+    # source-deck defects the validator flags). Notes slides hang off slides
+    # and drop transitively; media still referenced by promoted layouts stays.
     sldIdLst = prs.slides._sldIdLst
     count = len(list(sldIdLst))
     for child in list(sldIdLst):
+        rId = child.get(qn("r:id"))
         sldIdLst.remove(child)
+        if rId:
+            try:
+                prs.part.drop_rel(rId)
+            except Exception:
+                pass
     return count
 
 

@@ -155,10 +155,27 @@ print(report.to_dict())
 | `scripts/container_check.py` | `container_violations(layout)` / `check_template(prs)` — static geometry check. Raises `ContainerFitError` on critical violations when invoked as a gate. |
 | `scripts/contrast_check.py` | `contrast_violations(layout, theme, auto_fix)` / `contrast_ratio(fg, bg)` — WCAG 2.1 contrast verification with optional auto-fix (flips low-contrast placeholder text to white/black based on background luminance). |
 | `scripts/vision_extractor.py` | `render_slides_to_pngs(pptx)` / `build_image_analyzer_prompt(...)` / `aggregate_vision_results(...)` / `fallback_xml_background(slide, theme)` — vision-assisted schema extraction. Composes with the XML path: vision provides `dominant_bg_hex` for master + layout bg injection; XML provides precise shape geometry. |
+| `scripts/pptx_validate.py` | Post-build validation gate: 8 static OOXML checks (zip, XML, content-types, broken/dangling rels, rel-type mismatch, empty r:id, duplicate layout ids) + `--fix` auto-repair + `--com` authoritative PowerPoint open test. **Run after every build.** |
 
 ### Cross-link to Capability B
 
 Capability B (`state_machine.resolve_and_clone`) and Capability C (`designer_promoter.promote_designer_slides`) are siblings: B borrows from a donor, C reverse-engineers from the source. The orchestrator (`pptx-specialist-subagent` Stage -1) routes between them based on whether the master is empty.
+
+## Post-build validation gate (MANDATORY)
+
+python-pptx/lxml stay silent on defects that make PowerPoint show **"needs repair"**. After ANY Capability B/C build, run:
+
+```bash
+python scripts/pptx_validate.py <output>.pptx --fix --com
+```
+
+Exit 0 = clean. `--fix` safely repairs id collisions + empty `r:id` attrs in place. `--com` (Windows + PowerPoint + pywin32) is the **authoritative gate**: PowerPoint hard-fails COM open on repair-worthy files. Without LibreOffice, this replaces vision-render smoke testing. Kill lingering `POWERPNT.EXE` after a failed COM open before retesting (hidden modal blocks later opens); HRESULT `0x80070070` is PowerPoint's generic open-failure code, not disk-full.
+
+Three defect classes this gate exists to catch (all seen in the wild on designer promotion):
+
+1. **Duplicate `sldLayoutId` ids** — PowerPoint treats `sldMasterId` + `sldLayoutId` as ONE presentation-wide uniqueness space. Allocating from a single master's list collides on multi-master decks. (`designer_promoter._max_layout_id` now scans all masters + `sldMasterIdLst`.)
+2. **Dangling relationship refs** — shapes `deepcopy`ed from slides carry `r:embed`/`r:link`/`r:id` values whose rIds don't exist in the new layout's `.rels`. (`_remap_shape_rels` recreates every referenced rel on the new part at copy time.)
+3. **Rel-id type collision** — a copied `p14:media r:embed="rId1"` pointing at the layout's `rId1` = slideMaster rel (structural rel where image/media/video expected). Same fix: remap, never copy rIds verbatim. Empty `r:id=""` (from `ppaction://media` hlinks) is also invalid and is dropped.
 
 ## Reference
 
