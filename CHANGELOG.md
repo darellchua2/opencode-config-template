@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.26.3](https://github.com/darellchua2/opencode-config-template/compare/v4.26.2...v4.26.3) (2026-08-12)
+
+### Bug Fixes
+
+* **pptx-template-modifier:** repair-worthy defects in designer_promoter output ([#332](https://github.com/darellchua2/opencode-config-template/issues/332)) ([c0da44e](https://github.com/darellchua2/opencode-config-template/commit/c0da44e12040b6a36679b44e2e8e1f3804c6cf6e)), closes [#331](https://github.com/darellchua2/opencode-config-template/issues/331)
+
 ## [4.26.2](https://github.com/darellchua2/opencode-config-template/compare/v4.26.1...v4.26.2) (2026-08-10)
 
 ### Bug Fixes
