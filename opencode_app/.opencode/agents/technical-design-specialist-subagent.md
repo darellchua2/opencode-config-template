@@ -24,7 +24,6 @@ permission:
     clean-architecture-skill: allow
     design-patterns-skill: allow
     domain-modeling-skill: allow
-    codegraph-setup-skill: allow
     api-design-skill: allow
     openapi-contract-adherence-skill: allow
     markitdown-mcp-skill: allow

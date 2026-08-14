@@ -90,6 +90,26 @@ Also in Step 1 detection: ALWAYS `cat <repo>/opencode.json` when present and sho
 
 If accepted and `.codegraph/` absent: run `codegraph init -i` in the repo root. If `codegraph` is not installed or the repo is non-code/very large, soft-skip with a note. In headless/CI: skip silently unless explicitly requested.
 
+CodeGraph setup reference (merged from the former `codegraph-setup-skill`):
+
+```bash
+npx @colbymchenry/codegraph init -i          # init + index (5-60s; creates .codegraph/)
+echo ".codegraph/" >> .gitignore             # index is local-only — never commit it
+npx @colbymchenry/codegraph status           # verify: backend native (preferred) or wasm
+npx @colbymchenry/codegraph sync             # incremental sync (watcher auto-syncs, 2s debounce)
+npx @colbymchenry/codegraph index --force    # full re-index after major structural changes
+npx @colbymchenry/codegraph uninit --force   # remove CodeGraph from the project
+```
+
+- **Prereqs:** Node.js v18+, no API keys (100% local). 19+ languages (TS/JS/Python/Go/Rust/Java/C#/…).
+- **Post-setup:** the file watcher auto-syncs; MCP tools (`codegraph_search`, `codegraph_callers`/`callees`, `codegraph_impact`, `codegraph_files`, …) are available to all agents whenever `.codegraph/` exists. `codegraph_explore`/`codegraph_context` are for explore agents (flood primary context otherwise).
+
+Troubleshooting:
+
+- **"Backend: wasm" (5–10x slower)** — install native build tools (`sudo apt install build-essential python3 make`; macOS: `xcode-select --install`), then `npm rebuild better-sqlite3`. Also fixes **"database is locked"**.
+- **Missing symbols after edits** — wait 2–3s for the watcher, or run `sync` manually.
+- **Large repos slow to index** — add `exclude` globs (`node_modules/**`, `dist/**`, `build/**`, `vendor/**`, `*.min.js`, `*.generated.*`) to `.codegraph/config.json`.
+
 ## Step 5 — Report
 
 State exactly:

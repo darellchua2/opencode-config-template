@@ -63,7 +63,7 @@ param(
     [string]$EnablePack = "",
     # Skill profile (GIT-333): deploy-time primary visibility. lean (default)
     # rewrites the DEPLOYED config's permission.skill to 30 visible skills;
-    # full deploys the shipped 88-allow allowlist verbatim.
+    # full deploys the shipped 87-allow allowlist verbatim.
     [ValidateSet("lean", "full")]
     [string]$SkillProfile = "lean"
 )
@@ -925,7 +925,7 @@ USAGE:
                          config's permission.skill to 30 primary-visible skills
                          + "*": "deny" (subagents unaffected — they self-scope
                          via frontmatter allows); full deploys the shipped
-                         88-allow allowlist verbatim.
+                         87-allow allowlist verbatim.
 
 =======================================================================
                          CONFIGURED FEATURES
