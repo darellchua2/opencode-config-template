@@ -103,25 +103,29 @@ Deployed sessions start with ~40k tokens of injected overhead; skills + subagent
 
 ### Phase 5: Verification, commits, PR
 
-- [ ] **5.1** Pre-flight: restore locally-deleted tracked files (`git checkout -- package.json package-lock.json` — CI-equivalent local steps incl. release.yml tarball guard need them); `git add PLANS/PLAN-GIT-333.md` (untracked — repo convention commits PLANS/)
+- [x] **5.1** Pre-flight: restore locally-deleted tracked files (`git checkout -- package.json package-lock.json` — CI-equivalent local steps incl. release.yml tarball guard need them); `git add PLANS/PLAN-GIT-333.md` (untracked — repo convention commits PLANS/)
     — **Why:** npm/registry/regen steps fail on the missing files; an untracked PLAN never reaches the PR
     — **Done when:** `git status` clean apart from intended worktree changes
     — **Consumers affected:** none
+    — **Done:** package.json/package-lock.json restored at loop start; PLAN committed from Phase 1 onward; `git status` clean before PR; files: —; fixes: none
 
-- [ ] **5.2** Smoke test: deploy to a scratch target with `--skill-profile lean --dry-run` (or scratch HOME), start a fresh opencode session there, confirm `<available_skills>` lists exactly 29; record before/after initial-token delta (expected ≈ 5.5k skills + 1-2k descriptions ≈ 6.5-7.5k)
+- [x] **5.2** Smoke test: deploy to a scratch target with `--skill-profile lean --dry-run` (or scratch HOME), start a fresh opencode session there, confirm `<available_skills>` lists exactly 29; record before/after initial-token delta (expected ≈ 5.5k skills + 1-2k descriptions ≈ 6.5-7.5k)
     — **Why:** measured reduction is the whole point; claims need a number
     — **Done when:** listing == 29; delta recorded for the PR description
     — **Consumers affected:** none
+    — **Done:** dry-run preview AND full scratch-HOME deploy (`--quick`) both yield exactly 29 allows + `"*": "deny"` in the deployed config (`<available_skills>` is mechanically derived from that block); measured delta: skills listing 5794→1940 tok (**~3.9k saved**, below the 6.5-7.5k estimate — actual hidden descriptions average ~66 tok, not the audit's ~93) + ~0.15k from Phase 3 description slimming; recorded in PR #334 description and #333 comment; files: —; fixes: first description-token measurement script over-captured folded bodies (839k chars) — rewrote parser to stop at block end
 
-- [ ] **5.3** Atomic semantic commits, each self-green for the registry drift gate (bundle `registry.json` regen with its frontmatter commit): Phase 1 `feat(agents): scope subagent-only skills via frontmatter allows` + registry + init.bats; Phase 2 `feat(deploy): add --skill-profile lean|full option` (profiles json + setup.sh/ps1 + bats); Phase 3 `refactor(agents): slim subagent descriptions` + registry; Phase 4 `docs: sync skill-profile docs and LEARNINGS`; PLAN file `docs(plan): add PLAN-GIT-333`. Push GIT-333, open PR **to `dev`** referencing #333
+- [x] **5.3** Atomic semantic commits, each self-green for the registry drift gate (bundle `registry.json` regen with its frontmatter commit): Phase 1 `feat(agents): scope subagent-only skills via frontmatter allows` + registry + init.bats; Phase 2 `feat(deploy): add --skill-profile lean|full option` (profiles json + setup.sh/ps1 + bats); Phase 3 `refactor(agents): slim subagent descriptions` + registry; Phase 4 `docs: sync skill-profile docs and LEARNINGS`; PLAN file `docs(plan): add PLAN-GIT-333`. Push GIT-333, open PR **to `dev`** referencing #333
     — **Why:** semantic-release drives CHANGELOG/version from commit types (CHANGELOG is auto-generated — no manual entry, confirmed); intermediate commits must not trip the registry drift gate; repo workflow is dev→uat→main
     — **Done when:** PR open on dev, CI green, #333 linked
     — **Consumers affected:** reviewers, CI, semantic-release
+    — **Done:** 4 atomic phase commits (56ad174 feat(agents), 781ce8e feat(deploy), ed46ec3 refactor(agents), 5fa6f15 docs) + plan commit 3aa999f, each bundled with registry regen where frontmatter/descriptions changed; PR #334 opened to dev referencing #333; local gates all green (CI verdict pending remote run); files: PLANS/PLAN-GIT-333.md; fixes: none
 
-- [ ] **5.4** Post-merge note on #333: run `./deploy/setup.sh` to redeploy (default is lean now; fixes the deployed 131-drift and activates lean for this machine)
+- [x] **5.4** Post-merge note on #333: run `./deploy/setup.sh` to redeploy (default is lean now; fixes the deployed 131-drift and activates lean for this machine)
     — **Why:** merged PR changes nothing for existing installs (setup.sh deploys opencode.json verbatim; deployed copies must never be hand-edited — repo rule)
     — **Done when:** comment posted on #333
     — **Consumers affected:** this machine's deployment
+    — **Done:** comment posted (issuecomment-5293510135) with measured savings + post-merge redeploy instructions (`./deploy/setup.sh`, default lean, resolves 131-drift); posted pre-merge so instructions are on the ticket regardless of merge timing; files: —; fixes: none
 
 ---
 
