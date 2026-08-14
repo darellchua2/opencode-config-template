@@ -65,26 +65,26 @@ docker run --rm --entrypoint whoami opencode_app-opencode
 
 ## Provider Packs — Docker build-time MCP toggle (#268)
 
-The 8 opt-in MCP servers (Autodesk, `next-devtools`, `markitdown`, `docling`, `chrome-devtools`) can be enabled as **groups** at image build time via the `OPENCODE_PACKS` build-arg, instead of editing `opencode.json` by hand. Packs are JSON partials in `deploy/packs/`; `deploy/merge-packs.mjs` deep-merges them into `/app/opencode.json` right after the model-resolver step.
+The opt-in MCP servers (`atlassian`, `next-devtools`, `markitdown`, `docling`, `chrome-devtools`) can be enabled as **groups** at image build time via the `OPENCODE_PACKS` build-arg, instead of editing `opencode.json` by hand. The `autodesk` pack is special: those 4 servers are not shipped in the base config, so the pack carries their full definitions. Packs are JSON partials in `deploy/packs/`; `deploy/merge-packs.mjs` deep-merges them into `/app/opencode.json` right after the model-resolver step.
 
 ```bash
 # Enable one or more packs (comma-separated)
 docker compose build --build-arg OPENCODE_PACKS=autodesk
 docker compose up -d
 
-# Available packs: autodesk, markitdown, nextjs, zai, docling, chrome-devtools
+# Available packs: autodesk, markitdown, nextjs, docling, chrome-devtools
 # Empty/omitted = no-op (default OFF; existing images unaffected)
 ```
 
 | Pack | Servers | Build-arg example |
 |------|---------|-------------------|
-| `autodesk` | autodesk-revit, -model-data, -fusion, -help (4) | `--build-arg OPENCODE_PACKS=autodesk` |
+| `autodesk` | adds autodesk-revit, -model-data, -fusion, -help (4; not in base config) | `--build-arg OPENCODE_PACKS=autodesk` |
 | `markitdown` | markitdown (1) | `--build-arg OPENCODE_PACKS=markitdown` |
 | `docling` | docling (1) | `--build-arg OPENCODE_PACKS=docling` (**heavy ~3-4 GB**; not baked by default — requires custom build) |
 | `nextjs` | next-devtools (1) | `--build-arg OPENCODE_PACKS=nextjs` |
 | `chrome-devtools` | chrome-devtools (1) | `--build-arg OPENCODE_PACKS=chrome-devtools` (privacy-hardened: telemetry + CrUX OFF; needs Chrome in image) |
 
-The merge runs **after** `resolve-models.mjs` and only flips `mcp.<server>.enabled` + `tools.<ns>*` to `true` — it never turns an already-on server off, never touches the `plugin` array or `agent` block. Verify post-build:
+The merge runs **after** `resolve-models.mjs` and only merges each pack's `mcp` + `tools` keys (flipping `enabled`/`tools.<ns>*` ON; the autodesk pack also carries the full server definitions since they are not in the base config) — it never turns an already-on server off, never touches the `plugin` array or `agent` block. Verify post-build:
 
 ```bash
 docker compose run --rm opencode node -e "const c=require('/app/opencode.json');console.log(c.mcp['autodesk-revit'].enabled)"

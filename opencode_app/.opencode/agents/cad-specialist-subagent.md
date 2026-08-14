@@ -164,7 +164,7 @@ Use these defaults unless the user specifies otherwise:
 
 ## Autodesk MCP Servers
 
-When Autodesk MCP servers are configured (`autodesk-revit`, `autodesk-fusion`, `autodesk-model-data`, `autodesk-help`), use them for live model data access. Load `autodesk-aps-skill` for REST API patterns when MCP servers are unavailable or for cloud API integration (Data Management, Model Derivative, Design Automation).
+The 4 Autodesk MCP servers (`autodesk-revit`, `autodesk-fusion`, `autodesk-model-data`, `autodesk-help`) are **not shipped by default** — they are added wholesale via `./deploy/setup.sh --enable-pack autodesk` (Docker: `OPENCODE_PACKS=autodesk`) and require `AUTODESK_API_KEY`. When `autodesk-*` tools appear in your tool list, use them for live model data access. Otherwise load `autodesk-aps-skill` for REST API patterns (Data Management, Model Derivative, Design Automation).
 
 ## CodeGraph Integration
 

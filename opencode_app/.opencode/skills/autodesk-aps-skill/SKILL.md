@@ -575,7 +575,9 @@ interface WorkitemResult {
 }
 ```
 
-## MCP Servers (Beta / Coming Soon)
+## MCP Servers (Beta)
+
+In this configurator the 4 servers are **not shipped in the base config** — enable them wholesale via `./deploy/setup.sh --enable-pack autodesk` (Docker: `--build-arg OPENCODE_PACKS=autodesk`; needs `AUTODESK_API_KEY`). For standalone setups, add the entries below manually.
 
 | Server | Status | Tools Pattern | Description |
 |--------|--------|---------------|-------------|

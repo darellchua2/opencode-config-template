@@ -1,15 +1,43 @@
 {
-  "$comment": "Provider pack: Autodesk Platform Services (APS) MCP servers. Deep-merged into the target opencode.json by deploy/merge-packs.mjs when the user passes --enable-pack autodesk. Only flips enabled flags ON; never alters type/command/url/headers/environment.",
+  "$comment": "Provider pack: Autodesk Platform Services (APS) MCP servers. Deep-merged into the target opencode.json by deploy/merge-packs.mjs when the user passes --enable-pack autodesk. The 4 Autodesk servers are NOT shipped in the base config — this pack carries their FULL definitions (type/url/headers) plus enabled flags and tool allows. Requires AUTODESK_API_KEY in the environment.",
   "mcp": {
-    "autodesk-revit":      { "enabled": true },
-    "autodesk-model-data": { "enabled": true },
-    "autodesk-fusion":     { "enabled": true },
-    "autodesk-help":       { "enabled": true }
+    "autodesk-revit": {
+      "type": "remote",
+      "url": "https://mcp.autodesk.com/revit/v1",
+      "headers": {
+        "Authorization": "Bearer {env:AUTODESK_API_KEY}"
+      },
+      "enabled": true
+    },
+    "autodesk-model-data": {
+      "type": "remote",
+      "url": "https://mcp.autodesk.com/model-data/v1",
+      "headers": {
+        "Authorization": "Bearer {env:AUTODESK_API_KEY}"
+      },
+      "enabled": true
+    },
+    "autodesk-fusion": {
+      "type": "remote",
+      "url": "https://mcp.autodesk.com/fusion/v1",
+      "headers": {
+        "Authorization": "Bearer {env:AUTODESK_API_KEY}"
+      },
+      "enabled": true
+    },
+    "autodesk-help": {
+      "type": "remote",
+      "url": "https://mcp.autodesk.com/help/v1",
+      "headers": {
+        "Authorization": "Bearer {env:AUTODESK_API_KEY}"
+      },
+      "enabled": true
+    }
   },
   "tools": {
-    "autodesk-revit*":      true,
+    "autodesk-revit*": true,
     "autodesk-model-data*": true,
-    "autodesk-fusion*":     true,
-    "autodesk-help*":       true
+    "autodesk-fusion*": true,
+    "autodesk-help*": true
   }
 }

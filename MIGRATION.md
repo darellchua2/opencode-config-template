@@ -27,7 +27,10 @@ migration, and how to revert.
   agents + `gh`/`webfetch` cover their use cases. The `mermaid` MCP server
   and `zai-web-search-prime` were also removed (diagrams ship as inline
   fenced code blocks rendered client-side; built-in `webfetch` covers
-  search-free reading). Enable per-project by
+  search-free reading). The 4 `autodesk-*` servers were also removed from
+  the base config — the `autodesk` provider pack now carries their full
+  definitions (`--enable-pack autodesk`, needs `AUTODESK_API_KEY`).
+  Enable per-project by
   adding `<repo>/opencode.json` with `{"mcp":{"atlassian":{"enabled":true}}}`
   (project wins over global; `opencode-repo-setup-skill` automates this), or
   flip `enabled: true` in your global config to restore the old behavior.

@@ -59,7 +59,7 @@ param(
     [switch]$Migrate,
     [switch]$Mix,
     # Provider packs (#268): deploy-time MCP toggle. CSV of pack names
-    # (autodesk,markitdown,nextjs,zai,docling,chrome-devtools). Empty = no-op.
+    # (autodesk,markitdown,nextjs,docling,chrome-devtools). Empty = no-op.
     [string]$EnablePack = "",
     # Skill profile (GIT-333): deploy-time primary visibility. lean (default)
     # rewrites the DEPLOYED config's permission.skill to 30 visible skills;
@@ -916,7 +916,7 @@ USAGE:
   PROVIDER PACKS (deploy-time MCP toggle):
     -EnablePack <csv>    Enable provider pack(s) — flips mcp.<server>.enabled
                          and tools.<ns>* flags ON. Available packs:
-                         autodesk, markitdown, nextjs, zai, docling, chrome-devtools
+                         autodesk, markitdown, nextjs, docling, chrome-devtools
                          (comma-separated). No-op if omitted; default OFF.
                          Example: -EnablePack autodesk,markitdown
 
@@ -2706,10 +2706,10 @@ function Show-NextSteps {
     Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
     Write-Host "  Run 'opencode --skill <name> `"prompt`"' to invoke a skill"
     Write-Host ""
-     Write-Host "MCP Servers (3):"
+     Write-Host "MCP Servers:"
      Write-Host "  Auto-start: codegraph, web-reader"
      Write-Host "  Opt-in per-project: atlassian"
-     Write-Host "  Opt-in global packs: next-devtools, markitdown, docling, chrome-devtools, autodesk-*"
+     Write-Host "  Opt-in global packs: next-devtools, markitdown, docling, chrome-devtools (+ autodesk pack adds 4)"
     Write-Host ""
     Write-Host "  Auth: opencode mcp auth atlassian / opencode mcp auth github"
     Write-Host ""

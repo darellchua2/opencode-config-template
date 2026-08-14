@@ -326,14 +326,14 @@ nvm install 24
 
 ## MCP Servers
 
-The configuration ships 11 MCP server entries. **2 are enabled by default:**
+The configuration ships 7 MCP server entries. **2 are enabled by default:**
 
 | Server | Type | Purpose |
 |--------|------|---------|
 | `codegraph` | local (npx) | Pre-indexed code knowledge graph |
 | `zai-web-reader` | remote | Web page content extraction |
 
-The remaining 9 are `enabled: false` and opt-in:
+The remaining 5 are `enabled: false` and opt-in:
 
 | Server | Type | Purpose |
 |--------|------|---------|
@@ -342,7 +342,8 @@ The remaining 9 are `enabled: false` and opt-in:
 | `markitdown` | local | Document-to-Markdown (local-only) |
 | `docling` | local | Layout-aware document extraction (~3-4 GB) |
 | `chrome-devtools` | local | Live Chrome automation |
-| `autodesk-revit` / `autodesk-model-data` / `autodesk-fusion` / `autodesk-help` | remote | Autodesk platform |
+
+The 4 Autodesk servers are **not shipped in the base config** — the `autodesk` provider pack below adds their full definitions at deploy time (needs `AUTODESK_API_KEY`).
 
 To enable one **for a single project**, add a `.opencode/opencode.json` in the repo (project config merges over the global one — project wins):
 
@@ -358,7 +359,7 @@ Instead of editing 4–9 JSON entries to enable a logical group of MCP servers, 
 
 | Pack | Servers enabled | Requires |
 |------|----------------|----------|
-| `autodesk` | autodesk-revit, autodesk-model-data, autodesk-fusion, autodesk-help | `AUTODESK_API_KEY` |
+| `autodesk` | **adds** autodesk-revit, autodesk-model-data, autodesk-fusion, autodesk-help (not in base config) | `AUTODESK_API_KEY` |
 | `markitdown` | markitdown | Python launcher (auto-installed by `setup.sh`; baked into Docker image) |
 | `docling` | docling | Python + `docling-mcp[local]` (~3-4 GB; first convert downloads models from huggingface.co) |
 | `nextjs` | next-devtools | A running Next.js dev server |

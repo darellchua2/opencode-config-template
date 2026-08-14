@@ -342,7 +342,7 @@ MODELS_ONLY=false        # --models-only (provider + resolve only)
 FORCE_RESOLVE=false      # --force (ignore preserve-edits)
 MIGRATE_ONLY=false       # --migrate (migration + resolve only)
 MIX_MODE=false           # --mix (per-category provider/model editor)
-ENABLE_PACK=""           # --enable-pack <csv> (provider packs: autodesk,markitdown,nextjs,zai,docling,chrome-devtools)
+ENABLE_PACK=""           # --enable-pack <csv> (provider packs: autodesk,markitdown,nextjs,docling,chrome-devtools)
 SKILL_PROFILE="lean"     # --skill-profile lean|full (default lean: primary sees 30 skills; full = shipped 88 verbatim)
 
 # API Keys (initialize to empty to avoid unbound variable errors)
@@ -576,7 +576,7 @@ USAGE:
   PROVIDER PACKS (deploy-time MCP toggle):
     --enable-pack <csv>   Enable provider pack(s) — flips mcp.<server>.enabled
                           and tools.<ns>* flags ON for the named packs. Available
-                          packs: autodesk, markitdown, nextjs, zai, docling, chrome-devtools
+                          packs: autodesk, markitdown, nextjs, docling, chrome-devtools
                           (comma-separated, e.g. --enable-pack autodesk,markitdown).
                           No-op if omitted; default state of every pack is OFF.
 
@@ -674,13 +674,13 @@ USAGE:
     Usage: opencode --agent build "implement auth feature"
            opencode --agent explore "find all API routes"
 
-  MCP SERVERS (11):
+  MCP SERVERS (7):
     Auto-start (enabled by default):
       codegraph           Pre-indexed code knowledge graph (100% local)
       zai-web-reader      Web page content extraction (remote, needs ZAI_API_KEY)
 
     Available but disabled (opt-in — enable per-project via
-    .opencode/opencode.json or opencode-repo-setup-skill):
+    opencode.json or opencode-repo-setup-skill):
       atlassian           JIRA and Confluence integration (first use opens browser OAuth)
       next-devtools      Next.js DevTools integration
       markitdown         Document-to-Markdown (local-only, privacy-hardened)
@@ -688,11 +688,9 @@ USAGE:
       chrome-devtools    Live Chrome automation: perf traces, network/console, Lighthouse, heap snapshots
                           (privacy-hardened: telemetry + CrUX OFF; throwaway profile; enable via --enable-pack chrome-devtools)
 
-    Autodesk (requires Autodesk access token):
-      autodesk-revit     Revit model data and APIs
-      autodesk-fusion    Fusion 360 integration
-      autodesk-model-data  Autodesk Model Data API
-      autodesk-help      Autodesk Help knowledge base
+    Autodesk (4 servers, requires AUTODESK_API_KEY):
+      not shipped in the base config — added wholesale via
+      ./setup.sh --enable-pack autodesk (revit, model-data, fusion, help)
 
     SKILLS ($(count_skills "${REPO_DIR}/opencode_app/.opencode/skills")):
 
@@ -863,7 +861,7 @@ parse_arguments() {
                 # Accept any value including "" (empty = no-op, handled by
                 # merge-packs.mjs). Only error if no following token at all.
                 if [ $# -lt 2 ]; then
-                    log_error "--enable-pack requires an argument (csv: autodesk,markitdown,nextjs,zai,docling,chrome-devtools)"
+                    log_error "--enable-pack requires an argument (csv: autodesk,markitdown,nextjs,docling,chrome-devtools)"
                     exit 1
                 fi
                 ENABLE_PACK="$2"
@@ -2451,8 +2449,8 @@ setup_config() {
              echo "✓ Configured MCP servers:"
              echo "    Auto-start: codegraph, web-reader"
               echo "    Opt-in per-project (.opencode/opencode.json): atlassian"
-              echo "    Available but disabled (opt-in): next-devtools, markitdown, autodesk-*, docling, chrome-devtools"
-              echo "    Enable a group with: ./setup.sh --enable-pack <autodesk|markitdown|nextjs|zai|docling|chrome-devtools>"
+              echo "    Available but disabled (opt-in): next-devtools, markitdown, docling, chrome-devtools"
+              echo "    Enable a group with: ./setup.sh --enable-pack <autodesk|markitdown|nextjs|docling|chrome-devtools>"
             echo ""
         else
             log_error "config.json source not found: ${SOURCE_CONFIG}"
@@ -3574,7 +3572,7 @@ print_next_steps() {
      echo ""
      echo "  Auto-start: codegraph, web-reader"
       echo "  Opt-in per-project: atlassian"
-     echo "  Opt-in global packs: next-devtools, markitdown, docling, chrome-devtools, autodesk-*"
+     echo "  Opt-in global packs: next-devtools, markitdown, docling, chrome-devtools"
     echo ""
     echo "  Auth: opencode mcp auth atlassian / opencode mcp auth github"
     echo ""
