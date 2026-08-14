@@ -32,6 +32,15 @@ Use this framework when:
 
 This is a **framework skill** - it provides JIRA utilities that other skills use.
 
+## MCP Availability Guard
+
+Every step below uses `atlassian_*` MCP tools, and the `atlassian` MCP server is **disabled by default** (opt-in). Before Step 1:
+
+- If `atlassian_*` tools are absent from your tool list, do NOT attempt or hallucinate them.
+- Interactive: offer per-project enable via `opencode-repo-setup-skill` (effective next session).
+- Fallback: REST with an API token — `curl -u email:token` against `https://<site>.atlassian.net` (cloudId: `curl https://<site>.atlassian.net/_edge/tenant_info`); scoped tokens use `api.atlassian.com/ex/jira/{cloudId}`.
+- No credentials/headless: report the JIRA operation as skipped — never block the calling workflow.
+
 ## Core Workflow Steps
 
 ### Step 1: Get Accessible Atlassian Resources

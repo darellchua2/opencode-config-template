@@ -87,6 +87,7 @@ JIRA Integration:
 - Update JIRA tickets with PR links via atlassian MCP tools
 - Transition ticket status after PR merge via jira-status-updater
 - Add PR screenshots/images as attachments
+- MCP GUARD: the `atlassian` server is disabled by default (opt-in). If `atlassian_*` tools are absent from your tool list, do NOT attempt them — skip JIRA integration, note it in the PR report, and suggest per-project enable via `opencode-repo-setup-skill` (or its REST fallback). Never fail the PR flow on a disabled server.
 
 JIRA MCP Tools:
 - atlassian_addCommentToJiraIssue: Add PR link to ticket

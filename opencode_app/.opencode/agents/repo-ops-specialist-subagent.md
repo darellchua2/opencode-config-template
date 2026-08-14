@@ -102,6 +102,8 @@ Load these skills to apply the correct standards and conventions:
 - **documentation-consistency**: Audit documentation consistency across files
 - **plan-updater / plan-execution**: Track and execute PLAN.md phases
 
+> **JIRA skills MCP dependency:** `jira-git-integration`, `jira-status-updater`, `jira-ticket-labeler`, and the JIRA branch of `ticket-plan-workflow`/`git-issue-updater` require the `atlassian` MCP server, which is **disabled by default** (opt-in). If `atlassian_*` tools are absent from your tool list, do NOT attempt them — each of those skills carries its own MCP Availability Guard (enable via `opencode-repo-setup-skill` next session, REST fallback, or skip + report). GitHub-side operations are unaffected.
+
 ## Repository Setup Workflow
 
 1. **Determine the standard** — load `semantic-release-convention-skill` and `version-bump-standard-skill` to identify the governing conventions
