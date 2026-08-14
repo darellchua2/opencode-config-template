@@ -30,7 +30,6 @@
   ],
   "mcps": [
     "next-devtools",
-    "codegraph",
-    "mermaid"
+    "codegraph"
   ]
 }

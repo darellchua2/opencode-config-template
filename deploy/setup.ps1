@@ -992,7 +992,7 @@ $(Get-SkillCategories (Join-Path $RepoDir 'opencode_app\.opencode\skills'))
     git                   For version control
 
   API Keys (prompted during setup):
-    ZAI_API_KEY           Required for web-reader, web-search-prime
+    ZAI_API_KEY           Required for web-reader
                           Get from: https://z.ai
 
   GitHub Auth:
@@ -1742,9 +1742,9 @@ function Set-Configuration {
             Write-Host "    - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
             Write-Host ""
             Write-Host "Configured MCP servers:" -ForegroundColor Green
-            Write-Host "    - Auto-start: codegraph, mermaid, web-reader"
+            Write-Host "    - Auto-start: codegraph, web-reader"
             Write-Host "    - Opt-in per-project (.opencode/opencode.json): atlassian"
-            Write-Host "    - Available but disabled (opt-in): web-search-prime, next-devtools, markitdown, docling, chrome-devtools"
+            Write-Host "    - Available but disabled (opt-in): next-devtools, markitdown, docling, chrome-devtools"
             if ($script:vgDeployed) {
                 Write-Host "Secret masking: active (vibeguard)" -ForegroundColor Green
             }
@@ -2707,9 +2707,9 @@ function Show-NextSteps {
     Write-Host "  Run 'opencode --skill <name> `"prompt`"' to invoke a skill"
     Write-Host ""
      Write-Host "MCP Servers (3):"
-     Write-Host "  Auto-start: codegraph, mermaid, web-reader"
+     Write-Host "  Auto-start: codegraph, web-reader"
      Write-Host "  Opt-in per-project: atlassian"
-     Write-Host "  Opt-in global packs: next-devtools, markitdown, docling, chrome-devtools, autodesk-*, web-search-prime"
+     Write-Host "  Opt-in global packs: next-devtools, markitdown, docling, chrome-devtools, autodesk-*"
     Write-Host ""
     Write-Host "  Auth: opencode mcp auth atlassian / opencode mcp auth github"
     Write-Host ""

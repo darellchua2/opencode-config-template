@@ -536,7 +536,7 @@ render poorly in grayscale. See `research-paper-generation-skill` §3 for:
 - Shape differentiation rules (use shapes, never color alone, to distinguish
   node types).
 - Line styles (solid for forward flow, dashed for feedback / skip).
-- The `mermaid_generate` retry policy (3 attempts on `ENOENT` errors).
+- The `mmdc` render + retry policy (3 attempts on `ENOENT` errors).
 
 For matplotlib-based results figures (loss curves, ROC, confusion matrices),
 use hatching (`//`, `\\`, `xx`), grayscale colormaps (`Greys`, `binary`),
@@ -788,7 +788,7 @@ the paper is horseshoe-compliant.
 |------|-----|
 | Source data gathering, framing, B&W diagrams, DOCX conversion, verification | `research-paper-generation-skill` (companion) |
 | Literature search & reference validation | `autoresearch-research-subagent` (Tier 2, web-only) |
-| B&W academic diagrams | `research-paper-generation-skill` §3 + `mermaid_generate` |
+| B&W academic diagrams | `research-paper-generation-skill` §3 + `mmdc` |
 | DOCX conversion (pandoc) | `research-paper-generation-skill` §4 |
 | Section drafts (intro, methodology, etc.) | `section-templates/*.md` in this skill's folder |
 | Mirror audit (§5) | Run manually using the pairing-table template |
@@ -841,7 +841,7 @@ graph TD
 ```
 
 A rendered PNG lives at `assets/horseshoe-diagram.png` (generated once via
-`mermaid_generate`). Reference it in working notes / appendices, not in the
+`mmdc`). Reference it in working notes / appendices, not in the
 manuscript itself.
 
 ---

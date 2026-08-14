@@ -246,11 +246,11 @@ Not every project needs all 36 agents + 131 skills. <!-- count: hand-maintained 
 
 | Preset | Agents | Skills | MCPs | Use for |
 |--------|--------|--------|------|---------|
-| `core` | explorer | git-semantic-commits, continuous-learning | codegraph, mermaid | Minimal baseline |
+| `core` | explorer | git-semantic-commits, continuous-learning | codegraph | Minimal baseline |
 | `review` | code-review + architecture + 5 language reviewers | 25 (Code Quality + auth/perf/logging/eval) | codegraph | Code quality gates |
-| `frontend` | nextjs-specialist + uiux-reviewer + responsive-audit | 19 (Next.js/React/Three.js/a11y) | next-devtools, chrome-devtools, codegraph, mermaid | Web frontend |
+| `frontend` | nextjs-specialist + uiux-reviewer + responsive-audit | 19 (Next.js/React/Three.js/a11y) | next-devtools, chrome-devtools, codegraph | Web frontend |
 | `backend` | python-reviewer | 17 (Python/DB/API/security/docker) | codegraph | Server / devops-lite |
-| `docs` | documentation + coverage + docx/pptx/xlsx + office-doc | 21 (document ladder) | mermaid | Document generation |
+| `docs` | documentation + coverage + docx/pptx/xlsx + office-doc | 21 (document ladder) | — (inline mermaid blocks need no MCP) | Document generation |
 | `devops` | repo-ops + opentofu-explorer | 31 (release/IaC/JIRA) | codegraph | Git / infra / release |
 | `business` | startup-founder + ceo + discovery + requirements + technical-design | 32 (BD/pitch/planning) | — | BD / founder workflows |
 | `research` | autoresearch-{ml,code,research} + loop-operator | 11 (autoresearch + papers) | codegraph | Autonomous loops (ml needs GPU) |
@@ -326,21 +326,19 @@ nvm install 24
 
 ## MCP Servers
 
-The configuration ships 13 MCP server entries. **3 are enabled by default:**
+The configuration ships 11 MCP server entries. **2 are enabled by default:**
 
 | Server | Type | Purpose |
 |--------|------|---------|
 | `codegraph` | local (npx) | Pre-indexed code knowledge graph |
-| `mermaid` | local (npx) | Mermaid diagram rendering (SVG) |
 | `zai-web-reader` | remote | Web page content extraction |
 
-The remaining 10 are `enabled: false` and opt-in:
+The remaining 9 are `enabled: false` and opt-in:
 
 | Server | Type | Purpose |
 |--------|------|---------|
 | `atlassian` | local (npx mcp-remote) | JIRA and Confluence (first use opens browser OAuth) |
 | `next-devtools` | local (npx) | Next.js DevTools integration |
-| `web-search-prime` | remote | Web search |
 | `markitdown` | local | Document-to-Markdown (local-only) |
 | `docling` | local | Layout-aware document extraction (~3-4 GB) |
 | `chrome-devtools` | local | Live Chrome automation |
@@ -364,7 +362,6 @@ Instead of editing 4–9 JSON entries to enable a logical group of MCP servers, 
 | `markitdown` | markitdown | Python launcher (auto-installed by `setup.sh`; baked into Docker image) |
 | `docling` | docling | Python + `docling-mcp[local]` (~3-4 GB; first convert downloads models from huggingface.co) |
 | `nextjs` | next-devtools | A running Next.js dev server |
-| `zai` | zai-web-search-prime | `ZAI_API_KEY` |
 | `chrome-devtools` | chrome-devtools | Chrome stable installed locally (privacy-hardened: telemetry + CrUX OFF by default) |
 
 ```bash
@@ -411,7 +408,7 @@ Key properties:
 > - **`chrome-devtools`** — Google's `chrome-devtools-mcp` sends usage statistics and Chrome UX Report (CrUX) trace URLs to Google **by default**, plus polls the npm registry for updates. Hardened with `--no-usage-statistics`, `--no-performance-crux`, `--redact-network-headers` (strips sensitive request headers before they reach the LLM), and `CHROME_DEVTOOLS_MCP_NO_UPDATE_CHECKS=1` (kills the update poll).
 > - **`next-devtools`** — Vercel's `next-devtools-mcp` collects anonymous telemetry (tool names, error events, session metadata) by default, storing a local client ID in `~/.next-devtools-mcp/`. Hardened with `NEXT_TELEMETRY_DISABLED=1`.
 >
-> The enabled remote/`zai-*` servers send data **by design** (that is their function, not telemetry); `codegraph` and `mermaid` are purely local with no telemetry layer. `markitdown` and `docling` are already pinned to local-only conversion (`MARKITDOWN_ENABLE_PLUGINS=false`, `DOCLING_CONVERSION_MODE=local`). One unavoidable residual: every `npx -y <pkg>` first run hits the npm registry to download — not telemetry, but it is a phone-home; pre-install packages globally (`npm i -g`) and drop `npx` to avoid it.
+> The enabled remote/`zai-*` servers send data **by design** (that is their function, not telemetry); `codegraph` is purely local with no telemetry layer. Mermaid diagrams ship as inline fenced code blocks (rendered client-side by GitHub/VS Code — no MCP server); `markitdown` and `docling` are already pinned to local-only conversion (`MARKITDOWN_ENABLE_PLUGINS=false`, `DOCLING_CONVERSION_MODE=local`). One unavoidable residual: every `npx -y <pkg>` first run hits the npm registry to download — not telemetry, but it is a phone-home; pre-install packages globally (`npm i -g`) and drop `npx` to avoid it.
 
 ## Language Server Protocol (LSP)
 

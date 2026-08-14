@@ -126,7 +126,6 @@
     "tool": {
       "codegraph*": "allow",
       "atlassian*": "allow",
-      "mermaid*": "allow",
       "markitdown*": "deny",
       "docling*": "deny",
       "zai-web-reader*": "allow",
@@ -203,14 +202,6 @@
       },
       "enabled": true
     },
-    "zai-web-search-prime": {
-      "type": "remote",
-      "url": "https://api.z.ai/api/mcp/web_search_prime/mcp",
-      "headers": {
-        "Authorization": "Bearer {env:ZAI_API_KEY}"
-      },
-      "enabled": false
-    },
     "autodesk-revit": {
       "type": "remote",
       "url": "https://mcp.autodesk.com/revit/v1",
@@ -250,14 +241,6 @@
         "NEXT_TELEMETRY_DISABLED": "1"
       },
       "enabled": false
-    },
-    "mermaid": {
-      "type": "local",
-      "command": ["npx", "-y", "@peng-shawn/mermaid-mcp-server"],
-      "environment": {
-        "CONTENT_IMAGE_SUPPORTED": "false"
-      },
-      "enabled": true
     },
     "markitdown": {
       "type": "local",

@@ -8,14 +8,15 @@
 #   - README.md "ships N MCP server entries"
 #   - deploy/setup.sh "MCP SERVERS (N):"
 #
-# Note: deploy/setup.ps1 and setup.sh banner "MCP Servers (6)" / "(6)"
-# refer to the AUTO-START count (always 6), not the total — those are
+# Note: deploy/setup.ps1 and setup.sh banner refs
+# refer to the AUTO-START count, not the total — those are
 # intentionally different and not asserted here.
-# UPDATE (PLAN-GIT-333 Phase 6): auto-start is now 3 (codegraph,
-# zai-web-reader, mermaid). atlassian is opt-in per-project
-# (opencode-repo-setup-skill). zai-vision-mcp-server / zai-zread were
-# removed entirely (native vision tier + gh/webfetch cover them).
-# Banner refs must say 3.
+# UPDATE (PLAN-GIT-333 Phase 6): auto-start is now 2 (codegraph,
+# zai-web-reader). atlassian is opt-in per-project
+# (opencode-repo-setup-skill). zai-vision-mcp-server / zai-zread,
+# mermaid, and zai-web-search-prime were removed entirely
+# (native vision tier, inline mermaid blocks, gh/webfetch cover them).
+# Banner refs must say 2.
 
 CONFIG="opencode_app/opencode.json"
 
@@ -54,10 +55,15 @@ actual_mcp_count() {
   python3 -c "import json; d=json.load(open('${CONFIG}')); assert 'zai-vision-mcp-server' not in d['mcp'], 'zai-vision-mcp-server must be removed'; assert 'zai-zread' not in d['mcp'], 'zai-zread must be removed'"
 }
 
-@test "mcp_count_auto_start_is_three" {
-  # Three auto-start servers: codegraph, zai-web-reader, mermaid.
-  # atlassian is opt-in (Phase 6); zai-vision-mcp-server / zai-zread removed.
+@test "mcp_count_mermaid_web_search_removed" {
+  python3 -c "import json; d=json.load(open('${CONFIG}')); assert 'mermaid' not in d['mcp'], 'mermaid MCP must be removed (inline blocks + mmdc)'; assert 'zai-web-search-prime' not in d['mcp'], 'zai-web-search-prime must be removed'"
+}
+
+@test "mcp_count_auto_start_is_two" {
+  # Two auto-start servers: codegraph, zai-web-reader.
+  # atlassian is opt-in (Phase 6); zai-vision-mcp-server / zai-zread /
+  # mermaid / web-search-prime removed.
   auto_count=$(python3 -c "import json; d=json.load(open('${CONFIG}')); print(sum(1 for v in d['mcp'].values() if v.get('enabled')))")
   echo "Auto-start (enabled) MCP count: ${auto_count}" >&3
-  [ "$auto_count" = "3" ]
+  [ "$auto_count" = "2" ]
 }
