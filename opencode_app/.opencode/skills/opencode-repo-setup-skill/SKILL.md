@@ -1,6 +1,6 @@
 ---
 name: opencode-repo-setup-skill
-description: Interactive per-repo MCP and tooling setup for a target project. Detects repo signals (manifests, .codegraph/, Jira/GitHub refs), asks the user which opt-in MCP servers to enable, merge-writes only the delta into the project's .opencode/opencode.json (project config overrides global; global config never mutated), optionally initializes CodeGraph, and reports enabled set, token cost, and revert path. Triggers on "set up mcp for this repo", "enable atlassian/jira here", "project mcp setup", "repo setup", "per-project enable", "configure project opencode".
+description: Interactive per-repo MCP and tooling setup for a target project. Detects repo signals (manifests, .codegraph/, Jira/GitHub refs), asks the user which opt-in MCP servers to enable, merge-writes only the delta into the project's opencode.json (project config overrides global; global config never mutated), optionally initializes CodeGraph, and reports enabled set, token cost, and revert path. Triggers on "set up mcp for this repo", "enable atlassian/jira here", "project mcp setup", "repo setup", "per-project enable", "configure project opencode".
 license: Apache-2.0
 compatibility: opencode
 metadata:
@@ -15,7 +15,7 @@ I am the **interactive frontend for per-project MCP enablement**. The global dep
 
 1. **Detect** — scan the repo for setup signals
 2. **Ask** — present a question-tool menu of opt-in servers + extras
-3. **Write** — merge-write ONLY the delta into `<repo>/.opencode/opencode.json`
+3. **Write** — merge-write ONLY the delta into `<repo>/opencode.json`
 4. **Init** — optionally run `codegraph init -i`
 5. **Report** — enabled set, estimated token cost, revert instructions
 
@@ -33,7 +33,7 @@ Cheap, read-only scans (no network):
 
 | Signal | Check | Suggests |
 |--------|-------|----------|
-| Existing project config | `<repo>/.opencode/opencode.json` exists | Idempotent mode: show current overrides, offer to extend |
+| Existing project config | `<repo>/opencode.json` exists | Idempotent mode: show current overrides, offer to extend |
 | CodeGraph index | `<repo>/.codegraph/` exists | codegraph already enabled locally; no action |
 | Jira usage | AGENTS.md/README mentions Jira keys (`PROJ-123`), JIRA env vars, `atlassian` refs | offer `atlassian` enable |
 | GitHub-centric | `.github/`, `gh` in scripts | gh CLI usually suffices; no MCP needed |
@@ -59,7 +59,7 @@ One multi-select question + one yes/no per extra. Options are built from the det
 
 ## Step 3 — Write (merge-write, delta-only)
 
-Target: `<repo>/.opencode/opencode.json`. Create if absent; **never clobber existing keys** — deep-merge at the top level manually (read file, add only the `mcp.<server>.enabled` keys chosen). Keep the file comment-free JSON.
+Target: `<repo>/opencode.json`. Create if absent; **never clobber existing keys** — deep-merge at the top level manually (read file, add only the `mcp.<server>.enabled` keys chosen). Keep the file comment-free JSON.
 
 Typical delta:
 
@@ -75,6 +75,21 @@ Rules:
 - Only `enabled` keys — auth/transport stay as globally configured (Atlassian uses `mcp-remote` OAuth; see caveats)
 - If the file exists, preserve every other key verbatim (byte-stable elsewhere; pretty-print 2-space)
 - Never write `enabled: false` to disable something globally enabled — the project layer is for opting IN
+
+Merge procedure (MANDATORY when `<repo>/opencode.json` already exists — never Write-overwrite):
+
+1. Read + validate the existing file: `jq . opencode.json` (if invalid JSON, STOP and show the user; do not guess)
+2. Merge the delta with jq `*` deep-merge, existing file as base:
+
+   ```bash
+   jq -s '.[0] * .[1]' opencode.json delta.json > opencode.json.new && mv opencode.json.new opencode.json
+   ```
+
+   (`delta.json` = the chosen `{"mcp":{...}}` blob; `*` merges recursively, existing non-conflicting keys survive, delta wins on conflicts — which is exactly the chosen-enable set)
+3. Diff-check: `git diff opencode.json` (or plain diff vs a pre-made backup) must show ONLY the added `mcp.*` keys
+4. No jq available? Read the file, hand-merge the `mcp` key into the parsed object, and Write the full merged result — never emit a file missing previously-present keys
+
+Also in Step 1 detection: ALWAYS `cat <repo>/opencode.json` when present and show its current keys to the user before Step 2, so the menu reflects what is already enabled.
 
 ## Step 4 — Init (CodeGraph only)
 
