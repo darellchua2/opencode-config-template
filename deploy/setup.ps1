@@ -17,6 +17,10 @@
     .\setup.ps1 -Rollback -RollbackTarget latest # Restore most recent backup
     .\setup.ps1 -Rollback -RollbackArg 20260719_070926  # Restore by TIMESTAMP
     .\setup.ps1 -NoZipBackup         # Deploy without creating zip archive
+    .\setup.ps1 -Yes -Quick -Provider zai                  # Headless quick deploy
+    .\setup.ps1 -Yes -EnablePack markitdown,nextjs         # CI: defaults + packs
+    .\setup.ps1 -Yes -Provider openai -EnablePack markitdown -SkillProfile lean
+    .\setup.ps1 -DryRun -Yes -EnablePack autodesk          # Preview a combo
     .\setup.ps1 -Help                # Show detailed help
 
 .NOTES
@@ -920,12 +924,29 @@ USAGE:
                          (comma-separated). No-op if omitted; default OFF.
                          Example: -EnablePack autodesk,markitdown
 
-  SKILL PROFILE (deploy-time primary visibility):
-    -SkillProfile <p>    lean (default) | full. lean rewrites the DEPLOYED
-                         config's permission.skill to 30 primary-visible skills
-                         + "*": "deny" (subagents unaffected — they self-scope
-                         via frontmatter allows); full deploys the shipped
-                         87-allow allowlist verbatim.
+   SKILL PROFILE (deploy-time primary visibility):
+     -SkillProfile <p>    lean (default) | full. lean rewrites the DEPLOYED
+                          config's permission.skill to 30 primary-visible skills
+                          + "*": "deny" (subagents unaffected — they self-scope
+                          via frontmatter allows); full deploys the shipped
+                          87-allow allowlist verbatim.
+
+ ======================================================================
+                     COMMON COMBINATION EXAMPLES
+ ======================================================================
+
+   Model resolution + profile:
+     .\setup.ps1 -Provider anthropic -Yes      # Deploy with Anthropic models
+     .\setup.ps1 -Mix                          # Mix providers per tier
+     .\setup.ps1 -ModelsOnly -Force            # Re-resolve models only
+     .\setup.ps1 -SkillProfile full            # Primary sees all shipped skills
+
+   Headless / CI combos:
+     .\setup.ps1 -Yes -Quick -Provider zai                  # Quick deploy, no prompts
+     .\setup.ps1 -Yes -EnablePack markitdown,nextjs         # Defaults + packs
+     .\setup.ps1 -Yes -Provider openai -EnablePack markitdown -SkillProfile lean
+     .\setup.ps1 -DryRun -Yes -EnablePack autodesk          # Preview a combo
+
 
 =======================================================================
                          CONFIGURED FEATURES

@@ -605,6 +605,18 @@ USAGE:
     ./setup.sh --enable-pack autodesk,markitdown   # Enable multiple packs
     ./setup.sh --quick --enable-pack markitdown   # Combine with other modes
 
+  Model resolution + skill profile:
+    ./setup.sh --provider anthropic -y            # Deploy with Anthropic models
+    ./setup.sh --mix                              # Mix providers per tier (interactive)
+    ./setup.sh --models-only --force              # Re-resolve models only
+    ./setup.sh --skill-profile full               # Primary sees all shipped skills
+
+  Common combinations (headless / CI):
+    ./setup.sh -y -q --provider zai                  # Quick deploy, Z.AI, no prompts
+    ./setup.sh -y --enable-pack markitdown,nextjs    # Defaults + packs, non-interactive
+    ./setup.sh -y --provider openai --enable-pack markitdown --skill-profile lean
+    ./setup.sh --dry-run -y --enable-pack autodesk   # Preview a combo before running
+
   Preview and update:
     ./setup.sh --dry-run            # Preview what would be done
     ./setup.sh --update             # Update opencode-ai CLI
