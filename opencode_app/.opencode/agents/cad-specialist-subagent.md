@@ -1,11 +1,9 @@
 ---
 description: >-
-  Specialized subagent for ALL CAD, engineering, robotics, and hardware design
-  tasks. Orchestrates 14 skills: parametric CAD generation (STEP/STL/3MF/GLB),
-  DXF drawings, robot descriptions (URDF/SRDF/SDF), G-code slicing, 3D printing
-  (Bambu Labs), SendCutSend validation, CAD Viewer previews, Autodesk Platform
-  Services API integration, Civil 3D workflows, and Open3D 3D data processing.
-  Routes to the appropriate skill based on task type.
+  CAD/engineering/robotics/hardware specialist orchestrating 14 skills: parametric
+  CAD (STEP/STL/3MF/GLB), DXF, robot descriptions (URDF/SRDF/SDF), G-code
+  slicing, 3D printing, SendCutSend, CAD Viewer, Autodesk Platform Services,
+  Civil 3D, Open3D. Routes by task type.
 mode: subagent
 permission:
   read:

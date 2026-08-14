@@ -1,5 +1,5 @@
 ---
-description: "Technical design specialist — authors engineering Technical Design Documents (TDD) that convert requirements (SRS/feature specs) into architecture, data models, API contracts, and Architecture Decision Records (ADRs). Triggers on: technical design, architecture document, system design, technical design doc, design spec, create technical design. Engineering 'how' stage of the document ladder. Uses CodeGraph for impact/dependency analysis."
+description: "Authors engineering Technical Design Documents (TDD): converts SRS/feature specs into architecture, data models, API contracts, and ADRs, with CodeGraph impact/dependency analysis. Triggers on: technical design, architecture document, system design, technical design doc, design spec, create technical design."
 mode: subagent
 steps: 50
 permission:

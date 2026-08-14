@@ -1,5 +1,5 @@
 ---
-description: "Requirements specialist — conducts discovery interviews and drafts Business Requirements Documents (BRD, BABOK/IIBA) and internal Software Requirements Specifications (SRS, IEEE 830). Triggers on: create brd, business requirements, stakeholder requirements, business need, create srs, software requirements, functional spec, specification, plus back-compat 'create prd'/'product requirement' (routes to SRS). Uses an explicit BRD-vs-SRS routing decision tree. BRD is sponsor/stakeholder scope; SRS is internal functional/technical scope."
+description: "Drafts BRDs (BABOK/IIBA) and SRS (IEEE 830) from discovery interviews. Triggers on: create brd, business requirements, stakeholder requirements, business need, create srs, software requirements, functional spec, specification, plus 'create prd'/'product requirement' (routes to SRS). BRD=sponsor scope; SRS=internal scope."
 mode: subagent
 steps: 50
 permission:

@@ -69,10 +69,11 @@ Deployed sessions start with ~40k tokens of injected overhead; skills + subagent
 
 ### Phase 3: Agent description slimming
 
-- [ ] **3.1** Shorten `description` frontmatter across `opencode_app/.opencode/agents/*.md` (36 agents), longest first — keep trigger phrases verbatim, cut mechanism prose; target ≤ 2 sentences / ~40 words; regenerate `registry.json` in the same commit (descriptions are embedded verbatim at `build-registry.mjs:121`)
+- [x] **3.1** Shorten `description` frontmatter across `opencode_app/.opencode/agents/*.md` (36 agents), longest first — keep trigger phrases verbatim, cut mechanism prose; target ≤ 2 sentences / ~40 words; regenerate `registry.json` in the same commit (descriptions are embedded verbatim at `build-registry.mjs:121`)
     — **Why:** all 36 descriptions surface in the primary's agent listing; registry drift gate embeds them verbatim — separate commits would re-drift
     — **Done when:** every description ≤ 40 words with triggers retained; `build-registry.mjs --check` passes; README tables (paraphrases, not verbatim — confirmed) still coherent
     — **Consumers affected:** agent picker, delegation routing, registry.json
+    — **Done:** slimmed the 8 over-limit descriptions (image-analyzer 66→36, responsive-audit 63→38, requirements-specialist 62→38, technical-design 54→37, cad-specialist 56→29, repo-ops 46→37, opencode-tooling 45→30, pptx 41→32); all trigger phrases kept verbatim (grep-verified); registry regenerated in same change; files: opencode_app/.opencode/agents/ (8 files), deploy/registry.json; fixes: cad-specialist folded-block rewrite initially dropped the opening `---` (build-registry warned "no frontmatter", 36→35 agents) — restored via edit, re-verified 36 agents
 
 ### Phase 4: Doc sync + LEARNINGS update
 
