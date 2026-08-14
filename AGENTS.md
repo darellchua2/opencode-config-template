@@ -1,23 +1,21 @@
 # Repository-Specific Agent Instructions
 
-Project-specific behavioral rules for agents working in this repository. Usage docs (install, deploy commands, file tree, CodeGraph, subagent chaining syntax) live in `README.md` and the user-level `deploy/.AGENTS.md` — do not duplicate them here.
+Repo conventions only. Usage docs (install, deploy commands, file tree, chaining syntax) live in `README.md` and user-level `deploy/.AGENTS.md` (deploys to `~/.config/opencode/AGENTS.md`). Do not duplicate here.
 
 ## Repository Purpose
 
-`opencode-config-template` is a **multi-mode OpenCode configurator**:
-1. **User-space deploy** — `./deploy/setup.sh` copies config, agents, and skills to `~/.config/opencode/`
-2. **Docker standalone** — `docker compose up -d` launches OpenCode as a web endpoint via `opencode_app/`
-3. **Individual install (npx)** — `npx github:darellchua2/opencode-config-template add <name>` pulls a single skill or agent into your config (shadcn-style copy model). Default target is `~/.config/opencode/` (auto-discovered, no config touch); `--project` opts into `./.opencode/`; `--format claude|both` writes to `~/.claude/skills/` for Claude Code compat (same Agent Skills open standard). See [issue #304](https://github.com/darellchua2/opencode-config-template/issues/304).
-
-This repo-level `AGENTS.md` defines repo-specific conventions. User-level routing (subagent/skill selection, MCP tool routing) is in `deploy/.AGENTS.md` (deployed to `~/.config/opencode/AGENTS.md`).
+Multi-mode OpenCode configurator:
+1. **User-space deploy** — `./deploy/setup.sh` copies config, agents, skills to `~/.config/opencode/`.
+2. **Docker standalone** — `docker compose up -d` launches a web endpoint via `opencode_app/`.
+3. **Individual install** — `npx github:darellchua2/opencode-config-template add <name>` pulls a single skill/agent (shadcn-style copy model). Default target `~/.config/opencode/` (auto-discovered, no config touch); `--project` opts into `./.opencode/`; `--format claude|both` writes `~/.claude/skills/` (Agent Skills open standard). See [issue #304](https://github.com/darellchua2/opencode-config-template/issues/304).
 
 ## Source of Truth
 
-`opencode_app/.opencode/` is the **single source** for agents and skills. Never edit deployed `~/.config/opencode/` copies directly — edit the source, then redeploy.
+`opencode_app/.opencode/` is the **single source** for agents and skills. Never edit deployed `~/.config/opencode/` copies — edit source, then redeploy.
 
 ## Secret Masking
 
-Vibeguard (`opencode-vibeguard@0.1.0`) masks `.env` secrets in provider-bound traffic via regex patterns (`opencode_app/.opencode/vibeguard.config.json`). Behavioral rules for all agents are in `deploy/.AGENTS.md` §Secret Hygiene; verification + per-project overlay procedure is in `security-audit-skill`. Residual risks (`/share` plaintext, no fail-closed, session DB stores plaintext) are documented there.
+Vibeguard (`opencode-vibeguard@0.1.0`) masks `.env` secrets in provider-bound traffic via regex patterns (`opencode_app/.opencode/vibeguard.config.json`). Behavioral rules: `deploy/.AGENTS.md` §Secret Hygiene. Verification + per-project overlay: `security-audit-skill` (also documents residual risks: `/share` plaintext, no fail-closed, plaintext session DB).
 
 ## Dependency Management
 
@@ -34,122 +32,80 @@ Project-level agents must NOT be counted in setup scripts or README.
 
 ## Subagent Model Tiering (v2.0)
 
-Subagents are right-sized by purpose into **4 tiers**. The tier for each agent
-lives in `deploy/agent-tiers.json`; concrete models are **resolved at deploy
-time** from `deploy/models.default.json` (Z.AI defaults) and are **provider-
-agnostic** — swap to Anthropic/OpenAI/OpenRouter/LM Studio via
-`deploy/provider-presets.json` without editing agent files. See `MIGRATION.md`.
+Tiers live in `deploy/agent-tiers.json`; models are resolved at deploy time from `deploy/models.default.json` (Z.AI defaults) and are provider-agnostic — swap via `deploy/provider-presets.json` without editing agent files. See `MIGRATION.md`.
 
-| Tier | Default model (Z.AI) | Use for |
-|------|----------------------|---------|
-| `primary` | `glm-5.3` (1M ctx) | **Primary session only** — holds the long orchestrator context. No subagent uses this. |
+| Tier | Default (Z.AI) | Use for |
+|------|----------------|---------|
+| `primary` | `glm-5.3` (1M ctx) | Primary session only — never for subagents. |
 | `reasoning` | `glm-5.3` (200k) | Correctness-critical: reviewers (code/architecture/language incl. java/uiux), repo-ops-specialist, tdd, opentofu-explorer, loop-operator, opencode-tooling, technical-design-specialist, discovery-specialist, requirements-specialist, autoresearch-ml, autoresearch-code |
-| `fast` | `glm-5-turbo` (200k) | Exploratory / low-impact / coordination: explorer, testing, specialists (nextjs/cad/office-docs), document creators, pr-workflow, autoresearch-research |
-| `docs` | `glm-4.7` (204k) | Docs/lint/reporting: documentation, linting, coverage. |
-| `vision` | `zai/glm-5v-turbo` (128k) | **Native multimodal** — `image-analyzer-subagent` + `error-resolver-subagent` use this tier and see images/screenshots directly (no external vision API / no skill). The `zai` provider (per models.dev) exposes `glm-4.6v` ($0.30/$0.90), `glm-4.5v`, `glm-5v-turbo`. |
+| `fast` | `glm-5-turbo` (200k) | Exploratory/low-impact: explorer, testing, nextjs/cad/office-docs specialists, document creators, pr-workflow, autoresearch-research |
+| `docs` | `glm-4.7` (204k) | documentation, linting, coverage |
+| `vision` | `zai/glm-5v-turbo` (128k) | Native multimodal: `image-analyzer-subagent` + `error-resolver-subagent` (see fallback below) |
 
-Pick the tier by what the agent *does*: correctness-critical → `reasoning`;
-exploratory/low-impact → `fast`; docs/lint → `docs`; native image perception → `vision`. **Never
-default a subagent to the `primary` tier.**
+Pick by purpose: correctness-critical → `reasoning`; exploratory → `fast`; docs/lint → `docs`; image perception → `vision`.
 
-> **Image / screenshot analysis:** `image-analyzer-subagent` and `error-resolver-subagent` are
-> **native multimodal** — they run on `zai/glm-5v-turbo` (vision tier) and perceive images directly.
-> When native perception is unavailable (vision MCP server not connected, "model does not support
-> image input", or a text-only session), they fall back to a **direct Z.AI vision API call** to the
-> same `glm-5v-turbo` model via `zai-vision-analysis-skill` (coding-plan endpoint preferred, PAAS
-> fallback). Requires Z.AI auth / `ZAI_API_KEY`. The free `glm-4.6v-flash` endpoint remains
-> available as a cost-constrained option but is no longer the default.
+**Vision fallback:** when native perception is unavailable (vision server not connected, "model does not support image input", text-only session), image-analyzer and error-resolver fall back to a direct Z.AI vision API call to the same `glm-5v-turbo` via `zai-vision-analysis-skill` (coding-plan endpoint preferred, PAAS fallback; requires `ZAI_API_KEY`). Free `glm-4.6v-flash` is a cost-constrained option, not the default.
 
-### Resolution precedence (highest wins)
-1. `<project>/.opencode/agent-overrides.json` (per-agent, project-local)
-2. `~/.config/opencode/agent-overrides.json` (per-agent, global)
-3. `<project>/.opencode/models.json` (tier map, project-local)
-4. `~/.config/opencode/models.json` (tier map, global)
-5. `deploy/models.default.json` (Z.AI defaults)
-
-Swap provider: `./deploy/setup.sh --provider anthropic` (or interactive).
-**Mix providers per category**: `./deploy/setup.sh --mix` — each of
-`primary`/`reasoning`/`fast`/`docs`/`vision` can use a different provider's model
-(e.g. Z.AI everywhere except `vision` on OpenAI); stored in `models.json`, so
-resolve without `--provider`. Each referenced provider must be authenticated in
-OpenCode. Re-resolve: `./deploy/setup.sh --models-only`. Per-agent pin: edit
-`~/.config/opencode/agent-overrides.json`. Built-in agents `explore`→`fast` and
-`general`→`reasoning` are patched in `opencode.json`, not via the tier registry.
+**Resolution precedence (highest wins):** project `.opencode/agent-overrides.json` > global `~/.config/opencode/agent-overrides.json` > project `.opencode/models.json` > global `~/.config/opencode/models.json` > `deploy/models.default.json`. Swap provider: `setup.sh --provider <p>`; mix per tier: `setup.sh --mix` (stored in `models.json`, re-resolve with `--models-only`); per-agent pin: global `agent-overrides.json`. Built-ins `explore`→`fast` and `general`→`reasoning` are patched in `opencode.json`, not the tier registry.
 
 ## Adding Skills or Subagents — Sync Rules
 
-When adding/removing a skill or subagent, update these files to maintain synchronization:
-
-| Trigger | What to Update |
+| Trigger | What to update |
 |---------|---------------|
 | New/removed MCP server | MCP count, auto-start listing, help text |
 | New/removed skill | Skill count, category listing, banner |
 | New/removed agent | Agent count, help text listing |
-| Config changes (`opencode.json`) | MCP server entries if added/removed |
+| `opencode.json` config change | MCP server entries if added/removed |
 
-| File | Update Type |
-|------|-------------|
-| `deploy/setup.sh` | Skill/agent listings and counts (banner + status sections) |
-| `deploy/setup.ps1` | Mirror of setup.sh (Windows parity) |
-| `README.md` | Skill Categories and Subagents tables |
-| `opencode_app/README.md` | Docker-specific docs if relevant |
-
-After changes, invoke the `documentation-sync-workflow` skill or delegate to `opencode-tooling-subagent` for guided synchronization.
+Files: `deploy/setup.sh`, `deploy/setup.ps1` (Windows mirror), `README.md` (Skill Categories + Subagents tables), `opencode_app/README.md` (if Docker-relevant). Then invoke `documentation-sync-workflow` skill or delegate to `opencode-tooling-subagent`.
 
 ## Skill / Agent Frontmatter Contract
 
-Authoritative rules (verified against opencode.ai docs 2026-08-14). All new/edited SKILL.md and agent files MUST conform.
+Verified against opencode.ai docs 2026-08-14. All new/edited SKILL.md and agent files MUST conform.
 
-**Skills — runtime-read keys** (everything else is ignored by OpenCode):
+**Skills — runtime-read keys** (all else ignored):
 | Key | Rule |
 |-----|------|
-| `name` | Required. MUST equal the directory name (`^[a-z0-9]+(-[a-z0-9]+)*$`, ≤64 chars) |
+| `name` | Required. MUST equal directory name (`^[a-z0-9]+(-[a-z0-9]+)*$`, ≤64 chars) |
 | `description` | Required, 1–1024 chars. House style: ≤50 words, preserve trigger phrases |
 | `license` | `Apache-2.0` (house default; existing MIT exceptions grandfathered) |
 | `compatibility` | `opencode` |
-| `metadata` | Opaque string map — zero runtime behavior. House-kept sub-keys: `protocol`, `pattern` only (bats/registry test signals). Do NOT add `audience`/`workflow`/`languages`/`trigger`/etc. |
-| `category` | **Installer-registry-only** (build-registry.mjs, init.mjs, setup.sh counts) — invisible to OpenCode, never delete |
+| `metadata` | Opaque string map, zero runtime behavior. House sub-keys: `protocol`, `pattern` only |
+| `category` | Installer-registry-only (build-registry.mjs, init.mjs, setup.sh counts) — invisible to OpenCode, never delete |
 
 `permission.skill` does NOT belong in SKILL.md — gating lives in `opencode.json` or agent frontmatter only.
 
-**Agents — runtime-read keys:** `description` (required), `temperature`, `steps`, `disable`, `prompt`, `model`, `permission` (NOT deprecated `tools`), `mode`, `hidden`, `color`, `top_p`. Source files ship NO `model:` — tiers inject it at deploy time. `category` is installer-registry-only (may pass through to provider — tolerated).
+**Agents — runtime-read keys:** `description` (required), `temperature`, `steps`, `disable`, `prompt`, `model`, `permission` (NOT deprecated `tools`), `mode`, `hidden`, `color`, `top_p`. Source files ship no `model:` — tiers inject it at deploy time. `category` is installer-registry-only.
 
 After ANY frontmatter change: run `node deploy/build-registry.mjs` and commit `registry.json`.
 
-## Return Contract Convention
+## Return Contract
 
-All subagents return this structure to minimize context bloat:
+All subagents return (additive signal fields allowed beyond, never replacing):
+**Status:** success | partial | failed
+**Output:** file path(s) / key result, one line
+**Summary:** 2–3 sentences max
+**Issues:** blockers, warnings, or "None"
 
-**Status:** [success | partial | failed]
-**Output:** [file path(s) or key result, one line]
-**Summary:** [2-3 sentences max]
-**Issues:** [blockers, warnings, or "None"]
-
-Additive signal fields (e.g., `NEEDS_GIT_BRANCH_SETUP: true`) are allowed beyond the required quartet but never replace the required fields.
-
-### Reviewer Additions (architecture, code, python, typescript, java, go, rust, uiux)
-
-**Patterns applied/violated:** `[{id: <LEARNINGS-slug>, status: applied|violated, evidence: <file:line or review-section ref>}]`
-- **Required** for all reviewer subagents on every review.
-- If no LEARNINGS pattern applied or was violated, emit `Patterns applied/violated: []` (empty list, never omit).
+**Reviewer additions** (architecture, code, python, typescript, java, go, rust, uiux) — required on every review: `Patterns applied/violated: [{id: <LEARNINGS-slug>, status: applied|violated, evidence: <file:line>}]`; emit `[]` if none, never omit.
 
 ## Project Learnings
 
-`LEARNINGS/` is a template in this repo. In target projects (where skills are deployed), check `LEARNINGS/` for existing patterns before reviewing or planning. Primary storage: `memory` tool (searchable). Secondary: `LEARNINGS/*.md` (git-committed). The `learnings-autoinject` plugin auto-surfaces a `LEARNINGS/*.md` manifest into the system prompt each session (on by default; `/learnings-off` to disable, `/learnings-refresh` after adding files mid-session), so manual `glob`+`read` is a fallback, not the primary discovery path.
+`LEARNINGS/` is a template in this repo; in target projects, check it before reviewing/planning. Primary storage: `memory` tool (searchable); secondary: `LEARNINGS/*.md`. The manifest is auto-injected per session — see user-level Memory Hygiene.
 
-## Extract-then-Delegate Pattern
+## Extract-then-Delegate
 
-When a subagent needs domain knowledge, the primary agent loads the skill, extracts relevant parameters, and passes ONLY those params to the subagent. This keeps heavy knowledge in the compactable primary context rather than the subagent's isolated context.
+When a subagent needs domain knowledge, the primary loads the skill, extracts relevant parameters, and passes ONLY those params to the subagent — heavy knowledge stays in the compactable primary context.
 
 ## Office Document Extraction Routing
 
-Binary office docs (`.docx`, `.pptx`, `.xlsx`, born-digital `.pdf`) need an extraction engine — `Read` cannot parse them. Route by content type, escalating only when the cheaper tier is insufficient. **This section is the single source of truth** — skills and subagents reference it rather than duplicating the decision tree.
+**Single source of truth** — skills/subagents reference this section instead of duplicating the tree. Binary office docs (`.docx`, `.pptx`, `.xlsx`, born-digital `.pdf`) need an extraction engine — `Read` cannot parse them. Escalate only when the cheaper tier is insufficient:
 
 | Tier | Engine | Best for | Enable |
 |------|--------|----------|--------|
-| 1 | **markitdown** (MCP) | Fast text dumps of born-digital docs (~1s/50 pages, no cloud calls) | `--enable-pack markitdown` |
-| 2 | **docling** (CLI-on-demand or MCP) | Layout-aware extraction: complex tables, multi-column, scanned PDFs where markitdown returns garbage | CLI: `pip install --user docling` (ask consent — ~3-4 GB); MCP: `--enable-pack docling` |
-| 3 | **image-analyzer-subagent** | Visual understanding: charts, diagrams, screenshots, "what does this look like" | always available (native multimodal) |
-| 4 | **pdf-specialist-skill** | Structured PDF data: forms, fillable fields, OCR-as-purpose, post-edit | load skill |
+| 1 | markitdown (MCP) | Fast text dumps of born-digital docs (~1s/50 pages, no cloud) | `--enable-pack markitdown` |
+| 2 | docling (CLI or MCP) | Layout-aware: complex tables, multi-column, scanned PDFs | CLI `pip install --user docling` (ask consent, ~3-4 GB); MCP `--enable-pack docling` |
+| 3 | image-analyzer-subagent | Visual understanding: charts, diagrams, screenshots | always available (native multimodal) |
+| 4 | pdf-specialist-skill | Structured PDF data: forms, fillable fields, OCR-as-purpose | load skill |
 
-**Default state:** markitdown and docling are both opt-in (disabled). When markitdown is disabled, tell the user to run `--enable-pack markitdown`. When markitdown output is insufficient (complex layout, scanned), escalate to docling — if absent, ask consent via `question` for the heavy install (never auto-install 3-4 GB). In headless/CI contexts, soft-fail to markitdown's best-effort output.
+markitdown and docling are both opt-in (disabled by default). When markitdown is disabled, tell the user to `--enable-pack markitdown`. When its output is insufficient, escalate to docling — if absent, ask consent via `question` (never auto-install 3-4 GB). Headless/CI: soft-fail to markitdown best-effort.

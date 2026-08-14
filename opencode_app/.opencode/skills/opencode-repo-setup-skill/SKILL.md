@@ -1,6 +1,6 @@
 ---
 name: opencode-repo-setup-skill
-description: Interactive per-repo MCP setup. Detects repo signals, asks which opt-in MCP servers to enable, merge-writes only the delta into the project's opencode.json (project wins over global), optionally initializes CodeGraph, reports token cost and revert path. Triggers on "set up mcp for this repo", "repo setup", "per-project enable", "configure project opencode".
+description: Interactive per-repo setup. Detects repo signals, asks which opt-in MCP servers to enable (project opencode.json wins over global), optionally initializes CodeGraph, appends CodeGraph/LSP rule blocks to the project AGENTS.md, reports token cost and revert path. Triggers on "set up mcp for this repo", "repo setup", "per-project enable", "configure project opencode".
 license: Apache-2.0
 compatibility: opencode
 category: OpenCode Meta
@@ -49,7 +49,8 @@ One multi-select question + one yes/no per extra. Options are built from the det
 - markitdown / docling / chrome-devtools / next-devtools — via global `--enable-pack` if not already enabled
 
 **Extras**:
-- "Initialize CodeGraph index? (`codegraph init -i`)" — only if `.codegraph/` absent and repo is code-heavy
+- "Initialize CodeGraph index? (`codegraph init -i`)" — only if `.codegraph/` absent and repo is code-heavy; on accept, also append the CodeGraph rule block (below) to `<repo>/AGENTS.md`
+- "Append the LSP rule block to AGENTS.md?" — offer when a built-in LSP server matches the repo language (TS/JS → `typescript`+`eslint`; Python → `pyright`)
 - "Scaffold a minimal project AGENTS.md?" — repo rules only; NO MCP prose (that belongs to config + this skill)
 
 ## Step 3 — Write (merge-write, delta-only)
@@ -110,13 +111,26 @@ Troubleshooting:
 - **Missing symbols after edits** — wait 2–3s for the watcher, or run `sync` manually.
 - **Large repos slow to index** — add `exclude` globs (`node_modules/**`, `dist/**`, `build/**`, `vendor/**`, `*.min.js`, `*.generated.*`) to `.codegraph/config.json`.
 
+## Rule blocks (project AGENTS.md)
+
+Per-tool routing rules live at PROJECT level, not user level — this skill appends them on acceptance. Append = add the block verbatim under an `## OpenCode Rule Blocks` heading (create file/heading if absent); skip if the block's marker comment already exists anywhere in the file.
+
+**CodeGraph** (marker `<!-- opencode:codegraph -->`) — append on init accept:
+
+> The `codegraph_*` tools are the interface (`status` → `search`/`callers`/`callees`/`impact`/`node`/`files`). Never call `read_mcp_resource`/`list_mcp_resources` — runtime-denied (upstream tool-list bug). Main session: lightweight lookups only — never `codegraph_explore`/`codegraph_context` (flood context; spawn an explore agent).
+
+**LSP** (marker `<!-- opencode:lsp -->`) — append on offer accept:
+
+> On reviews with >10-file or shared-module changes where `opencode.json` has no `lsp` key and a built-in server matches: append a one-line LSP-enable recommendation (TS/JS/Next.js → `typescript`+`eslint`; Python → `pyright`). Recommend only — never auto-edit `opencode.json`.
+
 ## Step 5 — Report
 
 State exactly:
 
 - **Enabled here**: list (e.g. `atlassian`) — takes effect on NEXT session start (opencode reads config at startup; no lazy-start mid-session)
 - **Estimated per-session cost**: atlassian ~5–6.5k tok; codegraph ~1.2k (already default-on)
-- **Revert**: delete the added `mcp.<server>` keys (or the whole file if we created it)
+- **Rule blocks appended**: CodeGraph / LSP / none
+- **Revert**: delete the added `mcp.<server>` keys (or the whole file if we created it); remove appended AGENTS.md blocks
 - **Global untouched**: `~/.config/opencode/config.json` unchanged; other repos unaffected
 
 ## Atlassian caveats (read before enabling)
@@ -131,6 +145,6 @@ State exactly:
 |--------|----------------|
 | Server inventory + default enable states | `opencode_app/opencode.json` `mcp` block of the configurator repo |
 | Config layering (project wins) | opencode docs — config merge semantics |
-| CodeGraph init | CodeGraph §pre-flight conventions (user AGENTS.md) |
+| CodeGraph init | CodeGraph server's own MCP instructions + this skill's Step 4 / Rule blocks |
 
 This skill deliberately contains no server versions, URLs beyond Atlassian REST constants, or token costs beyond the estimates above — refresh from the configurator repo's README MCP table when drifting.

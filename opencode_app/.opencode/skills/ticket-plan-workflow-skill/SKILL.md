@@ -1,6 +1,6 @@
 ---
 name: ticket-plan-workflow-skill
-description: Unified ticket/issue planning workflow for GitHub Issues and JIRA, with structured description, branch creation, PLAN.md generation, and phased execution
+description: Unified ticket/issue planning workflow for GitHub Issues and JIRA — structured description, branch creation, PLAN.md generation, phased execution. Triggers on "create issue", "new issue", "jira ticket", "open issue", "bug report", "feature request", "log a ticket", "track this", "create plan", "ticket with plan".
 license: Apache-2.0
 compatibility: opencode
 category: Git/Workflow
