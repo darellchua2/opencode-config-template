@@ -189,25 +189,29 @@ Deployed sessions start with ~40k tokens of injected overhead; skills + subagent
 
 ### Phase 8: Verification + ship (extension)
 
-- [ ] **8.1** Scratch-repo simulation: temp git repo; merge-write exactly as the skill prescribes yields `{"mcp":{"atlassian":{"enabled":true}}}` delta with pre-existing project keys preserved; verify project-over-global merge precedence with a scratch-HOME opencode session (project sees atlassian tools ON while global stays OFF); global config byte-identical after; delete-file revert works
+- [x] **8.1** Scratch-repo simulation: temp git repo; merge-write exactly as the skill prescribes yields `{"mcp":{"atlassian":{"enabled":true}}}` delta with pre-existing project keys preserved; verify project-over-global merge precedence with a scratch-HOME opencode session (project sees atlassian tools ON while global stays OFF); global config byte-identical after; delete-file revert works
     — **Why:** the whole mechanism rests on project-wins merge semantics — verify against live opencode, don't assume
     — **Done when:** simulation passes end-to-end
     — **Consumers affected:** none (throwaway)
+    — **Done:** Verified live with opencode 1.18.18 + XDG_CONFIG_HOME scratch global (new source config): baseline atlassian OFF; project .opencode/opencode.json {"mcp":{"atlassian":{"enabled":true}}} flips it ON (project-wins) while zai-vision/zread stay OFF and codegraph stays ON; deleting the file reverts to OFF; scratch global byte-identical throughout; files: /tmp/opencode/scratch-repo, /tmp/opencode/scratch-xdg; fixes: none
 
-- [ ] **8.2** Full gate: every `tests/*.bats` suite green; `node deploy/build-registry.mjs --check` green; `bash -n` on touched scripts; dry-run deploy lands lean-30 + auto-start 3
+- [x] **8.2** Full gate: every `tests/*.bats` suite green; `node deploy/build-registry.mjs --check` green; `bash -n` on touched scripts; dry-run deploy lands lean-30 + auto-start 3
     — **Why:** never push red; the extension touches config + tests + counts simultaneously
     — **Done when:** all green locally
     — **Consumers affected:** CI
+    — **Done:** 12/12 bats suites rc=0; registry OK (agents=36, skills=131); bash -n clean; dry-run rc=0 → lean=30 allows deny-first, mcp auto-start=3 (codegraph/mermaid/zai-web-reader), banner "skill profile: lean"; files: tests/, deploy/; fixes: none
 
-- [ ] **8.3** Atomic commits on GIT-333: Phase 6 `feat(config): default atlassian and dead zai MCP servers to opt-in` (config + bats + banners + routing docs), Phase 7 `feat(skills): add opencode-repo-setup-skill for per-project enablement` (skill + profiles + counts), Phase 8 residual `docs:`; push; update #333 (extension summary + expected ~5.9-7.7k additional savings). **Decision point:** PR #334 still open — extend it with these commits (default; single initiative) or merge #334 first and stack a new PR
+- [x] **8.3** Atomic commits on GIT-333: Phase 6 `feat(config): default atlassian and dead zai MCP servers to opt-in` (config + bats + banners + routing docs), Phase 7 `feat(skills): add opencode-repo-setup-skill for per-project enablement` (skill + profiles + counts), Phase 8 residual `docs:`; push; update #333 (extension summary + expected ~5.9-7.7k additional savings). **Decision point:** PR #334 still open — extend it with these commits (default; single initiative) or merge #334 first and stack a new PR
     — **Why:** semantic-release types drive CHANGELOG; PR history must show scope
     — **Done when:** commits pushed; #333 updated; CI green
     — **Consumers affected:** reviewers, CI, semantic-release
+    — **Done:** Phase 6 = 719b3d3 (feat(config)), Phase 7 = 33d4f4c (feat(skills)), Phase 8 residual = this docs commit; pushed to GIT-333. PR decision: EXTEND #334 (single initiative, one issue); #334 body updated with phases 6-8; issue #333 progress comment posted; files: PLANS/PLAN-GIT-333.md; fixes: none
 
-- [ ] **8.4** Post-merge note on #333: `./deploy/setup.sh` redeploy activates lean-30 + auto-start 3; per-project users run the new skill to re-enable what they need
+- [x] **8.4** Post-merge note on #333: `./deploy/setup.sh` redeploy activates lean-30 + auto-start 3; per-project users run the new skill to re-enable what they need
     — **Why:** merged PRs change nothing for existing installs (setup.sh redeploys; deployed copies never hand-edited)
     — **Done when:** comment appended
     — **Consumers affected:** this machine + downstream users
+    — **Done:** Pre-merge by design (mirrors 5.4): completion comment on #333 covers redeploy (./deploy/setup.sh → lean-30 + auto-start 3) and per-project re-enable via opencode-repo-setup-skill; files: issue #333; fixes: none
 
 ---
 
