@@ -5,9 +5,10 @@
 **Decisions (user-confirmed):**
 1. **Configurator-agnostic design** — this repo ships defaults to downstream users; no opinionated hardcoded trim. New `--skill-profile lean|full` deploy-time flag, **default `lean`** (context-lean default; `--skill-profile full` opts back in). Shipped `opencode_app/opencode.json` allowlist stays at 87 (= the `full` profile source; the default flip lives in the deploy scripts). Documented as a behavior change in `MIGRATION.md`.
 2. Lean profile = **29 skills** (audit's 28 + `pdf-specialist-skill`, whose only documented consumer is the primary session per the Office Document Routing tables).
+3. **MCP opt-in defaults (phases 6-8, extension scope)** — shipped config flips `atlassian` + dead `zai-vision-mcp-server`/`zai-zread` to `enabled:false` (auto-start 6→3; `codegraph`, `mermaid`, `zai-web-reader` stay on). Per-project enablement via `<repo>/.opencode/opencode.json` merge (project wins over global) is THE enablement mechanism, fronted by new `opencode-repo-setup-skill` (detect → ask → merge-write delta → optional codegraph init → report). No jira-REST skill rewrite in this initiative — MCP enablement covers Atlassian; REST/API-token is documented inside the skill as fallback.
 
 ## Overview
-Deployed sessions start with ~40k tokens of injected overhead; skills + subagent descriptions account for ~12-13k (`<available_skills>` ~8.1k for 87 allows; 36 agent descriptions ~4-5.5k). Deliver: (a) per-agent frontmatter allows so subagents are immune to any profile, (b) a lean/full skill-profile mechanism selected at deploy time, (c) slimmer agent descriptions, (d) doc/LEARNINGS/test sync. Default deploy profile: `lean` (opt back in with `--skill-profile full`); shipped `opencode.json` unchanged at 87.
+Deployed sessions start with ~40k tokens of injected overhead; skills + subagent descriptions account for ~12-13k (`<available_skills>` ~8.1k for 87 allows; 36 agent descriptions ~4-5.5k). Deliver: (a) per-agent frontmatter allows so subagents are immune to any profile, (b) a lean/full skill-profile mechanism selected at deploy time, (c) slimmer agent descriptions, (d) doc/LEARNINGS/test sync. Default deploy profile: `lean` (opt back in with `--skill-profile full`); shipped `opencode.json` unchanged at 87. **Extension (phases 6-8):** MCP servers become fully opt-in (`atlassian` + 2 dead zai servers default-off, ~5.9-7.7k further savings in non-Jira projects) with new `opencode-repo-setup-skill` as the per-project interactive enablement frontend.
 
 ---
 
@@ -22,6 +23,9 @@ Deployed sessions start with ~40k tokens of injected overhead; skills + subagent
 | agent `description` frontmatter (slimming) | nothing | Task-tool agent listing; registry.json (verbatim embed) | med — losing trigger phrases degrades routing |
 | `LEARNINGS/decisions/skill-permission-allowlist.md` | Phases 1-2 (records final state + supersedes 13-must-keep) | maintainers, `LEARNINGS/_index.md`, anti-pattern doc mentions | low |
 | `README.md`, `opencode_app/README.md`, `deploy/.AGENTS.md` | all above | users, doc-consistency bats tests | low |
+| `opencode_app/opencode.json` mcp block (enabled flips, Phase 6) | nothing | `tests/test_mcp_count_consistency.bats` (auto-start == 6 assertion), setup.sh/ps1 auto-start banners/help, README MCP listing, `deploy/.AGENTS.md` §MCP Tool Routing | med — flips every non-project session's tool surface; tests hard-assert current state |
+| `opencode_app/.opencode/skills/opencode-repo-setup-skill/` (new, Phase 7) | skill-profiles.json (Phase 2) | primary sessions in target repos; `deploy/skill-profiles.json` lean array; README/registry/LEARNINGS count surfaces (Sync Rules) | med — new skill triggers the full doc-sync surface (130→131 etc.) |
+| explorer-subagent zread prose (strip, Phase 6) | nothing | `deploy/registry.json` (regen only if description changes) | low |
 
 ---
 
@@ -127,6 +131,72 @@ Deployed sessions start with ~40k tokens of injected overhead; skills + subagent
     — **Consumers affected:** this machine's deployment
     — **Done:** comment posted (issuecomment-5293510135) with measured savings + post-merge redeploy instructions (`./deploy/setup.sh`, default lean, resolves 131-drift); posted pre-merge so instructions are on the ticket regardless of merge timing; files: —; fixes: none
 
+### Phase 6: MCP opt-in defaults (everything-off unless project-declared)
+
+- [ ] **6.1** Flip shipped defaults in `opencode_app/opencode.json` (comment-free strict JSON): `atlassian.enabled` true→false, `zai-vision-mcp-server.enabled` true→false, `zai-zread.enabled` true→false. `codegraph`, `mermaid`, `zai-web-reader` stay enabled. Auto-start count 6→3.
+    — **Why:** both zai servers are already runtime-denied globally (proven dead, ~1.2k tok/session wasted); atlassian costs ~4.7-6.5k/session even unused and schemas inject regardless of `permission.tool` deny (dead-server proof); per-project enablement (Phase 7) replaces global-on
+    — **Done when:** enabled-count == 3 via python3 json check; config still valid strict JSON; no other keys touched
+    — **Consumers affected:** every deployed session's tool surface; bats suites; banners
+
+- [ ] **6.2** Update `tests/test_mcp_count_consistency.bats` **in the same commit** as 6.1: `mcp_count_auto_start_is_six` → `..._is_three` (codegraph, mermaid, zai-web-reader) + header comment (lines 11-13, 43-48); add per-server opt-in assertions mirroring the markitdown pattern (lines 38-41) for `atlassian`, `zai-vision-mcp-server`, `zai-zread`
+    — **Why:** the suite hard-asserts auto-start == 6 — the config flip alone turns CI red; the markitdown assertion is the established opt-in precedent
+    — **Done when:** suite green against the flipped config
+    — **Consumers affected:** CI
+
+- [ ] **6.3** Sync auto-start mentions: `deploy/setup.sh` + `deploy/setup.ps1` banner/help "MCP Servers (6)"-style auto-start text → 3 (grep both); README + `opencode_app/README.md` enabled-server/auto-start listings if they enumerate the six
+    — **Why:** those surfaces document the AUTO-START set; silent drift repeats the 130-vs-131 count story
+    — **Done when:** no stale auto-start references; `mcp_count` doc test green
+    — **Consumers affected:** setup banner/help readers
+
+- [ ] **6.4** Strip explorer-subagent's dead zread prose (instructions reference globally-denied `zai-zread` tools with no tool override — verified dead code); regen `registry.json` in the same commit if the description changed
+    — **Why:** the audit's "pick one, not both" finding — prose + deny teaches agents to call tools that always fail
+    — **Done when:** no `zai-zread` references remain in agent prompts; `build-registry.mjs --check` green
+    — **Consumers affected:** explorer-subagent; registry.json
+
+- [ ] **6.5** Docs: README MCP section gains the per-project enablement snippet (`<repo>/.opencode/opencode.json`: `{"mcp":{"atlassian":{"enabled":true}}}`, project wins over global); `deploy/.AGENTS.md` §MCP Tool Routing marks Atlassian tools conditional on project enablement; `MIGRATION.md` TL;DR behavior-change bullet (auto-start 6→3 + opt-in path)
+    — **Why:** deployed AGENTS.md reaches every session — must not route to tools that are off by default; MIGRATION.md is the behavior-change ledger (same as the default-lean bullet)
+    — **Done when:** routing reflects opt-in state; MIGRATION bullet present; docs consistent with config
+    — **Consumers affected:** every deployed session; README readers
+
+### Phase 7: `opencode-repo-setup-skill` (per-project enablement frontend)
+
+- [ ] **7.1** Create `opencode_app/.opencode/skills/opencode-repo-setup-skill/SKILL.md` — flow: **detect** (existing `.opencode/`, `.codegraph/`, Jira/GitHub refs in AGENTS.md, framework manifests, CI files) → **ask** via `question` tool (which MCP servers to enable incl. `atlassian`/zai extras; `codegraph init -i`?; scaffold minimal project AGENTS.md?) → **merge-write** `<repo>/.opencode/opencode.json` delta-only (node-based read-modify-write; never clobber existing keys; fail-closed on parse error; comment-free output) → optional `codegraph init -i` → **report** (enabled set, ~token cost, revert = delete the file). Idempotent on re-run. Triggers: "set up this repo for opencode", "enable mcp for this project", "project-level opencode config", "opencode repo setup". Include the Atlassian OAuth browser-flow caveat (mcp-remote first auth) + REST/API-token fallback pointers (id.atlassian.com scoped tokens, `_edge/tenant_info` cloudId discovery, `api.atlassian.com/ex/jira/{cloudId}`).
+    — **Why:** enablement needs an interactive frontend or users hand-write project configs; procedures live in the skill, NOT user-level AGENTS.md (zero always-on cost — placement decision from the session)
+    — **Done when:** SKILL.md on disk; valid frontmatter; all five flow sections complete; no secret literals
+    — **Consumers affected:** primary sessions in target repos
+
+- [ ] **7.2** Wire allowlist + profile: add `opencode-repo-setup-skill: allow` to shipped `permission.skill` (87→88) AND `deploy/skill-profiles.json` lean (29→30) — primary-invoked setup skill, one listing line, high value; update `tests/skill_profiles.bats` count assertions (29→30; 30→31 incl. deny)
+    — **Why:** hidden = Skill-tool-denied for the primary under both profiles' `"*": "deny"`; lean is the default so it must be lean-visible
+    — **Done when:** skill_profiles.bats green at the new counts; lean ⊆ shipped holds; valid JSON
+    — **Consumers affected:** lean/full deploys; skill_profiles.bats
+
+- [ ] **7.3** Sync Rules sweep for the new skill: skill counts 130→131 (README lines ~27/241/517/521 + `opencode_app/README.md:26`); `node deploy/build-registry.mjs` regen (skills 130→131) **in the same commit**; LEARNINGS decision counts (87→88 shipped, 29→30 lean); README skill-categories table; setup.sh/ps1 category listings if they enumerate it
+    — **Why:** `test_markitdown_skill.bats:73-99` asserts README == find == count_skills — count edits must land with the skill dir; registry drift gate on every PR
+    — **Done when:** all count surfaces say 131 skills / 88 allows / 30 lean; doc-consistency tests green
+    — **Consumers affected:** CI, README, registry.json, LEARNINGS
+
+### Phase 8: Verification + ship (extension)
+
+- [ ] **8.1** Scratch-repo simulation: temp git repo; merge-write exactly as the skill prescribes yields `{"mcp":{"atlassian":{"enabled":true}}}` delta with pre-existing project keys preserved; verify project-over-global merge precedence with a scratch-HOME opencode session (project sees atlassian tools ON while global stays OFF); global config byte-identical after; delete-file revert works
+    — **Why:** the whole mechanism rests on project-wins merge semantics — verify against live opencode, don't assume
+    — **Done when:** simulation passes end-to-end
+    — **Consumers affected:** none (throwaway)
+
+- [ ] **8.2** Full gate: every `tests/*.bats` suite green; `node deploy/build-registry.mjs --check` green; `bash -n` on touched scripts; dry-run deploy lands lean-30 + auto-start 3
+    — **Why:** never push red; the extension touches config + tests + counts simultaneously
+    — **Done when:** all green locally
+    — **Consumers affected:** CI
+
+- [ ] **8.3** Atomic commits on GIT-333: Phase 6 `feat(config): default atlassian and dead zai MCP servers to opt-in` (config + bats + banners + routing docs), Phase 7 `feat(skills): add opencode-repo-setup-skill for per-project enablement` (skill + profiles + counts), Phase 8 residual `docs:`; push; update #333 (extension summary + expected ~5.9-7.7k additional savings). **Decision point:** PR #334 still open — extend it with these commits (default; single initiative) or merge #334 first and stack a new PR
+    — **Why:** semantic-release types drive CHANGELOG; PR history must show scope
+    — **Done when:** commits pushed; #333 updated; CI green
+    — **Consumers affected:** reviewers, CI, semantic-release
+
+- [ ] **8.4** Post-merge note on #333: `./deploy/setup.sh` redeploy activates lean-30 + auto-start 3; per-project users run the new skill to re-enable what they need
+    — **Why:** merged PRs change nothing for existing installs (setup.sh redeploys; deployed copies never hand-edited)
+    — **Done when:** comment appended
+    — **Consumers affected:** this machine + downstream users
+
 ---
 
 ## Appendix: 1.1 Classification Table
@@ -139,6 +209,9 @@ _To be filled during execution of step 1.1 — all 58 lean-hidden skills classif
 - `pdf-specialist-skill` in lean (29th): primary is its only documented consumer (Office Document Routing Tier 4, root AGENTS.md + deploy/.AGENTS.md) — hiding it would break the routing table.
 - Only command-block skill reference is `/run-plan` → `plan-automation-loop-skill` (kept in lean). docker-entrypoint/plugins reference no lean-hidden skills.
 - README Subagents/Trigger-Phrases tables are paraphrases — Phase 3 won't desync them; the verbatim consumer is registry.json.
+- `test_mcp_count_consistency.bats:43-48` hard-asserts auto-start == 6 (codegraph, atlassian, zai-vision, mermaid, zai-web-reader, zai-zread); lines 38-41 (markitdown opt-in) are the per-server assertion precedent; banner "(6)" refs = AUTO-START count (header note lines 11-13).
+- Project `.opencode/opencode.json` merges over global (project wins) — opencode config layering; 8.1 verifies live before doc claims rely on it.
+- Atlassian per-project first use opens a browser for OAuth (mcp-remote); headless/docker needs the REST/API-token fallback documented in the skill.
 
 ## Dependencies
 - None external. Blocked-by: nothing.
@@ -150,7 +223,12 @@ _To be filled during execution of step 1.1 — all 58 lean-hidden skills classif
 - **Registry drift gate red on intermediate commits** → every frontmatter commit bundles regen (5.3).
 - **Description slimming drops a trigger phrase** → triggers kept verbatim (3.1); smoke-test delegation routing in 5.2.
 - **setup.ps1 parity lag** → 2.2 done-when includes ps1 mirror.
+- **PR #334 scope grows with phases 6-8 on GIT-333** → merge-first + stacked PR is the fallback (decision recorded at 8.3).
+- **Auto-start count surfaces drift (banners/help/README)** → 6.3 sweeps all in the same commit as the flip; 6.2 keeps the bats assertion authoritative.
+- **Project-wins merge assumption wrong** → 8.1 verifies against live opencode behavior before any doc claims.
 
 ## Success Metrics
 - Lean deployment: initial overhead reduced ~6.5-7.5k tokens (58 fewer skill descriptions + slimmer agent descriptions); full deployment: ~1-2k (descriptions only).
+- Extension: non-project sessions save an additional ~5.9-7.7k tokens (atlassian schemas ~4.7-6.5k + dead zai ~1.2k) → total ~10-11.5k with lean.
+- Scratch-repo enablement round-trip works: enable → project session sees the tools → delete project config → gone; global never mutated.
 - All bats suites green; `build-registry.mjs --check` green; README/LEARNINGS/registry counts consistent (zero drift).
