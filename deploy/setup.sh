@@ -98,6 +98,8 @@ DEPLOY_DIR="${REPO_DIR}/deploy"
 RESOLVER_SCRIPT="${DEPLOY_DIR}/resolve-models.mjs"
 MERGE_PACKS_SCRIPT="${DEPLOY_DIR}/merge-packs.mjs"
 PACKS_DIR="${DEPLOY_DIR}/packs"
+APPLY_SKILL_PROFILE_SCRIPT="${DEPLOY_DIR}/apply-skill-profile.mjs"
+SKILL_PROFILES_FILE="${DEPLOY_DIR}/skill-profiles.json"
 TUI_SCRIPT="${DEPLOY_DIR}/tui.mjs"
 AGENT_TIERS="${DEPLOY_DIR}/agent-tiers.json"
 MODELS_DEFAULT_MAP="${DEPLOY_DIR}/models.default.json"
@@ -341,6 +343,7 @@ FORCE_RESOLVE=false      # --force (ignore preserve-edits)
 MIGRATE_ONLY=false       # --migrate (migration + resolve only)
 MIX_MODE=false           # --mix (per-category provider/model editor)
 ENABLE_PACK=""           # --enable-pack <csv> (provider packs: autodesk,markitdown,nextjs,zai,docling,chrome-devtools)
+SKILL_PROFILE="lean"     # --skill-profile lean|full (default lean: primary sees 29 skills; full = shipped 87 verbatim)
 
 # API Keys (initialize to empty to avoid unbound variable errors)
 # Capture from environment if they exist
@@ -576,6 +579,13 @@ USAGE:
                           packs: autodesk, markitdown, nextjs, zai, docling, chrome-devtools
                           (comma-separated, e.g. --enable-pack autodesk,markitdown).
                           No-op if omitted; default state of every pack is OFF.
+
+  SKILL PROFILE (deploy-time primary visibility):
+    --skill-profile <p>   lean (default) | full. lean rewrites the DEPLOYED
+                          config's permission.skill to 29 primary-visible
+                          skills + "*": "deny" (subagents unaffected — they
+                          self-scope via frontmatter allows); full deploys the
+                          shipped 87-allow allowlist verbatim.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
                             EXAMPLES
@@ -862,6 +872,15 @@ parse_arguments() {
                     exit 1
                 fi
                 ENABLE_PACK="$2"
+                shift 2
+                ;;
+            --skill-profile)
+                if [ -n "$2" ] && { [ "$2" = "lean" ] || [ "$2" = "full" ]; }; then
+                    SKILL_PROFILE="$2"
+                else
+                    log_error "--skill-profile requires an argument (lean|full)"
+                    exit 1
+                fi
                 shift 2
                 ;;
             *)
@@ -2857,6 +2876,45 @@ deploy_plugins() {
 # ─────────────────────────────────────────────────────────────────────────────
 # AGENT DEPLOYMENT (v2.0 — resolver-driven)
 # ─────────────────────────────────────────────────────────────────────────────
+# Apply the skill profile (GIT-333): rewrites ONLY the permission.skill block
+# of the DEPLOYED config (never the source opencode_app/opencode.json).
+#   lean (default) -> 29 primary-visible skills + "*": "deny"
+#   full           -> verified no-op (shipped 87-allow allowlist stays verbatim)
+# Mirrors run_pack_merger's dry-run contract (B1): in dry-run the resolver
+# stages the preview config at $DRY_RUN_PREVIEW_DIR/opencode.json — patch that.
+run_skill_profile() {
+    if [ ! -f "$APPLY_SKILL_PROFILE_SCRIPT" ]; then
+        log_error "Skill-profile applier not found: ${APPLY_SKILL_PROFILE_SCRIPT}"
+        return 1
+    fi
+    if [ ! -f "$SKILL_PROFILES_FILE" ]; then
+        log_error "Skill profiles file not found: ${SKILL_PROFILES_FILE}"
+        return 1
+    fi
+
+    local target_config="$CONFIG_FILE"
+    if [ "$DRY_RUN" = true ]; then
+        target_config="${DRY_RUN_PREVIEW_DIR}/opencode.json"
+        if [ ! -f "$target_config" ]; then
+            log_error "Dry-run preview config not found: ${target_config}"
+            log_error "The resolver must run first to stage the preview. Aborting skill-profile apply."
+            return 1
+        fi
+    fi
+
+    log_info "Applying skill profile: ${SKILL_PROFILE}"
+    node "$APPLY_SKILL_PROFILE_SCRIPT" \
+        --config "$target_config" \
+        --profiles "$SKILL_PROFILES_FILE" \
+        --profile "$SKILL_PROFILE"
+    local rc=$?
+    if [ "$rc" -ne 0 ]; then
+        log_error "Skill-profile application failed (exit ${rc})"
+        return 1
+    fi
+    return 0
+}
+
 deploy_agents() {
     echo ""
     log_info "Setting up agents (v2.0 model resolution)..."
@@ -2895,6 +2953,16 @@ deploy_agents() {
     rc=$?
     if [ "$rc" -ne 0 ]; then
         log_error "Provider-pack application failed (exit ${rc})"
+        return 1
+    fi
+
+    # Apply skill profile (--skill-profile lean|full, default lean). Runs LAST
+    # so the rewrite lands on the final resolved+packed config. Subagents are
+    # unaffected (frontmatter allows, GIT-333 Phase 1).
+    run_skill_profile
+    rc=$?
+    if [ "$rc" -ne 0 ]; then
+        log_error "Skill-profile application failed (exit ${rc})"
         return 1
     fi
 
@@ -3433,6 +3501,7 @@ print_summary() {
     if [ -d "$SKILLS_DIR" ] && [ "$(ls -A "${SKILLS_DIR}" 2>/dev/null)" ]; then
         local skill_count=$(count_skills "${SKILLS_DIR}")
         echo "✓ skills: ${skill_count} skills deployed to ${SKILLS_DIR}/"
+        echo "✓ skill profile: ${SKILL_PROFILE} (primary-visible skills in permission.skill)"
         print_skill_categories "${SKILLS_DIR}"
 
     else
