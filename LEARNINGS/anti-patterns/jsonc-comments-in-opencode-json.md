@@ -3,7 +3,7 @@
 **Context**: When editing `opencode_app/opencode.json`
 **Pattern**: NEVER add `//` comment lines. The file must be valid standard JSON.
 **Rationale**: opencode itself supports JSONC (strips comments at runtime), but the CI bats tests (`tests/test_mcp_count_consistency.bats`) parse the file with Python's `json.load()`, which does NOT support comments. Adding `//` category headers causes `json.decoder.JSONDecodeError` and CI failure.
-**Alternatives Considered**: JSONC comments improve readability of the 87-entry allowlist. But CI compatibility trumps readability — the file must pass both parsers. (Metadata keys like `_comment` are valid JSON and acceptable; `deploy/skill-profiles.json` uses one.)
+**Alternatives Considered**: JSONC comments improve readability of the 88-entry allowlist. But CI compatibility trumps readability — the file must pass both parsers. (Metadata keys like `_comment` are valid JSON and acceptable; `deploy/skill-profiles.json` uses one.)
 **Trade-offs**: Slightly less readable config (no inline documentation) vs. CI stability.
 **Confidence**: 0.9
 **Scope**: project

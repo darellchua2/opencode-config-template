@@ -62,8 +62,8 @@ param(
     # (autodesk,markitdown,nextjs,zai,docling,chrome-devtools). Empty = no-op.
     [string]$EnablePack = "",
     # Skill profile (GIT-333): deploy-time primary visibility. lean (default)
-    # rewrites the DEPLOYED config's permission.skill to 29 visible skills;
-    # full deploys the shipped 87-allow allowlist verbatim.
+    # rewrites the DEPLOYED config's permission.skill to 30 visible skills;
+    # full deploys the shipped 88-allow allowlist verbatim.
     [ValidateSet("lean", "full")]
     [string]$SkillProfile = "lean"
 )
@@ -922,10 +922,10 @@ USAGE:
 
   SKILL PROFILE (deploy-time primary visibility):
     -SkillProfile <p>    lean (default) | full. lean rewrites the DEPLOYED
-                         config's permission.skill to 29 primary-visible skills
+                         config's permission.skill to 30 primary-visible skills
                          + "*": "deny" (subagents unaffected — they self-scope
                          via frontmatter allows); full deploys the shipped
-                         87-allow allowlist verbatim.
+                         88-allow allowlist verbatim.
 
 =======================================================================
                          CONFIGURED FEATURES
@@ -1885,7 +1885,7 @@ function Invoke-PackMerger {
 
 # Apply the skill profile (GIT-333): rewrites ONLY the permission.skill block
 # of the DEPLOYED config (never the source opencode_app/opencode.json).
-# lean (default) -> 29 primary-visible skills + "*": "deny"; full -> verified
+# lean (default) -> 30 primary-visible skills + "*": "deny"; full -> verified
 # no-op. Mirrors Invoke-PackMerger's dry-run contract (B1).
 function Invoke-SkillProfile {
     if (-not (Test-Path $ApplySkillProfileScript)) {

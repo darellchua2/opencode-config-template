@@ -64,6 +64,7 @@
       "version-bump-standard-skill": "allow",
 
       "opencode-agent-creation-skill": "allow",
+      "opencode-repo-setup-skill": "allow",
       "opencode-skill-creation-skill": "allow",
       "opencode-skills-maintainer-skill": "allow",
       "agent-introspection-debugging-skill": "allow",

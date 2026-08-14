@@ -343,7 +343,7 @@ FORCE_RESOLVE=false      # --force (ignore preserve-edits)
 MIGRATE_ONLY=false       # --migrate (migration + resolve only)
 MIX_MODE=false           # --mix (per-category provider/model editor)
 ENABLE_PACK=""           # --enable-pack <csv> (provider packs: autodesk,markitdown,nextjs,zai,docling,chrome-devtools)
-SKILL_PROFILE="lean"     # --skill-profile lean|full (default lean: primary sees 29 skills; full = shipped 87 verbatim)
+SKILL_PROFILE="lean"     # --skill-profile lean|full (default lean: primary sees 30 skills; full = shipped 88 verbatim)
 
 # API Keys (initialize to empty to avoid unbound variable errors)
 # Capture from environment if they exist
@@ -582,10 +582,10 @@ USAGE:
 
   SKILL PROFILE (deploy-time primary visibility):
     --skill-profile <p>   lean (default) | full. lean rewrites the DEPLOYED
-                          config's permission.skill to 29 primary-visible
-                          skills + "*": "deny" (subagents unaffected — they
-                          self-scope via frontmatter allows); full deploys the
-                          shipped 87-allow allowlist verbatim.
+                           config's permission.skill to 30 primary-visible
+                           skills + "*": "deny" (subagents unaffected — they
+                           self-scope via frontmatter allows); full deploys the
+                           shipped 88-allow allowlist verbatim.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
                             EXAMPLES
@@ -2879,8 +2879,8 @@ deploy_plugins() {
 # ─────────────────────────────────────────────────────────────────────────────
 # Apply the skill profile (GIT-333): rewrites ONLY the permission.skill block
 # of the DEPLOYED config (never the source opencode_app/opencode.json).
-#   lean (default) -> 29 primary-visible skills + "*": "deny"
-#   full           -> verified no-op (shipped 87-allow allowlist stays verbatim)
+#   lean (default) -> 30 primary-visible skills + "*": "deny"
+#   full           -> verified no-op (shipped 88-allow allowlist stays verbatim)
 # Mirrors run_pack_merger's dry-run contract (B1): in dry-run the resolver
 # stages the preview config at $DRY_RUN_PREVIEW_DIR/opencode.json — patch that.
 run_skill_profile() {
