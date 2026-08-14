@@ -326,18 +326,35 @@ nvm install 24
 
 ## MCP Servers
 
-The configuration ships 15 MCP server entries. **6 are enabled by default:**
+The configuration ships 15 MCP server entries. **3 are enabled by default:**
 
 | Server | Type | Purpose |
 |--------|------|---------|
 | `codegraph` | local (npx) | Pre-indexed code knowledge graph |
-| `atlassian` | local (npx) | JIRA and Confluence |
-| `zai-vision-mcp-server` | local (npx) | Image/video analysis |
 | `mermaid` | local (npx) | Mermaid diagram rendering (SVG) |
 | `zai-web-reader` | remote | Web page content extraction |
-| `zai-zread` | remote | GitHub repository search/reading |
 
-The remaining 9 (Autodesk, `next-devtools`, `web-search-prime`, `markitdown`, `docling`, `chrome-devtools`) are `enabled: false` and opt-in. To enable one, set `"enabled": true` (and grant its tools in the `permission.tool` block) in `config.json`.
+The remaining 12 are `enabled: false` and opt-in:
+
+| Server | Type | Purpose |
+|--------|------|---------|
+| `atlassian` | local (npx mcp-remote) | JIRA and Confluence (first use opens browser OAuth) |
+| `zai-vision-mcp-server` | local (npx) | Image/video analysis |
+| `zai-zread` | remote | GitHub repository search/reading |
+| `next-devtools` | local (npx) | Next.js DevTools integration |
+| `web-search-prime` | remote | Web search |
+| `markitdown` | local | Document-to-Markdown (local-only) |
+| `docling` | local | Layout-aware document extraction (~3-4 GB) |
+| `chrome-devtools` | local | Live Chrome automation |
+| `autodesk-revit` / `autodesk-model-data` / `autodesk-fusion` / `autodesk-help` | remote | Autodesk platform |
+
+To enable one **for a single project**, add a `.opencode/opencode.json` in the repo (project config merges over the global one — project wins):
+
+```json
+{ "mcp": { "atlassian": { "enabled": true } } }
+```
+
+To enable one **globally**, set `"enabled": true` in `config.json`, or use a provider pack below. The `opencode-repo-setup-skill` automates per-project enablement interactively.
 
 #### Provider Packs — deploy-time MCP toggle (#268)
 

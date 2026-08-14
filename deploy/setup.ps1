@@ -1742,8 +1742,8 @@ function Set-Configuration {
             Write-Host "    - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
             Write-Host ""
             Write-Host "Configured MCP servers:" -ForegroundColor Green
-            Write-Host "    - Local (auto-start): atlassian, zai-vision-mcp-server, codegraph, mermaid"
-            Write-Host "    - Remote (needs key): web-reader, zread"
+            Write-Host "    - Auto-start: codegraph, mermaid, web-reader"
+            Write-Host "    - Opt-in per-project (.opencode/opencode.json): atlassian, zai-vision-mcp-server, zai-zread"
             Write-Host "    - Available but disabled (opt-in): web-search-prime, next-devtools, markitdown, docling, chrome-devtools"
             if ($script:vgDeployed) {
                 Write-Host "Secret masking: active (vibeguard)" -ForegroundColor Green
@@ -2706,9 +2706,10 @@ function Show-NextSteps {
     Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
     Write-Host "  Run 'opencode --skill <name> `"prompt`"' to invoke a skill"
     Write-Host ""
-     Write-Host "MCP Servers (6):"
-     Write-Host "  Local (auto-start): atlassian, zai-vision-mcp-server, codegraph"
-     Write-Host "  Remote (needs key): web-reader, web-search-prime, zread"
+     Write-Host "MCP Servers (3):"
+     Write-Host "  Auto-start: codegraph, mermaid, web-reader"
+     Write-Host "  Opt-in per-project: atlassian, zai-vision-mcp-server, zai-zread"
+     Write-Host "  Opt-in global packs: next-devtools, markitdown, docling, chrome-devtools, autodesk-*, web-search-prime"
     Write-Host ""
     Write-Host "  Auth: opencode mcp auth atlassian / opencode mcp auth github"
     Write-Host ""

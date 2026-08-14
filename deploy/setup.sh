@@ -675,23 +675,24 @@ USAGE:
            opencode --agent explore "find all API routes"
 
   MCP SERVERS (15):
-    Auto-start (local npx servers):
+    Auto-start (enabled by default):
       codegraph           Pre-indexed code knowledge graph (100% local)
-      atlassian          JIRA and Confluence integration
-      zai-vision-mcp-server     Image analysis and video processing
-      mermaid            Mermaid diagram rendering (SVG/PNG)
+      zai-web-reader      Web page content extraction (remote, needs ZAI_API_KEY)
+      mermaid             Mermaid diagram rendering (SVG/PNG)
 
-    Available but disabled (opt-in — set enabled: true in config.json):
+    Available but disabled (opt-in — enable per-project via
+    .opencode/opencode.json or opencode-repo-setup-skill):
+      atlassian           JIRA and Confluence integration (first use opens browser OAuth)
+      zai-vision-mcp-server     Image analysis and video processing
+      zai-zread           GitHub repository search and file reading
       next-devtools      Next.js DevTools integration
       markitdown         Document-to-Markdown (local-only, privacy-hardened)
       docling            Layout-aware document extraction (heavy ~3-4 GB)
       chrome-devtools    Live Chrome automation: perf traces, network/console, Lighthouse, heap snapshots
                           (privacy-hardened: telemetry + CrUX OFF; throwaway profile; enable via --enable-pack chrome-devtools)
 
-    Remote (requires ZAI_API_KEY):
-      web-reader         Web page content extraction
+    Remote (requires ZAI_API_KEY, disabled):
       web-search-prime   Web search capabilities
-      zread              GitHub repository search and file reading
 
     Autodesk (requires Autodesk access token):
       autodesk-revit     Revit model data and APIs
@@ -2454,8 +2455,8 @@ setup_config() {
         echo "    - ... and $(($(count_agents "${REPO_DIR}/opencode_app/.opencode/agents") - 5)) more agents"
             echo ""
              echo "✓ Configured MCP servers:"
-             echo "    Local (auto-start): atlassian, zai-vision-mcp-server, codegraph, mermaid"
-             echo "    Remote (needs key): web-reader, web-search-prime, zread"
+             echo "    Auto-start: codegraph, mermaid, web-reader"
+             echo "    Opt-in per-project (.opencode/opencode.json): atlassian, zai-vision-mcp-server, zai-zread"
               echo "    Available but disabled (opt-in): next-devtools, markitdown, autodesk-*, docling, chrome-devtools"
               echo "    Enable a group with: ./setup.sh --enable-pack <autodesk|markitdown|nextjs|zai|docling|chrome-devtools>"
             echo ""
@@ -3482,13 +3483,13 @@ print_summary() {
     # MCP servers configured
     if [ -f "$CONFIG_FILE" ]; then
          echo "✓ Configured MCP servers:"
-         echo "    - atlassian - JIRA and Confluence integration (auto-start)"
-         echo "    - web-reader - Web page reading (needs ZAI_API_KEY)"
-         echo "    - web-search-prime - Web search (needs ZAI_API_KEY)"
-         echo "    - zai-vision-mcp-server - Image analysis (auto-start)"
-         echo "    - zread - GitHub repo search (needs ZAI_API_KEY)"
          echo "    - codegraph - Code knowledge graph (auto-start)"
          echo "    - mermaid - Diagram rendering SVG/PNG (auto-start)"
+         echo "    - web-reader - Web page reading (auto-start, needs ZAI_API_KEY)"
+         echo "    - atlassian - JIRA and Confluence (opt-in per-project)"
+         echo "    - zai-vision-mcp-server - Image analysis (opt-in per-project)"
+         echo "    - zread - GitHub repo search (opt-in per-project)"
+         echo "    - web-search-prime - Web search (needs ZAI_API_KEY, disabled)"
          echo "    - markitdown - Document-to-Markdown, local-only, opt-in"
 
     # Secret masking
@@ -3577,11 +3578,12 @@ print_next_steps() {
     echo "  Run 'opencode --skill <name> \"prompt\"' to use a skill"
     echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-     echo "                     🔌 MCP Servers (6)"
+     echo "                     🔌 MCP Servers (3)"
      echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
      echo ""
-     echo "  Local (auto-start): atlassian, zai-vision-mcp-server, codegraph"
-     echo "  Remote (needs key): web-reader, web-search-prime, zread"
+     echo "  Auto-start: codegraph, mermaid, web-reader"
+     echo "  Opt-in per-project: atlassian, zai-vision-mcp-server, zai-zread"
+     echo "  Opt-in global packs: next-devtools, markitdown, docling, chrome-devtools, autodesk-*, web-search-prime"
     echo ""
     echo "  Auth: opencode mcp auth atlassian / opencode mcp auth github"
     echo ""

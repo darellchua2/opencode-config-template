@@ -11,6 +11,9 @@
 # Note: deploy/setup.ps1 and setup.sh banner "MCP Servers (6)" / "(6)"
 # refer to the AUTO-START count (always 6), not the total — those are
 # intentionally different and not asserted here.
+# UPDATE (PLAN-GIT-333 Phase 6): auto-start is now 3 (codegraph,
+# zai-web-reader, mermaid). atlassian/zai-vision/zai-zread are opt-in
+# per-project (opencode-repo-setup-skill). Banner refs must say 3.
 
 CONFIG="opencode_app/opencode.json"
 
@@ -40,10 +43,23 @@ actual_mcp_count() {
   python3 -c "import json; d=json.load(open('${CONFIG}')); assert 'markitdown' in d['mcp'], 'markitdown missing'; assert d['mcp']['markitdown']['enabled'] is False, 'markitdown must be opt-in'"
 }
 
-@test "mcp_count_auto_start_is_six" {
-  # Six auto-start servers: codegraph, atlassian, zai-vision-mcp-server,
-  # mermaid, zai-web-reader, zai-zread
+@test "mcp_count_atlassian_is_opt_in" {
+  # PLAN-GIT-333 Phase 6 — atlassian must be per-project opt-in
+  python3 -c "import json; d=json.load(open('${CONFIG}')); assert d['mcp']['atlassian']['enabled'] is False, 'atlassian must be opt-in'"
+}
+
+@test "mcp_count_zai_vision_is_opt_in" {
+  python3 -c "import json; d=json.load(open('${CONFIG}')); assert d['mcp']['zai-vision-mcp-server']['enabled'] is False, 'zai-vision-mcp-server must be opt-in'"
+}
+
+@test "mcp_count_zai_zread_is_opt_in" {
+  python3 -c "import json; d=json.load(open('${CONFIG}')); assert d['mcp']['zai-zread']['enabled'] is False, 'zai-zread must be opt-in'"
+}
+
+@test "mcp_count_auto_start_is_three" {
+  # Three auto-start servers: codegraph, zai-web-reader, mermaid.
+  # atlassian + zai-vision-mcp-server + zai-zread are opt-in (Phase 6).
   auto_count=$(python3 -c "import json; d=json.load(open('${CONFIG}')); print(sum(1 for v in d['mcp'].values() if v.get('enabled')))")
   echo "Auto-start (enabled) MCP count: ${auto_count}" >&3
-  [ "$auto_count" = "6" ]
+  [ "$auto_count" = "3" ]
 }

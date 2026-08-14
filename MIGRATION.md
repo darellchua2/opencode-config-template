@@ -20,6 +20,13 @@ migration, and how to revert.
   tokens less startup context). Opt back in with `--skill-profile full`
   (PowerShell: `-SkillProfile full`). Subagents are unaffected under either
   profile; re-running setup applies the profile to your deployed config.
+- **Behavior change (#333): auto-start MCP servers reduced 6 → 3** —
+  `codegraph`, `mermaid`, `zai-web-reader` stay on; `atlassian`,
+  `zai-vision-mcp-server`, `zai-zread` are now opt-in (~5.9-7.7k tokens less
+  startup context per non-project session). Enable per-project by adding
+  `<repo>/.opencode/opencode.json` with `{"mcp":{"atlassian":{"enabled":true}}}`
+  (project wins over global; `opencode-repo-setup-skill` automates this), or
+  flip `enabled: true` in your global config to restore the old behavior.
 
 ---
 

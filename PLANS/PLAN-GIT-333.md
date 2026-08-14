@@ -133,31 +133,31 @@ Deployed sessions start with ~40k tokens of injected overhead; skills + subagent
 
 ### Phase 6: MCP opt-in defaults (everything-off unless project-declared)
 
-- [ ] **6.1** Flip shipped defaults in `opencode_app/opencode.json` (comment-free strict JSON): `atlassian.enabled` true→false, `zai-vision-mcp-server.enabled` true→false, `zai-zread.enabled` true→false. `codegraph`, `mermaid`, `zai-web-reader` stay enabled. Auto-start count 6→3.
+- [x] **6.1** Flip shipped defaults in `opencode_app/opencode.json` (comment-free strict JSON): `atlassian.enabled` true→false, `zai-vision-mcp-server.enabled` true→false, `zai-zread.enabled` true→false. `codegraph`, `mermaid`, `zai-web-reader` stay enabled. Auto-start count 6→3.
     — **Why:** both zai servers are already runtime-denied globally (proven dead, ~1.2k tok/session wasted); atlassian costs ~4.7-6.5k/session even unused and schemas inject regardless of `permission.tool` deny (dead-server proof); per-project enablement (Phase 7) replaces global-on
     — **Done when:** enabled-count == 3 via python3 json check; config still valid strict JSON; no other keys touched
     — **Consumers affected:** every deployed session's tool surface; bats suites; banners
-
-- [ ] **6.2** Update `tests/test_mcp_count_consistency.bats` **in the same commit** as 6.1: `mcp_count_auto_start_is_six` → `..._is_three` (codegraph, mermaid, zai-web-reader) + header comment (lines 11-13, 43-48); add per-server opt-in assertions mirroring the markitdown pattern (lines 38-41) for `atlassian`, `zai-vision-mcp-server`, `zai-zread`
+    — **Done:** flipped atlassian/zai-vision-mcp-server/zai-zread to enabled:false via surgical edits (node full-file rewrite reformatted the file — reverted); enabled = codegraph, zai-web-reader, mermaid (3); config still strict JSON; files: opencode_app/opencode.json; fixes: zai-zread edit initially produced duplicate enabled key — removed stale line, JSON parses\n
+- [x] **6.2** Update `tests/test_mcp_count_consistency.bats` **in the same commit** as 6.1: `mcp_count_auto_start_is_six` → `..._is_three` (codegraph, mermaid, zai-web-reader) + header comment (lines 11-13, 43-48); add per-server opt-in assertions mirroring the markitdown pattern (lines 38-41) for `atlassian`, `zai-vision-mcp-server`, `zai-zread`
     — **Why:** the suite hard-asserts auto-start == 6 — the config flip alone turns CI red; the markitdown assertion is the established opt-in precedent
     — **Done when:** suite green against the flipped config
     — **Consumers affected:** CI
-
-- [ ] **6.3** Sync auto-start mentions: `deploy/setup.sh` + `deploy/setup.ps1` banner/help "MCP Servers (6)"-style auto-start text → 3 (grep both); README + `opencode_app/README.md` enabled-server/auto-start listings if they enumerate the six
+    — **Done:** same-commit bats update: auto_start_is_six → auto_start_is_three + 3 new per-server opt-in assertions (markitdown pattern) + header note; suite 6/6 green; files: tests/test_mcp_count_consistency.bats; fixes: none\n
+- [x] **6.3** Sync auto-start mentions: `deploy/setup.sh` + `deploy/setup.ps1` banner/help "MCP Servers (6)"-style auto-start text → 3 (grep both); README + `opencode_app/README.md` enabled-server/auto-start listings if they enumerate the six
     — **Why:** those surfaces document the AUTO-START set; silent drift repeats the 130-vs-131 count story
     — **Done when:** no stale auto-start references; `mcp_count` doc test green
     — **Consumers affected:** setup banner/help readers
-
-- [ ] **6.4** Strip explorer-subagent's dead zread prose (instructions reference globally-denied `zai-zread` tools with no tool override — verified dead code); regen `registry.json` in the same commit if the description changed
+    — **Done:** swept auto-start text: setup.sh help (MCP SERVERS listing regrouped), config-echo block (3478), banner MCP Servers (6)→(3); setup.ps1 both mirrors; README MCP Servers section rewritten (3 default + 12 opt-in table + per-project snippet); files: deploy/setup.sh, deploy/setup.ps1, README.md; fixes: none\n
+- [x] **6.4** Strip explorer-subagent's dead zread prose (instructions reference globally-denied `zai-zread` tools with no tool override — verified dead code); regen `registry.json` in the same commit if the description changed
     — **Why:** the audit's "pick one, not both" finding — prose + deny teaches agents to call tools that always fail
     — **Done when:** no `zai-zread` references remain in agent prompts; `build-registry.mjs --check` green
     — **Consumers affected:** explorer-subagent; registry.json
-
-- [ ] **6.5** Docs: README MCP section gains the per-project enablement snippet (`<repo>/.opencode/opencode.json`: `{"mcp":{"atlassian":{"enabled":true}}}`, project wins over global); `deploy/.AGENTS.md` §MCP Tool Routing marks Atlassian tools conditional on project enablement; `MIGRATION.md` TL;DR behavior-change bullet (auto-start 6→3 + opt-in path)
+    — **Done:** explorer-subagent remote-exploration prose rewritten to gh CLI + webfetch raw.githubusercontent.com fallback (zread noted as disabled-by-default only); registry regenerated + --check green (1-line diff, description unchanged); files: opencode_app/.opencode/agents/explorer-subagent.md, deploy/registry.json; fixes: none\n
+- [x] **6.5** Docs: README MCP section gains the per-project enablement snippet (`<repo>/.opencode/opencode.json`: `{"mcp":{"atlassian":{"enabled":true}}}`, project wins over global); `deploy/.AGENTS.md` §MCP Tool Routing marks Atlassian tools conditional on project enablement; `MIGRATION.md` TL;DR behavior-change bullet (auto-start 6→3 + opt-in path)
     — **Why:** deployed AGENTS.md reaches every session — must not route to tools that are off by default; MIGRATION.md is the behavior-change ledger (same as the default-lean bullet)
     — **Done when:** routing reflects opt-in state; MIGRATION bullet present; docs consistent with config
     — **Consumers affected:** every deployed session; README readers
-
+    — **Done:** deploy/.AGENTS.md §MCP Tool Routing gained per-project enablement rule (no atlassian_* calls unless project-enabled); MIGRATION.md TL;DR gained auto-start 6→3 behavior-change bullet with restore path; files: deploy/.AGENTS.md, MIGRATION.md; fixes: none\n
 ### Phase 7: `opencode-repo-setup-skill` (per-project enablement frontend)
 
 - [ ] **7.1** Create `opencode_app/.opencode/skills/opencode-repo-setup-skill/SKILL.md` — flow: **detect** (existing `.opencode/`, `.codegraph/`, Jira/GitHub refs in AGENTS.md, framework manifests, CI files) → **ask** via `question` tool (which MCP servers to enable incl. `atlassian`/zai extras; `codegraph init -i`?; scaffold minimal project AGENTS.md?) → **merge-write** `<repo>/.opencode/opencode.json` delta-only (node-based read-modify-write; never clobber existing keys; fail-closed on parse error; comment-free output) → optional `codegraph init -i` → **report** (enabled set, ~token cost, revert = delete the file). Idempotent on re-run. Triggers: "set up this repo for opencode", "enable mcp for this project", "project-level opencode config", "opencode repo setup". Include the Atlassian OAuth browser-flow caveat (mcp-remote first auth) + REST/API-token fallback pointers (id.atlassian.com scoped tokens, `_edge/tenant_info` cloudId discovery, `api.atlassian.com/ex/jira/{cloudId}`).

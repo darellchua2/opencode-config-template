@@ -194,7 +194,7 @@
         "mcp-remote",
         "https://mcp.atlassian.com/v1/mcp"
       ],
-      "enabled": true
+      "enabled": false
     },
     "zai-web-reader": {
       "type": "remote",
@@ -219,7 +219,7 @@
         "Z_AI_API_KEY": "{env:ZAI_API_KEY}",
         "Z_AI_MODE": "ZAI"
       },
-      "enabled": true
+      "enabled": false
     },
     "zai-zread": {
       "type": "remote",
@@ -227,7 +227,7 @@
       "headers": {
         "Authorization": "Bearer {env:ZAI_API_KEY}"
       },
-      "enabled": true
+      "enabled": false
     },
     "autodesk-revit": {
       "type": "remote",

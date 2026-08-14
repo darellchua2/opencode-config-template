@@ -58,14 +58,15 @@ When `.codegraph/` exists in the project, prioritize CodeGraph tools over grep/g
 
 If `.codegraph/` does not exist, fall back to grep/glob/read normally.
 
-For remote GitHub repo exploration, continue using `zai-zread` tools (CodeGraph is local-only).
-
 ## Remote Repo Exploration
 
-When exploring open source GitHub repositories (not the local codebase), use the `zai-zread` tools:
-- `search_doc` — search documentation, issues, PRs, and contributors for a GitHub repo
-  - `get_repo_structure` — get directory structure and file list of a GitHub repo
-  - `read_file` — read complete file contents from a GitHub repo
+When exploring open source GitHub repositories (not the local codebase), prefer:
+
+1. `gh` CLI (`gh repo view`, `gh api`) when authenticated — structured output.
+2. `webfetch` on `https://raw.githubusercontent.com/<owner>/<repo>/<ref>/<path>` for raw file contents.
+3. GitHub HTML pages via `webfetch` as a last resort.
+
+(`zai-zread` MCP tools are disabled by default — only mention them if a project config has enabled them.)
 
 ## Return Contract
 
