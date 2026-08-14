@@ -101,7 +101,7 @@ MERGE_SCRIPT="deploy/merge-packs.mjs"
 }
 
 @test "deploy_agents_md_references_routing_rule" {
-  grep -q "Office Document Extraction Routing" deploy/.AGENTS.md
+  grep -q "4-tier routing in repo-root" deploy/.AGENTS.md
 }
 
 # =============================================================================
