@@ -245,7 +245,7 @@ async function isModelAvailable(modelId) {
   if (!modelId) return false;
   const pm = await readJsonMaybe(PROVIDER_MODELS);
   if (!pm) return true; // can't check — assume ok
-  // modelId is "provider/model-id" (e.g. "zai-coding-plan/glm-5.2"); provider-models.json
+  // modelId is "provider/model-id" (e.g. "zai-coding-plan/glm-5.3"); provider-models.json
   // maps provider key -> [bare model ids]. Also tolerate a bare id match across providers.
   const slash = modelId.indexOf("/");
   const provider = slash >= 0 ? modelId.slice(0, slash) : null;
@@ -684,7 +684,7 @@ async function permitMerge(sel) {
 // Claude Code uses the SAME SKILL.md format (Agent Skills open standard).
 // Skills are directories under ~/.claude/skills/<name>/ — straight copy, no
 // frontmatter manipulation needed EXCEPT stripping `model:` (Claude Code
-// recognizes it and would try to use non-Claude model IDs like glm-5.2).
+// recognizes it and would try to use non-Claude model IDs like glm-5.3).
 // Other unknown frontmatter fields (tier, permission, category) are safely ignored.
 function stripModelLine(content) {
   const lines = content.split(/\r?\n/);

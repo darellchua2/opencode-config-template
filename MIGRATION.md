@@ -40,7 +40,7 @@ migration, and how to revert.
   4. `~/.config/opencode/models.json` (tier map, global)
   5. `deploy/models.default.json` (Z.AI defaults)
 
-> **Default tier models:** `reasoning` → `zai-coding-plan/glm-5.2`. **Image analysis (#283)**
+> **Default tier models:** `reasoning` → `zai-coding-plan/glm-5.3`. **Image analysis (#283)**
 > is not a vision tier — `image-analyzer-subagent`/`error-resolver-subagent` run on `docs`
 > (`glm-4.7`) and obtain image content via `zai-vision-analysis-skill` (free `glm-4.6v-flash`
 > through a direct Z.AI API call, since models.dev doesn't list it). The `vision` tier
@@ -136,9 +136,9 @@ hand:
 
 ```json
 {
-  "primary": "zai-coding-plan/glm-5.2",
+  "primary": "zai-coding-plan/glm-5.3",
   "tiers": {
-    "reasoning": "zai-coding-plan/glm-5.2",
+    "reasoning": "zai-coding-plan/glm-5.3",
     "fast": "zai-coding-plan/glm-5-turbo",
     "docs": "zai-coding-plan/glm-4.7",
     "vision": "openai/gpt-5"

@@ -52,7 +52,7 @@ Prompt the user for the following information:
 - **Mode**: `primary` or `subagent`
 
 **Configuration Options**:
-- **Model**: Provider/model-id — primary agents use `zai-coding-plan/glm-5.2` (1M context); subagents tier by purpose: `glm-5.2` (reasoning/review/refactor), `glm-5-turbo` (explore/low-impact), `glm-4.7` (docs/lint — incl. `image-analyzer-subagent`/`error-resolver-subagent`, which obtain image content via `zai-vision-analysis-skill`). The `vision` tier (`zai/glm-4.6v`) is opt-in paid multimodal only.
+- **Model**: Provider/model-id — primary agents use `zai-coding-plan/glm-5.3` (1M context); subagents tier by purpose: `glm-5.3` (reasoning/review/refactor), `glm-5-turbo` (explore/low-impact), `glm-4.7` (docs/lint — incl. `image-analyzer-subagent`/`error-resolver-subagent`, which obtain image content via `zai-vision-analysis-skill`). The `vision` tier (`zai/glm-4.6v`) is opt-in paid multimodal only.
 - **Temperature**: 0.0-1.0 (default: 0.7)
 - **Steps**: Max agentic iterations (default: 5)
 - **Hidden**: Hide from @ autocomplete (default: false, subagents only)
@@ -79,7 +79,7 @@ Example:
   - Name: code-reviewer
   - Description: Review code for quality, security, and best practices
   - Mode: subagent
-  - Model: zai-coding-plan/glm-5.2
+  - Model: zai-coding-plan/glm-5.3
   - Temperature: 0.3
   - Steps: 3
   - Scope: project
@@ -133,7 +133,7 @@ Create the frontmatter section based on agent type:
 ---
 description: Main coding assistant for Python development
 mode: primary
-model: zai-coding-plan/glm-5.2
+model: zai-coding-plan/glm-5.3
 temperature: 0.7
 steps: 10
 permission:
@@ -151,7 +151,7 @@ color: primary
 ---
 description: Review code for quality and security issues
 mode: subagent
-model: zai-coding-plan/glm-5.2
+model: zai-coding-plan/glm-5.3
 temperature: 0.3
 steps: 3
 hidden: true
@@ -385,7 +385,7 @@ grep -E "^(description|mode):" .opencode/agents/<name>.md
 ---
 description: Review code for quality, security, and best practices
 mode: subagent
-model: zai-coding-plan/glm-5.2
+model: zai-coding-plan/glm-5.3
 temperature: 0.3
 steps: 3
 hidden: true
