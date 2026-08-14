@@ -15,6 +15,11 @@ migration, and how to revert.
 - To switch provider: `./deploy/setup.sh --provider anthropic` (interactive:
   `./deploy/setup.sh` and answer the provider prompt).
 - To re-resolve models only: `./deploy/setup.sh --models-only`.
+- **Behavior change (#333): deploys now default to the `lean` skill profile** —
+  the primary session sees 29 primary-visible skills instead of 87 (~5.4k
+  tokens less startup context). Opt back in with `--skill-profile full`
+  (PowerShell: `-SkillProfile full`). Subagents are unaffected under either
+  profile; re-running setup applies the profile to your deployed config.
 
 ---
 

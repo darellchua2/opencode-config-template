@@ -77,25 +77,29 @@ Deployed sessions start with ~40k tokens of injected overhead; skills + subagent
 
 ### Phase 4: Doc sync + LEARNINGS update
 
-- [ ] **4.1** Update `LEARNINGS/decisions/skill-permission-allowlist.md`: document the profile mechanism (87 shipped / 29 lean / default lean), supersede the 13-must-keep list, fix stale references — title line 1 ("80 explicit allows"), line 5 math, line 10 ("36 of 39 subagents"), line 18 ("80 allows + 1 deny"). Also `LEARNINGS/_index.md:29` ("80 allows" title) and `LEARNINGS/anti-patterns/jsonc-comments-in-opencode-json.md:6` ("80-entry allowlist")
+- [x] **4.1** Update `LEARNINGS/decisions/skill-permission-allowlist.md`: document the profile mechanism (87 shipped / 29 lean / default lean), supersede the 13-must-keep list, fix stale references — title line 1 ("80 explicit allows"), line 5 math, line 10 ("36 of 39 subagents"), line 18 ("80 allows + 1 deny"). Also `LEARNINGS/_index.md:29` ("80 allows" title) and `LEARNINGS/anti-patterns/jsonc-comments-in-opencode-json.md:6` ("80-entry allowlist")
     — **Why:** decision doc + index + anti-pattern all carry the stale count; the "no residual 80 references" gate is repo-wide
     — **Done when:** `rg -n '\b80\b' LEARNINGS/` returns nothing allowlist-related; decision file documents lean/full + hidden list
     — **Consumers affected:** maintainers, future sessions
+    — **Done:** rewrote decision file (87 shipped / 29 lean / default lean, superseded-constraint section, new references incl. skill-profiles.json + apply-skill-profile.mjs); _index.md entry title updated; jsonc anti-pattern "80-entry" → "87-entry" + _comment-key note; `grep -rn '\b80\b' LEARNINGS/` clean; files: LEARNINGS/decisions/skill-permission-allowlist.md, LEARNINGS/_index.md, LEARNINGS/anti-patterns/jsonc-comments-in-opencode-json.md; fixes: none
 
-- [ ] **4.2** README skill count stays **130** (source of truth is consistent: find-based count excluding `_archived` AND `_common` = 130; registry.json says 130; the "131" was deployed-copy drift, fixed by redeploy not docs). Add `opencode_app/README.md:26` ("130 skill directories" literal) to verification scope. Add lean/full profile section to README deploy docs. Sync README Presets table member counts if Phase 1 closure changes shifted them ("9 Code Quality", "10", "26", "12", "11"…) and verify `deploy/presets/pack-*.json` `skills` arrays against regenerated registry (generator `/tmp/gen-presets.mjs` is uncommitted — sync manually or commit it)
+- [x] **4.2** README skill count stays **130** (source of truth is consistent: find-based count excluding `_archived` AND `_common` = 130; registry.json says 130; the "131" was deployed-copy drift, fixed by redeploy not docs). Add `opencode_app/README.md:26` ("130 skill directories" literal) to verification scope. Add lean/full profile section to README deploy docs. Sync README Presets table member counts if Phase 1 closure changes shifted them ("9 Code Quality", "10", "26", "12", "11"…) and verify `deploy/presets/pack-*.json` `skills` arrays against regenerated registry (generator `/tmp/gen-presets.mjs` is uncommitted — sync manually or commit it)
     — **Why:** 4.2's original "130→131 fix" would itself fail `tests/test_markitdown_skill.bats:73-99` (`skill_count_consistent_across_docs` asserts README == find == count_skills); preset counts are consumer-visible
     — **Done when:** `test_markitdown_skill.bats` + `test_count_drift.bats` green; presets table matches registry
     — **Consumers affected:** README readers, doc-consistency tests
+    — **Done:** README count stays 130 (verified vs find-based count + registry + opencode_app/README.md:26); added "Skill Profiles — deploy-time primary visibility (#333)" section after Provider Packs; presets table resynced to actual closures (review 25, frontend 19, backend 17, docs 21, devops 31, business 32; core/research/cad unchanged); pack-{review,backend,frontend,docs,devops,business}.json skills arrays synced to measured closures (generator was uncommitted — synced via scratch-install enumeration); files: README.md, deploy/presets/ (6 files); fixes: none
 
-- [ ] **4.3** Update `deploy/.AGENTS.md` §Skill Permission Allowlist — guidance only (review: section contains NO counts): document the lean/full profiles, `--skill-profile` flag, and per-agent frontmatter allows as the relocation mechanism
+- [x] **4.3** Update `deploy/.AGENTS.md` §Skill Permission Allowlist — guidance only (review: section contains NO counts): document the lean/full profiles, `--skill-profile` flag, and per-agent frontmatter allows as the relocation mechanism
     — **Why:** deployed to every session as `~/.config/opencode/AGENTS.md`; must teach the profile pattern, not stale counts
     — **Done when:** section reflects the mechanism
     — **Consumers affected:** every deployed session
+    — **Done:** deploy/.AGENTS.md §Skill Permission Allowlist now documents lean/full profiles, --skill-profile flag, apply-skill-profile.mjs, lean-array addition guidance for new skills, and profile-immunity of self-scoped subagents; files: deploy/.AGENTS.md; fixes: none
 
-- [ ] **4.4** Verify `deploy/setup.sh`/`setup.ps1` dynamic counts unaffected (counts computed via `count_agents`/`count_skills` — confirmed); confirm no hardcoded "80"/"87" in allowlist context; update setup help text for the new flag; add default-lean behavior-change note to `MIGRATION.md`
+- [x] **4.4** Verify `deploy/setup.sh`/`setup.ps1` dynamic counts unaffected (counts computed via `count_agents`/`count_skills` — confirmed); confirm no hardcoded "80"/"87" in allowlist context; update setup help text for the new flag; add default-lean behavior-change note to `MIGRATION.md`
     — **Why:** Sync Rules; confirm-only because counts are computed
     — **Done when:** `rg -n '\b(80|87)\b' deploy/setup.sh deploy/setup.ps1` returns nothing allowlist-related; help text shows `--skill-profile`
     — **Consumers affected:** setup banner/help
+    — **Done:** verified setup.sh/ps1 contain no stale "80" (all "87" mentions are intentional full-profile docs added in Phase 2 help text); setup help text shows --skill-profile (Phase 2); MIGRATION.md TL;DR gained the default-lean behavior-change bullet (#333); files: MIGRATION.md; fixes: none
 
 ### Phase 5: Verification, commits, PR
 

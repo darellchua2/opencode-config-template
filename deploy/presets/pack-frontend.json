@@ -10,7 +10,11 @@
   "skills": [
     "accessibility-a11y-skill",
     "amplify-nextjs-deployment-skill",
+    "context-budget-skill",
+    "continuous-learning-skill",
+    "docstring-generator-skill",
     "frontend-design-skill",
+    "monorepo-management-skill",
     "nextjs-devtools-mcp-skill",
     "nextjs-image-usage-skill",
     "nextjs-pr-workflow-skill",

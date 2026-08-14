@@ -1,23 +1,24 @@
-## Decision: Skill permission allowlist — "*":"deny" + 80 explicit allows
+## Decision: Skill permission allowlist — shipped 87, lean profile 29, deploy default lean
 
-**Context**: Primary session loads every skill's `description` into `<available_skills>` at startup (~124 skills = significant per-session token tax).
-**Pattern**: Use `"permission.skill": { "*": "deny", "<skill>": "allow" }` in `opencode_app/opencode.json`. The `"*": "deny"` catch-all goes first (lowest priority); specific allows go after (last-match-wins per [permissions docs](https://opencode.ai/docs/permissions/#granular-rules-object-syntax)).
-**Rationale**: An allowlist of 80 primary-visible skills hides 44 subagent-only skills from the primary's `<available_skills>`, cutting ~44 descriptions (~200–400 tokens each) per session. New skills default to hidden until explicitly added.
-**Alternatives Considered**: Denylist (deny only specific subagent-only skills). Rejected — only hides ~17 skills vs allowlist's ~44. Allowlist scales better (new skills auto-hidden).
-**Trade-offs**: 
-- Pro: ~2.6x more token savings than denylist; enforces hub-and-spoke routing
-- Con: new skills are invisible to primary until manually added to allowlist; maintenance burden
-- Con: must verify every denied skill has a consumer subagent with `permission.skill: allow` override (36 of 39 subagents are self-scoped)
+**Context**: Primary session loads every skill's `description` into `<available_skills>` at startup (~130 skills = significant per-session token tax). GIT-333 added a deploy-time profile so downstream users choose visibility without hand-editing.
+**Pattern**: Ship `"permission.skill": { "*": "deny", "<skill>": "allow" }` with **87 allows** in `opencode_app/opencode.json` (= the `full` profile, single source of truth). `deploy/skill-profiles.json` defines `lean` (**29 allows**). `./deploy/setup.sh --skill-profile lean|full` (default **lean**) rewrites ONLY the deployed copy's `permission.skill` block via `deploy/apply-skill-profile.mjs` — the shipped file is never modified by deploys.
+**Rationale**: 87 allows hides 43 subagent-only skills from the primary; the lean profile hides 58 more (~5.4k tokens/session). Subagents are profile-immune: every skill has either a frontmatter `permission.skill: allow` consumer (41 self-scoped pre-GIT-333 + 17 added in GIT-333 Phase 1) or stays primary-visible in lean (pdf-specialist). New skills default to hidden until explicitly added.
+**Alternatives Considered**: Denylist (rejected — hides fewer skills, poor scaling). Hardcoding lean into opencode.json (rejected — this repo is an agnostic configurator; defaults belong to deploy-time selection, symmetric with `--provider`).
+**Trade-offs**:
+- Pro: ~5.4k tokens/session saved on default deploys; one-line `deploy/skill-profiles.json` edit re-exposes any skill; `full` is always available
+- Con: lean-hidden skills cannot be @-loaded by the primary until re-exposed (documented in README profile section)
+- Con: new skills need a frontmatter consumer (or a profiles entry) to be visible anywhere
 **Confidence**: 0.9
 **Scope**: project
-**Date**: 2026-07-26
+**Date**: 2026-08-14
 
-**Key constraint**: 13 skills have NO consumer subagent override — they MUST stay in the allowlist because denying them would make them inaccessible to ALL scoped subagents. These include: `pdf-specialist-skill`, `construction-bd-skill`, `startup-business-docs-skill`, `python-packaging-skill`, `csharp-linter-skill`, `java-linter-skill`, `typescript-dry-principle-skill`, `monorepo-management-skill`, `threejs-nextjs-skill`, etc.
-
-> **SUPERSEDED (2026-08-14, GIT-333)**: the 13-must-keep constraint above is lifted. Every formerly-orphaned skill now has a frontmatter `permission.skill: allow` consumer (see `PLANS/PLAN-GIT-333.md` Appendix for the full 58-skill classification: 41 self-scoped, 17 new allows added in Phase 1, 0 intentionally-hidden) or remains primary-visible via the `lean` profile (`pdf-specialist-skill`). Denying the other 58 from the primary is now safe under the lean profile — subagents are profile-immune.
+**Superseded constraint (former "13 must-keep")**: pre-GIT-333, 13 skills had NO consumer subagent override and had to stay primary-visible. As of GIT-333 Phase 1 every skill has a frontmatter consumer or a lean slot — the constraint is lifted. Full 58-skill classification: `PLANS/PLAN-GIT-333.md` Appendix (41 self-scoped, 17 new allows, 0 intentionally-hidden).
 
 **References**:
-- `opencode_app/opencode.json` — `permission.skill` block (80 allows + 1 deny)
+- `opencode_app/opencode.json` — `permission.skill` block (87 allows + 1 deny = full profile)
+- `deploy/skill-profiles.json` — lean profile (29 keys)
+- `deploy/apply-skill-profile.mjs` — deploy-time rewriter (typo-guarded, fail-closed)
 - `deploy/.AGENTS.md` — "Skill Permission Allowlist" documentation section
-- `PLANS/PLAN-GIT-270.md` — full implementation plan
-- Issue #270, PR #271
+- `PLANS/PLAN-GIT-270.md` — original allowlist implementation
+- `PLANS/PLAN-GIT-333.md` — profile mechanism + Phase 1 consumer safety net
+- Issue #270, PR #271; Issue #333

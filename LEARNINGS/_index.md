@@ -26,7 +26,7 @@
 - **Summary**: Never add // comments to opencode_app/opencode.json — CI bats tests use Python json.load() which can't parse JSONC
 - **Date**: 2026-07-26
 
-### Skill permission allowlist — "*":"deny" + 80 allows
+### Skill permission allowlist — shipped 87, lean profile 29, deploy default lean
 
 - **Category**: decision
 - **File**: `decisions/skill-permission-allowlist.md`

@@ -8,8 +8,12 @@
   ],
   "skills": [
     "ascii-diagram-creator-skill",
+    "aws-iac-safety-skill",
     "changelog-python-cliff-skill",
+    "continuous-learning-skill",
     "docker-containerization-skill",
+    "documentation-consistency-skill",
+    "documentation-sync-workflow-skill",
     "git-compact-commits-skill",
     "git-issue-labeler-skill",
     "git-issue-updater-skill",
@@ -30,6 +34,7 @@
     "plan-updater-skill",
     "pr-creation-workflow-skill",
     "pr-merge-workflow-skill",
+    "search-first-skill",
     "semantic-release-convention-skill",
     "ticket-plan-workflow-skill",
     "version-bump-standard-skill"

@@ -247,12 +247,12 @@ Not every project needs all 36 agents + 130 skills. <!-- count: hand-maintained 
 | Preset | Agents | Skills | MCPs | Use for |
 |--------|--------|--------|------|---------|
 | `core` | explorer | git-semantic-commits, continuous-learning | codegraph, mermaid | Minimal baseline |
-| `review` | code-review + architecture + 5 language reviewers | 9 Code Quality | codegraph | Code quality gates |
-| `frontend` | nextjs-specialist + uiux-reviewer + responsive-audit | 14 (Next.js/React/Three.js/a11y) | next-devtools, chrome-devtools, codegraph, mermaid | Web frontend |
-| `backend` | python-reviewer | 10 (Python/DB/API/security/docker) | codegraph | Server / devops-lite |
-| `docs` | documentation + coverage + docx/pptx/xlsx + office-doc | 15 (document ladder) | mermaid | Document generation |
-| `devops` | repo-ops + opentofu-explorer | 26 (release/IaC/JIRA) | codegraph | Git / infra / release |
-| `business` | startup-founder + ceo + discovery + requirements + technical-design | 12 (BD/pitch/planning) | — | BD / founder workflows |
+| `review` | code-review + architecture + 5 language reviewers | 25 (Code Quality + auth/perf/logging/eval) | codegraph | Code quality gates |
+| `frontend` | nextjs-specialist + uiux-reviewer + responsive-audit | 19 (Next.js/React/Three.js/a11y) | next-devtools, chrome-devtools, codegraph, mermaid | Web frontend |
+| `backend` | python-reviewer | 17 (Python/DB/API/security/docker) | codegraph | Server / devops-lite |
+| `docs` | documentation + coverage + docx/pptx/xlsx + office-doc | 21 (document ladder) | mermaid | Document generation |
+| `devops` | repo-ops + opentofu-explorer | 31 (release/IaC/JIRA) | codegraph | Git / infra / release |
+| `business` | startup-founder + ceo + discovery + requirements + technical-design | 32 (BD/pitch/planning) | — | BD / founder workflows |
 | `research` | autoresearch-{ml,code,research} + loop-operator | 11 (autoresearch + papers) | codegraph | Autonomous loops (ml needs GPU) |
 | `cad` | cad-specialist | 14 (CAD & Hardware Design) | — | CAD / robotics / hardware |
 
@@ -367,6 +367,25 @@ docker compose build --build-arg OPENCODE_PACKS=autodesk,markitdown
 ```
 
 Default state of every pack is **OFF** — existing deployments are unaffected unless a pack is explicitly requested. Empty/omitted `--enable-pack` is a no-op. Unknown pack names exit non-zero with a clear error. See [`PLAN.md`](PLAN.md) (issue #268) for the full design and the opencode-tooling review that shaped it.
+
+#### Skill Profiles — deploy-time primary visibility (#333)
+
+Every allowed skill's `description` is injected into the primary session's context at startup (~90 tokens each). The shipped `opencode_app/opencode.json` allowlist (87 allows) is the **full** profile. For a context-lean primary, deploy with a **lean** profile: only 29 primary-visible skills + `"*": "deny"` (~5.4k tokens saved per session).
+
+```bash
+./deploy/setup.sh                                # default: lean (29 primary-visible skills)
+./deploy/setup.sh --skill-profile full           # opt back in: shipped 87-allow allowlist verbatim
+./deploy/setup.sh --skill-profile lean --dry-run # preview the deployed permission.skill block
+./deploy/setup.ps1 -SkillProfile full            # Windows parity
+```
+
+Key properties:
+
+- Only the **deployed** copy's `permission.skill` block is rewritten (`deploy/apply-skill-profile.mjs`); the shipped `opencode.json` is never modified — `full` is a verified no-op.
+- **Subagents are profile-immune.** All 130 skills stay on disk and every skill has either a frontmatter `permission.skill: allow` consumer agent or a lean slot — nothing is orphaned under lean.
+- Lean-hidden skills cannot be `@`-loaded by the primary until re-exposed; re-exposing any skill is a one-line edit to `deploy/skill-profiles.json`.
+- Typo-guarded: a lean key that doesn't match a real skill directory or the shipped allowlist fails the deploy closed.
+
 
 > **Note — `markitdown` MCP server (PLAN-GIT-262).** Privacy-hardened document-to-Markdown converter (PDF/DOCX/PPTX/XLSX/XLS/Outlook MSG + image EXIF). Vendored launcher at `opencode_app/mcp-servers/markitdown-local-mcp/` depends **only** on local converter extras — no `markitdown[all]`, no Azure SDKs, no Google Speech, no YouTube API. `enable_plugins=False` is hard-coded. User-supplied `http:`/`https:` URIs are fetched via a single `requests.get()` (no telemetry headers, no Microsoft endpoints — equivalent to built-in `webfetch`). See [`opencode_app/mcp-servers/markitdown-local-mcp/README.md`](opencode_app/mcp-servers/markitdown-local-mcp/README.md) for the full trust-boundary analysis.
 
