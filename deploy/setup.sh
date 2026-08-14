@@ -51,7 +51,7 @@
 #   - curl (for downloading)
 #   - Node.js v20+ and npm (for opencode-ai and MCP servers)
 #   - nvm recommended (for Node.js version management on macOS/Linux)
-#   - ZAI_API_KEY (required for web-reader, web-search-prime, zread MCP servers)
+#   - ZAI_API_KEY (required for web-reader, web-search-prime MCP servers)
 #   - LM Studio running on http://127.0.0.1:1234/v1 (local LLM inference)
 #
 ################################################################################
@@ -674,7 +674,7 @@ USAGE:
     Usage: opencode --agent build "implement auth feature"
            opencode --agent explore "find all API routes"
 
-  MCP SERVERS (15):
+  MCP SERVERS (13):
     Auto-start (enabled by default):
       codegraph           Pre-indexed code knowledge graph (100% local)
       zai-web-reader      Web page content extraction (remote, needs ZAI_API_KEY)
@@ -683,8 +683,6 @@ USAGE:
     Available but disabled (opt-in — enable per-project via
     .opencode/opencode.json or opencode-repo-setup-skill):
       atlassian           JIRA and Confluence integration (first use opens browser OAuth)
-      zai-vision-mcp-server     Image analysis and video processing
-      zai-zread           GitHub repository search and file reading
       next-devtools      Next.js DevTools integration
       markitdown         Document-to-Markdown (local-only, privacy-hardened)
       docling            Layout-aware document extraction (heavy ~3-4 GB)
@@ -721,7 +719,7 @@ $(print_skill_categories "${REPO_DIR}/opencode_app/.opencode/skills")
     git                   For version control integration
 
   API Keys (prompted during setup):
-     ZAI_API_KEY           Required for: web-reader, web-search-prime, zread
+     ZAI_API_KEY           Required for: web-reader, web-search-prime
                            Get from: https://z.ai
 
    GitHub Auth:
@@ -2456,7 +2454,7 @@ setup_config() {
             echo ""
              echo "✓ Configured MCP servers:"
              echo "    Auto-start: codegraph, mermaid, web-reader"
-             echo "    Opt-in per-project (.opencode/opencode.json): atlassian, zai-vision-mcp-server, zai-zread"
+              echo "    Opt-in per-project (.opencode/opencode.json): atlassian"
               echo "    Available but disabled (opt-in): next-devtools, markitdown, autodesk-*, docling, chrome-devtools"
               echo "    Enable a group with: ./setup.sh --enable-pack <autodesk|markitdown|nextjs|zai|docling|chrome-devtools>"
             echo ""
@@ -3487,8 +3485,7 @@ print_summary() {
          echo "    - mermaid - Diagram rendering SVG/PNG (auto-start)"
          echo "    - web-reader - Web page reading (auto-start, needs ZAI_API_KEY)"
          echo "    - atlassian - JIRA and Confluence (opt-in per-project)"
-         echo "    - zai-vision-mcp-server - Image analysis (opt-in per-project)"
-         echo "    - zread - GitHub repo search (opt-in per-project)"
+
          echo "    - web-search-prime - Web search (needs ZAI_API_KEY, disabled)"
          echo "    - markitdown - Document-to-Markdown, local-only, opt-in"
 
@@ -3582,7 +3579,7 @@ print_next_steps() {
      echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
      echo ""
      echo "  Auto-start: codegraph, mermaid, web-reader"
-     echo "  Opt-in per-project: atlassian, zai-vision-mcp-server, zai-zread"
+      echo "  Opt-in per-project: atlassian"
      echo "  Opt-in global packs: next-devtools, markitdown, docling, chrome-devtools, autodesk-*, web-search-prime"
     echo ""
     echo "  Auth: opencode mcp auth atlassian / opencode mcp auth github"

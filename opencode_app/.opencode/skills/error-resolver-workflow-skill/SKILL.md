@@ -95,11 +95,11 @@ Use when user explicitly requests:
 
 ## Image Input Routing (error screenshots)
 
-The `zai-vision-mcp-server` is **disabled by default** (opt-in) — never assume its tools exist. Route screenshot input by availability, in order:
+No vision MCP server is shipped — never assume vision MCP tools exist. Route screenshot input by availability, in order:
 
 1. **Primary — delegate to `error-resolver-subagent`** (Task tool): it runs on the `zai/glm-5v-turbo` vision tier (native multimodal) and sees screenshots directly. This covers both diagnosis and error-text/stack-trace extraction.
 2. **Fallback — `zai-vision-analysis-skill`**: direct Z.AI vision API call (same `glm-5v-turbo` model) via bash, for text-only sessions or when the vision provider is not connected.
-3. **Only if a project config has enabled `zai-vision-mcp-server`**: its `diagnose_error_screenshot` / `extract_text_from_screenshot` tools (pass `image_source` path/URL + `prompt`; optional `context` / `programming_language`). If absent from your tool list, do NOT attempt or hallucinate these calls — use path 1 or 2.
+3. **Only if the project's own config adds a vision MCP server** (e.g. `zai-vision-mcp-server`): its `diagnose_error_screenshot` / `extract_text_from_screenshot` tools (pass `image_source` path/URL + `prompt`; optional `context` / `programming_language`). If absent from your tool list, do NOT attempt or hallucinate these calls — use path 1 or 2.
 
 ## Error Categories
 

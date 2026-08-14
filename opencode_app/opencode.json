@@ -130,8 +130,6 @@
       "markitdown*": "deny",
       "docling*": "deny",
       "zai-web-reader*": "allow",
-      "zai-vision-mcp-server*": "deny",
-      "zai-zread*": "deny",
       "autodesk-revit*": "deny",
       "autodesk-model-data*": "deny",
       "autodesk-fusion*": "deny",
@@ -208,23 +206,6 @@
     "zai-web-search-prime": {
       "type": "remote",
       "url": "https://api.z.ai/api/mcp/web_search_prime/mcp",
-      "headers": {
-        "Authorization": "Bearer {env:ZAI_API_KEY}"
-      },
-      "enabled": false
-    },
-    "zai-vision-mcp-server": {
-      "type": "local",
-      "command": ["npx", "-y", "@z_ai/mcp-server"],
-      "environment": {
-        "Z_AI_API_KEY": "{env:ZAI_API_KEY}",
-        "Z_AI_MODE": "ZAI"
-      },
-      "enabled": false
-    },
-    "zai-zread": {
-      "type": "remote",
-      "url": "https://api.z.ai/api/mcp/zread/mcp",
       "headers": {
         "Authorization": "Bearer {env:ZAI_API_KEY}"
       },

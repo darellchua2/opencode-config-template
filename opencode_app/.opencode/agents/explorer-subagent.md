@@ -66,8 +66,6 @@ When exploring open source GitHub repositories (not the local codebase), prefer:
 2. `webfetch` on `https://raw.githubusercontent.com/<owner>/<repo>/<ref>/<path>` for raw file contents.
 3. GitHub HTML pages via `webfetch` as a last resort.
 
-(`zai-zread` MCP tools are disabled by default — only mention them if a project config has enabled them.)
-
 ## Return Contract
 
 When your task is complete, return ONLY this structure:

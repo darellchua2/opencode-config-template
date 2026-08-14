@@ -49,8 +49,6 @@ One multi-select question + one yes/no per extra. Options are built from the det
 
 **MCP enables** (any of):
 - `atlassian` — Jira/Confluence tools (~5–6.5k tok/session when enabled; see caveats below)
-- `zai-vision-mcp-server` — image analysis tools (~0.9k; native-multimodal agents may not need it)
-- `zai-zread` — GitHub repo browsing tools (~0.3k)
 - markitdown / docling / chrome-devtools / next-devtools — via global `--enable-pack` if not already enabled
 
 **Extras**:
@@ -100,7 +98,7 @@ If accepted and `.codegraph/` absent: run `codegraph init -i` in the repo root. 
 State exactly:
 
 - **Enabled here**: list (e.g. `atlassian`) — takes effect on NEXT session start (opencode reads config at startup; no lazy-start mid-session)
-- **Estimated per-session cost**: atlassian ~5–6.5k tok; zai-vision ~0.9k; zread ~0.3k; codegraph ~1.2k (already default-on)
+- **Estimated per-session cost**: atlassian ~5–6.5k tok; codegraph ~1.2k (already default-on)
 - **Revert**: delete the added `mcp.<server>` keys (or the whole file if we created it)
 - **Global untouched**: `~/.config/opencode/config.json` unchanged; other repos unaffected
 

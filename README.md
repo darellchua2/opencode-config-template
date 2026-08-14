@@ -326,7 +326,7 @@ nvm install 24
 
 ## MCP Servers
 
-The configuration ships 15 MCP server entries. **3 are enabled by default:**
+The configuration ships 13 MCP server entries. **3 are enabled by default:**
 
 | Server | Type | Purpose |
 |--------|------|---------|
@@ -334,13 +334,11 @@ The configuration ships 15 MCP server entries. **3 are enabled by default:**
 | `mermaid` | local (npx) | Mermaid diagram rendering (SVG) |
 | `zai-web-reader` | remote | Web page content extraction |
 
-The remaining 12 are `enabled: false` and opt-in:
+The remaining 10 are `enabled: false` and opt-in:
 
 | Server | Type | Purpose |
 |--------|------|---------|
 | `atlassian` | local (npx mcp-remote) | JIRA and Confluence (first use opens browser OAuth) |
-| `zai-vision-mcp-server` | local (npx) | Image/video analysis |
-| `zai-zread` | remote | GitHub repository search/reading |
 | `next-devtools` | local (npx) | Next.js DevTools integration |
 | `web-search-prime` | remote | Web search |
 | `markitdown` | local | Document-to-Markdown (local-only) |
