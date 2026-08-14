@@ -1,11 +1,8 @@
 ---
 name: docx-creation-skill
-description: "Use this skill whenever the user wants to create, read, edit, or manipulate Word documents (.docx files). Triggers include: any mention of 'Word doc', 'word document', '.docx', or requests to produce professional documents with formatting like tables of contents, headings, page numbers, or letterheads. Also use when extracting or reorganizing content from .docx files, inserting or replacing images in documents, performing find-and-replace in Word files, working with tracked changes or comments, or converting content into a polished Word document. If the user asks for a 'report', 'memo', 'letter', 'template', or similar deliverable as a Word or .docx file, use this skill. Do NOT use for PDFs, spreadsheets, Google Docs, or general coding tasks unrelated to document generation."
+description: "Create, read, edit, or manipulate Word documents (.docx). Triggers: 'Word doc', 'word document', '.docx', professional documents with tables of contents, headings, page numbers, letterheads; tracked changes, comments, image insertion, find-and-replace; 'report'/'memo'/'letter'/'template' deliverables as Word files. Do NOT use for PDFs, spreadsheets, or Google Docs."
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: document-generation
 category: Framework
 ---
 

@@ -8,9 +8,6 @@ description: >-
   plugins, Fusion 360 add-ins, AutoCAD .NET plugins.
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers, bim-developers, cad-developers
-  workflow: api-integration
 category: CAD & Hardware Design
 ---
 

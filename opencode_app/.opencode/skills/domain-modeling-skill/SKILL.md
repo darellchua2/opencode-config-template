@@ -3,11 +3,6 @@ name: domain-modeling-skill
 description: Actively build and sharpen a project's domain model. Use when the user wants to pin down domain terminology or a ubiquitous language, record an architectural decision, or when another skill needs to maintain CONTEXT.md and ADRs inline. Changes the model — not merely reads it.
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers, agents
-  workflow: documentation, domain-design
-  trigger: auto
-  version: "1"
 category: Planning & Alignment
 ---
 

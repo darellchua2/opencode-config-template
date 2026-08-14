@@ -11,9 +11,6 @@ description: >-
   git-semantic-commits-skill for that).
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers, maintainers
-  workflow: commit-compact-authoring
 category: Git/Workflow
 ---
 

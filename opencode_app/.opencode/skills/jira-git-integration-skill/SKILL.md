@@ -3,9 +3,6 @@ name: jira-git-integration-skill
 description: Generic JIRA + Git workflow utilities for ticket management, branch creation, and integration
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: jira-git-integration
 category: JIRA
 ---
 

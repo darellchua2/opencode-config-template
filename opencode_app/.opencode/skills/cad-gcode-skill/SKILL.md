@@ -1,11 +1,8 @@
 ---
 name: cad-gcode-skill
-description: Generate, inspect, dry-run, and statically validate plain FDM `.gcode` from 3D mesh files by orchestrating real slicer CLIs. Use when Codex needs to slice `.stl`, `.obj`, unsliced `.3mf`, `.ply`, `.glb`, or `.gltf` into printer-profiled G-code, discover local slicer backends, inspect whether a mesh is slice-ready, or validate generated G-code before any printer-specific handoff.
+description: Generate, inspect, dry-run, and statically validate plain FDM `.gcode` from 3D mesh files by orchestrating real slicer CLIs. Use when slicing `.stl`, `.obj`, unsliced `.3mf`, `.ply`, `.glb`, or `.gltf` into printer-profiled G-code, discovering local slicer backends, checking mesh slice-readiness, or validating G-code before printer handoff.
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: engineers, robotics-developers, hardware-designers, makers
-  workflow: gcode
 category: CAD & Hardware Design
 ---
 

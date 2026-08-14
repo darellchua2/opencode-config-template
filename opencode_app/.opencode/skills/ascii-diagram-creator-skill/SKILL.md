@@ -3,9 +3,6 @@ name: ascii-diagram-creator-skill
 description: Create ASCII diagrams from workflow definitions and save them as image files (PNG, SVG, etc.)
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: diagram-generation
 category: Git/Workflow
 ---
 

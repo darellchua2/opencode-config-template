@@ -3,11 +3,6 @@ name: react-render-antipatterns-skill
 description: Detect and fix React render-time anti-patterns — missing fragment keys in .map(), unsafe JSON.parse in event handlers, inconsistent visibility toggle strategies, theme-driven component design, Next.js revalidatePath/redirect swallowing, ssr:false hydration elimination, and Playwright browserName vs project routing
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: code-quality
-  languages: typescript, javascript
-  frameworks: react
 category: Framework-Specific
 ---
 

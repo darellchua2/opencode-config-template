@@ -3,9 +3,6 @@ name: opentofu-ecr-provision-skill
 description: Provision AWS Elastic Container Registry (ECR) repositories with GitHub OIDC integration following BETEKK standards
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: infrastructure-as-code
 category: OpenTofu
 ---
 

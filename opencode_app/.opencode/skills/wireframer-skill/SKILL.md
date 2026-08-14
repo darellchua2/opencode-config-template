@@ -1,11 +1,9 @@
 ---
 name: wireframer-skill
-description: "Generate low-fidelity, hand-drawn web wireframes and clickable prototypes. Use when the user wants to wireframe, mockup, sketch, or prototype a UI before writing production code. Triggers on: wireframe, mockup, lo-fi prototype, rough layout, Balsamiq-style, hand-drawn UI, clickable prototype, sketch the screens, visualize the flow, show what the app would look like, responsive baseline, breakpoint wireframe. Produces self-contained SPAs with sketchy aesthetics — wired-elements components, graph-paper background, doodle icons. Also used as a baseline source for responsive audits: generate wireframes at specific viewport breakpoints to establish the expected structural layout."
+description: "Generate low-fidelity, hand-drawn web wireframes and clickable prototypes before writing production code. Triggers on: wireframe, mockup, lo-fi prototype, rough layout, Balsamiq-style, hand-drawn UI, sketch the screens, visualize the flow, responsive baseline, breakpoint wireframe. Produces self-contained SPAs (wired-elements, graph-paper background); also provides baseline layouts for responsive audits."
 license: MIT
 compatibility: opencode
 metadata:
-  audience: developers
-  workflow: ui-prototyping
   protocol: autoresearch-opt-in
 category: Responsive & Visual Testing
 ---

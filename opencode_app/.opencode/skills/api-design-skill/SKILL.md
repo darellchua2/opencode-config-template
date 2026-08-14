@@ -4,9 +4,6 @@ description: Design and document APIs — REST conventions, OpenAPI/Swagger spec
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: developers
-  workflow: api-design
-  languages: typescript, python, openapi, graphql
   protocol: autoresearch-opt-in
 category: Framework
 ---

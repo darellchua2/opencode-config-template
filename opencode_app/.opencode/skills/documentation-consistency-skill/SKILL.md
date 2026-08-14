@@ -4,8 +4,6 @@ description: Audit and auto-fix documentation consistency across PLAN files, REA
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: developers, agents, subagents
-  workflow: documentation, audit, consistency
   protocol: autoresearch-opt-in
 category: OpenCode Meta
 ---

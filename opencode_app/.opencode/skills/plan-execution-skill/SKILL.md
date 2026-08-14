@@ -4,8 +4,6 @@ description: Execute PLAN.md phases with automatic progress tracking. Parses pla
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: developers, agents, subagents
-  workflow: planning, execution, progress-tracking
   protocol: autoresearch-opt-in
 category: Git/Workflow
 ---

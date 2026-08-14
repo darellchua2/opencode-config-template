@@ -4,8 +4,6 @@ description: Next.js PR workflow with quality checks (lint/build/test), semantic
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: developers
-  workflow: nextjs-pr
   protocol: autoresearch-opt-in
 category: Framework-Specific
 ---

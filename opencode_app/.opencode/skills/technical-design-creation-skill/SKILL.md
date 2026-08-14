@@ -1,13 +1,8 @@
 ---
 name: technical-design-creation-skill
-description: "Create, draft, and review engineering Technical Design Documents (TDD) that convert requirements (SRS/feature specs) into architecture, data models, API contracts, and Architecture Decision Records (ADRs). Triggers on: technical design, architecture document, system design, technical design doc, design spec, create technical design. Output: docs/technical-design/TDD-{key}.md. Engineering 'how' stage of the document ladder (after SRS, before implementation). Renders a snapshot .docx per interactive-document-rendering-skill."
+description: "Create, draft, and review engineering Technical Design Documents (TDD) converting requirements (SRS/feature specs) into architecture, data models, API contracts, and ADRs. Triggers on: technical design, architecture document, system design, design spec, create technical design. Output: docs/technical-design/TDD-{key}.md — the engineering 'how' stage after SRS, with snapshot .docx."
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: engineers, architects, tech leads, agents
-  workflow: engineering-design
-  trigger: explicit-only
-  languages: markdown
 category: Framework
 ---
 

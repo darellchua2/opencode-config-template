@@ -3,10 +3,6 @@ name: database-migration-skill
 description: Manage database schema evolution with Prisma, Alembic, and Django migrations — schema design, migration workflows, rollback strategies, zero-downtime migrations, seed data, and migration testing
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: database
-  languages: sql, typescript, python
 category: DevOps
 ---
 

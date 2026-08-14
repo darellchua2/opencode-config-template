@@ -3,9 +3,6 @@ name: python-ruff-linter-skill
 description: Ensure Python code follows industry standards using Ruff linter with linting-workflow framework
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: code-quality
 category: Language-Specific
 ---
 

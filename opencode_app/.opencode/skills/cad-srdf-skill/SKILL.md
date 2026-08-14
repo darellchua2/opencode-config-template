@@ -1,11 +1,8 @@
 ---
 name: cad-srdf-skill
-description: MoveIt2 SRDF generation, validation, and planning-semantics workflow. Use when creating, editing, regenerating, inspecting, or validating `.srdf` files, `gen_srdf()` sources, MoveIt planning groups, virtual joints, passive joints, end effectors, group states, disabled collisions, URDF-linked planning semantics, or SRDF handoff for live review. Use the cad-urdf-skill for robot structure, the cad-sdf-skill for simulator descriptions, and the cad-viewer-skill for rendering, live review links, and optional MoveIt2 controls.
+description: MoveIt2 SRDF generation, validation, and planning-semantics workflow. Use when creating, editing, regenerating, inspecting, or validating `.srdf` files, `gen_srdf()` sources, MoveIt planning groups, virtual/passive joints, end effectors, group states, or disabled collisions. Use cad-urdf-skill for robot structure, cad-sdf-skill for simulator descriptions, cad-viewer-skill for rendering and MoveIt2 controls.
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: engineers, robotics-developers, hardware-designers, makers
-  workflow: srdf
 category: CAD & Hardware Design
 ---
 

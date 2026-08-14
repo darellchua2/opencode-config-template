@@ -1,12 +1,9 @@
 ---
 name: markitdown-mcp-skill
-description: Reference and workflows for the markitdown MCP server — convert documents (PDF, DOCX, PPTX, XLSX, XLS, Outlook MSG, HTML, CSV, JSON, XML, EPUB, IPYNB, ZIP, image EXIF) to Markdown via local-only converters. Covers opencode.json configuration, tool reference, decision tree (markitdown vs image-analyzer-subagent vs pdf-specialist-skill vs bash pdftotext), usage patterns, troubleshooting, fallback strategy, and privacy guarantees.
+description: Reference and workflows for the markitdown MCP server — convert documents (PDF, DOCX, PPTX, XLSX, MSG, HTML, CSV, JSON, XML, EPUB, IPYNB, ZIP) to Markdown via local-only converters. Covers opencode.json configuration, tool reference, decision tree vs image-analyzer/pdf-specialist/pdftotext, troubleshooting, fallback, privacy guarantees.
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: developers
-  workflow: document-conversion
-  scope: binary-doc-text-extraction
   pattern: mcp-document-reading
 category: Configuration
 ---

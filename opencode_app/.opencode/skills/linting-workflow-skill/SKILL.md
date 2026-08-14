@@ -4,8 +4,6 @@ description: Generic linting workflow for multiple languages with auto-fix and e
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: developers
-  workflow: code-quality
   protocol: autoresearch-opt-in
 category: Framework
 ---

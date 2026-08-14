@@ -3,9 +3,6 @@ name: ticket-plan-workflow-skill
 description: Unified ticket/issue planning workflow for GitHub Issues and JIRA, with structured description, branch creation, PLAN.md generation, and phased execution
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: unified-planning
 category: Git/Workflow
 ---
 

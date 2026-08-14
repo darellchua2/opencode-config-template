@@ -12,11 +12,6 @@ description: >-
   or @react-three/* packages in a Next.js or React 19 project.
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers, frontend-developers, graphics-developers
-  workflow: integration-guidance
-  languages: [typescript, javascript]
-  frameworks: [three.js, react-three-fiber, next.js, react]
 category: Framework-Specific
 ---
 

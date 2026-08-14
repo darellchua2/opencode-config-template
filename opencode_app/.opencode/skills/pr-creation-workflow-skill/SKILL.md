@@ -4,9 +4,6 @@ description: Framework for creating PRs with automatic framework/language detect
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: developers
-  workflow: pr-creation
-  languages: language-agnostic
   protocol: autoresearch-opt-in
 category: Framework
 ---

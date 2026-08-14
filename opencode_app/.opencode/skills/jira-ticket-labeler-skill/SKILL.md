@@ -3,9 +3,6 @@ name: jira-ticket-labeler-skill
 description: Assess and classify JIRA tickets with appropriate issue types (Bug, Story, Task, Epic), priorities, and components using Atlassian MCP tools
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers, maintainers, project managers
-  workflow: issue-management
 category: JIRA
 ---
 

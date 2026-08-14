@@ -4,9 +4,6 @@ description: Continuously verify implementations against requirements, acceptanc
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: developers, QA engineers, agents
-  workflow: verification, quality-assurance
-  trigger: explicit-only
   protocol: autoresearch-opt-in
 category: Agent Optimization
 ---

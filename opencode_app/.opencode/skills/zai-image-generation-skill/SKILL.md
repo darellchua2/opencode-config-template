@@ -1,12 +1,8 @@
 ---
 name: zai-image-generation-skill
-description: Generate images from text prompts using the Z.AI GLM-Image API (glm-image / cogview-4-250304) and save them as local PNG files. Bypasses the OpenCode chat-only provider layer by calling the /images/generations endpoint directly, then downloading the temporary result URL to a persistent file. Use when an agent needs to create, generate, or draw an image/picture/illustration/visual asset from a text description. Triggers on image generation, generate image, create image, text to image, GLM-Image, draw a picture, make an image from prompt, save generated image.
+description: Generate images from text prompts via the Z.AI GLM-Image API (glm-image / cogview-4-250304), saved as local PNG files — calls /images/generations directly, bypassing the chat-only provider layer, then downloads the result URL. Triggers on image generation, generate image, text to image, GLM-Image, draw a picture, make an image from prompt.
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: agents
-  workflow: media-generation
-  requires: ZAI_API_KEY env OR opencode Z.AI auth (auth.json)
 category: Media Generation
 ---
 

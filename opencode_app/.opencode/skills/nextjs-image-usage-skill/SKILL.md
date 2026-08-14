@@ -4,9 +4,6 @@ description: Implement proper Next.js 16 Image component usage with configuratio
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: developers
-  workflow: frontend
-  scope: nextjs-image
   pattern: image-implementation
 category: Framework-Specific
 ---

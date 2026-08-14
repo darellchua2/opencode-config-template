@@ -3,10 +3,6 @@ name: clean-architecture-skill
 description: Apply clean architecture principles with vertical slicing, dependency rule, clear layer boundaries, and feature-first organization - language-agnostic
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: architecture
-  languages: language-agnostic
 category: Code Quality
 ---
 

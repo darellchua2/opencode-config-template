@@ -96,6 +96,26 @@ When adding/removing a skill or subagent, update these files to maintain synchro
 
 After changes, invoke the `documentation-sync-workflow` skill or delegate to `opencode-tooling-subagent` for guided synchronization.
 
+## Skill / Agent Frontmatter Contract
+
+Authoritative rules (verified against opencode.ai docs 2026-08-14). All new/edited SKILL.md and agent files MUST conform.
+
+**Skills — runtime-read keys** (everything else is ignored by OpenCode):
+| Key | Rule |
+|-----|------|
+| `name` | Required. MUST equal the directory name (`^[a-z0-9]+(-[a-z0-9]+)*$`, ≤64 chars) |
+| `description` | Required, 1–1024 chars. House style: ≤50 words, preserve trigger phrases |
+| `license` | `Apache-2.0` (house default; existing MIT exceptions grandfathered) |
+| `compatibility` | `opencode` |
+| `metadata` | Opaque string map — zero runtime behavior. House-kept sub-keys: `protocol`, `pattern` only (bats/registry test signals). Do NOT add `audience`/`workflow`/`languages`/`trigger`/etc. |
+| `category` | **Installer-registry-only** (build-registry.mjs, init.mjs, setup.sh counts) — invisible to OpenCode, never delete |
+
+`permission.skill` does NOT belong in SKILL.md — gating lives in `opencode.json` or agent frontmatter only.
+
+**Agents — runtime-read keys:** `description` (required), `temperature`, `steps`, `disable`, `prompt`, `model`, `permission` (NOT deprecated `tools`), `mode`, `hidden`, `color`, `top_p`. Source files ship NO `model:` — tiers inject it at deploy time. `category` is installer-registry-only (may pass through to provider — tolerated).
+
+After ANY frontmatter change: run `node deploy/build-registry.mjs` and commit `registry.json`.
+
 ## Return Contract Convention
 
 All subagents return this structure to minimize context bloat:

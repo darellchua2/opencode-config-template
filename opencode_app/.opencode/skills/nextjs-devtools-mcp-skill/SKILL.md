@@ -4,9 +4,6 @@ description: Reference and workflows for the next-devtools-mcp server — Next.j
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: developers
-  workflow: frontend
-  scope: nextjs-runtime
   pattern: mcp-diagnosis
 category: Framework-Specific
 ---

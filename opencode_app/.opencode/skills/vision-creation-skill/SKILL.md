@@ -1,13 +1,8 @@
 ---
 name: vision-creation-skill
-description: "Create the customer-facing Vision Document (IIBA 'Business Need / Solution Vision') produced during a discovery session. Triggers on: create vision, vision document, concept brief, solution vision, discovery output. Output: docs/vision/VISION-{slug}.md — NO ticket/PLAN linkage (Vision is upstream of tickets). Renders dual outputs (living interactive HTML through the session, .docx on wrap) per interactive-document-rendering-skill; optionally distills to a customer presentation deck via pptx-specialist-subagent."
+description: "Create the customer-facing Vision Document (IIBA 'Business Need / Solution Vision') from a discovery session. Triggers on: create vision, vision document, concept brief, solution vision, discovery output. Output: docs/vision/VISION-{slug}.md — no ticket/PLAN linkage. Dual outputs (interactive HTML during session, .docx on wrap) per interactive-document-rendering-skill."
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: business analysts, product managers, agents
-  workflow: discovery, customer-facing
-  trigger: explicit-only
-  languages: markdown
 category: Framework
 ---
 

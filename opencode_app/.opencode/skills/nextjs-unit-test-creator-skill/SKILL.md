@@ -4,8 +4,6 @@ description: Generate comprehensive unit tests for Next.js 16 applications cover
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: developers
-  workflow: test-generation
   protocol: autoresearch-opt-in
 category: Framework-Specific
 ---

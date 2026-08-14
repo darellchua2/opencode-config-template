@@ -3,9 +3,6 @@ name: office-thumbnail-skill
 description: "Generate visual thumbnail grids and image conversions from Office files (PPTX/DOCX/XLSX). Uses LibreOffice (soffice) to convert Office files to PDF, then Poppler (pdftoppm) to render pages as images. Use for 'show me thumbnails', 'visual analysis', 'convert slides to images', or any task needing visual review of Office document pages."
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: visual-analysis
 category: Office Utilities
 ---
 

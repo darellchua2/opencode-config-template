@@ -1,11 +1,8 @@
 ---
 name: opencode-repo-setup-skill
-description: Interactive per-repo MCP and tooling setup for a target project. Detects repo signals (manifests, .codegraph/, Jira/GitHub refs), asks the user which opt-in MCP servers to enable, merge-writes only the delta into the project's opencode.json (project config overrides global; global config never mutated), optionally initializes CodeGraph, and reports enabled set, token cost, and revert path. Triggers on "set up mcp for this repo", "enable atlassian/jira here", "project mcp setup", "repo setup", "per-project enable", "configure project opencode".
+description: Interactive per-repo MCP setup. Detects repo signals, asks which opt-in MCP servers to enable, merge-writes only the delta into the project's opencode.json (project wins over global), optionally initializes CodeGraph, reports token cost and revert path. Triggers on "set up mcp for this repo", "repo setup", "per-project enable", "configure project opencode".
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: agent
-  workflow: scaffolding
 category: OpenCode Meta
 ---
 

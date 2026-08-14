@@ -4,9 +4,6 @@ description: Audit code and dependencies for security vulnerabilities — OWASP 
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: developers
-  workflow: security
-  languages: language-agnostic
   protocol: autoresearch-opt-in
 category: Security
 ---

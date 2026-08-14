@@ -4,8 +4,6 @@ description: Autonomous literature-review and paper-synthesis loop. Tier 2 (web-
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: researchers
-  workflow: autonomous-iteration
   protocol: autoresearch-default-on
 category: Autoresearch
 ---

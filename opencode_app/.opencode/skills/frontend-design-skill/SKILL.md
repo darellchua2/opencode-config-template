@@ -4,9 +4,6 @@ description: Create distinctive, production-grade frontend interfaces with high 
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: developers
-  workflow: design
-  languages: "html, css, javascript, typescript, react, vue"
   protocol: autoresearch-opt-in
 category: Framework
 ---

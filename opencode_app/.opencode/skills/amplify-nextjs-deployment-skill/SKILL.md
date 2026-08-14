@@ -4,9 +4,6 @@ description: Deploy and troubleshoot Next.js 16+ applications on AWS Amplify Hos
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: frontend-developers
-  workflow: deployment
-  scope: nextjs-amplify-hosting
   pattern: amplify-deployment
 category: Framework-Specific
 ---

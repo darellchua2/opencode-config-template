@@ -1,11 +1,8 @@
 ---
 name: xlsx-specialist-skill
-description: "Use this skill whenever a spreadsheet file is the primary input or output. This means any task where you want to: open, read, edit, or fix an existing .xlsx, .xlsm, .csv, or .tsv file (e.g., adding columns, computing formulas, formatting, charting, cleaning messy data); create a new spreadsheet from scratch or from other data sources; or convert between tabular file formats. Trigger especially when you reference a spreadsheet file by name or path — even casually (like \"the xlsx in my downloads\") — and want something done to it or produced from it. Also trigger for cleaning or restructuring messy tabular data files (malformed rows, misplaced headers, junk data) into proper spreadsheets. The deliverable must be a spreadsheet file. Do NOT trigger when the primary deliverable is a Word document, HTML report, standalone Python script, database pipeline, or Google Sheets API integration, even if tabular data is involved."
+description: "Use when a spreadsheet file is the primary input or output: read, edit, or fix .xlsx/.xlsm/.csv/.tsv (formulas, formatting, charts, data cleaning), or create spreadsheets from scratch. Trigger on any spreadsheet reference by name. Not for Word doc, HTML report, script, pipeline, or Google Sheets deliverables."
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: spreadsheet-generation
 category: Framework
 ---
 

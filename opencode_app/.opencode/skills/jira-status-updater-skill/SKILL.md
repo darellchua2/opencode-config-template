@@ -3,9 +3,6 @@ name: jira-status-updater-skill
 description: Automate JIRA ticket status transitions after pull requests are merged, ensuring proper workflow closure
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: jira-status-transition
 category: JIRA
 ---
 

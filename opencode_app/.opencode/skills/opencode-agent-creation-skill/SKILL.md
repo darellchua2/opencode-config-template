@@ -3,9 +3,6 @@ name: opencode-agent-creation-skill
 description: Generate OpenCode agents following official documentation best practices
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: agent-development
 category: OpenCode Meta
 ---
 

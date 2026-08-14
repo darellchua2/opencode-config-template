@@ -10,9 +10,6 @@ description: >-
   validation, pandoc DOCX conversion, and a mandatory verification checklist.
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: researchers
-  workflow: research
 category: Academic & Research Writing
 ---
 

@@ -1,11 +1,8 @@
 ---
 name: pdf-specialist-skill
-description: "Use this skill whenever you want to create, read, edit, analyze, or manipulate PDF files. Triggers include: any mention of 'PDF', '.pdf', 'fill PDF form', 'extract text from PDF', 'merge PDF', 'split PDF', 'convert to PDF', or requests involving form filling, text extraction, OCR, watermarking, encryption, or image extraction from PDFs. Also use when working with fillable or non-fillable PDF forms. Do NOT use for Word documents (.docx), spreadsheets, or general coding tasks unrelated to PDF processing."
+description: "Create, read, edit, analyze, or manipulate PDF files. Triggers: any 'PDF'/'.pdf' mention, 'fill PDF form', 'extract text from PDF', 'merge PDF', 'split PDF', 'convert to PDF', form filling, OCR, watermarking, encryption, image extraction. Do NOT use for Word documents, spreadsheets, or general coding tasks."
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: pdf-processing
 category: Framework
 ---
 

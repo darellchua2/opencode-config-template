@@ -4,8 +4,6 @@ description: Generate comprehensive pytest test files for Python using the test-
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: developers
-  workflow: python-testing
   protocol: autoresearch-opt-in
 category: Language-Specific
 ---

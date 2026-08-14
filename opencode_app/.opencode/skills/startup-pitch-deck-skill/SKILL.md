@@ -3,9 +3,6 @@ name: startup-pitch-deck-skill
 description: Startup presentation domain knowledge — pitch deck structures, board update templates, product launch decks, design principles, color palettes, investor-readiness checklists, and stage-specific guidance for creating compelling presentations.
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers, startup-founders
-  workflow: presentation-strategy
 category: Startup/Business
 ---
 

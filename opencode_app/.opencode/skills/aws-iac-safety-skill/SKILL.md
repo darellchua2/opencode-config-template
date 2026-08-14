@@ -3,11 +3,6 @@ name: aws-iac-safety-skill
 description: AWS Infrastructure-as-Code safety patterns — GitHub resource count gating, SSM parameter CI passthrough pitfalls, cross-module ECR lifecycle ownership, SSM_SECRETS_REFERENCE convention, and Lambda Web Adapter for dual-target deployment (EC2 + Lambda)
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: infrastructure-as-code
-  languages: hcl
-  frameworks: terraform, opentofu, github-actions
 category: DevOps
 ---
 

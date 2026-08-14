@@ -4,8 +4,6 @@ description: "Methodology for auditing and fixing responsive UI defects in Next.
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: developers
-  workflow: testing
   protocol: autoresearch-opt-in
 category: Responsive & Visual Testing
 ---

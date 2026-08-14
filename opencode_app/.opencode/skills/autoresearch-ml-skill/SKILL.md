@@ -4,8 +4,6 @@ description: "[Requires NVIDIA GPU] Autonomous ML training research loop — mod
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: ml-researchers
-  workflow: autonomous-iteration
   protocol: autoresearch-default-on
 category: Autoresearch
 ---

@@ -3,9 +3,6 @@ name: git-issue-updater-skill
 description: Update GitHub issues and JIRA tickets with commit progress including user, date, time, and consistent documentation formatting for traceability
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers, maintainers
-  workflow: issue-tracking
 category: Git/Workflow
 ---
 

@@ -4,9 +4,6 @@ description: Diagnose and resolve errors, exceptions, and stack traces with inte
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: developers
-  workflow: debugging
-  trigger: explicit-only
   protocol: autoresearch-opt-in
 category: Framework
 ---

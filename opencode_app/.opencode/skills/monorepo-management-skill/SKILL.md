@@ -3,10 +3,6 @@ name: monorepo-management-skill
 description: Manage JavaScript/TypeScript monorepos with Turborepo, Nx, or pnpm workspaces — package boundaries, shared configs, build caching, dependency graphs, and changesets for versioning
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: monorepo
-  languages: typescript, javascript
 category: DevOps
 ---
 

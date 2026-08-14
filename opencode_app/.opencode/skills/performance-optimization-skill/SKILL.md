@@ -4,9 +4,6 @@ description: Identify and fix performance bottlenecks — profiling (cProfile, C
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: developers
-  workflow: performance
-  languages: typescript, python, javascript
   protocol: autoresearch-opt-in
 category: Framework
 ---

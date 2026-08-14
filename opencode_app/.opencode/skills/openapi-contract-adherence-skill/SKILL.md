@@ -7,11 +7,6 @@ description: >
   changed, regenerate client.
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers, API engineers, agents
-  workflow: contract-management, api-evolution
-  trigger: explicit-only
-  languages: openapi, typescript, python
 category: Framework
 ---
 

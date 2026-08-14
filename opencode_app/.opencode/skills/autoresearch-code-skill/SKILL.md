@@ -4,8 +4,6 @@ description: "Autonomous code optimization loop — modify → verify (benchmark
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: developers
-  workflow: autonomous-iteration
   protocol: autoresearch-default-on
 category: Autoresearch
 ---

@@ -3,9 +3,6 @@ name: git-issue-labeler-skill
 description: Assess GitHub issues and assign labels using GitHub defaults, priority labels, and semantic versioning labels (major, minor, patch) with auto-create for missing labels
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers, maintainers
-  workflow: issue-management
 category: Git/Workflow
 ---
 

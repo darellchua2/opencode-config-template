@@ -11,8 +11,6 @@ description: >-
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: developers
-  workflow: code-cleanup
   protocol: autoresearch-opt-in
 category: Code Quality
 ---

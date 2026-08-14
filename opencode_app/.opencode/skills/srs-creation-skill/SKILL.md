@@ -1,13 +1,8 @@
 ---
 name: srs-creation-skill
-description: "Create, draft, and review Software Requirements Specifications (SRS) following the IEEE 830 standard. Triggers on: create srs, software requirements, functional spec, feature spec, write srs, specification, plus back-compat 'create prd'/'product requirement' (routes to SRS). Output: docs/srs/SRS-draft-{slug}.md (renamed to SRS-{key}.md when a ticket is created). Internal BA-to-dev document. Renders a snapshot .docx per interactive-document-rendering-skill; large tabular artifacts (RTM, data dictionary) exported as .xlsx via xlsx-specialist."
+description: "Create, draft, and review Software Requirements Specifications (SRS) following IEEE 830. Triggers on: create srs, software requirements, functional spec, feature spec, write srs, specification, plus back-compat 'create prd'/'product requirement'. Output: docs/srs/SRS-{key}.md with snapshot .docx per interactive-document-rendering-skill; large tabular artifacts (RTM, data dictionary) as .xlsx via xlsx-specialist."
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: business analysts, developers, agents
-  workflow: requirements-engineering
-  trigger: explicit-only
-  languages: markdown
 category: Framework
 ---
 

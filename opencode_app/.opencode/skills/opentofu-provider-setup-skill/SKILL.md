@@ -3,9 +3,6 @@ name: opentofu-provider-setup-skill
 description: Configure OpenTofu with cloud providers, manage authentication, and setup state backends
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: infrastructure-provisioning
 category: OpenTofu
 ---
 

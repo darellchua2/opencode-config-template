@@ -3,9 +3,6 @@ name: git-branch-workflow-setup-skill
 description: Orchestrate dev→uat→main branch workflow setup during project initialization. Detects when release branch structure is needed, prompts the end user via the question tool for configuration choices, and delegates execution to repo-ops-specialist-subagent. Centralizes branch-workflow decision-making for all framework setup agents.
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: agent
-  workflow: scaffolding
 category: Git/Workflow
 ---
 

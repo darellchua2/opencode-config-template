@@ -4,8 +4,6 @@ description: Create Mermaid diagrams embedded directly in Markdown as fenced cod
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: developers
-  workflow: diagram-generation
   protocol: autoresearch-opt-in
 category: Git/Workflow
 ---

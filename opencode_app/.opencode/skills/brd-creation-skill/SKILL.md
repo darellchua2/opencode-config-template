@@ -1,13 +1,8 @@
 ---
 name: brd-creation-skill
-description: "Create, draft, and review Business Requirements Documents (BRD) following the BABOK/IIBA standard. Triggers on: create brd, business requirements, stakeholder requirements, business need, business requirements document. The sponsor-level 'why' document — sits BETWEEN the customer Vision (docs/vision/) and the internal SRS (docs/srs/). Output: docs/brd/BRD-draft-{slug}.md (renamed to BRD-{key}.md when a ticket is created). Renders a snapshot .docx per interactive-document-rendering-skill."
+description: "Create, draft, and review Business Requirements Documents (BRD) following the BABOK/IIBA standard. Triggers on: create brd, business requirements, stakeholder requirements, business need, business requirements document. The sponsor-level 'why' document between the customer Vision (docs/vision/) and the internal SRS (docs/srs/). Output: docs/brd/BRD-{key}.md with snapshot .docx per interactive-document-rendering-skill."
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: business analysts, sponsors, stakeholders, agents
-  workflow: requirements-engineering
-  trigger: explicit-only
-  languages: markdown
 category: Framework
 ---
 

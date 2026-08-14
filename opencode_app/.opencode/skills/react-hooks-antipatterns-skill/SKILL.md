@@ -3,11 +3,6 @@ name: react-hooks-antipatterns-skill
 description: Detect and fix React hooks anti-patterns — stale useState from props, StrictMode double-execution, useCallback/useMemo dependency traps, stale ref accumulators, toast.promise double-consumer leaks, and hook decomposition for complex components
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: code-quality
-  languages: typescript, javascript
-  frameworks: react
 category: Framework-Specific
 ---
 

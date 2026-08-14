@@ -3,10 +3,6 @@ name: docker-containerization-skill
 description: Create and optimize Dockerfiles, multi-stage builds, docker-compose patterns, image size reduction, layer caching, .dockerignore, health checks, and container security scanning with hadolint and docker scout
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: containerization
-  languages: dockerfile, yaml
 category: DevOps
 ---
 

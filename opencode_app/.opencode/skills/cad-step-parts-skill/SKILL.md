@@ -1,11 +1,8 @@
 ---
 name: cad-step-parts-skill
-description: Find, evaluate, and download common purchasable CAD parts from step.parts, including named off-the-shelf actuators, servos, motors, electronics boards, connectors, screws, bolts, nuts, washers, bearings, standoffs, and other catalog components. Use when Codex needs to search the hosted step.parts catalog before creating simplified placeholder geometry, resolve fuzzy part names, standards, aliases, or dimensions, choose a matching part, fetch a canonical .step file, verify checksums, or use the step.parts API/OpenAPI/catalog endpoints for standard part discovery.
+description: Find, evaluate, and download purchasable CAD parts from the step.parts catalog — actuators, servos, motors, electronics boards, connectors, fasteners, bearings, standoffs. Use when searching the catalog before creating placeholder geometry, resolving fuzzy part names/standards/dimensions, or fetching canonical .step files with checksum verification via the step.parts API.
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: engineers, robotics-developers, hardware-designers, makers
-  workflow: cad-parts
 category: CAD & Hardware Design
 ---
 

@@ -3,9 +3,6 @@ name: version-bump-standard-skill
 description: Ensure consistent version bumping and release workflows across all CanvasTekk repositories. Enforces the dev to uat to main branch flow with PR-label-driven semantic versioning. Use when setting up or auditing release workflows, standardizing version bumping, configuring branch protection, or onboarding a new repo.
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers, devops
-  workflow: release-management
 category: Git/Workflow
 ---
 

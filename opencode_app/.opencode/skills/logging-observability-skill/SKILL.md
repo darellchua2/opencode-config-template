@@ -3,10 +3,6 @@ name: logging-observability-skill
 description: Set up structured logging, distributed tracing, and observability — Winston, pino, structlog, OpenTelemetry integration, Sentry error monitoring, correlation IDs, log levels, and observability stack configuration
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: observability
-  languages: typescript, python
 category: DevOps
 ---
 

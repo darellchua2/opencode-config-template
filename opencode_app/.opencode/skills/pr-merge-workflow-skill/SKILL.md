@@ -4,6 +4,8 @@ description: Post-merge workflow triggered by "pr merge to [branch]", "merge the
 metadata:
   protocol: autoresearch-opt-in
 category: Framework
+license: Apache-2.0
+compatibility: opencode
 ---
 
 # PR Merge + Monitor + Fix Workflow

@@ -6,9 +6,6 @@ description: >-
   with version-specific guidance. MANDATORY version detection before API advice.
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: civil-engineers, bim-developers, surveyors
-  workflow: civil-engineering
 category: CAD & Hardware Design
 ---
 

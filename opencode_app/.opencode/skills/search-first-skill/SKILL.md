@@ -4,9 +4,6 @@ description: Research-before-coding workflow that searches for existing tools, l
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: developers, agents
-  workflow: research, decision-making
-  trigger: explicit-only
   protocol: autoresearch-opt-in
 category: Agent Optimization
 ---

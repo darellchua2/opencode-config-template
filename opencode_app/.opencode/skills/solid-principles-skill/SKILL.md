@@ -4,9 +4,6 @@ description: Enforce SOLID principles (Single Responsibility, Open/Closed, Lisko
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: developers
-  workflow: code-quality
-  languages: language-agnostic
   protocol: autoresearch-opt-in
 category: Code Quality
 ---

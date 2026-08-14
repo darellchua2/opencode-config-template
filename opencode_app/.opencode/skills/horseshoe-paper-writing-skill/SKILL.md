@@ -14,10 +14,6 @@ description: >-
   "journal paper draft", "write paper horseshoe".
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: researchers
-  workflow: writing
-  venue_class: ASCE, Elsevier built-environment, IEEE, Springer, MDPI
 category: Academic & Research Writing
 ---
 

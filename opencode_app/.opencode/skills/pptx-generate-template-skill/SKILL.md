@@ -1,11 +1,8 @@
 ---
 name: pptx-generate-template-skill
-description: "Extract a PowerPoint (.pptx) into a normalized template-schema JSON and return a self-describing 'templated' PPTX with that JSON embedded at ppt/template_schema.json. Use when the user wants to extract/generate a template, fingerprint a deck, learn its layouts/components/fonts, or produce a reusable templated PPTX. Do NOT use for filling a template with content (use pptx-generate-slide-skill) or extending a template's layouts (use pptx-template-modifier-skill)."
+description: "Extract a PowerPoint (.pptx) into a normalized template-schema JSON and return a self-describing 'templated' PPTX with that JSON embedded at ppt/template_schema.json. Use when extracting/generating a template, fingerprinting a deck, or producing a reusable templated PPTX. Do NOT use for filling a template (pptx-generate-slide-skill) or extending layouts (pptx-template-modifier-skill)."
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: template-extraction
 category: Presentation
 ---
 

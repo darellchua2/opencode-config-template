@@ -4,11 +4,7 @@ description: Extract and store reusable patterns, decisions, and insights from c
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: developers, agents
-  workflow: learning, optimization
-  trigger: explicit-only
   protocol: autoresearch-opt-in
-  version: "2"
 category: Agent Optimization
 ---
 
