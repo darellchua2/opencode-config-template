@@ -1,6 +1,9 @@
 ---
 name: cad-viewer-skill
-description: Start or reuse CAD Viewer and return review links for explicit CAD, implicit CAD, robot-description, and G-code files. Use when visually reviewing `.step`, `.stp`, `.implicit.js`, `.implicit.mjs`, `.glb`, `.stl`, `.3mf`, `.gcode`, `.dxf`, `.urdf`, `.srdf`, or `.sdf` files, especially when handed off from cad-generation-skill, cad-implicit-skill, cad-gcode-skill, cad-urdf-skill, cad-srdf-skill, or cad-sdf-skill.
+description: >-
+  Start or reuse CAD Viewer and return review links for CAD, implicit,
+  robot-description, and G-code files (.step, .stl, .glb, .3mf, .gcode, .dxf,
+  .urdf, .srdf, .sdf).
 license: Apache-2.0
 compatibility: opencode
 category: CAD & Hardware Design

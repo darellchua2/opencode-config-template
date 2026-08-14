@@ -1,6 +1,8 @@
 ---
 name: plan-updater-skill
-description: Update branch-specific PLAN.md files with progress. Detects branch name, finds matching PLAN file, updates checkboxes, and commits changes. Supports both GitHub (PLAN-GIT-*.md) and JIRA (PLAN-*.md) conventions.
+description: >-
+  Update branch-specific PLAN.md progress — detects branch, matches
+  PLAN-GIT-*.md / PLAN-*.md, ticks checkboxes, commits.
 license: Apache-2.0
 compatibility: opencode
 category: Git/Workflow

@@ -1,9 +1,8 @@
 ---
 description: >-
-  Specialized subagent for Next.js 16. Three modes: (1) project scaffolding with
-  shadcn/Tailwind v4/src directory/path aliases/React Compiler, (2) runtime
-  diagnosis via next-devtools-mcp, (3) proactive project audit. Routes to the
-  appropriate skills based on task type.
+  Next.js 16 specialist, three modes — project scaffolding (shadcn, Tailwind v4,
+  React Compiler), runtime diagnosis via next-devtools-mcp, proactive audit.
+  Routes to skills by task type.
 mode: subagent
 permission:
   read:

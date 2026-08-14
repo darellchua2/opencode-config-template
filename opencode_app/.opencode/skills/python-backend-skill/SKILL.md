@@ -1,6 +1,8 @@
 ---
 name: python-backend-skill
-description: Scaffold and structure Python backend projects with FastAPI, Django, or Flask — project layout, dependency injection, configuration management, virtual environments, and pyproject.toml standards
+description: >-
+  Scaffold Python backend projects — FastAPI/Django/Flask layout, dependency
+  injection, config, virtual environments, pyproject.toml.
 license: Apache-2.0
 compatibility: opencode
 category: Language-Specific

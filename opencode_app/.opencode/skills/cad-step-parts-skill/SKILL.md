@@ -1,6 +1,9 @@
 ---
 name: cad-step-parts-skill
-description: Find, evaluate, and download purchasable CAD parts from the step.parts catalog — actuators, servos, motors, electronics boards, connectors, fasteners, bearings, standoffs. Use when searching the catalog before creating placeholder geometry, resolving fuzzy part names/standards/dimensions, or fetching canonical .step files with checksum verification via the step.parts API.
+description: >-
+  Search, evaluate, and download purchasable parts from the step.parts catalog —
+  actuators, servos, motors, boards, connectors, fasteners — as canonical .step
+  files.
 license: Apache-2.0
 compatibility: opencode
 category: CAD & Hardware Design

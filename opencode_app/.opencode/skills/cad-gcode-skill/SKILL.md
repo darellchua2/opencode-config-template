@@ -1,6 +1,8 @@
 ---
 name: cad-gcode-skill
-description: Generate, inspect, dry-run, and statically validate plain FDM `.gcode` from 3D mesh files by orchestrating real slicer CLIs. Use when slicing `.stl`, `.obj`, unsliced `.3mf`, `.ply`, `.glb`, or `.gltf` into printer-profiled G-code, discovering local slicer backends, checking mesh slice-readiness, or validating G-code before printer handoff.
+description: >-
+  Slice 3D meshes (.stl, .obj, .3mf, .ply, .glb) into printer-profiled G-code
+  via real slicer CLIs; inspect, dry-run, and validate .gcode.
 license: Apache-2.0
 compatibility: opencode
 category: CAD & Hardware Design

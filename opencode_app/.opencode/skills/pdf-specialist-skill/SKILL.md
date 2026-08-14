@@ -1,6 +1,9 @@
 ---
 name: pdf-specialist-skill
-description: "Create, read, edit, analyze, or manipulate PDF files. Triggers: any 'PDF'/'.pdf' mention, 'fill PDF form', 'extract text from PDF', 'merge PDF', 'split PDF', 'convert to PDF', form filling, OCR, watermarking, encryption, image extraction. Do NOT use for Word documents, spreadsheets, or general coding tasks."
+description: >-
+  Create, read, edit, analyze PDFs — forms, OCR, merge, split, convert,
+  watermark, encryption, image extraction. Any PDF/.pdf mention. Not Word or
+  spreadsheets.
 license: Apache-2.0
 compatibility: opencode
 category: Framework

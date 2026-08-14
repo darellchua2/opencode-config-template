@@ -1,6 +1,8 @@
 ---
 name: frontend-design-skill
-description: Create distinctive, production-grade frontend interfaces with high design quality that avoid generic AI aesthetics. Use this skill when building web components, pages, landing pages, dashboards, React components, HTML/CSS layouts, or when styling/beautifying any web UI.
+description: >-
+  Build distinctive, production-grade web UI that avoids generic AI aesthetics —
+  components, pages, landing pages, dashboards, any styling task.
 license: Apache-2.0
 compatibility: opencode
 metadata:

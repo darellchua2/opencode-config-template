@@ -1,6 +1,8 @@
 ---
 name: solid-principles-skill
-description: Enforce SOLID principles (Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion) with language-agnostic examples and detection strategies
+description: >-
+  Enforce SOLID principles with language-agnostic examples and detection
+  strategies.
 license: Apache-2.0
 compatibility: opencode
 metadata:

@@ -1,6 +1,8 @@
 ---
 name: semantic-release-convention-skill
-description: Single source of truth for commit to PR to merge to release to CI/CD conventions, governing semantic versioning labels, branch-aware release tagging, changelog generation, and release pipeline standards consumed by 5 skills and 2 agents
+description: >-
+  Source of truth for commit-to-PR-to-merge-to-release conventions — semver
+  labels, branch-aware tagging, changelogs, release pipelines.
 license: Apache-2.0
 compatibility: opencode
 category: Git/Workflow

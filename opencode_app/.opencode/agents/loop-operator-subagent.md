@@ -1,5 +1,7 @@
 ---
-description: Autonomous loop execution operator that iterates tasks until completion criteria are met, with self-correction and progress tracking
+description: >-
+  Autonomous loop operator — iterates tasks until completion criteria are met,
+  with self-correction and progress tracking.
 mode: subagent
 steps: 25
 permission:

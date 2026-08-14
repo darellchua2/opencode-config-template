@@ -1,6 +1,8 @@
 ---
 name: mermaid-diagram-creator-skill
-description: Create Mermaid diagrams embedded directly in Markdown as fenced code blocks (rendered natively by GitHub/GitLab/VS Code) — zero MCP overhead; optional mmdc CLI render for standalone SVG/PNG files
+description: >-
+  Create Mermaid diagrams as Markdown fenced blocks (native GitHub/GitLab/VS
+  Code rendering); optional mmdc CLI for standalone SVG/PNG.
 license: Apache-2.0
 compatibility: opencode
 metadata:

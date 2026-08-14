@@ -1,5 +1,8 @@
 ---
-description: "Authors engineering Technical Design Documents (TDD): converts SRS/feature specs into architecture, data models, API contracts, and ADRs, with CodeGraph impact/dependency analysis. Triggers on: technical design, architecture document, system design, technical design doc, design spec, create technical design."
+description: >-
+  Authors Technical Design Documents — converts SRS/feature specs into
+  architecture, data models, API contracts, ADRs with CodeGraph impact analysis.
+  Triggers: technical design, architecture/system design, design spec.
 mode: subagent
 steps: 50
 permission:

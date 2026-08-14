@@ -1,6 +1,9 @@
 ---
 name: autoresearch-core-skill
-description: Canonical source of the autoresearch iteration protocol — a 5-stage Understand → Hypothesize → Experiment → Evaluate → Log & Iterate loop driven by a mechanical {"pass":bool,"score":N} evaluator, with git-as-memory keep/revert, stuck detection, and prompt-injection boundaries. Cited by all domain and retrofitted skills.
+description: >-
+  Canonical autoresearch iteration protocol — Understand, Hypothesize,
+  Experiment, Evaluate, Log loop; mechanical pass/score evaluator; git-as-memory
+  keep/revert; stuck detection.
 license: Apache-2.0
 compatibility: opencode
 category: Autoresearch

@@ -1,6 +1,9 @@
 ---
 name: security-audit-skill
-description: Audit code and dependencies for security vulnerabilities — OWASP Top 10, dependency scanning (npm audit, pip-audit), secret detection, input validation, XSS/CSRF prevention, security headers, HTTPS enforcement, and runtime secret masking (vibeguard)
+description: >-
+  Audit code and dependencies for vulnerabilities — OWASP Top 10, npm
+  audit/pip-audit, secret detection, XSS/CSRF, security headers, vibeguard
+  masking.
 license: Apache-2.0
 compatibility: opencode
 metadata:

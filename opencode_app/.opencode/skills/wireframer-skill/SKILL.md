@@ -1,6 +1,9 @@
 ---
 name: wireframer-skill
-description: "Generate low-fidelity, hand-drawn web wireframes and clickable prototypes before writing production code. Triggers on: wireframe, mockup, lo-fi prototype, rough layout, Balsamiq-style, hand-drawn UI, sketch the screens, visualize the flow, responsive baseline, breakpoint wireframe. Produces self-contained SPAs (wired-elements, graph-paper background); also provides baseline layouts for responsive audits."
+description: >-
+  Generate lo-fi hand-drawn wireframes and clickable prototypes before
+  production code. Triggers: wireframe, mockup, lo-fi prototype, rough layout,
+  Balsamiq-style, sketch the screens, breakpoint wireframe.
 license: MIT
 compatibility: opencode
 metadata:

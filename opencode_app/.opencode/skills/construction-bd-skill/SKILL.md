@@ -1,6 +1,8 @@
 ---
 name: construction-bd-skill
-description: "Construction industry business development knowledge — proposal summarization, quotation preparation with cost categories, industry terminology, Atlassian integration workflows, and document generation standards for construction tech startups."
+description: >-
+  Construction business development knowledge — proposal summarization,
+  quotations with cost categories, industry terminology, Atlassian workflows.
 license: Apache-2.0
 compatibility: opencode
 category: Startup/Business

@@ -1,6 +1,8 @@
 ---
 name: grill-with-docs-skill
-description: A relentless interview to sharpen a plan or design, which also creates docs (CONTEXT.md glossary and ADRs) as we go. User-invoked orchestrator that pairs grilling-skill with domain-modeling-skill.
+description: >-
+  Relentless plan-sharpening interview that also produces CONTEXT.md glossary
+  and ADRs — pairs grilling-skill with domain-modeling-skill.
 license: Apache-2.0
 compatibility: opencode
 category: Planning & Alignment

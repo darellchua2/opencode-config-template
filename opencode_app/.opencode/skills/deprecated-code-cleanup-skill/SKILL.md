@@ -1,13 +1,10 @@
 ---
 name: deprecated-code-cleanup-skill
 description: >-
-  Find, classify, and remove @deprecated code from a TypeScript/Next.js codebase
-  using dependency-traced analysis. Scans for @deprecated markers, traces the
-  full dependency graph (including transitive chains through other deprecated
-  code), classifies items into tiers by deletion safety, and executes phased
-  removal with typecheck verification at each step. Triggers on: deprecated
-  cleanup, remove deprecated, dead code cleanup, deprecated functions, remove
-  @deprecated, cleanup deprecated code, find deprecated, deprecated removal.
+  Find, classify, and remove @deprecated TypeScript/Next.js code via
+  dependency-traced analysis — safety tiers, phased removal with typecheck per
+  step. Triggers: deprecated cleanup, remove deprecated, dead code cleanup, find
+  deprecated.
 license: Apache-2.0
 compatibility: opencode
 metadata:

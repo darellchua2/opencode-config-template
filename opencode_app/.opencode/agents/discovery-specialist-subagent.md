@@ -1,5 +1,8 @@
 ---
-description: "Customer-facing discovery specialist — runs live discovery sessions with the client, generates wireframes on the fly, captures client feedback verbatim, and synthesizes the Vision Document. Triggers on: create vision, vision document, concept brief, discovery session, start discovery, solution vision."
+description: >-
+  Runs live client discovery sessions — on-the-fly wireframes, verbatim feedback
+  capture, synthesizes the Vision Document. Triggers: create vision, vision
+  document, concept brief, discovery session, solution vision.
 mode: subagent
 steps: 60
 permission:

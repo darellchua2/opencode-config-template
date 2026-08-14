@@ -1,5 +1,8 @@
 ---
-description: Autonomous literature-review subagent (Tier 2, web-only). Fetches papers, extracts structured summaries, builds a living research.md with categories-covered tracking. No Bash, no code execution. Path-restricted edit (research files only).
+description: >-
+  Autonomous literature-review loop (Tier 2, web-only) — fetches papers,
+  structured summaries, living research.md with category tracking. No Bash;
+  research-files-only edits.
 mode: subagent
 steps: 30
 permission:

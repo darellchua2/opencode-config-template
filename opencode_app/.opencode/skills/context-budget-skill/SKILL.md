@@ -1,6 +1,8 @@
 ---
 name: context-budget-skill
-description: Audit token overhead across all loaded components including agents, skills, and MCP servers, producing actionable optimization recommendations with classification and problem detection
+description: >-
+  Audit token overhead across agents, skills, and MCP servers — classification
+  and optimization recommendations.
 license: Apache-2.0
 compatibility: opencode
 category: Agent Optimization

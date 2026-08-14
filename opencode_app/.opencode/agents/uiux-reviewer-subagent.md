@@ -1,5 +1,8 @@
 ---
-description: "Review-only UI/UX design review subagent. Applies a 13-axis rubric (6 AslanMazhidov + 5 RNT56 + Nielsen's 10 + anti-default AI cluster detection) to screenshots, source code, and live URLs. Delegates screenshot analysis to image-analyzer-subagent."
+description: >-
+  Review-only UI/UX design review — 13-axis rubric (AslanMazhidov, RNT56,
+  Nielsen, anti-default AI detection) over screenshots, source, live URLs;
+  delegates screenshots to image-analyzer.
 mode: subagent
 steps: 30
 permission:

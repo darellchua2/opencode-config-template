@@ -1,6 +1,10 @@
 ---
 name: opencode-repo-setup-skill
-description: Interactive per-repo setup. Detects repo signals, asks which opt-in MCP servers to enable (project opencode.json wins over global), optionally initializes CodeGraph, appends CodeGraph/LSP rule blocks to the project AGENTS.md, reports token cost and revert path. Triggers on "set up mcp for this repo", "repo setup", "per-project enable", "configure project opencode".
+description: >-
+  Interactive per-repo setup — opt-in MCP servers (project opencode.json wins),
+  optional CodeGraph init, AGENTS.md rule blocks, token-cost report. Triggers:
+  set up mcp for this repo, repo setup, per-project enable, configure project
+  opencode.
 license: Apache-2.0
 compatibility: opencode
 category: OpenCode Meta

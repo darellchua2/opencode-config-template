@@ -1,5 +1,7 @@
 ---
-description: Fast agent specialized for exploring codebases. Find files by patterns, search code for keywords, and answer questions about codebase structure.
+description: >-
+  Fast codebase exploration — find files by pattern, search code for keywords,
+  answer structural questions.
 mode: subagent
 steps: 10
 permission:

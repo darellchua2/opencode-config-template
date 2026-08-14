@@ -1,6 +1,9 @@
 ---
 name: playwright-responsive-audit-skill
-description: "Methodology for auditing and fixing responsive UI defects in Next.js projects using Playwright. Defines 6 detection assertions, 3 fix-confidence tiers, and a closed detect-fix-re-verify loop. Loaded by responsive-audit-subagent. Not auto-triggered — invoked exclusively via permission.skill by the audit subagent."
+description: >-
+  Responsive-audit methodology — 6 Playwright detection assertions, 3
+  fix-confidence tiers, detect-fix-re-verify loop. Loaded by
+  responsive-audit-subagent only, not auto-triggered.
 license: Apache-2.0
 compatibility: opencode
 metadata:

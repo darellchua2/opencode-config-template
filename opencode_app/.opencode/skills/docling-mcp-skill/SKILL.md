@@ -1,6 +1,9 @@
 ---
 name: docling-mcp-skill
-description: "Docling reference and workflows — layout-aware document extraction for complex tables, multi-column layouts, and scanned PDFs where markitdown returns garbage. Covers CLI-on-demand, the persistent MCP tier (--enable-pack docling), consent policy, escalation routing. Triggers on docling, layout-aware extraction, complex table extraction, scanned PDF OCR, markitdown insufficient."
+description: >-
+  Docling reference and workflows — layout-aware extraction for complex tables,
+  multi-column, scanned PDFs where markitdown fails. CLI and MCP tiers, consent
+  policy. Triggers: docling, scanned PDF OCR, markitdown insufficient.
 license: Apache-2.0
 compatibility: opencode
 metadata:

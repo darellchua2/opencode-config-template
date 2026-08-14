@@ -1,5 +1,7 @@
 ---
-description: Specialized subagent for test generation across multiple languages and frameworks. Covers Python pytest, Next.js unit tests, and generic test generation following industry best practices.
+description: >-
+  Test generation — Python pytest, Next.js unit tests, generic frameworks,
+  following best practices.
 mode: subagent
 permission:
   read:

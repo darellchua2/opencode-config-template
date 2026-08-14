@@ -1,6 +1,9 @@
 ---
 name: zai-image-generation-skill
-description: Generate images from text prompts via the Z.AI GLM-Image API (glm-image / cogview-4-250304), saved as local PNG files — calls /images/generations directly, bypassing the chat-only provider layer, then downloads the result URL. Triggers on image generation, generate image, text to image, GLM-Image, draw a picture, make an image from prompt.
+description: >-
+  Generate images from text prompts via Z.AI GLM-Image API, saved as local PNGs
+  — direct /images/generations call. Triggers: image generation, generate image,
+  text to image, draw a picture.
 license: Apache-2.0
 compatibility: opencode
 category: Media Generation

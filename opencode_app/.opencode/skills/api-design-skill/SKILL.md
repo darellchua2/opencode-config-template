@@ -1,6 +1,9 @@
 ---
 name: api-design-skill
-description: Design and document APIs — REST conventions, OpenAPI/Swagger spec generation, GraphQL schema patterns, API versioning, pagination, rate limiting, error response formats, and HATEOAS
+description: >-
+  Design and document APIs — REST conventions, OpenAPI/Swagger generation,
+  GraphQL schemas, versioning, pagination, rate limiting, error formats,
+  HATEOAS.
 license: Apache-2.0
 compatibility: opencode
 metadata:

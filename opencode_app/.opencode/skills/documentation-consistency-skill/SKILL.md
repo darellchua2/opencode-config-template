@@ -1,6 +1,8 @@
 ---
 name: documentation-consistency-skill
-description: Audit and auto-fix documentation consistency across PLAN files, README.md, AGENTS.md, and deploy scripts — cross-file count sync, PLAN vs reality drift, structural integrity, and orphan reference detection.
+description: >-
+  Audit and auto-fix doc consistency across PLAN, README, AGENTS.md, deploy
+  scripts — count sync, drift, orphan references.
 license: Apache-2.0
 compatibility: opencode
 metadata:

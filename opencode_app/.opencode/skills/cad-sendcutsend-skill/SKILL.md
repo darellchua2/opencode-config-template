@@ -1,6 +1,9 @@
 ---
 name: cad-sendcutsend-skill
-description: Review DXF and STEP/STP uploads for SendCutSend.com orders using its ordering guide, catalog, and specs. Use only for SendCutSend.com preflight reports covering upload readiness, selected material/SKU/thickness/service availability, and service-specific checks for laser cutting, CNC routing, bending, tapping, countersinking, hardware insertion, and finishing.
+description: >-
+  Preflight DXF and STEP/STP uploads for SendCutSend.com orders —
+  material/SKU/service availability plus laser, CNC, bending, tapping,
+  countersinking, and finishing checks.
 license: Apache-2.0
 compatibility: opencode
 category: CAD & Hardware Design

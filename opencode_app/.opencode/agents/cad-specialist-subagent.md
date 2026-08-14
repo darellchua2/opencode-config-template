@@ -1,9 +1,8 @@
 ---
 description: >-
-  CAD/engineering/robotics/hardware specialist orchestrating 14 skills: parametric
-  CAD (STEP/STL/3MF/GLB), DXF, robot descriptions (URDF/SRDF/SDF), G-code
-  slicing, 3D printing, SendCutSend, CAD Viewer, Autodesk Platform Services,
-  Civil 3D, Open3D. Routes by task type.
+  CAD/engineering/robotics specialist orchestrating 14 skills — parametric CAD
+  (STEP/STL/3MF/GLB), DXF, URDF/SRDF/SDF, G-code slicing, 3D printing,
+  SendCutSend, Civil 3D. Routes by task type.
 mode: subagent
 permission:
   read:

@@ -1,6 +1,9 @@
 ---
 name: ooxml-editing-skill
-description: "Edit Office Open XML (OOXML) files surgically — unpack DOCX/PPTX/XLSX to XML, edit individual elements, validate, repack. Use for surgical edits like 'fix typo on slide 4' or 'update a single cell formula'. Also houses the html2pptx escape hatch. Do NOT use for template-based slide generation (pptx-generate-slide-skill)."
+description: >-
+  Surgical OOXML edits — unpack DOCX/PPTX/XLSX to XML, edit elements, validate,
+  repack ('fix typo on slide 4'); houses the html2pptx escape hatch. Not
+  template slide generation.
 license: Apache-2.0
 compatibility: opencode
 category: Office Utilities

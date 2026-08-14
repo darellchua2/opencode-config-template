@@ -1,6 +1,8 @@
 ---
 name: nextjs-standard-setup-skill
-description: Create standardized Next.js 16 demo applications with shadcn, Tailwind v4, src directory with path aliases, React Compiler, and npx zero-install experience using Tekk-prefixed components and proper documentation standards
+description: >-
+  Scaffold standardized Next.js 16 demos — shadcn, Tailwind v4, src directory
+  with path aliases, React Compiler, Tekk-prefixed components.
 license: Apache-2.0
 compatibility: opencode
 category: Framework-Specific

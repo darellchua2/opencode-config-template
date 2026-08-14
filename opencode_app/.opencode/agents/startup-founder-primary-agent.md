@@ -1,5 +1,7 @@
 ---
-description: Primary agent for startup founders - reports, quotations, spreadsheets, presentations, and day-to-day business operations
+description: >-
+  Startup founder operations — reports, quotations, spreadsheets, presentations,
+  day-to-day business.
 mode: subagent
 temperature: 0.7
 steps: 30

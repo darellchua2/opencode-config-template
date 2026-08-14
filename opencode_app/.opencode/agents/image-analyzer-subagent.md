@@ -1,5 +1,7 @@
 ---
-description: "Shared image analysis utility: native multimodal on zai/glm-5v-turbo, falling back to a direct Z.AI vision API call when native perception is unavailable. Accepts image/screenshot paths or URLs; returns strictly bounded structured analysis to minimize caller context."
+description: >-
+  Image analysis utility — native multimodal (zai/glm-5v-turbo) with direct Z.AI
+  vision API fallback. Takes paths/URLs; returns bounded structured analysis.
 mode: subagent
 
 permission:

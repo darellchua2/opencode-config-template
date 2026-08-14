@@ -1,11 +1,9 @@
 ---
 name: autodesk-aps-skill
 description: >-
-  Autodesk Platform Services (APS) API integration — authentication (OAuth
-  2-legged/3-legged), Data Management, Model Derivative, Viewer, Design
-  Automation, Webhooks. Revit API, Fusion 360 API, AutoCAD .NET API add-in
-  development. MCP server configuration. Use for APS/Forge REST APIs, Revit
-  plugins, Fusion 360 add-ins, AutoCAD .NET plugins.
+  Autodesk Platform Services (APS/Forge) REST APIs — OAuth, Data Management,
+  Model Derivative, Viewer, Design Automation, Webhooks; Revit, Fusion 360,
+  AutoCAD add-in development.
 license: Apache-2.0
 compatibility: opencode
 category: CAD & Hardware Design

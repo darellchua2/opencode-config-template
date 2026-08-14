@@ -1,6 +1,9 @@
 ---
 name: pptx-template-modifier-skill
-description: "Extend a PowerPoint template when a slide_type's layout is missing. Resolves the render contract, detects missing layouts, and borrows/clones a layout into a derived template_new.pptx. Works alongside pptx-generate-slide-skill (Capability B); clone_on='missing' clones only missing layouts. Do NOT use for normal template filling — that is pptx-generate-slide-skill."
+description: >-
+  Extend a PowerPoint template when a slide_type layout is missing —
+  borrows/clones layouts into template_new.pptx. Normal filling:
+  pptx-generate-slide-skill.
 license: Apache-2.0
 compatibility: opencode
 category: Presentation

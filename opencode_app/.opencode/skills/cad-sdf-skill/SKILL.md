@@ -1,6 +1,9 @@
 ---
 name: cad-sdf-skill
-description: SDFormat/SDF model and world generation, validation, and simulator handoff. Use for `.sdf` files, SDFormat XML, Python `gen_sdf()` sources, models, worlds, links, joints, poses, frames, inertials, visual/collision geometry, mesh URIs, sensors, lights, physics, plugins, includes, Gazebo, static SDF review, or simulator-specific metadata. Do not use for signed-distance-field geometry.
+description: >-
+  Generate and validate SDFormat .sdf models and worlds for Gazebo — links,
+  joints, poses, sensors, plugins, physics. Not for signed-distance-field
+  geometry.
 license: Apache-2.0
 compatibility: opencode
 category: CAD & Hardware Design

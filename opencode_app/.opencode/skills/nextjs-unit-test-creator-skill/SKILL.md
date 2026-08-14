@@ -1,6 +1,8 @@
 ---
 name: nextjs-unit-test-creator-skill
-description: Generate comprehensive unit tests for Next.js 16 applications covering App Router, Server Components, Client Components, API routes, and Server Actions with industry best practices
+description: >-
+  Generate Next.js 16 unit tests — App Router, Server/Client Components, API
+  routes, Server Actions.
 license: Apache-2.0
 compatibility: opencode
 metadata:

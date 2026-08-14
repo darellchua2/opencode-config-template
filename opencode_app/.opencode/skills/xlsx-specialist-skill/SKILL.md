@@ -1,6 +1,9 @@
 ---
 name: xlsx-specialist-skill
-description: "Use when a spreadsheet file is the primary input or output: read, edit, or fix .xlsx/.xlsm/.csv/.tsv (formulas, formatting, charts, data cleaning), or create spreadsheets from scratch. Trigger on any spreadsheet reference by name. Not for Word doc, HTML report, script, pipeline, or Google Sheets deliverables."
+description: >-
+  Spreadsheet-first tasks — read, edit, fix, create .xlsx/.xlsm/.csv/.tsv
+  (formulas, formatting, charts, data cleaning). Not Word docs, HTML reports,
+  scripts, or Google Sheets.
 license: Apache-2.0
 compatibility: opencode
 category: Framework

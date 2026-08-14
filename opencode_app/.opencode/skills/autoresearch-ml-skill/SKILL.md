@@ -1,6 +1,8 @@
 ---
 name: autoresearch-ml-skill
-description: "[Requires NVIDIA GPU] Autonomous ML training research loop — modify train.py, run a fixed-time-budget experiment, parse val_bpb, keep/revert via git-as-memory. Adapted from karpathy/autoresearch."
+description: >-
+  Autonomous ML training research loop (NVIDIA GPU required) — modify train.py,
+  run fixed-budget experiment, parse val_bpb, keep/revert. karpathy-style.
 license: Apache-2.0
 compatibility: opencode
 metadata:

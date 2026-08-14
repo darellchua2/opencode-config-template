@@ -1,6 +1,9 @@
 ---
 name: docx-creation-skill
-description: "Create, read, edit, or manipulate Word documents (.docx). Triggers: 'Word doc', 'word document', '.docx', professional documents with tables of contents, headings, page numbers, letterheads; tracked changes, comments, image insertion, find-and-replace; 'report'/'memo'/'letter'/'template' deliverables as Word files. Do NOT use for PDFs, spreadsheets, or Google Docs."
+description: >-
+  Create, read, edit Word (.docx) — TOCs, headings, letterheads, tracked
+  changes, comments, images; report/memo/letter/template deliverables. Not PDFs,
+  spreadsheets, or Google Docs.
 license: Apache-2.0
 compatibility: opencode
 category: Framework

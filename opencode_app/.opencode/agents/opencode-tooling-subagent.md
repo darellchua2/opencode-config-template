@@ -1,5 +1,7 @@
 ---
-description: Creates and maintains OpenCode rules (AGENTS.md), agents, subagents, and skills; scaffolds configurator repos (project vs user scope); suggests project-specific tooling, behavior rules, and AGENTS.md conventions; verifies compliance with opencode.ai docs.
+description: >-
+  Creates and maintains OpenCode rules (AGENTS.md), agents, skills; scaffolds
+  configurator repos; verifies compliance with opencode.ai docs.
 mode: subagent
 
 permission:

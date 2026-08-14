@@ -1,6 +1,8 @@
 ---
 name: pr-creation-workflow-skill
-description: Framework for creating PRs with automatic framework/language detection, configurable quality checks, multi-platform integration, semantic versioning labels (major/minor/patch), JIRA image attachments, and JIRA/git issue tracking
+description: >-
+  PR creation framework — framework/language detection, configurable quality
+  checks, semver labels, JIRA image attachments and tracking.
 license: Apache-2.0
 compatibility: opencode
 metadata:

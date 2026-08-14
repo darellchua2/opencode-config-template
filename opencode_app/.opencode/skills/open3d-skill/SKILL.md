@@ -2,9 +2,8 @@
 name: open3d-skill
 description: >-
   Open3D 3D data processing — point clouds (filtering, registration, FPFH,
-  RANSAC, ICP), mesh operations (simplification, smoothing, Poisson), 3D
-  visualization, TSDF reconstruction, Open3D-ML deep learning, camera/sensor
-  integration (RGBD, Kinect, RealSense). MANDATORY version detection.
+  RANSAC, ICP), mesh operations, TSDF reconstruction, visualization, Open3D-ML,
+  RGBD/Kinect/RealSense. Version detection first.
 license: Apache-2.0
 compatibility: opencode
 category: CAD & Hardware Design

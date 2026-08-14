@@ -1,13 +1,10 @@
 ---
 name: research-paper-generation-skill
 description: >-
-  Generate submission-ready research papers from codebase + verified experimental
-  data. Triggers on: "research paper", "academic paper", "write paper",
-  "paper draft", "submission-ready", "journal submission", "conference paper".
-  Orchestrates autoresearch-research-subagent, B&W diagram generation, DOCX
-  conversion, and folder organization. Covers three framing strategies (ML
-  methodology, built environment framework, application/system) with reference
-  validation, pandoc DOCX conversion, and a mandatory verification checklist.
+  Generate submission-ready research papers from codebase and verified
+  experimental data — three framing strategies, reference validation, pandoc
+  DOCX conversion. Triggers: research paper, academic paper, write paper, paper
+  draft, journal submission, conference paper.
 license: Apache-2.0
 compatibility: opencode
 category: Academic & Research Writing

@@ -1,6 +1,9 @@
 ---
 name: cad-urdf-skill
-description: URDF robot description generation with default generation-time validation. Use when creating, editing, regenerating, inspecting, or debugging `.urdf` files, `gen_urdf()` sources, links, joints, limits, inertials, visual/collision geometry, mesh references, or frame conventions. Use cad-srdf-skill for MoveIt2 semantics, cad-viewer-skill for MoveIt2 server controls, cad-generation-skill for STEP/STL/3MF/DXF/GLB outputs.
+description: >-
+  Generate and validate .urdf robot descriptions — links, joints, limits,
+  inertials, geometry, frames — from gen_urdf() sources. MoveIt2 semantics:
+  cad-srdf-skill; rendering: cad-viewer-skill.
 license: Apache-2.0
 compatibility: opencode
 category: CAD & Hardware Design
