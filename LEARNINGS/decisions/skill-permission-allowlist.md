@@ -14,6 +14,8 @@
 
 **Key constraint**: 13 skills have NO consumer subagent override — they MUST stay in the allowlist because denying them would make them inaccessible to ALL scoped subagents. These include: `pdf-specialist-skill`, `construction-bd-skill`, `startup-business-docs-skill`, `python-packaging-skill`, `csharp-linter-skill`, `java-linter-skill`, `typescript-dry-principle-skill`, `monorepo-management-skill`, `threejs-nextjs-skill`, etc.
 
+> **SUPERSEDED (2026-08-14, GIT-333)**: the 13-must-keep constraint above is lifted. Every formerly-orphaned skill now has a frontmatter `permission.skill: allow` consumer (see `PLANS/PLAN-GIT-333.md` Appendix for the full 58-skill classification: 41 self-scoped, 17 new allows added in Phase 1, 0 intentionally-hidden) or remains primary-visible via the `lean` profile (`pdf-specialist-skill`). Denying the other 58 from the primary is now safe under the lean profile — subagents are profile-immune.
+
 **References**:
 - `opencode_app/opencode.json` — `permission.skill` block (80 allows + 1 deny)
 - `deploy/.AGENTS.md` — "Skill Permission Allowlist" documentation section

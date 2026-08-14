@@ -62,7 +62,7 @@ teardown() { rm -rf "$TMP_PROJ"; }
   delegates=$(echo "$out" | jq_get "len(d['delegatesTo'])")
   avail=$(echo "$out" | jq_get "d['modelAvailable']")
   echo "skills=$skills delegates=$delegates avail=$avail" >&3
-  [ "$skills" = "12" ]
+  [ "$skills" = "16" ]
   [ "$delegates" -ge 5 ]
   [ "$avail" = "True" ]
 }
@@ -75,13 +75,13 @@ teardown() { rm -rf "$TMP_PROJ"; }
   [ "$has_img" = "True" ]
 }
 
-@test "install review --yes lands exactly 8 agents + 16 skills + codegraph (resolver deps)" {
+@test "install review --yes lands exactly 8 agents + 25 skills + codegraph (resolver deps)" {
   run $INIT --project "$TMP_PROJ" --preset review --yes
   [ "$status" -eq 0 ]
   agent_files=$(ls "$TMP_PROJ/.opencode/agents/" | wc -l)
   skill_dirs=$(ls "$TMP_PROJ/.opencode/skills/" | wc -l)
   [ "$agent_files" -eq 8 ]
-  [ "$skill_dirs" -eq 18 ]
+  [ "$skill_dirs" -eq 25 ]
 }
 
 @test "each installed agent has a model: frontmatter line" {

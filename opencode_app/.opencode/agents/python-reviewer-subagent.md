@@ -25,6 +25,8 @@ permission:
     continuous-learning-skill: allow
     search-first-skill: allow
     fastapi-pydantic-orm-patterns-skill: allow
+    database-migration-skill: allow
+    python-packaging-skill: allow
 category: review
 ---
 

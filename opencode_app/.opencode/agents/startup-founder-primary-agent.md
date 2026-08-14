@@ -15,6 +15,7 @@ permission:
   skill:
     docx-creation-skill: allow
     startup-business-docs-skill: allow
+    construction-bd-skill: allow
 category: business
 ---
 

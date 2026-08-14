@@ -22,6 +22,7 @@ permission:
     code-smells-skill: allow
     continuous-learning-skill: allow
     search-first-skill: allow
+    java-linter-skill: allow
 category: review
 ---
 

@@ -15,6 +15,9 @@ permission:
     docstring-generator-skill: allow
     coverage-readme-workflow-skill: allow
     markitdown-mcp-skill: allow
+    ascii-diagram-creator-skill: allow
+    horseshoe-paper-writing-skill: allow
+    research-paper-generation-skill: allow
 category: docs
 ---
 

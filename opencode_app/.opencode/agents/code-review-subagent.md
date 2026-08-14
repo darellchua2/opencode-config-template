@@ -37,6 +37,10 @@ permission:
     typescript-dry-principle-skill: allow
     continuous-learning-skill: allow
     context-budget-skill: allow
+    authentication-authorization-skill: allow
+    eval-harness-skill: allow
+    logging-observability-skill: allow
+    performance-optimization-skill: allow
 category: review
 ---
 

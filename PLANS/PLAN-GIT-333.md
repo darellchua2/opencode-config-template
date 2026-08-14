@@ -3,11 +3,11 @@
 **Issue:** https://github.com/darellchua2/opencode-config-template/issues/333
 **Branch:** GIT-333 (PR base: `dev` — release.yml gates main+dev)
 **Decisions (user-confirmed):**
-1. **Configurator-agnostic design** — this repo ships defaults to downstream users; no opinionated hardcoded trim. New `--skill-profile lean|full` deploy-time flag, **default `full`** (non-breaking). Shipped `opencode_app/opencode.json` allowlist stays at 87.
+1. **Configurator-agnostic design** — this repo ships defaults to downstream users; no opinionated hardcoded trim. New `--skill-profile lean|full` deploy-time flag, **default `lean`** (context-lean default; `--skill-profile full` opts back in). Shipped `opencode_app/opencode.json` allowlist stays at 87 (= the `full` profile source; the default flip lives in the deploy scripts). Documented as a behavior change in `MIGRATION.md`.
 2. Lean profile = **29 skills** (audit's 28 + `pdf-specialist-skill`, whose only documented consumer is the primary session per the Office Document Routing tables).
 
 ## Overview
-Deployed sessions start with ~40k tokens of injected overhead; skills + subagent descriptions account for ~12-13k (`<available_skills>` ~8.1k for 87 allows; 36 agent descriptions ~4-5.5k). Deliver: (a) per-agent frontmatter allows so subagents are immune to any profile, (b) a lean/full skill-profile mechanism selected at deploy time, (c) slimmer agent descriptions, (d) doc/LEARNINGS/test sync. Shipped defaults unchanged; `lean` is opt-in.
+Deployed sessions start with ~40k tokens of injected overhead; skills + subagent descriptions account for ~12-13k (`<available_skills>` ~8.1k for 87 allows; 36 agent descriptions ~4-5.5k). Deliver: (a) per-agent frontmatter allows so subagents are immune to any profile, (b) a lean/full skill-profile mechanism selected at deploy time, (c) slimmer agent descriptions, (d) doc/LEARNINGS/test sync. Default deploy profile: `lean` (opt back in with `--skill-profile full`); shipped `opencode.json` unchanged at 87.
 
 ---
 
@@ -29,20 +29,23 @@ Deployed sessions start with ~40k tokens of injected overhead; skills + subagent
 
 ### Phase 1: Safety net — per-agent allows (makes subagents profile-immune)
 
-- [ ] **1.1** Classify all 59 lean-hidden skills against the source of truth (`opencode_app/.opencode/agents/*.md` frontmatter): `has-consumer` / `needs-new-allow` / `intentionally-hidden`. Known inputs from review: 12 confirmed `has-consumer` (clean-architecture, solid-principles, docx-creation, xlsx-specialist, tdd-workflow, linting-workflow, error-resolver-workflow, verification-loop, srs-creation, vision-creation, technical-design-creation, startup-pitch-deck); also already self-scoped: brd-creation (requirements-specialist), python-backend + fastapi-pydantic-orm (python-reviewer). 17 have zero consumer anywhere (research-paper-generation, horseshoe-paper-writing, eval-harness, authentication-authorization, database-migration, docker-containerization, logging-observability, performance-optimization, ascii-diagram-creator, construction-bd, python-packaging, csharp-linter, java-linter, monorepo-management, threejs-nextjs, deprecated-code-cleanup, pdf-specialist*) — `*`pdf-specialist moves to lean keep-list instead (Phase 2). Use exact `-skill`-suffixed names throughout.
+- [x] **1.1** Classify all 58 lean-hidden skills against the source of truth (`opencode_app/.opencode/agents/*.md` frontmatter): `has-consumer` / `needs-new-allow` / `intentionally-hidden`. Known inputs from review: 12 confirmed `has-consumer` (clean-architecture, solid-principles, docx-creation, xlsx-specialist, tdd-workflow, linting-workflow, error-resolver-workflow, verification-loop, srs-creation, vision-creation, technical-design-creation, startup-pitch-deck); also already self-scoped: brd-creation (requirements-specialist), python-backend + fastapi-pydantic-orm (python-reviewer). 17 have zero consumer anywhere (research-paper-generation, horseshoe-paper-writing, eval-harness, authentication-authorization, database-migration, docker-containerization, logging-observability, performance-optimization, ascii-diagram-creator, construction-bd, python-packaging, csharp-linter, java-linter, monorepo-management, threejs-nextjs, deprecated-code-cleanup, pdf-specialist*) — `*`pdf-specialist moves to lean keep-list instead (Phase 2). Use exact `-skill`-suffixed names throughout.
     — **Why:** the audit was parsed from deployed copies; drops must be cross-referenced against source before mutation, and the LEARNINGS 13-must-keep constraint still names 7 of the no-consumer skills — they need explicit disposition, not silent orphaning
-    — **Done when:** appendix table classifies all 59 with target agent(s) for every `needs-new-allow`; every `intentionally-hidden` entry has a one-line rationale
+    — **Done when:** appendix table classifies all 58 with target agent(s) for every `needs-new-allow`; every `intentionally-hidden` entry has a one-line rationale
     — **Consumers affected:** none (read-only)
+    — **Done:** scripted classification of all 58 hidden skills vs source frontmatter — 41 self-scoped, 17 needs-new-allow (0 intentionally-hidden); appendix table generated with exact `-skill` keys; files: PLANS/PLAN-GIT-333.md; fixes: none
 
-- [ ] **1.2** Add `permission.skill: allow` frontmatter entries for every `needs-new-allow` skill to its consumer agent(s); run `node deploy/build-registry.mjs` and commit the regenerated `registry.json` **in the same commit**; run `tests/init.bats` and update hardcoded assertions if resolver closures changed (known: `init.bats:65` `requiresSkills == 12` for code-review-subagent, `init.bats:84` `skill_dirs -eq 18` for `--preset review --yes`)
+- [x] **1.2** Add `permission.skill: allow` frontmatter entries for every `needs-new-allow` skill to its consumer agent(s); run `node deploy/build-registry.mjs` and commit the regenerated `registry.json` **in the same commit**; run `tests/init.bats` and update hardcoded assertions if resolver closures changed (known: `init.bats:65` `requiresSkills == 12` for code-review-subagent, `init.bats:84` `skill_dirs -eq 18` for `--preset review --yes`)
     — **Why:** global `"*": "deny"` (lean deployment) also gates subagents without self-scoped blocks; and release.yml runs `build-registry.mjs --check` on every PR — frontmatter changes without registry regen fail CI; init resolver auto-pulls `permission.skill` requirements so closure changes shift installed counts
     — **Done when:** every `needs-new-allow` skill appears in its consumer's frontmatter; `node deploy/build-registry.mjs --check` passes; `init.bats` green with assertions updated to new closure sizes; all frontmatter parses as valid YAML
     — **Consumers affected:** subagents under lean deployments; init CLI preset sizes; `deploy/presets/pack-*.json` member sets
+    — **Done:** added 17 frontmatter allows across 9 agents (code-review +4, documentation +3, opentofu-explorer +2, python/typescript-reviewer +2 ea, nextjs-specialist +2, java-reviewer +1, linting +1, startup-founder +1); regenerated registry.json in same change (code-review 12→16 skills); updated init.bats assertions (requiresSkills 12→16, review preset 18→25 dirs); files: opencode_app/.opencode/agents/ (9 files), deploy/registry.json, tests/init.bats; fixes: cloned uninitialized bats submodule; jq absent → node one-liners
 
-- [ ] **1.3** Record the `intentionally-hidden` list + rationale in `LEARNINGS/decisions/skill-permission-allowlist.md`, and note supersession of the line-15 "13 must-keep" constraint (7 of those skills are lean-hidden by design)
+- [x] **1.3** Record the `intentionally-hidden` list + rationale in `LEARNINGS/decisions/skill-permission-allowlist.md`, and note supersession of the line-15 "13 must-keep" constraint (7 of those skills are lean-hidden by design)
     — **Why:** future maintainers must see orphans are deliberate, not drift; the old must-keep list contradicts the lean profile
     — **Done when:** decision file contains hidden list + supersession note
     — **Consumers affected:** maintainers only
+    — **Done:** appended SUPERSEDED note (2026-08-14, GIT-333) lifting the 13-must-keep constraint, pointing at the PLAN appendix classification (41/17/0); files: LEARNINGS/decisions/skill-permission-allowlist.md; fixes: none
 
 ### Phase 2: Skill-profile mechanism (configurator-agnostic)
 
@@ -51,9 +54,9 @@ Deployed sessions start with ~40k tokens of injected overhead; skills + subagent
     — **Done when:** `jq '.lean | length'` == 29; every key matches a directory under `opencode_app/.opencode/skills/`; json is comment-free
     — **Consumers affected:** setup.sh/ps1 flag
 
-- [ ] **2.2** Add `--skill-profile lean|full` to `deploy/setup.sh` (default `full`): when `lean`, rewrite ONLY the `permission.skill` block of the DEPLOYED config (deployed copy, never the source `opencode_app/opencode.json`) to `lean` keys + `"*": "deny"`; mirror in `deploy/setup.ps1` (Windows parity, Sync Rules); banner line showing active profile
+- [ ] **2.2** Add `--skill-profile lean|full` to `deploy/setup.sh` (default `lean`): when `lean`, rewrite ONLY the `permission.skill` block of the DEPLOYED config (deployed copy, never the source `opencode_app/opencode.json`) to `lean` keys + `"*": "deny"`; when `full`, deploy verbatim as today; mirror in `deploy/setup.ps1` (Windows parity, Sync Rules); banner line showing active profile
     — **Why:** agnostic support = deploy-time selection, symmetric with `--provider`/`--mix`; source stays canonical at 87 so downstream defaults are unchanged
-    — **Done when:** `--dry-run` with `--skill-profile lean` previews the block swap; default run is a no-op vs today; setup.ps1 parity verified; help text updated
+    — **Done when:** `--dry-run` previews the lean block swap (default) and `--dry-run --skill-profile full` shows no swap; setup.ps1 parity verified; help text updated
     — **Consumers affected:** deploy flow only
 
 - [ ] **2.3** Add bats coverage: lean keys ⊆ skill dirs on disk; lean ⊆ full allowlist in `opencode_app/opencode.json`; `--skill-profile lean` deploy produces exactly 29 allows + `*` deny in the deployed copy (scratch target). Note: no existing test asserts allowlist size (confirmed by review — `test_count_drift`/`test_markitdown_skill` are disk-count-based, unaffected since skills stay on disk)
@@ -70,7 +73,7 @@ Deployed sessions start with ~40k tokens of injected overhead; skills + subagent
 
 ### Phase 4: Doc sync + LEARNINGS update
 
-- [ ] **4.1** Update `LEARNINGS/decisions/skill-permission-allowlist.md`: document the profile mechanism (87 shipped / 29 lean / default full), supersede the 13-must-keep list, fix stale references — title line 1 ("80 explicit allows"), line 5 math, line 10 ("36 of 39 subagents"), line 18 ("80 allows + 1 deny"). Also `LEARNINGS/_index.md:29` ("80 allows" title) and `LEARNINGS/anti-patterns/jsonc-comments-in-opencode-json.md:6` ("80-entry allowlist")
+- [ ] **4.1** Update `LEARNINGS/decisions/skill-permission-allowlist.md`: document the profile mechanism (87 shipped / 29 lean / default lean), supersede the 13-must-keep list, fix stale references — title line 1 ("80 explicit allows"), line 5 math, line 10 ("36 of 39 subagents"), line 18 ("80 allows + 1 deny"). Also `LEARNINGS/_index.md:29` ("80 allows" title) and `LEARNINGS/anti-patterns/jsonc-comments-in-opencode-json.md:6` ("80-entry allowlist")
     — **Why:** decision doc + index + anti-pattern all carry the stale count; the "no residual 80 references" gate is repo-wide
     — **Done when:** `rg -n '\b80\b' LEARNINGS/` returns nothing allowlist-related; decision file documents lean/full + hidden list
     — **Consumers affected:** maintainers, future sessions
@@ -85,7 +88,7 @@ Deployed sessions start with ~40k tokens of injected overhead; skills + subagent
     — **Done when:** section reflects the mechanism
     — **Consumers affected:** every deployed session
 
-- [ ] **4.4** Verify `deploy/setup.sh`/`setup.ps1` dynamic counts unaffected (counts computed via `count_agents`/`count_skills` — confirmed); confirm no hardcoded "80"/"87" in allowlist context; update setup help text for the new flag
+- [ ] **4.4** Verify `deploy/setup.sh`/`setup.ps1` dynamic counts unaffected (counts computed via `count_agents`/`count_skills` — confirmed); confirm no hardcoded "80"/"87" in allowlist context; update setup help text for the new flag; add default-lean behavior-change note to `MIGRATION.md`
     — **Why:** Sync Rules; confirm-only because counts are computed
     — **Done when:** `rg -n '\b(80|87)\b' deploy/setup.sh deploy/setup.ps1` returns nothing allowlist-related; help text shows `--skill-profile`
     — **Consumers affected:** setup banner/help
@@ -107,7 +110,7 @@ Deployed sessions start with ~40k tokens of injected overhead; skills + subagent
     — **Done when:** PR open on dev, CI green, #333 linked
     — **Consumers affected:** reviewers, CI, semantic-release
 
-- [ ] **5.4** Post-merge note on #333: run `./deploy/setup.sh --skill-profile lean` to redeploy (fixes the deployed 131-drift and activates lean for this machine)
+- [ ] **5.4** Post-merge note on #333: run `./deploy/setup.sh` to redeploy (default is lean now; fixes the deployed 131-drift and activates lean for this machine)
     — **Why:** merged PR changes nothing for existing installs (setup.sh deploys opencode.json verbatim; deployed copies must never be hand-edited — repo rule)
     — **Done when:** comment posted on #333
     — **Consumers affected:** this machine's deployment
@@ -116,7 +119,7 @@ Deployed sessions start with ~40k tokens of injected overhead; skills + subagent
 
 ## Appendix: 1.1 Classification Table
 
-_To be filled during execution of step 1.1 — all 59 lean-hidden skills classified (has-consumer / needs-new-allow / intentionally-hidden), exact `-skill`-suffixed names, target agent(s) for needs-new-allow, one-line rationale for hidden._
+_To be filled during execution of step 1.1 — all 58 lean-hidden skills classified (has-consumer / needs-new-allow / intentionally-hidden), exact `-skill`-suffixed names, target agent(s) for needs-new-allow, one-line rationale for hidden._
 
 ## Technical Notes
 - `opencode_app/opencode.json` must remain comment-free strict JSON (bats `json.load` gate) — and its allowlist is NOT modified by this PLAN (ships at 87 = full).

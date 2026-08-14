@@ -26,6 +26,8 @@ permission:
     typescript-dry-principle-skill: allow
     continuous-learning-skill: allow
     search-first-skill: allow
+    database-migration-skill: allow
+    deprecated-code-cleanup-skill: allow
 category: review
 ---
 

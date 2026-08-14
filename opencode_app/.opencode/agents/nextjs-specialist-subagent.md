@@ -26,6 +26,8 @@ permission:
     react-render-antipatterns-skill: allow
     nextjs-devtools-mcp-skill: allow
     amplify-nextjs-deployment-skill: allow
+    monorepo-management-skill: allow
+    threejs-nextjs-skill: allow
 category: frontend
 ---
 
