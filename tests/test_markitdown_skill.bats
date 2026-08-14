@@ -99,10 +99,10 @@ AGENTS_WITH_SKILL_GRANT=(
 }
 
 @test "configuration_category_count_is_three" {
-  # markitdown-mcp-skill joins Configuration (was 2, now 3).
-  # README bolds the category name with **Configuration**, so the regex
-  # tolerates optional leading asterisks.
+  # Category counts drift as skills are merged/recategorized (BT-157);
+  # README's Configuration count must equal registry.json's.
   actual=$(grep -oE '\*\*Configuration\*\* \([0-9]+\)|Configuration \([0-9]+\)' README.md | grep -oE '[0-9]+' | head -1)
-  echo "README.md Configuration count: $actual" >&3
-  [ "$actual" = "3" ]
+  expected=$(node -e "const r=require('./deploy/registry.json'); console.log((r.skills||[]).filter(s=>s.category==='Configuration').length)")
+  echo "README.md Configuration count: $actual, registry: $expected" >&3
+  [ "$actual" = "$expected" ]
 }
