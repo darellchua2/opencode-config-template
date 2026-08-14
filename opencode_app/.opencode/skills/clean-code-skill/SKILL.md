@@ -4,9 +4,6 @@ description: Write clean, human-readable code with proper naming, small function
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: developers
-  workflow: code-quality
-  languages: language-agnostic
   protocol: autoresearch-opt-in
 category: Code Quality
 ---
@@ -704,7 +701,7 @@ async def sync_engine_to_cds() -> None:
 toast.promise(apiCall(), {
   error: "Failed",  // User sees toast, but caller's await never throws
 })
-await apiCall() // Unhandled rejection if no catch — see react-nextjs-antipatterns
+await apiCall() // Unhandled rejection if no catch — see react-hooks-antipatterns
 
 // GOOD — single consumer; error propagates
 try {

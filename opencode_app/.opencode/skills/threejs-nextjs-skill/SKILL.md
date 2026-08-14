@@ -1,22 +1,11 @@
 ---
 name: threejs-nextjs-skill
 description: >-
-  Three.js + Next.js (App Router / React 19) integration guidance with
-  MANDATORY version detection. Covers SSR/Server Component pitfalls,
-  Turbopack vs Webpack GLSL/bundler issues, hydration mismatches, StrictMode
-  WebGL context loss, persistent canvas across routes, R3F (React Three Fiber)
-  + drei ecosystem, WebXR/AR/VR via @react-three/xr, and the companion library
-  decision tree (drei, postprocessing, rapier, csg, leva, maath, meshline,
-  troika-three-text, three-mesh-bvh, gltfjsx, zustand). Use when working with
-  three.js, threejs, react-three-fiber, R3F, WebGL, WebXR, ARButton, VRButton,
-  or @react-three/* packages in a Next.js or React 19 project.
+  Three.js + Next.js (App Router, React 19) integration — SSR pitfalls, GLSL
+  bundling, hydration, WebGL context loss, R3F/drei, WebXR, companion-library
+  decision tree. Version detection first.
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers, frontend-developers, graphics-developers
-  workflow: integration-guidance
-  languages: [typescript, javascript]
-  frameworks: [three.js, react-three-fiber, next.js, react]
 category: Framework-Specific
 ---
 
@@ -252,7 +241,7 @@ Key patterns to copy:
 
 ## Pitfall Catalog
 
-Mirrors the format of `react-nextjs-antipatterns-skill`. Each pitfall has an
+Mirrors the format of `react-hooks-antipatterns-skill` / `react-render-antipatterns-skill`. Each pitfall has an
 identifier, symptom, root cause, and fix with code.
 
 ### Section A: SSR & Server Components (Critical)
@@ -575,6 +564,61 @@ class ThreeResourceManager {
 (`<mesh>`, `<boxGeometry>`, etc.). The above is only for objects created
 imperatively via `useThree()` or raw Three.js.
 
+**Sub-pattern — `material clone leak`:** `.clone()` on a material creates a new
+GPU allocation that is NOT tracked by any manager. Always register cloned
+materials: `manager.trackMaterial(mat.clone())`. This is a refinement of D2 —
+the root cause is the same (missing dispose), but `.clone()` is a sneakier path
+to the leak because developers assume the original manager covers the clone.
+
+#### D3. `line-not-disposed-in-overlay-cleanup` — Overlay Line Leak
+
+<!-- Provenance: canvastekk-frontend-nextjs/LEARNINGS/ -->
+
+**Symptom:** Memory grows when toggling overlay visibility (measurements, annotations).
+
+**Root cause:** `THREE.Line` objects added to an overlay group are removed from
+the scene graph but never `.dispose()`d — the GPU memory is retained.
+
+**Fix:**
+```ts
+function clearOverlay(group: THREE.Group) {
+  group.children.forEach(child => {
+    if (child instanceof THREE.Line) {
+      child.geometry.dispose()
+      const mat = child.material as THREE.Material
+      if (Array.isArray(mat)) mat.forEach(m => m.dispose())
+      else mat.dispose()
+    }
+  })
+  group.clear()
+}
+```
+
+#### D4. `perspectivecamera-cast-after-swap` — Stale Camera Reference
+
+<!-- Provenance: canvastekk-frontend-nextjs/LEARNINGS/ -->
+
+**Symptom:** Raycasting returns wrong results after camera swap (e.g., switching
+between perspective and orthographic views).
+
+**Root cause:** The raycaster holds a stale reference to the old camera object.
+After a camera swap, `raycaster.setFromCamera()` must be called with the NEW
+camera, not the one captured at initialization.
+
+**Fix:**
+```ts
+// BAD — captures camera at init, never updates
+const raycaster = new THREE.Raycaster()
+raycaster.setFromCamera(pointer, camera) // stale after camera swap
+
+// GOOD — always pass the current camera
+function onClick(event: MouseEvent, getCurrentCamera: () => THREE.Camera) {
+  const raycaster = new THREE.Raycaster()
+  raycaster.setFromCamera(pointer, getCurrentCamera())
+  // ...
+}
+```
+
 ---
 
 ## Companion Library Decision Tree
@@ -777,7 +821,7 @@ APIs:
 | Peer Skill | Boundary |
 |---|---|
 | **frontend-design-skill** | Visual aesthetics, layout, typography. This skill handles Three.js runtime correctness; frontend-design handles what the 3D scene sits inside. |
-| **react-nextjs-antipatterns-skill** | React 19 / Next.js 16 runtime anti-patterns (hydration, StrictMode, RBAC). This skill covers Three.js-specific issues; many pitfalls (e.g. StrictMode double-mount) overlap — coordinate. |
+| **react-hooks-antipatterns-skill** / **react-render-antipatterns-skill** | React runtime anti-patterns (hydration, StrictMode, hooks traps). This skill covers Three.js-specific issues; many pitfalls (e.g. StrictMode double-mount) overlap — coordinate. |
 | **accessibility-a11y-skill** | ARIA for canvas. Three.js `<canvas>` has no DOM semantics; this skill notes the issue but defers to a11y for screen-reader strategy. |
 | **performance-optimization-skill** | WebGL perf profiling, GPU memory. This skill documents the disposal pattern; perf-optimization goes deeper into draw-call counts and shader cost. |
 | **nextjs-standard-setup-skill** | Scaffolding a Next.js 16 project. Reach for it before this skill if the project doesn't exist yet; then layer Three.js on top using this skill. |

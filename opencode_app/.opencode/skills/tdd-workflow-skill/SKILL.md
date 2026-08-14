@@ -4,8 +4,6 @@ description: Guide developers through Test Driven Development workflow with red-
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: developers, QA engineers
-  workflow: testing
   protocol: autoresearch-opt-in
 category: Framework
 ---

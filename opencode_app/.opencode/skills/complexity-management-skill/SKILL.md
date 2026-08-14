@@ -3,10 +3,6 @@ name: complexity-management-skill
 description: Manage software complexity by minimizing accidental complexity and clearly expressing essential complexity through KISS, YAGNI, DRY principles
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: design
-  languages: language-agnostic
 category: Code Quality
 ---
 

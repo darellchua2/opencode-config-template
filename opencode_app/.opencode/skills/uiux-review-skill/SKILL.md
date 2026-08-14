@@ -1,12 +1,10 @@
 ---
 name: uiux-review-skill
-description: UI/UX design review — 13-axis rubric combining AslanMazhidov's 6 axes, RNT56's review dimensions (axes 7-11), Nielsen's 10 heuristics mapped to DOM/CSS checks, and anti-default AI design cluster detection. Evidence-first methodology with Playwright capture protocol and structured finding schema.
+description: >-
+  UI/UX design review — 13-axis rubric (AslanMazhidov, RNT56, Nielsen
+  heuristics, anti-default AI detection) with Playwright capture protocol.
 license: MIT
 compatibility: opencode
-metadata:
-  audience: developers, designers
-  workflow: review
-  languages: typescript, javascript, html, css, tsx, jsx
 category: Framework
 ---
 
@@ -377,4 +375,4 @@ This skill adapts patterns from the following open-source projects. No code was 
 - **frontend-design-skill**: Peer — creates new UI; this skill reviews existing UI
 - **accessibility-a11y-skill**: Deep-dive delegation target for axis 10 surface findings
 - **wireframer-skill**: Produces baselines for structural drift comparison
-- **react-nextjs-antipatterns-skill**: Source for axis 12 (Nielsen heuristic 4) findings in React/Next.js projects
+- **react-hooks-antipatterns-skill** + **react-render-antipatterns-skill**: Source for axis 12 (Nielsen heuristic 4) findings in React/Next.js projects

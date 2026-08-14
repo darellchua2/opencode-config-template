@@ -4,8 +4,6 @@ description: Ensure test coverage percentage is displayed in README.md for Next.
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: developers
-  workflow: test-coverage-documentation
   protocol: autoresearch-opt-in
 category: Documentation
 ---

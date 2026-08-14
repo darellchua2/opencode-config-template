@@ -24,13 +24,16 @@ teardown() { rm -rf "$TMP_PROJ"; }
   agents=$(jq_get "len(d['agents'])" < "$REG")
   skills=$(jq_get "len(d['skills'])" < "$REG")
   echo "agents=$agents skills=$skills" >&3
-  [ "$agents" = "38" ]
-  [ "$skills" = "126" ]
+  # Count-agnostic: registry must match disk (excludes _archived). BT-157.
+  disk_agents=$(find "${REPO}/opencode_app/.opencode/agents" -name '*.md' 2>/dev/null | wc -l | tr -d ' ')
+  disk_skills=$(find "${REPO}/opencode_app/.opencode/skills" -name 'SKILL.md' -not -path '*/_archived/*' 2>/dev/null | wc -l | tr -d ' ')
+  [ "$agents" = "$disk_agents" ]
+  [ "$skills" = "$disk_skills" ]
 }
 
-@test "--list agents is valid JSON with 38 entries" {
+@test "--list agents is valid JSON matching registry count" {
   count=$($INIT --list agents 2>/dev/null | jq_len)
-  [ "$count" = "38" ]
+  [ "$count" = "$(jq_get "len(d['agents'])" < "$REG")" ]
 }
 
 @test "--list agents --category review filters to reviewers" {
@@ -38,9 +41,9 @@ teardown() { rm -rf "$TMP_PROJ"; }
   [ "$count" = "7" ]
 }
 
-@test "--list skills is valid JSON with 126 entries" {
+@test "--list skills is valid JSON matching registry count" {
   count=$($INIT --list skills 2>/dev/null | jq_len)
-  [ "$count" = "126" ]
+  [ "$count" = "$(jq_get "len(d['skills'])" < "$REG")" ]
 }
 
 @test "--list categories is valid non-empty JSON" {
@@ -48,9 +51,9 @@ teardown() { rm -rf "$TMP_PROJ"; }
   [ "$count" -gt 10 ]
 }
 
-@test "--list presets shows all 10 presets" {
+@test "--list presets shows all 9 presets" {
   count=$($INIT --list presets 2>/dev/null | jq_len)
-  [ "$count" = "10" ]
+  [ "$count" = "9" ]
 }
 
 @test "--describe code-review-subagent returns skills+delegates+modelAvailable" {
@@ -59,7 +62,7 @@ teardown() { rm -rf "$TMP_PROJ"; }
   delegates=$(echo "$out" | jq_get "len(d['delegatesTo'])")
   avail=$(echo "$out" | jq_get "d['modelAvailable']")
   echo "skills=$skills delegates=$delegates avail=$avail" >&3
-  [ "$skills" = "11" ]
+  [ "$skills" = "16" ]
   [ "$delegates" -ge 5 ]
   [ "$avail" = "True" ]
 }
@@ -72,13 +75,13 @@ teardown() { rm -rf "$TMP_PROJ"; }
   [ "$has_img" = "True" ]
 }
 
-@test "install review --yes lands exactly 8 agents + 16 skills + codegraph (resolver deps)" {
+@test "install review --yes lands exactly 8 agents + 25 skills + codegraph (resolver deps)" {
   run $INIT --project "$TMP_PROJ" --preset review --yes
   [ "$status" -eq 0 ]
   agent_files=$(ls "$TMP_PROJ/.opencode/agents/" | wc -l)
   skill_dirs=$(ls "$TMP_PROJ/.opencode/skills/" | wc -l)
   [ "$agent_files" -eq 8 ]
-  [ "$skill_dirs" -eq 16 ]
+  [ "$skill_dirs" -eq 25 ]
 }
 
 @test "each installed agent has a model: frontmatter line" {

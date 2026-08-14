@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           submodules: true
           persist-credentials: false
@@ -40,14 +40,25 @@ jobs:
           fi
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: Registry drift guard
         run: |
           echo "Checking deploy/registry.json is in sync with agent/skill frontmatter..."
           node deploy/build-registry.mjs --check
+
+      - name: Lint .mjs + package.json + npx tarball guard
+        run: |
+          echo "Syntax-checking .mjs files..."
+          node --check deploy/init.mjs deploy/source.mjs deploy/build-site.mjs
+          echo "Validating package.json..."
+          jq . package.json
+          echo "Checking npx tarball includes source tree..."
+          npm pack --dry-run 2>&1 | grep -q "opencode_app/.opencode/" \
+            && echo "source tree in tarball ✓" \
+            || { echo "FAIL: opencode_app/.opencode/ missing from tarball"; exit 1; }
 
       - name: Run tests
         run: |
@@ -64,7 +75,7 @@ jobs:
     if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.create_release)
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -81,21 +92,12 @@ jobs:
         continue-on-error: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: '24'
 
-      - name: Install semantic-release plugins
-        run: |
-          npm install --no-save \
-            semantic-release \
-            @semantic-release/commit-analyzer \
-            @semantic-release/release-notes-generator \
-            @semantic-release/changelog \
-            @semantic-release/exec \
-            @semantic-release/git \
-            @semantic-release/github \
-            conventional-changelog-conventionalcommits
+      - name: Install dependencies
+        run: npm ci
 
       - name: Create Release with CHANGELOG
         env:
@@ -118,3 +120,46 @@ jobs:
           name: CHANGELOG
           path: CHANGELOG.md
           retention-days: 30
+
+  pages:
+    name: Deploy catalog to Pages
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: pages
+      cancel-in-progress: true
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+
+      - name: Build catalog site
+        run: node deploy/build-site.mjs
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: docs
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
+        timeout-minutes: 15
+        continue-on-error: true
+      - name: Retry deploy on failure
+        if: steps.deployment.outcome == 'failure'
+        uses: actions/deploy-pages@v5
+        timeout-minutes: 15

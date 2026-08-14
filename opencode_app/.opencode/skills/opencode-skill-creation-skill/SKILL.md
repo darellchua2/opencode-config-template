@@ -3,9 +3,6 @@ name: opencode-skill-creation-skill
 description: Generate OpenCode skills following official documentation best practices
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: skill-development
 category: OpenCode Meta
 ---
 
@@ -13,7 +10,7 @@ category: OpenCode Meta
 
 I guide you through creating a new OpenCode skill from scratch by:
 
-1. **Collect Requirements**: Prompt for skill name, description, purpose, audience, and workflow type
+1. **Collect Requirements**: Prompt for skill name, description, purpose, and category
 2. **Generate Frontmatter**: Create proper YAML frontmatter with all required fields
 3. **Structure Content**: Build complete skill documentation following official standards
 4. **Validate**: Ensure skill meets naming rules and documentation guidelines
@@ -28,8 +25,7 @@ Use this when:
 
 Ask clarifying questions about:
 - Skill's primary purpose and capabilities
-- Target audience (developers, DevOps, QA, etc.)
-- Workflow type (testing, linting, deployment, etc.)
+- Category for the installer registry (testing, linting, deployment, etc.)
 - Prerequisites and dependencies
 - Expected inputs and outputs
 
@@ -53,8 +49,8 @@ Prompt the user for the following information:
 
 **Optional Fields**:
 - **Compatibility**: Usually "opencode" but can specify framework compatibility
-- **Audience**: Target users (developers, DevOps, QA, etc.)
-- **Workflow**: Workflow type (testing, linting, deployment, etc.)
+- **Category**: Installer-registry grouping (required by build-registry.mjs, init.mjs, setup.sh counts — invisible to OpenCode runtime but never omit)
+- **Metadata**: Opaque string map; only `protocol`/`pattern` are house-kept (bats/registry test signals). Do not add audience/workflow/languages/trigger keys
 
 **Prompt Template**:
 ```
@@ -113,10 +109,8 @@ Create the frontmatter section with all provided fields:
 name: <skill-name>
 description: <skill-description>
 license: <license-type>
-compatibility: <compatibility>
-metadata:
-  audience: <target-audience>
-  workflow: <workflow-type>
+compatibility: opencode
+category: <registry-category>
 ---
 ```
 
@@ -127,20 +121,18 @@ name: python-pytest-creator
 description: Generate comprehensive pytest test files for Python using test-generator-framework
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: testing
+category: testing
 ---
 ```
 
 **Important**: Only these frontmatter fields are recognized by OpenCode:
-- `name` (required)
-- `description` (required, 1-1024 characters)
+- `name` (required, MUST equal the directory name)
+- `description` (required, 1-1024 characters; house style ≤50 words with trigger phrases)
 - `license` (optional)
 - `compatibility` (optional)
 - `metadata` (optional, string-to-string map)
 
-Unknown frontmatter fields are ignored.
+Unknown frontmatter fields are ignored by OpenCode. `category` is installer-registry-only (required by this repo's tooling). After any frontmatter change, run `node deploy/build-registry.mjs` and commit `registry.json`.
 
 ### Step 4: Build Skill Content
 
@@ -197,10 +189,8 @@ cat > "skills/<skill-name>/SKILL.md" << 'EOF'
 name: <skill-name>
 description: <skill-description>
 license: <license-type>
-compatibility: <compatibility>
-metadata:
-  audience: <target-audience>
-  workflow: <workflow-type>
+compatibility: opencode
+category: <registry-category>
 ---
 
 ## What I do
@@ -484,9 +474,7 @@ name: python-pytest-creator-skill
 description: Generate comprehensive pytest test files for Python using test-generator-framework
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: testing
+category: testing
 ---
 ```
 

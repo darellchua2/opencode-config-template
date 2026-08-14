@@ -1,14 +1,11 @@
 ---
 name: civil-3d-skill
 description: >-
-  Autodesk Civil 3D workflow guidance — corridor design, surface management,
-  alignment/profile, pipe networks, grading, survey. COM and .NET API usage
-  with version-specific guidance. MANDATORY version detection before API advice.
+  Autodesk Civil 3D workflows — corridors, surfaces, alignments/profiles, pipe
+  networks, grading, survey; COM and .NET APIs. Version detection before API
+  advice.
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: civil-engineers, bim-developers, surveyors
-  workflow: civil-engineering
 category: CAD & Hardware Design
 ---
 

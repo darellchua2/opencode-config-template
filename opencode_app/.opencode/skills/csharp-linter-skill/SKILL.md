@@ -3,10 +3,6 @@ name: csharp-linter-skill
 description: Ensure C# code follows industry standards using dotnet format, Roslyn analyzers, and StyleCop with linting-workflow framework
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: code-quality
-  languages: csharp, dotnet
 category: Language-Specific
 ---
 

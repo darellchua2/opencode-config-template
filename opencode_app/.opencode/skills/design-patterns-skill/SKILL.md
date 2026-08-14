@@ -3,10 +3,6 @@ name: design-patterns-skill
 description: Apply GoF design patterns (Creational, Structural, Behavioral) appropriately without over-engineering - language-agnostic with practical examples
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: design
-  languages: language-agnostic
 category: Code Quality
 ---
 

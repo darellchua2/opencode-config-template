@@ -10,14 +10,19 @@
   "skills": [
     "accessibility-a11y-skill",
     "amplify-nextjs-deployment-skill",
+    "context-budget-skill",
+    "continuous-learning-skill",
+    "docstring-generator-skill",
     "frontend-design-skill",
+    "monorepo-management-skill",
     "nextjs-devtools-mcp-skill",
     "nextjs-image-usage-skill",
     "nextjs-pr-workflow-skill",
     "nextjs-standard-setup-skill",
     "nextjs-unit-test-creator-skill",
     "playwright-responsive-audit-skill",
-    "react-nextjs-antipatterns-skill",
+    "react-hooks-antipatterns-skill",
+    "react-render-antipatterns-skill",
     "threejs-nextjs-skill",
     "typescript-dry-principle-skill",
     "uiux-review-skill",
@@ -25,7 +30,6 @@
   ],
   "mcps": [
     "next-devtools",
-    "codegraph",
-    "mermaid"
+    "codegraph"
   ]
 }

@@ -3,9 +3,6 @@ name: docstring-generator-skill
 description: Generate language-specific docstrings for C#, Java, Python, and TypeScript following industry standards (PEP 257, Javadoc, JSDoc, XML documentation)
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: documentation
 category: Documentation
 ---
 

@@ -3,9 +3,6 @@ name: opentofu-neon-explorer-skill
 description: Explore and manage Neon Postgres serverless database resources using OpenTofu/Terraform
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: database-management
 category: OpenTofu
 ---
 
@@ -481,7 +478,7 @@ tofu output
 
 ### Connection Management
 
-1. **Connection Pooling**: Use connection pooling for high-traffic applications
+1. **Connection Pooling**: Use connection pooling for high-traffic applications. The `kislerdm/neon` provider (~0.13.0+) exposes `connection_uri_pooler` as a first-class attribute on `neon_branch` — no manual `-pooler` hostname construction needed. Use `connection_uri` for EC2/long-running processes, `connection_uri_pooler` for serverless/ECS/Lambda/edge (PgBouncer pooled).
 2. **Read Replicas**: Use read-only endpoints for analytics workloads
 3. **SSL Required**: Always use SSL/TLS for production connections
 4. **Timeout Configuration**: Configure appropriate connection timeouts

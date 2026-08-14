@@ -1,17 +1,11 @@
 ---
 name: openapi-contract-adherence-skill
-description: >
+description: >-
   Detect OpenAPI contract changes, classify breaking vs additive, map consumer
-  impact, and generate migration plans using oasdiff. Triggers on: openapi diff,
-  api contract, breaking change, consumer update plan, contract review, spec
-  changed, regenerate client.
+  impact, generate migration plans (oasdiff). Triggers: openapi diff, api
+  contract, breaking change, contract review, spec changed, regenerate client.
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers, API engineers, agents
-  workflow: contract-management, api-evolution
-  trigger: explicit-only
-  languages: openapi, typescript, python
 category: Framework
 ---
 

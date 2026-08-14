@@ -1,11 +1,12 @@
 ---
 name: autoresearch-research-skill
-description: Autonomous literature-review and paper-synthesis loop. Tier 2 (web-only, no Bash) — fetches papers, extracts structured summaries, builds a living research.md with categories-covered tracking. Uses agent-as-evaluator fallback when no mechanical evaluator applies.
+description: >-
+  Autonomous literature-review loop (Tier 2, web-only, no Bash) — fetches
+  papers, extracts structured summaries, builds living research.md with category
+  tracking.
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: researchers
-  workflow: autonomous-iteration
   protocol: autoresearch-default-on
 category: Autoresearch
 ---

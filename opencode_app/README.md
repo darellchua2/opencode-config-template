@@ -22,8 +22,8 @@ opencode_app/
 ├── AGENTS.md              # Agent instructions for container mode
 ├── .dockerignore          # Excludes _archived, .env, node_modules
 └── .opencode/
-    ├── agents/            # 39 agent .md files (single source of truth)
-    └── skills/            # 126 skill directories + _common/ shared + _archived/ legacy
+    ├── agents/            # 36 agent .md files (single source of truth)
+    └── skills/            # 130 skill directories + _common/ shared + _archived/ legacy
 ```
 
 ## How It Works
@@ -65,34 +65,35 @@ docker run --rm --entrypoint whoami opencode_app-opencode
 
 ## Provider Packs — Docker build-time MCP toggle (#268)
 
-The 20 opt-in MCP servers (Autodesk, Microsoft 365, Google Cloud, `next-devtools`, `web-search-prime`, `markitdown`) can be enabled as **groups** at image build time via the `OPENCODE_PACKS` build-arg, instead of editing `opencode.json` by hand. Packs are JSON partials in `deploy/packs/`; `deploy/merge-packs.mjs` deep-merges them into `/app/opencode.json` right after the model-resolver step.
+The opt-in MCP servers (`atlassian`, `next-devtools`, `markitdown`, `docling`, `chrome-devtools`) can be enabled as **groups** at image build time via the `OPENCODE_PACKS` build-arg, instead of editing `opencode.json` by hand. The `autodesk` pack is special: those 4 servers are not shipped in the base config, so the pack carries their full definitions. Packs are JSON partials in `deploy/packs/`; `deploy/merge-packs.mjs` deep-merges them into `/app/opencode.json` right after the model-resolver step.
 
 ```bash
 # Enable one or more packs (comma-separated)
-docker compose build --build-arg OPENCODE_PACKS=autodesk,microsoft
+docker compose build --build-arg OPENCODE_PACKS=autodesk
 docker compose up -d
 
-# Available packs: autodesk, microsoft, google, markitdown, nextjs, zai
+# Available packs: autodesk, markitdown, nextjs, docling, chrome-devtools
 # Empty/omitted = no-op (default OFF; existing images unaffected)
 ```
 
 | Pack | Servers | Build-arg example |
 |------|---------|-------------------|
-| `autodesk` | autodesk-revit, -model-data, -fusion, -help (4) | `--build-arg OPENCODE_PACKS=autodesk` |
-| `microsoft` | microsoft-teams, -mail, -calendar, -sharepoint, -onedrive, -user, -word, -copilot, -dataverse (9) | `--build-arg OPENCODE_PACKS=microsoft` |
-| `google` | google-bigquery, -maps, -gce, -gke (4) | `--build-arg OPENCODE_PACKS=google` |
+| `autodesk` | adds autodesk-revit, -model-data, -fusion, -help (4; not in base config) | `--build-arg OPENCODE_PACKS=autodesk` |
 | `markitdown` | markitdown (1) | `--build-arg OPENCODE_PACKS=markitdown` |
+| `docling` | docling (1) | `--build-arg OPENCODE_PACKS=docling` (**heavy ~3-4 GB**; not baked by default — requires custom build) |
 | `nextjs` | next-devtools (1) | `--build-arg OPENCODE_PACKS=nextjs` |
-| `zai` | zai-web-search-prime (1) | `--build-arg OPENCODE_PACKS=zai` |
+| `chrome-devtools` | chrome-devtools (1) | `--build-arg OPENCODE_PACKS=chrome-devtools` (privacy-hardened: telemetry + CrUX OFF; needs Chrome in image) |
 
-The merge runs **after** `resolve-models.mjs` and only flips `mcp.<server>.enabled` + `tools.<ns>*` to `true` — it never turns an already-on server off, never touches the `plugin` array or `agent` block. Verify post-build:
+The merge runs **after** `resolve-models.mjs` and only merges each pack's `mcp` + `tools` keys (flipping `enabled`/`tools.<ns>*` ON; the autodesk pack also carries the full server definitions since they are not in the base config) — it never turns an already-on server off, never touches the `plugin` array or `agent` block. Verify post-build:
 
 ```bash
-docker compose run --rm opencode node -e "const c=require('/app/opencode.json');console.log(c.mcp['google-bigquery'].enabled)"
+docker compose run --rm opencode node -e "const c=require('/app/opencode.json');console.log(c.mcp['autodesk-revit'].enabled)"
 # Expected: true
 ```
 
 User-space equivalent: `./deploy/setup.sh --enable-pack <csv>` (see root `README.md` § Provider Packs).
+
+> **Telemetry hardening — opt-in MCP servers ship with analytics pre-disabled.** `chrome-devtools` (`--no-usage-statistics`, `--no-performance-crux`, `--redact-network-headers`, `CHROME_DEVTOOLS_MCP_NO_UPDATE_CHECKS=1`) and `next-devtools` (`NEXT_TELEMETRY_DISABLED=1`) are hardened in `opencode.json` so `enabled: true` is safe without further edits. See root `README.md` § MCP Servers for the full rationale.
 
 ## Security
 
@@ -100,6 +101,18 @@ User-space equivalent: `./deploy/setup.sh --enable-pack <csv>` (see root `README
 - No secrets baked into the image — API keys injected at runtime via entrypoint
 - `.dockerignore` excludes `.env`, `_archived/`, and dev files
 - Health check: `GET /global/health` every 30s
+
+### Secret Masking (vibeguard)
+
+The image ships with `vibeguard.config.json` baked into `.opencode/` — secret masking is **active by default**. Vibeguard masks secrets in provider-bound traffic (LLM requests) using regex patterns and restores real values at tool-execution time.
+
+**Per-project overlay:** mount a `./vibeguard.config.json` to override the global config (first match wins, no merge — re-include regex patterns if you need both global + project keywords).
+
+**Residual risks:**
+- `/share` exports plaintext tool I/O — never share sessions that processed `.env` secrets.
+- If vibeguard fails to load, masking silently disappears (bash/grep/MCP exposed).
+- Session DB stores plaintext locally.
+- MCP structured output bypasses redaction (narrow — most tools serialize to string).
 
 ## Updating Agents and Skills
 
@@ -169,7 +182,7 @@ OpenCode supports subagent-to-subagent delegation via the Task tool, controlled 
 - Agent name = filename minus `.md` (e.g., `code-review-subagent.md` -> `code-review-subagent`)
 - Each spawned subagent gets its own session, context window, and step budget
 - Hub-and-spoke (primary agent -> subagent) remains the recommended pattern
-- 26 of 39 agents have explicit `task` permissions; the remaining 13 default to full access
+- 24 of 36 agents have explicit `task` permissions; the remaining 12 default to full access
 
 ## Ponytail Plugin (scoped wrapper)
 
@@ -211,3 +224,33 @@ Override by setting `PONYTAIL_SUBAGENT_OFF` to a custom regex.
 3. `command.execute.before` hook persists `/ponytail <level>` switches per session.
 
 The vendored ruleset + adapted instruction builder live in `opencode_app/.opencode/plugins/ponytail/`. MIT attribution: `opencode_app/.opencode/plugins/ATTRIBUTION.md`. The stock `@dietrichgebert/ponytail` npm package is deliberately NOT in `opencode.json` `plugin` array (double-injection guard).
+
+## Learnings Auto-Inject Plugin
+
+`opencode_app/.opencode/plugins/learnings-autoinject.ts` auto-injects a **compact manifest** of a project's `LEARNINGS/*.md` files into the system prompt at session start, so the model knows what learned knowledge exists without a `glob`+`read` round-trip. It injects only titles + paths + a one-line summary (~200-400 tokens); the model `read()`s full file bodies on demand. This closes the gap documented in `continuous-learning-skill` (*"OpenCode does NOT auto-scan LEARNINGS/ directories"*). Architecture mirrors `ponytail-scoped.ts` (same 4 hooks, same toggle pattern, same off-set).
+
+### Commands
+
+| Command | What it does |
+|---------|--------------|
+| `/learnings` | Report on/off state + file count for this session |
+| `/learnings-on` | Enable manifest injection for this session |
+| `/learnings-off` | Disable manifest injection for this session |
+| `/learnings-refresh` | Re-scan `LEARNINGS/` and rebuild the manifest on the next turn |
+
+### Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `LEARNINGS_AUTOINJECT_DEFAULT` | `on` | Global on/off |
+| `LEARNINGS_AUTOINJECT_USER` | `off` | Also scan `~/.config/opencode/learnings/` (user-level) |
+| `LEARNINGS_AUTOINJECT_OFF` | (built-in read-only agent set) | Regex of agent names that skip injection (mirrors ponytail) |
+| `LEARNINGS_AUTOINJECT_MAX` | `30` | Cap on files included in the manifest |
+
+### How It Works
+
+1. `chat.message` hook caches `sessionID → agent`.
+2. `experimental.chat.system.transform` hook resolves the agent, checks the toggle + off-set, and appends the cached manifest to the system prompt — once per turn (idempotent). The manifest is globbed once per session and cached (rebuilt on `/learnings-refresh`).
+3. `command.execute.before` hook persists `/learnings-on|off|refresh` per session.
+
+No `opencode.json` change required — local plugins are glob-discovered. No conflict with `opencode-superlocalmemory` (different store: markdown vs vectors; different hook: `experimental.chat.system.transform` vs `tui.prompt.append`). Reference: `opencode_app/.opencode/plugins/learnings-autoinject.README.md`.

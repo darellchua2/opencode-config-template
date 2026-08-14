@@ -1,31 +1,35 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "zai-coding-plan/glm-5.2",
   "default_agent": "build",
   "subagent_depth": 3,
   "plugin": [
-    "@franlol/opencode-md-table-formatter@latest",
-    "opencode-dynamic-context-pruning",
-    "opencode-superlocalmemory",
-    "opencode-notificator",
-    "opencode-pty",
-    "opencode-vibeguard",
-    "opencode-gemini-auth@latest",
-    "opencode-goal-plugin",
-    "@nick-vi/opencode-type-inject",
-    "@bastiangx/opencode-unmoji"
+    "@franlol/opencode-md-table-formatter@0.0.6",
+    "@tarquinen/opencode-dcp@3.2.8-beta0",
+    "opencode-superlocalmemory@0.1.2",
+    "@mohak34/opencode-notifier@0.2.8",
+    "opencode-pty@0.3.6",
+    "opencode-vibeguard@0.1.0",
+    "opencode-gemini-auth@1.4.15",
+    "opencode-goal-plugin@0.7.0",
+    "@nick-vi/opencode-type-inject@1.5.2",
+    "@bastiangx/opencode-unmoji@1.0.0"
   ],
   "instructions": ["AGENTS.md"],
   "permission": {
     "read": {
-      "mcp:*": "deny"
+      "mcp:*": "deny",
+      "*.env": "deny",
+      "*.env.*": "deny",
+      "*.env.example": "allow"
     },
     "skill": {
       "*": "deny",
 
       "zai-vision-analysis-skill": "allow",
+      "zai-image-generation-skill": "allow",
       "openapi-contract-adherence-skill": "allow",
       "markitdown-mcp-skill": "allow",
+      "docling-mcp-skill": "allow",
       "git-branch-workflow-setup-skill": "allow",
       "git-semantic-commits-skill": "allow",
       "documentation-sync-workflow-skill": "allow",
@@ -60,6 +64,7 @@
       "version-bump-standard-skill": "allow",
 
       "opencode-agent-creation-skill": "allow",
+      "opencode-repo-setup-skill": "allow",
       "opencode-skill-creation-skill": "allow",
       "opencode-skills-maintainer-skill": "allow",
       "agent-introspection-debugging-skill": "allow",
@@ -82,9 +87,7 @@
       "security-audit-skill": "allow",
       "performance-optimization-skill": "allow",
 
-      "microsoft-m365-config-skill": "allow",
       "nextjs-devtools-mcp-skill": "allow",
-      "codegraph-setup-skill": "allow",
       "ascii-diagram-creator-skill": "allow",
       "mermaid-diagram-creator-skill": "allow",
 
@@ -113,34 +116,19 @@
       "threejs-nextjs-skill": "allow",
       "frontend-design-skill": "allow",
       "accessibility-a11y-skill": "allow",
-      "changelog-python-cliff-skill": "allow"
+      "changelog-python-cliff-skill": "allow",
+      "fastapi-pydantic-orm-patterns-skill": "allow",
+      "aws-iac-safety-skill": "allow",
+      "react-hooks-antipatterns-skill": "allow",
+      "react-render-antipatterns-skill": "allow"
     },
     "tool": {
       "codegraph*": "allow",
       "atlassian*": "allow",
-      "mermaid*": "allow",
       "markitdown*": "deny",
+      "docling*": "deny",
       "zai-web-reader*": "allow",
-      "zai-vision-mcp-server*": "deny",
-      "zai-zread*": "deny",
-      "google-bigquery*": "deny",
-      "google-maps*": "deny",
-      "google-gce*": "deny",
-      "google-gke*": "deny",
-      "autodesk-revit*": "deny",
-      "autodesk-model-data*": "deny",
-      "autodesk-fusion*": "deny",
-      "autodesk-help*": "deny",
-      "next-devtools*": "deny",
-      "microsoft-teams*": "deny",
-      "microsoft-mail*": "deny",
-      "microsoft-calendar*": "deny",
-      "microsoft-sharepoint*": "deny",
-      "microsoft-onedrive*": "deny",
-      "microsoft-user*": "deny",
-      "microsoft-word*": "deny",
-      "microsoft-copilot*": "deny",
-      "microsoft-dataverse*": "deny"
+      "next-devtools*": "deny"
     }
   },
   "command": {
@@ -167,6 +155,16 @@
           "name": "GPT-OSS 20B (local)"
         }
       }
+    },
+    "zai-coding-plan": {
+      "models": {
+        "glm-5v-turbo": {
+          "name": "GLM-5V Turbo (vision)",
+          "modalities": {
+            "input": ["text", "image"]
+          }
+        }
+      }
     }
   },
   "mcp": {
@@ -189,7 +187,7 @@
         "mcp-remote",
         "https://mcp.atlassian.com/v1/mcp"
       ],
-      "enabled": true
+      "enabled": false
     },
     "zai-web-reader": {
       "type": "remote",
@@ -199,181 +197,43 @@
       },
       "enabled": true
     },
-    "zai-web-search-prime": {
-      "type": "remote",
-      "url": "https://api.z.ai/api/mcp/web_search_prime/mcp",
-      "headers": {
-        "Authorization": "Bearer {env:ZAI_API_KEY}"
-      },
-      "enabled": false
-    },
-    "zai-vision-mcp-server": {
-      "type": "local",
-      "command": ["npx", "-y", "@z_ai/mcp-server"],
-      "environment": {
-        "Z_AI_API_KEY": "${env:ZAI_API_KEY}",
-        "Z_AI_MODE": "ZAI"
-      },
-      "enabled": true
-    },
-    "zai-zread": {
-      "type": "remote",
-      "url": "https://api.z.ai/api/mcp/zread/mcp",
-      "headers": {
-        "Authorization": "Bearer {env:ZAI_API_KEY}"
-      },
-      "enabled": true
-    },
-    "google-bigquery": {
-      "type": "local",
-      "command": [
-        "npx",
-        "-y",
-        "mcp-remote",
-        "https://mcp.googleapis.com/bigquery/v1/sse"
-      ],
-      "environment": {
-        "GOOGLE_APPLICATION_CREDENTIALS": "${env:GOOGLE_APPLICATION_CREDENTIALS}"
-      },
-      "enabled": false
-    },
-    "google-maps": {
-      "type": "local",
-      "command": [
-        "npx",
-        "-y",
-        "mcp-remote",
-        "https://mcp.googleapis.com/maps/v1/sse"
-      ],
-      "environment": {
-        "GOOGLE_APPLICATION_CREDENTIALS": "${env:GOOGLE_APPLICATION_CREDENTIALS}"
-      },
-      "enabled": false
-    },
-    "google-gce": {
-      "type": "local",
-      "command": [
-        "npx",
-        "-y",
-        "mcp-remote",
-        "https://mcp.googleapis.com/compute/v1/sse"
-      ],
-      "environment": {
-        "GOOGLE_APPLICATION_CREDENTIALS": "${env:GOOGLE_APPLICATION_CREDENTIALS}"
-      },
-      "enabled": false
-    },
-    "google-gke": {
-      "type": "local",
-      "command": [
-        "npx",
-        "-y",
-        "mcp-remote",
-        "https://mcp.googleapis.com/kubernetes-engine/v1/sse"
-      ],
-      "environment": {
-        "GOOGLE_APPLICATION_CREDENTIALS": "${env:GOOGLE_APPLICATION_CREDENTIALS}"
-      },
-      "enabled": false
-    },
-    "autodesk-revit": {
-      "type": "remote",
-      "url": "https://mcp.autodesk.com/revit/v1",
-      "headers": {
-        "Authorization": "Bearer {env:AUTODESK_API_KEY}"
-      },
-      "enabled": false
-    },
-    "autodesk-model-data": {
-      "type": "remote",
-      "url": "https://mcp.autodesk.com/model-data/v1",
-      "headers": {
-        "Authorization": "Bearer {env:AUTODESK_API_KEY}"
-      },
-      "enabled": false
-    },
-    "autodesk-fusion": {
-      "type": "remote",
-      "url": "https://mcp.autodesk.com/fusion/v1",
-      "headers": {
-        "Authorization": "Bearer {env:AUTODESK_API_KEY}"
-      },
-      "enabled": false
-    },
-    "autodesk-help": {
-      "type": "remote",
-      "url": "https://mcp.autodesk.com/help/v1",
-      "headers": {
-        "Authorization": "Bearer {env:AUTODESK_API_KEY}"
-      },
-      "enabled": false
-    },
     "next-devtools": {
       "type": "local",
       "command": ["npx", "-y", "next-devtools-mcp@latest"],
-      "enabled": false
-    },
-    "microsoft-teams": {
-      "type": "local",
-      "command": ["npx", "-y", "mcp-remote", "https://mcp.cloud.microsoft/teams/v1/sse"],
-      "enabled": false
-    },
-    "microsoft-mail": {
-      "type": "local",
-      "command": ["npx", "-y", "mcp-remote", "https://mcp.cloud.microsoft/mail/v1/sse"],
-      "enabled": false
-    },
-    "microsoft-calendar": {
-      "type": "local",
-      "command": ["npx", "-y", "mcp-remote", "https://mcp.cloud.microsoft/calendar/v1/sse"],
-      "enabled": false
-    },
-    "microsoft-sharepoint": {
-      "type": "local",
-      "command": ["npx", "-y", "mcp-remote", "https://mcp.cloud.microsoft/sharepoint/v1/sse"],
-      "enabled": false
-    },
-    "microsoft-onedrive": {
-      "type": "local",
-      "command": ["npx", "-y", "mcp-remote", "https://mcp.cloud.microsoft/onedrive/v1/sse"],
-      "enabled": false
-    },
-    "microsoft-user": {
-      "type": "local",
-      "command": ["npx", "-y", "mcp-remote", "https://mcp.cloud.microsoft/me/v1/sse"],
-      "enabled": false
-    },
-    "microsoft-word": {
-      "type": "local",
-      "command": ["npx", "-y", "mcp-remote", "https://mcp.cloud.microsoft/word/v1/sse"],
-      "enabled": false
-    },
-    "microsoft-copilot": {
-      "type": "local",
-      "command": ["npx", "-y", "mcp-remote", "https://mcp.cloud.microsoft/copilot/v1/sse"],
-      "enabled": false
-    },
-    "microsoft-dataverse": {
-      "type": "local",
-      "command": ["npx", "-y", "mcp-remote", "https://mcp.cloud.microsoft/dataverse/v1/sse"],
       "environment": {
-        "POWER_PLATFORM_ENV_ID": "${env:POWER_PLATFORM_ENV_ID}"
+        "NEXT_TELEMETRY_DISABLED": "1"
       },
       "enabled": false
-    },
-    "mermaid": {
-      "type": "local",
-      "command": ["npx", "-y", "@peng-shawn/mermaid-mcp-server"],
-      "environment": {
-        "CONTENT_IMAGE_SUPPORTED": "false"
-      },
-      "enabled": true
     },
     "markitdown": {
       "type": "local",
       "command": ["markitdown-local-mcp"],
       "environment": {
         "MARKITDOWN_ENABLE_PLUGINS": "false"
+      },
+      "enabled": false
+    },
+    "docling": {
+      "type": "local",
+      "command": ["docling-mcp-server"],
+      "environment": {
+        "DOCLING_CONVERSION_MODE": "local"
+      },
+      "enabled": false
+    },
+    "chrome-devtools": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "chrome-devtools-mcp@latest",
+        "--no-usage-statistics",
+        "--no-performance-crux",
+        "--redact-network-headers",
+        "--isolated"
+      ],
+      "environment": {
+        "CHROME_DEVTOOLS_MCP_NO_UPDATE_CHECKS": "1"
       },
       "enabled": false
     }
@@ -405,7 +265,7 @@
       }
     },
     "general": {
-      "model": "zai-coding-plan/glm-5.2",
+      "model": "zai-coding-plan/glm-5.3",
       "permission": {
         "read": {
           "*": "allow",

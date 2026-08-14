@@ -51,7 +51,7 @@
 #   - curl (for downloading)
 #   - Node.js v20+ and npm (for opencode-ai and MCP servers)
 #   - nvm recommended (for Node.js version management on macOS/Linux)
-#   - ZAI_API_KEY (required for web-reader, web-search-prime, zread MCP servers)
+#   - ZAI_API_KEY (required for web-reader MCP server)
 #   - LM Studio running on http://127.0.0.1:1234/v1 (local LLM inference)
 #
 ################################################################################
@@ -98,6 +98,8 @@ DEPLOY_DIR="${REPO_DIR}/deploy"
 RESOLVER_SCRIPT="${DEPLOY_DIR}/resolve-models.mjs"
 MERGE_PACKS_SCRIPT="${DEPLOY_DIR}/merge-packs.mjs"
 PACKS_DIR="${DEPLOY_DIR}/packs"
+APPLY_SKILL_PROFILE_SCRIPT="${DEPLOY_DIR}/apply-skill-profile.mjs"
+SKILL_PROFILES_FILE="${DEPLOY_DIR}/skill-profiles.json"
 TUI_SCRIPT="${DEPLOY_DIR}/tui.mjs"
 AGENT_TIERS="${DEPLOY_DIR}/agent-tiers.json"
 MODELS_DEFAULT_MAP="${DEPLOY_DIR}/models.default.json"
@@ -340,7 +342,8 @@ MODELS_ONLY=false        # --models-only (provider + resolve only)
 FORCE_RESOLVE=false      # --force (ignore preserve-edits)
 MIGRATE_ONLY=false       # --migrate (migration + resolve only)
 MIX_MODE=false           # --mix (per-category provider/model editor)
-ENABLE_PACK=""           # --enable-pack <csv> (provider packs: autodesk,microsoft,google,markitdown,nextjs,zai)
+ENABLE_PACK=""           # --enable-pack <csv> (provider packs: autodesk,markitdown,nextjs,docling,chrome-devtools)
+SKILL_PROFILE="lean"     # --skill-profile lean|full (default lean: primary sees 30 skills; full = shipped 87 verbatim)
 
 # API Keys (initialize to empty to avoid unbound variable errors)
 # Capture from environment if they exist
@@ -403,6 +406,30 @@ log_info() { log "INFO" "$@"; }
 log_warn() { log "WARNING" "$@"; }
 log_error() { log "ERROR" "$@"; }
 log_success() { log "SUCCESS" "$@"; }
+
+# Count active SKILL.md files in a directory, excluding _archived (matches
+# the deploy's rsync --exclude='_archived'). Used by banners/status listings
+# so skill counts can never drift from disk. BT-157.
+count_skills() {
+    [ -d "$1" ] || { echo 0; return; }
+    find "$1" -type f -name "SKILL.md" -not -path "*/_archived/*" 2>/dev/null | wc -l
+}
+
+count_agents() {
+    [ -d "$1" ] || { echo 0; return; }
+    find "$1" -maxdepth 1 -type f -name "*.md" -not -path "*/_archived/*" 2>/dev/null | wc -l
+}
+
+# Auto-derive per-category counts from skill frontmatter (category: field),
+# excluding _archived. Drift-proof replacement for the hand-maintained listings.
+# Prints "Category (N)" lines sorted by count desc. BT-157.
+print_skill_categories() {
+    [ -d "$1" ] || return
+    find "$1" -type f -name "SKILL.md" -not -path "*/_archived/*" -exec grep -hE '^[[:space:]]*category:' {} + 2>/dev/null \
+        | sed -E 's/^[[:space:]]*category:[[:space:]]*//' \
+        | sort | uniq -c | sort -rn \
+        | while read -r n c; do [ -n "$c" ] && echo "    - ${c} (${n})"; done
+}
 
 ################################################################################
 # ERROR HANDLING
@@ -549,9 +576,16 @@ USAGE:
   PROVIDER PACKS (deploy-time MCP toggle):
     --enable-pack <csv>   Enable provider pack(s) — flips mcp.<server>.enabled
                           and tools.<ns>* flags ON for the named packs. Available
-                          packs: autodesk, microsoft, google, markitdown, nextjs, zai
-                          (comma-separated, e.g. --enable-pack autodesk,microsoft).
+                          packs: autodesk, markitdown, nextjs, docling, chrome-devtools
+                          (comma-separated, e.g. --enable-pack autodesk,markitdown).
                           No-op if omitted; default state of every pack is OFF.
+
+  SKILL PROFILE (deploy-time primary visibility):
+    --skill-profile <p>   lean (default) | full. lean rewrites the DEPLOYED
+                           config's permission.skill to 30 primary-visible
+                           skills + "*": "deny" (subagents unaffected — they
+                           self-scope via frontmatter allows); full deploys the
+                           shipped 87-allow allowlist verbatim.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
                             EXAMPLES
@@ -568,9 +602,20 @@ USAGE:
 
   Provider packs (deploy-time MCP toggle):
     ./setup.sh --enable-pack autodesk             # Enable all 4 Autodesk MCP servers
-    ./setup.sh --enable-pack autodesk,microsoft   # Enable multiple packs
-    ./setup.sh --enable-pack google --dry-run     # Preview without writing
+    ./setup.sh --enable-pack autodesk,markitdown   # Enable multiple packs
     ./setup.sh --quick --enable-pack markitdown   # Combine with other modes
+
+  Model resolution + skill profile:
+    ./setup.sh --provider anthropic -y            # Deploy with Anthropic models
+    ./setup.sh --mix                              # Mix providers per tier (interactive)
+    ./setup.sh --models-only --force              # Re-resolve models only
+    ./setup.sh --skill-profile full               # Primary sees all shipped skills
+
+  Common combinations (headless / CI):
+    ./setup.sh -y -q --provider zai                  # Quick deploy, Z.AI, no prompts
+    ./setup.sh -y --enable-pack markitdown,nextjs    # Defaults + packs, non-interactive
+    ./setup.sh -y --provider openai --enable-pack markitdown --skill-profile lean
+    ./setup.sh --dry-run -y --enable-pack autodesk   # Preview a combo before running
 
   Preview and update:
     ./setup.sh --dry-run            # Preview what would be done
@@ -600,7 +645,7 @@ USAGE:
                          CONFIGURED FEATURES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-   AGENTS (38):
+   AGENTS ($(count_agents "${REPO_DIR}/opencode_app/.opencode/agents")):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
@@ -631,8 +676,6 @@ USAGE:
     startup-founder      Startup founder business operations agent
     startup-ceo          Investor-ready pitch decks and board updates
     office-document      Office document specialist: Word, PowerPoint, Excel
-    google-mcp           Google Cloud MCP (BigQuery, Maps, GCE, GKE)
-    microsoft-m365       Microsoft 365 MCP (Teams, Mail, Calendar, SharePoint, etc.)
      nextjs-specialist  Next.js scaffolding + runtime MCP diagnosis
     opentofu-explorer    OpenTofu/Terraform infrastructure management
     cad-specialist       CAD, robotics, hardware design orchestration
@@ -643,135 +686,29 @@ USAGE:
     Usage: opencode --agent build "implement auth feature"
            opencode --agent explore "find all API routes"
 
-  MCP SERVERS (26):
-    Auto-start (local npx servers):
+  MCP SERVERS (7):
+    Auto-start (enabled by default):
       codegraph           Pre-indexed code knowledge graph (100% local)
-      atlassian          JIRA and Confluence integration
-      zai-vision-mcp-server     Image analysis and video processing
-      mermaid            Mermaid diagram rendering (SVG/PNG)
+      zai-web-reader      Web page content extraction (remote, needs ZAI_API_KEY)
 
-    Available but disabled (opt-in — set enabled: true in config.json):
+    Available but disabled (opt-in — enable per-project via
+    opencode.json or opencode-repo-setup-skill):
+      atlassian           JIRA and Confluence integration (first use opens browser OAuth)
       next-devtools      Next.js DevTools integration
       markitdown         Document-to-Markdown (local-only, privacy-hardened)
+      docling            Layout-aware document extraction (heavy ~3-4 GB)
+      chrome-devtools    Live Chrome automation: perf traces, network/console, Lighthouse, heap snapshots
+                          (privacy-hardened: telemetry + CrUX OFF; throwaway profile; enable via --enable-pack chrome-devtools)
 
-    Remote (requires ZAI_API_KEY):
-      web-reader         Web page content extraction
-      web-search-prime   Web search capabilities
-      zread              GitHub repository search and file reading
+    Autodesk (4 servers, requires AUTODESK_API_KEY):
+      not shipped in the base config — added wholesale via
+      ./setup.sh --enable-pack autodesk (revit, model-data, fusion, help)
 
-    Microsoft 365 (requires M365 Copilot license):
-      microsoft-teams    Teams chats, channels, messages
-      microsoft-mail     Outlook email operations
-      microsoft-calendar Calendar event management
-      microsoft-sharepoint SharePoint files and lists
-      microsoft-onedrive Personal file management
-      microsoft-word     Word document operations
-      microsoft-user     User profile and org info
-      microsoft-copilot  M365 Copilot conversations
-      microsoft-dataverse Business data (Dynamics 365)
+    SKILLS ($(count_skills "${REPO_DIR}/opencode_app/.opencode/skills")):
 
-    Autodesk (requires Autodesk access token):
-      autodesk-revit     Revit model data and APIs
-      autodesk-fusion    Fusion 360 integration
-      autodesk-model-data  Autodesk Model Data API
-      autodesk-help      Autodesk Help knowledge base
+$(print_skill_categories "${REPO_DIR}/opencode_app/.opencode/skills")
 
-    Google Cloud (requires Google auth):
-      google-bigquery    BigQuery analytics queries
-      google-maps        Google Maps geocoding/routes
-      google-gce         Google Compute Engine management
-      google-gke         Google Kubernetes Engine management
-
-    SKILLS (126):
-              Framework (19):       test-generator-framework, linting-workflow,
-                                      pr-creation-workflow, pr-merge-workflow,
-                                      error-resolver-workflow, tdd-workflow,
-                                      docx-creation,
-                                      xlsx-specialist, pdf-specialist, frontend-design,
-                                      uiux-review-skill,
-                                      api-design-skill, openapi-contract-adherence-skill,
-                                      performance-optimization-skill, srs-creation-skill,
-                                      brd-creation-skill, technical-design-creation-skill,
-                                      vision-creation-skill, interactive-document-rendering-skill
-
-            Presentation (3):       pptx-generate-slide-skill, pptx-generate-template-skill,
-                                      pptx-template-modifier-skill
-
-            Office Utilities (2):   ooxml-editing-skill, office-thumbnail-skill
-
-            Language-Specific (8): python-pytest-creator, python-ruff-linter,
-                                  javascript-eslint-linter, changelog-python-cliff,
-                                  python-backend-skill, python-packaging-skill,
-                                  csharp-linter-skill, java-linter-skill
-
-          Framework-Specific (10): nextjs-pr-workflow, nextjs-unit-test-creator,
-                                 nextjs-standard-setup, nextjs-image-usage,
-                                 nextjs-devtools-mcp, amplify-nextjs-deployment,
-                                  typescript-dry-principle, accessibility-a11y-skill,
-                                  react-nextjs-antipatterns-skill,
-                                  threejs-nextjs-skill
-
-           OpenCode Meta (4):    opencode-agent-creation, opencode-skill-creation,
-                                 opencode-skills-maintainer,
-                                 documentation-consistency-skill
-
-           OpenTofu (7):         opentofu-aws-explorer, opentofu-keycloak-explorer,
-                                 opentofu-kubernetes-explorer, opentofu-neon-explorer,
-                                 opentofu-provider-setup, opentofu-provisioning-workflow,
-                                 opentofu-ecr-provision
-
-            Git/Workflow (13):   ascii-diagram-creator, mermaid-diagram-creator,
-                                  ticket-plan-workflow-skill, plan-execution-skill,
-                                  plan-automation-loop-skill,
-                                  git-issue-labeler, git-issue-updater,
-                                  git-semantic-commits, semantic-release-convention,
-                                  git-compact-commits, plan-updater, version-bump-standard,
-                                  git-branch-workflow-setup-skill
-
-          Documentation (3):    coverage-readme-workflow, docstring-generator,
-                                 documentation-sync-workflow
-
-          JIRA (3):             jira-status-updater, jira-git-integration, jira-ticket-labeler
-
-         Code Quality (8):     solid-principles-skill, clean-code-skill, clean-architecture-skill,
-                               design-patterns-skill, object-design-skill, code-smells-skill,
-                               complexity-management-skill, deprecated-code-cleanup-skill
-
-       Agent Optimization (7):  continuous-learning-skill, eval-harness-skill,
-                                strategic-compact-skill, verification-loop-skill,
-                                search-first-skill, context-budget-skill,
-                                agent-introspection-debugging-skill
-
-            Autoresearch (4):  autoresearch-core-skill, autoresearch-ml-skill,
-                                autoresearch-code-skill, autoresearch-research-skill
-
-            Startup/Business (3): startup-pitch-deck-skill, startup-business-docs-skill,
-                                  construction-bd-skill
-
-            Configuration (3):    microsoft-m365-config-skill, codegraph-setup-skill,
-                                  markitdown-mcp-skill
-
-              Security (2):     security-audit-skill, authentication-authorization-skill
-
-                 DevOps (4):     docker-containerization-skill, monorepo-management-skill,
-                                 database-migration-skill, logging-observability-skill
-
-       Planning & Alignment (4): grilling-skill, domain-modeling-skill,
-                                 grill-with-docs-skill, grill-me-skill
-
- Responsive & Visual Testing (2): wireframer-skill,
-                                   playwright-responsive-audit-skill
-
-    CAD & Hardware Design (14): cad-generation, cad-viewer, cad-step-parts,
-                                 cad-dxf, cad-urdf, cad-srdf, cad-sdf,
-                                 cad-sendcutsend, cad-gcode, cad-bambu-labs,
-                                 cad-implicit, autodesk-aps-skill,
-                                 civil-3d-skill, open3d-skill
-
-  Academic & Research Writing (2): horseshoe-paper-writing-skill,
-                                    research-paper-generation-skill
-
-    Run 'opencode --list-skills' for detailed descriptions
+     Run 'opencode --list-skills' for detailed descriptions
     Run 'opencode --skill <name> "prompt"' to invoke a skill
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -788,7 +725,7 @@ USAGE:
     git                   For version control integration
 
   API Keys (prompted during setup):
-     ZAI_API_KEY           Required for: web-reader, web-search-prime, zread
+     ZAI_API_KEY           Required for: web-reader
                            Get from: https://z.ai
 
    GitHub Auth:
@@ -936,10 +873,19 @@ parse_arguments() {
                 # Accept any value including "" (empty = no-op, handled by
                 # merge-packs.mjs). Only error if no following token at all.
                 if [ $# -lt 2 ]; then
-                    log_error "--enable-pack requires an argument (csv: autodesk,microsoft,google,markitdown,nextjs,zai)"
+                    log_error "--enable-pack requires an argument (csv: autodesk,markitdown,nextjs,docling,chrome-devtools)"
                     exit 1
                 fi
                 ENABLE_PACK="$2"
+                shift 2
+                ;;
+            --skill-profile)
+                if [ -n "$2" ] && { [ "$2" = "lean" ] || [ "$2" = "full" ]; }; then
+                    SKILL_PROFILE="$2"
+                else
+                    log_error "--skill-profile requires an argument (lean|full)"
+                    exit 1
+                fi
                 shift 2
                 ;;
             *)
@@ -1545,6 +1491,9 @@ create_pre_rollback_backup() {
     if [ -f "${CONFIG_DIR}/AGENTS.md" ]; then
         cp -f "${CONFIG_DIR}/AGENTS.md" "${pre_dir}/AGENTS.md"
     fi
+    if [ -f "${CONFIG_DIR}/vibeguard.config.json" ]; then
+        cp -f "${CONFIG_DIR}/vibeguard.config.json" "${pre_dir}/vibeguard.config.json"
+    fi
     if [ -d "$SKILLS_DIR" ]; then
         cp -r "$SKILLS_DIR" "${pre_dir}/skills"
     fi
@@ -1762,6 +1711,12 @@ check_dependencies() {
     # Check for git (optional but recommended)
     if ! command_exists git; then
         log_warn "git is not installed (recommended but not required)"
+    fi
+
+    # Check for rg (optional but recommended)
+    if ! command_exists rg; then
+        log_warn "rg (ripgrep) is not installed (recommended but not required)"
+        log_warn "  Install with: apt install ripgrep (Debian/Ubuntu) | brew install ripgrep (macOS) | pacman -S ripgrep (Arch)"
     fi
 
     if [ ${#missing_deps[@]} -gt 0 ]; then
@@ -2470,7 +2425,9 @@ setup_config() {
     # Copy config.json from the single source of truth (opencode_app/opencode.json).
     # Historically this copied deploy/config.json, but maintaining a duplicate
     # caused drift (see PLAN-BT-74 Phase 12.2). The resolver (run later in
-    # deploy_agents) patches this file in-place for primary/explore/general models.
+    # deploy_agents) patches this file in-place for explore/general models (and
+    # primary only if --provider/--mix was chosen — local deploys ship no
+    # baked-in primary; the end user picks at runtime).
     if [ "$SKIP_CONFIG_COPY" != true ]; then
         if [ -f "$SOURCE_CONFIG" ]; then
             run_cmd cp "$SOURCE_CONFIG" "$CONFIG_FILE"
@@ -2480,21 +2437,32 @@ setup_config() {
             # Best-effort — non-fatal on offline/pip-missing.
             install_local_mcp_launchers
 
+            # Install docling-mcp if --enable-pack docling was requested (PLAN-GIT-308).
+            # Heavy (~3-4 GB) — only runs when explicitly opted in.
+            install_docling
+
+            # Deploy vibeguard secret-masking config (PLAN-GIT-315).
+            local vg_src="${REPO_DIR}/opencode_app/.opencode/vibeguard.config.json"
+            if [ -f "$vg_src" ]; then
+                run_cmd cp "$vg_src" "${CONFIG_DIR}/vibeguard.config.json"
+                log_success "vibeguard.config.json deployed (secret masking active)"
+                echo "✓ Secret masking: active (vibeguard)"
+            fi
+
             echo ""
-        echo "✓ Configured 38 agents:"
+        echo "✓ Configured $(count_agents "${REPO_DIR}/opencode_app/.opencode/agents") agents:"
         echo "    - build (default) - Full-featured coding agent"
         echo "    - plan - Planning agent (read-only)"
         echo "    - explore - Codebase exploration and analysis"
         echo "    - image-analyzer-subagent - Image/screenshot analysis"
         echo "    - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
-        echo "    - ... and 34 more agents"
+        echo "    - ... and $(($(count_agents "${REPO_DIR}/opencode_app/.opencode/agents") - 5)) more agents"
             echo ""
              echo "✓ Configured MCP servers:"
-             echo "    Local (auto-start): atlassian, zai-vision-mcp-server, codegraph, mermaid"
-             echo "    Remote (needs key): web-reader, web-search-prime, zread"
-             echo "    Available but disabled (opt-in): next-devtools, markitdown, autodesk-*,"
-             echo "                                      microsoft-*, google-*"
-             echo "    Enable a group with: ./setup.sh --enable-pack <autodesk|microsoft|google|markitdown|nextjs|zai>"
+             echo "    Auto-start: codegraph, web-reader"
+              echo "    Opt-in per-project (.opencode/opencode.json): atlassian"
+              echo "    Available but disabled (opt-in): next-devtools, markitdown, docling, chrome-devtools"
+              echo "    Enable a group with: ./setup.sh --enable-pack <autodesk|markitdown|nextjs|docling|chrome-devtools>"
             echo ""
         else
             log_error "config.json source not found: ${SOURCE_CONFIG}"
@@ -2607,13 +2575,45 @@ install_local_mcp_launchers() {
     fi
 }
 
+# Install docling-mcp (heavy ~3-4 GB) — only when --enable-pack docling is
+# requested. Unlike markitdown (local-dir pip install), docling-mcp comes from
+# PyPI. First convert downloads ~hundreds of MB of models from huggingface.co.
+install_docling() {
+    if ! echo "$ENABLE_PACK" | grep -qw "docling"; then
+        return 0
+    fi
+
+    echo ""
+    log_info "Installing docling-mcp[local] (~3-4 GB with models)..."
+
+    if ! command_exists python3; then
+        log_warn "python3 not found — cannot install docling-mcp. Install Python 3.10+ and re-run."
+        return 0
+    fi
+
+    if ! python3 -m pip --version >/dev/null 2>&1; then
+        log_warn "pip not available for python3 — cannot install docling-mcp. Install pip and re-run."
+        return 0
+    fi
+
+    log_info "pip install --user docling-mcp[local]"
+    if python3 -m pip install --user --no-warn-script-location "docling-mcp[local]" >/dev/null 2>&1; then
+        log_success "docling-mcp installed"
+        log_info "NOTE: first 'docling convert' will download ~hundreds of MB of models from huggingface.co (cached thereafter)."
+    else
+        log_warn "pip install failed for docling-mcp (offline or OOM?). The pack is opt-in — OpenCode will work without it. Re-run setup when online to enable."
+    fi
+}
+
 # ─────────────────────────────────────────────────────────────────────────────
 # v2.0 MODEL RESOLUTION HELPERS
 # ─────────────────────────────────────────────────────────────────────────────
 
 # Run the model resolver: injects concrete models into deployed agent .md files
-# and patches config.json (primary + explore + general). Honors global/project
-# overrides + provider preset. Preserve-edits via sidecar unless --force.
+# and patches config.json (explore + general always; primary only if
+# --provider/--mix chosen — local deploys omit a baked-in primary). Honors
+# global/project overrides + provider preset. Preserve-edits via sidecar unless
+# --force.
 run_resolver() {
     if [ ! -f "$RESOLVER_SCRIPT" ]; then
         log_error "Resolver not found: $RESOLVER_SCRIPT"
@@ -2881,6 +2881,45 @@ deploy_plugins() {
 # ─────────────────────────────────────────────────────────────────────────────
 # AGENT DEPLOYMENT (v2.0 — resolver-driven)
 # ─────────────────────────────────────────────────────────────────────────────
+# Apply the skill profile (GIT-333): rewrites ONLY the permission.skill block
+# of the DEPLOYED config (never the source opencode_app/opencode.json).
+#   lean (default) -> 30 primary-visible skills + "*": "deny"
+#   full           -> verified no-op (shipped 87-allow allowlist stays verbatim)
+# Mirrors run_pack_merger's dry-run contract (B1): in dry-run the resolver
+# stages the preview config at $DRY_RUN_PREVIEW_DIR/opencode.json — patch that.
+run_skill_profile() {
+    if [ ! -f "$APPLY_SKILL_PROFILE_SCRIPT" ]; then
+        log_error "Skill-profile applier not found: ${APPLY_SKILL_PROFILE_SCRIPT}"
+        return 1
+    fi
+    if [ ! -f "$SKILL_PROFILES_FILE" ]; then
+        log_error "Skill profiles file not found: ${SKILL_PROFILES_FILE}"
+        return 1
+    fi
+
+    local target_config="$CONFIG_FILE"
+    if [ "$DRY_RUN" = true ]; then
+        target_config="${DRY_RUN_PREVIEW_DIR}/opencode.json"
+        if [ ! -f "$target_config" ]; then
+            log_error "Dry-run preview config not found: ${target_config}"
+            log_error "The resolver must run first to stage the preview. Aborting skill-profile apply."
+            return 1
+        fi
+    fi
+
+    log_info "Applying skill profile: ${SKILL_PROFILE}"
+    node "$APPLY_SKILL_PROFILE_SCRIPT" \
+        --config "$target_config" \
+        --profiles "$SKILL_PROFILES_FILE" \
+        --profile "$SKILL_PROFILE"
+    local rc=$?
+    if [ "$rc" -ne 0 ]; then
+        log_error "Skill-profile application failed (exit ${rc})"
+        return 1
+    fi
+    return 0
+}
+
 deploy_agents() {
     echo ""
     log_info "Setting up agents (v2.0 model resolution)..."
@@ -2919,6 +2958,16 @@ deploy_agents() {
     rc=$?
     if [ "$rc" -ne 0 ]; then
         log_error "Provider-pack application failed (exit ${rc})"
+        return 1
+    fi
+
+    # Apply skill profile (--skill-profile lean|full, default lean). Runs LAST
+    # so the rewrite lands on the final resolved+packed config. Subagents are
+    # unaffected (frontmatter allows, GIT-333 Phase 1).
+    run_skill_profile
+    rc=$?
+    if [ "$rc" -ne 0 ]; then
+        log_error "Skill-profile application failed (exit ${rc})"
         return 1
     fi
 
@@ -3208,6 +3257,12 @@ create_backup_before_update() {
         log_info "Backed up: ${CONFIG_DIR}/AGENTS.md"
     fi
 
+    # Backup vibeguard.config.json if it exists (PLAN-GIT-315)
+    if [ -f "${CONFIG_DIR}/vibeguard.config.json" ]; then
+        cp "${CONFIG_DIR}/vibeguard.config.json" "${backup_dir}/vibeguard.config.json"
+        log_info "Backed up: ${CONFIG_DIR}/vibeguard.config.json"
+    fi
+
     # Backup skills directory if it exists
     if [ -d "$SKILLS_DIR" ]; then
         cp -r "$SKILLS_DIR" "${backup_dir}/skills"
@@ -3421,146 +3476,35 @@ print_summary() {
 
     # Agents configured
     if [ -f "$CONFIG_FILE" ]; then
-        echo "✓ Configured 38 agents:"
+        echo "✓ Configured $(count_agents "${REPO_DIR}/opencode_app/.opencode/agents") agents:"
         echo "    - build (default) - Full-featured coding agent"
         echo "    - plan - Planning agent (read-only)"
         echo "    - explore - Codebase exploration and analysis"
         echo "    - image-analyzer-subagent - Image/screenshot analysis"
-        echo "    - ... and 35 more agents"
+        echo "    - ... and $(($(count_agents "${REPO_DIR}/opencode_app/.opencode/agents") - 4)) more agents"
     fi
 
     # MCP servers configured
     if [ -f "$CONFIG_FILE" ]; then
          echo "✓ Configured MCP servers:"
-         echo "    - atlassian - JIRA and Confluence integration (auto-start)"
-         echo "    - web-reader - Web page reading (needs ZAI_API_KEY)"
-         echo "    - web-search-prime - Web search (needs ZAI_API_KEY)"
-         echo "    - zai-vision-mcp-server - Image analysis (auto-start)"
-         echo "    - zread - GitHub repo search (needs ZAI_API_KEY)"
          echo "    - codegraph - Code knowledge graph (auto-start)"
-         echo "    - mermaid - Diagram rendering SVG/PNG (auto-start)"
+         echo "    - web-reader - Web page reading (auto-start, needs ZAI_API_KEY)"
+         echo "    - atlassian - JIRA and Confluence (opt-in per-project)"
+
          echo "    - markitdown - Document-to-Markdown, local-only, opt-in"
+
+    # Secret masking
+    if [ -f "${CONFIG_DIR}/vibeguard.config.json" ]; then
+         echo "✓ Secret masking: active (vibeguard)"
+    fi
     fi
 
     # skills directory status
     if [ -d "$SKILLS_DIR" ] && [ "$(ls -A "${SKILLS_DIR}" 2>/dev/null)" ]; then
-        local skill_count=$(find "${SKILLS_DIR}" -type f -name "SKILL.md" 2>/dev/null | wc -l)
+        local skill_count=$(count_skills "${SKILLS_DIR}")
         echo "✓ skills: ${skill_count} skills deployed to ${SKILLS_DIR}/"
-        echo "    - Framework (19):"
-        echo "      - test-generator-framework"
-        echo "      - linting-workflow"
-        echo "      - pr-creation-workflow"
-        echo "      - pr-merge-workflow"
-        echo "      - error-resolver-workflow"
-        echo "      - tdd-workflow"
-        echo "      - docx-creation"
-        echo "      - xlsx-specialist"
-        echo "      - pdf-specialist"
-        echo "      - frontend-design"
-        echo "      - uiux-review-skill"
-        echo "      - api-design-skill"
-        echo "      - openapi-contract-adherence-skill"
-        echo "      - performance-optimization-skill"
-        echo "      - srs-creation-skill"
-        echo "      - brd-creation-skill"
-        echo "      - technical-design-creation-skill"
-        echo "      - vision-creation-skill"
-        echo "      - interactive-document-rendering-skill"
-        echo "    - Language-Specific (8):"
-        echo "      - python-pytest-creator"
-        echo "      - python-ruff-linter"
-        echo "      - javascript-eslint-linter"
-        echo "      - changelog-python-cliff"
-        echo "      - python-backend-skill"
-        echo "      - python-packaging-skill"
-        echo "      - csharp-linter-skill"
-        echo "      - java-linter-skill"
-        echo "    - Presentation (3):"
-        echo "      - pptx-generate-slide-skill, pptx-generate-template-skill"
-        echo "      - pptx-template-modifier-skill"
-        echo "    - Office Utilities (2):"
-        echo "      - ooxml-editing-skill, office-thumbnail-skill"
-        echo "    - Framework-Specific (10):"
-        echo "      - nextjs-pr-workflow"
-        echo "      - nextjs-unit-test-creator"
-        echo "      - nextjs-standard-setup"
-        echo "      - nextjs-image-usage"
-        echo "      - nextjs-devtools-mcp"
-        echo "      - amplify-nextjs-deployment"
-        echo "      - typescript-dry-principle"
-        echo "      - accessibility-a11y-skill"
-        echo "      - react-nextjs-antipatterns-skill"
-        echo "      - threejs-nextjs-skill"
-        echo "    - OpenCode Meta (4):"
-        echo "      - opencode-agent-creation"
-        echo "      - opencode-skill-creation"
-        echo "      - opencode-skills-maintainer"
-        echo "      - documentation-consistency-skill"
-        echo "    - OpenTofu (7):"
-        echo "      - opentofu-aws-explorer"
-        echo "      - opentofu-keycloak-explorer"
-        echo "      - opentofu-kubernetes-explorer"
-        echo "      - opentofu-neon-explorer"
-        echo "      - opentofu-provider-setup"
-        echo "      - opentofu-provisioning-workflow"
-        echo "      - opentofu-ecr-provision"
-        echo "    - Git/Workflow (13):"
-        echo "      - ascii-diagram-creator"
-        echo "      - mermaid-diagram-creator"
-        echo "      - ticket-plan-workflow-skill"
-        echo "      - plan-execution-skill"
-        echo "      - plan-automation-loop-skill"
-        echo "      - git-issue-labeler"
-        echo "      - git-issue-updater"
-        echo "      - git-semantic-commits"
-        echo "      - semantic-release-convention"
-        echo "      - git-compact-commits"
-        echo "      - plan-updater"
-        echo "      - version-bump-standard"
-        echo "      - git-branch-workflow-setup-skill"
-        echo "    - Documentation (3):"
-        echo "      - coverage-readme-workflow"
-        echo "      - docstring-generator"
-        echo "      - documentation-sync-workflow"
-         echo "    - Academic & Research Writing (2):"
-         echo "      - horseshoe-paper-writing-skill"
-         echo "      - research-paper-generation-skill"
-         echo "    - JIRA (3):"
-         echo "      - jira-status-updater"
-         echo "      - jira-git-integration"
-         echo "      - jira-ticket-labeler"
-        echo "    - Code Quality (8):"
-        echo "      - solid-principles"
-        echo "      - clean-code"
-        echo "      - clean-architecture"
-        echo "      - design-patterns"
-        echo "      - object-design"
-        echo "      - code-smells"
-        echo "      - complexity-management"
-        echo "      - deprecated-code-cleanup-skill"
-         echo "    - Planning & Alignment (4):"
-         echo "      - grilling-skill"
-         echo "      - domain-modeling-skill"
-         echo "      - grill-with-docs-skill"
-         echo "      - grill-me-skill"
-        echo "    - Responsive & Visual Testing (2):"
-        echo "      - wireframer-skill"
-        echo "      - playwright-responsive-audit-skill"
-        echo "    - CAD & Hardware Design (14):"
-        echo "      - cad-generation-skill"
-        echo "      - cad-viewer-skill"
-        echo "      - cad-step-parts-skill"
-        echo "      - cad-dxf-skill"
-        echo "      - cad-urdf-skill"
-        echo "      - cad-srdf-skill"
-        echo "      - cad-sdf-skill"
-        echo "      - cad-sendcutsend-skill"
-        echo "      - cad-gcode-skill"
-        echo "      - cad-bambu-labs-skill"
-        echo "      - cad-implicit-skill"
-        echo "      - autodesk-aps-skill"
-        echo "      - civil-3d-skill"
-        echo "      - open3d-skill"
+        echo "✓ skill profile: ${SKILL_PROFILE} (primary-visible skills in permission.skill)"
+        print_skill_categories "${SKILLS_DIR}"
 
     else
         echo "✗ skills: Not deployed"
@@ -3614,37 +3558,33 @@ print_next_steps() {
     echo "                        🚀 Quick Start"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "🤖 Agents (38):"
+    echo "🤖 Agents (36):"
     echo "  - build (default) - Full-featured coding agent"
     echo "  - plan - Planning agent (read-only)"
     echo "  - explore - Fast codebase exploration and analysis"
     echo "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
     echo "  - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
-    echo "  - ... and 34 more agents"
+    echo "  - ... and $(($(count_agents "${REPO_DIR}/opencode_app/.opencode/agents") - 5)) more agents"
     echo ""
     echo "  Usage: opencode --agent <name> \"prompt\""
     echo "         opencode \"prompt\" (uses build)"
      echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-      echo "                     📦 123 Skills Available"
+      echo "                     📦 $(count_skills "${REPO_DIR}/opencode_app/.opencode/skills") Skills Available"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo ""
-     echo "  Framework (19) • Language-Specific (8) • Presentation (3)"
-     echo "  Office Utilities (2) • Framework-Specific (10) • OpenCode Meta (4)"
-      echo "  OpenTofu (7) • Git/Workflow (13) • Documentation (3) • JIRA (3) • Code Quality (8)"
-    echo "  Agent Optimization (7) • Planning & Alignment (4) • Academic & Research Writing (2)"
-    echo "  Responsive & Visual Testing (2)"
-    echo "  CAD & Hardware Design (14)"
-    echo ""
+     echo ""
+     print_skill_categories "${REPO_DIR}/opencode_app/.opencode/skills"
+     echo ""
     echo "  Run 'opencode --list-skills' for detailed descriptions"
     echo "  Run 'opencode --skill <name> \"prompt\"' to use a skill"
     echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-     echo "                     🔌 MCP Servers (6)"
+     echo "                     🔌 MCP Servers (3)"
      echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
      echo ""
-     echo "  Local (auto-start): atlassian, zai-vision-mcp-server, codegraph"
-     echo "  Remote (needs key): web-reader, web-search-prime, zread"
+     echo "  Auto-start: codegraph, web-reader"
+      echo "  Opt-in per-project: atlassian"
+     echo "  Opt-in global packs: next-devtools, markitdown, docling, chrome-devtools"
     echo ""
     echo "  Auth: opencode mcp auth atlassian / opencode mcp auth github"
     echo ""
@@ -3693,6 +3633,7 @@ setup_opencode_init_symlink() {
         *) log_warn "${user_bin} is not on your PATH. Add it to your shell rc to use opencode-init:" \
            && echo "    export PATH=\"${user_bin}:\$PATH\"" >&2 ;;
     esac
+    log_info "Tip: individual skills/agents can also be installed via: npx github:darellchua2/opencode-config-template add <name>"
 }
 
 main() {

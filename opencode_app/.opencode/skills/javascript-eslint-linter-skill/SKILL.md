@@ -3,9 +3,6 @@ name: javascript-eslint-linter-skill
 description: Ensure JavaScript/TypeScript code follows industry standards using ESLint linter with linting-workflow framework
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: code-quality
 category: Language-Specific
 ---
 

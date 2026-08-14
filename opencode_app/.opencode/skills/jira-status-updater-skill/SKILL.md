@@ -3,9 +3,6 @@ name: jira-status-updater-skill
 description: Automate JIRA ticket status transitions after pull requests are merged, ensuring proper workflow closure
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: jira-status-transition
 category: JIRA
 ---
 
@@ -31,6 +28,15 @@ Use this framework when:
 - You need automated JIRA workflow management
 
 This is a **framework skill** - it provides JIRA status transition functionality that other skills use.
+
+## MCP Availability Guard
+
+Transitions/comments use `atlassian_*` MCP tools, and the `atlassian` MCP server is **disabled by default** (opt-in). Ticket-key detection (Step 1, git/`gh` based) always works; before the first `atlassian_*` call:
+
+- If `atlassian_*` tools are absent from your tool list, do NOT attempt or hallucinate them.
+- Interactive: offer per-project enable via `opencode-repo-setup-skill` (effective next session).
+- Fallback: REST transition — `curl -u email:token -X POST https://<site>.atlassian.net/rest/api/3/issue/<KEY>/transitions` (cloudId: `curl https://<site>.atlassian.net/_edge/tenant_info`).
+- No credentials/headless: report the transition as skipped and log the detected ticket key — never fail the PR-merge workflow.
 
 ## Core Workflow Steps
 

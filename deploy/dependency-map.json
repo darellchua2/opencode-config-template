@@ -3,17 +3,6 @@
   "impliesMcp": {
     "nextjs-devtools-mcp-skill": ["next-devtools"],
     "markitdown-mcp-skill": ["markitdown"],
-    "codegraph-setup-skill": ["codegraph"],
-    "microsoft-m365-config-skill": [
-      "microsoft-teams",
-      "microsoft-mail",
-      "microsoft-calendar",
-      "microsoft-sharepoint",
-      "microsoft-onedrive",
-      "microsoft-user",
-      "microsoft-word",
-      "microsoft-copilot",
-      "microsoft-dataverse"
-    ]
+    "docling-mcp-skill": ["docling"]
   }
 }

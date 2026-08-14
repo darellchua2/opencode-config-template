@@ -2,6 +2,184 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.26.3](https://github.com/darellchua2/opencode-config-template/compare/v4.26.2...v4.26.3) (2026-08-12)
+
+### Bug Fixes
+
+* **pptx-template-modifier:** repair-worthy defects in designer_promoter output ([#332](https://github.com/darellchua2/opencode-config-template/issues/332)) ([c0da44e](https://github.com/darellchua2/opencode-config-template/commit/c0da44e12040b6a36679b44e2e8e1f3804c6cf6e)), closes [#331](https://github.com/darellchua2/opencode-config-template/issues/331)
+
+## [4.26.2](https://github.com/darellchua2/opencode-config-template/compare/v4.26.1...v4.26.2) (2026-08-10)
+
+### Bug Fixes
+
+* **deploy:** use $HOME instead of hard-coded silentx path ([2a99a06](https://github.com/darellchua2/opencode-config-template/commit/2a99a069cb9974e8a683779e851ab1ff164d8ffd))
+
+## [4.26.1](https://github.com/darellchua2/opencode-config-template/compare/v4.26.0...v4.26.1) (2026-08-09)
+
+### Bug Fixes
+
+* **config:** remove moonshot provider (incorrect setup) ([088b260](https://github.com/darellchua2/opencode-config-template/commit/088b260f25dcf3f075e37b9e8a3e6f3ab63bf7f4))
+
+## [4.26.0](https://github.com/darellchua2/opencode-config-template/compare/v4.25.3...v4.26.0) (2026-08-09)
+
+### Features
+
+* **config:** add moonshot provider with kimi-k3 vision support ([cb79f31](https://github.com/darellchua2/opencode-config-template/commit/cb79f3122ff4673ba41f113223cf4710a9d576b7))
+
+## [4.25.3](https://github.com/darellchua2/opencode-config-template/compare/v4.25.2...v4.25.3) (2026-08-09)
+
+### Bug Fixes
+
+* **config:** remove kimi-k3-vision from zai-coding-plan provider ([b135781](https://github.com/darellchua2/opencode-config-template/commit/b13578119f0f4c67c57e0ddcbc7e92f571e09cfd))
+
+## [4.25.2](https://github.com/darellchua2/opencode-config-template/compare/v4.25.1...v4.25.2) (2026-08-09)
+
+### Bug Fixes
+
+* **config:** rename kimi-k3 to kimi-k3-vision for variant differentiation ([aa8e7c5](https://github.com/darellchua2/opencode-config-template/commit/aa8e7c55dde93d049d90b12c1c82ef80a309839f))
+
+## [4.25.1](https://github.com/darellchua2/opencode-config-template/compare/v4.25.0...v4.25.1) (2026-08-09)
+
+### Bug Fixes
+
+* **config:** add modalities for vision support on zai-coding-plan models ([f497e82](https://github.com/darellchua2/opencode-config-template/commit/f497e822d0d955dce6dcdd10cf7a162334cdda27))
+
+## [4.25.0](https://github.com/darellchua2/opencode-config-template/compare/v4.24.0...v4.25.0) (2026-08-08)
+
+### Features
+
+* **deploy:** make primary model injection opt-in via --inject-primary ([5e69bb4](https://github.com/darellchua2/opencode-config-template/commit/5e69bb455fd5e485c3ec7772ae51bc99554c842a))
+
+## [4.24.0](https://github.com/darellchua2/opencode-config-template/compare/v4.23.0...v4.24.0) (2026-08-07)
+
+### Features
+
+* **mcp:** add privacy-hardened chrome-devtools MCP for frontend agents ([#329](https://github.com/darellchua2/opencode-config-template/issues/329)) ([#330](https://github.com/darellchua2/opencode-config-template/issues/330)) ([67c4d49](https://github.com/darellchua2/opencode-config-template/commit/67c4d493efe2fd8e08b17fc30d010b0d6e3bfee0))
+
+## [4.23.0](https://github.com/darellchua2/opencode-config-template/compare/v4.22.0...v4.23.0) (2026-08-06)
+
+### Features
+
+* **vision:** route glm-5v-turbo through coding-plan endpoint with API fallback ([#326](https://github.com/darellchua2/opencode-config-template/issues/326)) ([226f740](https://github.com/darellchua2/opencode-config-template/commit/226f7409a259eaaf55fff7670db8683f9f68d1b4))
+
+## [4.22.0](https://github.com/darellchua2/opencode-config-template/compare/v4.21.0...v4.22.0) (2026-08-06)
+
+### Features
+
+* **agents:** add epistemic-honesty & verification baseline with web access ([c672185](https://github.com/darellchua2/opencode-config-template/commit/c67218560030dc7769424239afaf98e96519faef))
+
+### Bug Fixes
+
+* **agents:** correct false factual claims and unverified version pins ([4da8d4f](https://github.com/darellchua2/opencode-config-template/commit/4da8d4fd13430d194c9e4c132816afe269b99b93))
+* **agents:** remove leaked secret-mask token from uiux-reviewer ([3cbf825](https://github.com/darellchua2/opencode-config-template/commit/3cbf8253ec3bbee297b16509db874e05825926e0))
+* **agents:** repair duplicate frontmatter task key in startup-ceo ([9ca357f](https://github.com/darellchua2/opencode-config-template/commit/9ca357f37e9ce292bfb1242b3a9c8aaf4e1e5b51))
+* **agents:** soften confabulation-pressure in error-resolver and explorer ([65702a4](https://github.com/darellchua2/opencode-config-template/commit/65702a4c3c94c3a73906043f9d2d68505087554d))
+
+## [4.21.0](https://github.com/darellchua2/opencode-config-template/compare/v4.20.0...v4.21.0) (2026-08-06)
+
+### Features
+
+* **agents:** grant web access + lookup guidance to reviewers ([01ab540](https://github.com/darellchua2/opencode-config-template/commit/01ab5407719846ba0a931f5148912cd7fb9a7211))
+
+### Documentation
+
+* **plan:** add PLAN-GIT-323.md for [#323](https://github.com/darellchua2/opencode-config-template/issues/323) ([d510249](https://github.com/darellchua2/opencode-config-template/commit/d510249377ce9c9a1c798be9036be1eb38b2cb56))
+* **plan:** revise PLAN-GIT-323 to minimal web-lookup scope ([ff1cd2e](https://github.com/darellchua2/opencode-config-template/commit/ff1cd2e9d1a0093533b836122094afd2cd6b02c2))
+
+## [4.20.0](https://github.com/darellchua2/opencode-config-template/compare/v4.19.2...v4.20.0) (2026-08-06)
+
+### Features
+
+* **skills:** add zai-image-generation-skill (Z.AI GLM-Image text→PNG) ([73ab708](https://github.com/darellchua2/opencode-config-template/commit/73ab7087fd4312df0eb79fc6f6e17dcd819b9f86))
+
+### Bug Fixes
+
+* **plugins:** pin exact versions to resolve DCP peer conflict ([164af01](https://github.com/darellchua2/opencode-config-template/commit/164af01ba0a6c6652b5dd2fa6de8e4e5460f4ac9))
+
+## [4.19.2](https://github.com/darellchua2/opencode-config-template/compare/v4.19.1...v4.19.2) (2026-08-06)
+
+### Bug Fixes
+
+* **mcp:** correct env var syntax in zai-vision-mcp-server ([bdbcdbd](https://github.com/darellchua2/opencode-config-template/commit/bdbcdbd9514cb81975875eccbacfb2b4d5f96e9c))
+
+## [4.19.1](https://github.com/darellchua2/opencode-config-template/compare/v4.19.0...v4.19.1) (2026-08-05)
+
+### Bug Fixes
+
+* **learnings:** capture redocly + tsoa factual corrections from [#319](https://github.com/darellchua2/opencode-config-template/issues/319) review ([c195011](https://github.com/darellchua2/opencode-config-template/commit/c195011b7ca5fdc19662319c7e2ba9c709aa7cbf))
+
+## [4.19.0](https://github.com/darellchua2/opencode-config-template/compare/v4.18.0...v4.19.0) (2026-08-05)
+
+### Features
+
+* **openapi:** route authoring signals to api-design-skill with Authoring Quality Gate ([5dc455e](https://github.com/darellchua2/opencode-config-template/commit/5dc455e942520f04979b4d3539b65d479adea87c)), closes [#319](https://github.com/darellchua2/opencode-config-template/issues/319)
+
+### Bug Fixes
+
+* **api-design:** correct Authoring Quality Gate per code review ([8fbe070](https://github.com/darellchua2/opencode-config-template/commit/8fbe0703c8de41d44fe9f97e4c56f7c581c78174)), closes [#319](https://github.com/darellchua2/opencode-config-template/issues/319)
+
+### Documentation
+
+* **plan:** add PLAN-GIT-319 for openapi authoring enforcement redesign ([8a9da55](https://github.com/darellchua2/opencode-config-template/commit/8a9da55acb99b706d146b960d99237ccbe25d690)), closes [#320](https://github.com/darellchua2/opencode-config-template/issues/320) [#319](https://github.com/darellchua2/opencode-config-template/issues/319)
+* **plan:** trace PLAN-GIT-319 phases + close acceptance criteria ([0e18a71](https://github.com/darellchua2/opencode-config-template/commit/0e18a715d27f0f6cb2526dd6459bed65974f1dd3)), closes [#320](https://github.com/darellchua2/opencode-config-template/issues/320)
+
+## [4.18.0](https://github.com/darellchua2/opencode-config-template/compare/v4.17.0...v4.18.0) (2026-08-05)
+
+### Features
+
+* **tooling:** recommend ripgrep as optional dependency ([#317](https://github.com/darellchua2/opencode-config-template/issues/317)) ([#318](https://github.com/darellchua2/opencode-config-template/issues/318)) ([c3ac0dc](https://github.com/darellchua2/opencode-config-template/commit/c3ac0dc15751496aafd22f377084992b148c3b3b))
+
+## [4.17.0](https://github.com/darellchua2/opencode-config-template/compare/v4.16.0...v4.17.0) (2026-08-05)
+
+### Features
+
+* **security:** integrate vibeguard secret masking for .env safety ([#315](https://github.com/darellchua2/opencode-config-template/issues/315)) ([#316](https://github.com/darellchua2/opencode-config-template/issues/316)) ([cd05707](https://github.com/darellchua2/opencode-config-template/commit/cd05707bd5b855234571da4fb1504d69b2fb605f)), closes [inkdust2021/opencode-vibeguard#6](https://github.com/inkdust2021/opencode-vibeguard/issues/6)
+
+## [4.16.0](https://github.com/darellchua2/opencode-config-template/compare/v4.15.0...v4.16.0) (2026-08-04)
+
+### Features
+
+* improve skills & subagents from cross-repo LEARNINGS (PLAN-GIT-312) ([#313](https://github.com/darellchua2/opencode-config-template/issues/313)) ([e494d5b](https://github.com/darellchua2/opencode-config-template/commit/e494d5b47b4e51b414238c97159abaa78fc2ff0a))
+
+### Bug Fixes
+
+* **ci:** rebuild registry after review fixes (PLAN-GIT-312) ([#314](https://github.com/darellchua2/opencode-config-template/issues/314)) ([c81b1d4](https://github.com/darellchua2/opencode-config-template/commit/c81b1d4cef9bfe768a84c9f4e0c7a9721a54bf8f))
+
+## [4.15.0](https://github.com/darellchua2/opencode-config-template/compare/v4.14.1...v4.15.0) (2026-08-04)
+
+### Features
+
+* **docling:** office document extraction routing + docling CLI-on-demand ([#308](https://github.com/darellchua2/opencode-config-template/issues/308)) ([#310](https://github.com/darellchua2/opencode-config-template/issues/310)) ([1be58ce](https://github.com/darellchua2/opencode-config-template/commit/1be58ced6e564510ec5c7c31ca9be0dd18827d6f))
+
+### Bug Fixes
+
+* **ci:** update preset count 10→9 (google/microsoft removed in [#309](https://github.com/darellchua2/opencode-config-template/issues/309)) ([#311](https://github.com/darellchua2/opencode-config-template/issues/311)) ([6fba3aa](https://github.com/darellchua2/opencode-config-template/commit/6fba3aaf1f2cab84140536be3e32f3dd76ef0433))
+* **docs:** replace stale microsoft/google pack examples with valid packs ([b7a719b](https://github.com/darellchua2/opencode-config-template/commit/b7a719ba881a353305a1f9879a9ccffa9cd88dac))
+
+### Code Refactoring
+
+* **mcp:** remove Google Cloud + Microsoft 365 MCP integrations ([65d156b](https://github.com/darellchua2/opencode-config-template/commit/65d156b15bb89d2f4bb305431ed2999c21fa15f8))
+
+### Documentation
+
+* **plan:** add PLAN-GIT-307.md for chore/remove-google-microsoft-mcp ([24ef880](https://github.com/darellchua2/opencode-config-template/commit/24ef88052a3dcf1301b55d0cd2e6bb434a149330))
+* **plan:** add PLAN-GIT-308 for [#308](https://github.com/darellchua2/opencode-config-template/issues/308) ([496ca73](https://github.com/darellchua2/opencode-config-template/commit/496ca7394b886c7804320caf9fa4344af666cafa))
+* **plan:** tick final 3 checkboxes — v4.14.1 release verified ([e163aef](https://github.com/darellchua2/opencode-config-template/commit/e163aeff71ac78f815ca71ddd4da9cf5bdeb77ee))
+
+## [4.14.1](https://github.com/darellchua2/opencode-config-template/compare/v4.14.0...v4.14.1) (2026-08-04)
+
+### Bug Fixes
+
+* **release:** pin semantic-release plugins + npm ci to restore release notes ([#306](https://github.com/darellchua2/opencode-config-template/issues/306)) ([666aef4](https://github.com/darellchua2/opencode-config-template/commit/666aef4417c4f09408e8f9bfa6166f2be34a8a90))
+
+## [4.14.0](https://github.com/darellchua2/opencode-config-template/compare/v4.13.0...v4.14.0) (2026-08-04)
+
+## [4.13.0](https://github.com/darellchua2/opencode-config-template/compare/v4.12.0...v4.13.0) (2026-08-04)
+
+## [4.12.0](https://github.com/darellchua2/opencode-config-template/compare/v4.11.0...v4.12.0) (2026-08-04)
+
+## [4.11.0](https://github.com/darellchua2/opencode-config-template/compare/v4.10.1...v4.11.0) (2026-08-04)
+
 ## [4.10.1](https://github.com/darellchua2/opencode-config-template/compare/v4.10.0...v4.10.1) (2026-08-04)
 
 ## [4.10.0](https://github.com/darellchua2/opencode-config-template/compare/v4.9.0...v4.10.0) (2026-08-04)

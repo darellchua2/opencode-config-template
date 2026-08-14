@@ -1,0 +1,3 @@
+# Release branch workflow already configured in this repo.
+# Detection found: .github/workflows/release.yml + .releaserc.json + dev/main branches.
+# Set by primary agent after ticket-creation-subagent returned NEEDS_GIT_BRANCH_SETUP: true (issue #307).

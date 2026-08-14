@@ -1,12 +1,11 @@
 ---
 name: amplify-nextjs-deployment-skill
-description: Deploy and troubleshoot Next.js 16+ applications on AWS Amplify Hosting — build spec (amplify.yml), SSR Lambda env-var injection, CloudFront OAC, Route53 DNS, GitHub Actions deploy triggers, post-deploy verification, and rollback strategy
+description: >-
+  Deploy and troubleshoot Next.js 16+ on AWS Amplify Hosting — amplify.yml, SSR
+  Lambda env vars, CloudFront OAC, Route53 DNS, deploy triggers, rollback.
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: frontend-developers
-  workflow: deployment
-  scope: nextjs-amplify-hosting
   pattern: amplify-deployment
 category: Framework-Specific
 ---
@@ -312,6 +311,6 @@ rg 'process\.env\.[A-Z_]+' --type ts --type tsx -g '!*.test.*' -g '!*.spec.*'
 
 - **`nextjs-standard-setup-skill`** — scaffolds the Next.js project that this skill deploys
 - **`nextjs-image-usage-skill`** — configures `next.config.ts` `images.remotePatterns` (referenced by Rule 4)
-- **`react-nextjs-antipatterns-skill`** — catches SSR anti-patterns that fail at runtime (Rule 7)
+- **`react-hooks-antipatterns-skill`** + **`react-render-antipatterns-skill`** — catch SSR/runtime anti-patterns that fail at runtime (Rule 7)
 - **`opentofu-aws-explorer-skill`** — manages the OpenTofu/Terraform infra module for Amplify + S3 + CloudFront
 - **`opentofu-provisioning-workflow-skill`** — state management for the infra side of rollbacks

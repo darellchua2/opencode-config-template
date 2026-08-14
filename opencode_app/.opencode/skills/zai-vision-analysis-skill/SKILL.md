@@ -1,96 +1,120 @@
 ---
 name: zai-vision-analysis-skill
-description: Analyze images/screenshots/PDFs by calling the Z.AI vision API directly (free glm-4.6v-flash). Bypasses the OpenCode provider catalog (models.dev) so the free vision model is usable. Use when an agent needs image/screenshot content but runs on a text model. Triggers on image analysis, screenshot analysis, vision, describe image, OCR, diagram understanding.
+description: >-
+  Analyze images/screenshots/PDFs via direct Z.AI vision API (glm-5v-turbo) —
+  fallback when native multimodal is unavailable. Triggers: image analysis,
+  screenshot analysis, vision, describe image, OCR.
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: agents
-  workflow: vision
-  requires: ZAI_API_KEY
 category: Responsive & Visual Testing
 ---
 
 ## What I do
 
-I provide the exact recipe for an agent to obtain **image/screenshot content** by calling the
-**Z.AI vision API directly**, using the **free `glm-4.6v-flash`** model. This bypasses the
-OpenCode provider/model catalog (models.dev), which does not list `glm-4.6v-flash` — so the
-free vision model is reachable only via this direct HTTP call. The calling agent (a text model)
-executes the call with its `bash` tool, then interprets the returned text description.
+I give an agent a single ready-to-run command that calls the **Z.AI vision API directly** with
+**`glm-5v-turbo`** (the same vision model the native multimodal path uses), returning the model's
+text description of an image. This is the **API fallback** for when native multimodal perception is
+unavailable — e.g. the `image-analyzer-subagent` runtime reports "model does not support image
+input", the vision MCP server isn't connected, or a text-model agent needs image content.
+
+The calling agent (typically a text model) runs the command with `bash`, then reasons over the
+returned description.
 
 ## Why a direct API call
 
-OpenCode resolves provider models from models.dev, and the `zai` provider does not expose
-`glm-4.6v-flash` (only paid `glm-4.6v`, `glm-4.5v`, `glm-5v-turbo`). A direct call to the Z.AI
-OpenAI-compatible endpoint serves `glm-4.6v-flash` (free) regardless, so this is the only way to
-get **free** vision. Paid models (`glm-4.6v`, `glm-5v-turbo`) can be substituted in the recipe if
-explicitly requested.
+OpenCode routes `zai/glm-5v-turbo` through its provider catalog for native multimodal agents, but
+that path can fail at runtime (provider mis-route, MCP server not connected, text-only session). A
+direct Z.AI API call works regardless of the OpenCode model layer, so it is a reliable fallback.
+It also serves any text-model agent that has `bash` but no image perception.
 
-## Prerequisite
+## Prerequisite — key + endpoint
 
-- `ZAI_API_KEY` environment variable must be set. If empty/missing, **stop and report**:
-  "ZAI_API_KEY is not set — authenticate via `opencode auth login` (Z.AI) or export ZAI_API_KEY."
+The recipe auto-resolves both, preferring the coding-plan tier:
 
-## Recipe
+| Source | Endpoint |
+|--------|----------|
+| `auth.json` → `zai-coding-plan.key` (preferred) | `https://api.z.ai/api/coding/paas/v4/chat/completions` |
+| `auth.json` → `zai.key`, else `$ZAI_API_KEY` | `https://api.z.ai/api/paas/v4/chat/completions` |
 
-Set two shell variables and run the curl. The `python3` helper takes the image source and
-prompt as **arguments** (no `export` needed) and reads + base64-encodes the image **itself**, so
-large images never round-trip through the shell (avoids `ARG_MAX` limits and `base64 -w0`
-portability issues):
+If neither key is found, the command exits with an error telling the caller to authenticate
+(`opencode auth login` for Z.AI, or `export ZAI_API_KEY`).
+
+## Recipe (one command — pure stdlib, no curl/ARG_MAX issues)
+
+`$IMG` = local file path **or** a remote `https://` URL. `$PROMPT` = analysis instruction.
+Large local images are auto-downscaled to 1280px max edge (JPEG q85) when Pillow is installed;
+without Pillow the raw file is sent (may hit size limits on very large images).
 
 ```bash
-IMG="/abs/path/to/image.png"     # OR a remote URL: IMG="https://example.com/img.png"
+IMG="/abs/path/to/image.png"
 PROMPT="Describe this image in detail — text, UI elements, errors, layout, colors, anything actionable."
 
-curl -sS --max-time 120 -X POST "https://api.z.ai/api/paas/v4/chat/completions" \
-  -H "Authorization: Bearer $ZAI_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d "$(python3 -c '
-import json, sys, base64, subprocess
-src = sys.argv[1]
-prompt = (sys.argv[2] if len(sys.argv) > 2 else "") or "Describe this image in detail."
-if src.startswith("http"):
-    img = src
+python3 - "$IMG" "$PROMPT" <<'PY'
+import sys, os, json, base64, subprocess, urllib.request, urllib.error
+src, prompt = sys.argv[1], (sys.argv[2] or "Describe this image in detail.")
+
+def load_auth():
+    try:
+        return json.load(open(os.path.expanduser("~/.local/share/opencode/auth.json")))
+    except Exception:
+        return {}
+auth = load_auth()
+cp = (auth.get("zai-coding-plan") or {}).get("key")
+zai = (auth.get("zai") or {}).get("key") or os.environ.get("ZAI_API_KEY", "")
+MODEL = "glm-5v-turbo"
+if cp:
+    ENDPOINT, APIKEY = "https://api.z.ai/api/coding/paas/v4/chat/completions", cp
+elif zai:
+    ENDPOINT, APIKEY = "https://api.z.ai/api/paas/v4/chat/completions", zai
 else:
-    mime = subprocess.check_output(["file", "-b", "--mime-type", src]).decode().strip() or "image/png"
-    with open(src, "rb") as f:
-        img = "data:%s;base64,%s" % (mime, base64.b64encode(f.read()).decode())
-print(json.dumps({"model": "glm-4.6v-flash", "messages": [{"role": "user", "content": [
+    sys.exit("ERROR: no Z.AI key — run `opencode auth login` (Z.AI) or export ZAI_API_KEY")
+
+def img_url(src):
+    if src.startswith("http"):
+        return src
+    try:
+        from PIL import Image; import io
+        im = Image.open(src).convert("RGB"); w, h = im.size
+        if max(w, h) > 1280:
+            im = im.resize((int(w*1280/max(w,h)), int(h*1280/max(w,h))), Image.LANCZOS)
+        buf = io.BytesIO(); im.save(buf, "JPEG", quality=85)
+        return "data:image/jpeg;base64,%s" % base64.b64encode(buf.getvalue()).decode()
+    except ImportError:
+        mime = subprocess.check_output(["file","-b","--mime-type",src]).decode().strip() or "image/png"
+        with open(src,"rb") as f: return "data:%s;base64,%s" % (mime, base64.b64encode(f.read()).decode())
+
+payload = json.dumps({"model": MODEL, "messages": [{"role": "user", "content": [
     {"type": "text", "text": prompt},
-    {"type": "image_url", "image_url": {"url": img}}]}]}))
-' "$IMG" "$PROMPT")"
+    {"type": "image_url", "image_url": {"url": img_url(src)}}]}]}).encode()
+req = urllib.request.Request(ENDPOINT, data=payload, headers={
+    "Authorization": "Bearer " + APIKEY, "Content-Type": "application/json"})
+try:
+    with urllib.request.urlopen(req, timeout=120) as r:
+        print(json.loads(r.read())["choices"][0]["message"]["content"])
+except urllib.error.HTTPError as e:
+    sys.exit("HTTP %d: %s" % (e.code, e.read().decode()[:500]))
+PY
 ```
 
-- `$IMG` — a **local file path** OR a remote `http(s)://` URL (the helper auto-detects).
-- `$PROMPT` — optional; defaults to a detailed description.
-- For very large images (>10 MB), downscale first to avoid request-size limits.
-
-### 3. Parse the response
-
-The description is at `choices[0].message.content`:
-```bash
-# pipe the curl output:
-... | python3 -c 'import sys,json; print(json.load(sys.stdin)["choices"][0]["message"]["content"])'
-```
+The description is printed to stdout (`choices[0].message.content`).
 
 ## Error handling
 
 | Condition | Detect | Action |
 |-----------|--------|--------|
-| Missing `ZAI_API_KEY` | `[ -z "$ZAI_API_KEY" ]` | Stop; tell caller to auth (`opencode auth login` Z.AI or export `ZAI_API_KEY`) |
-| HTTP non-200 / API error | response has `"error"` or curl exit != 0 | Print the error body; report `Status: failed` with the message |
-| Empty/invalid image | `file` reports non-image, or base64 empty | Report path + detected type; ask for a valid image |
-| Oversized payload | curl/HTTP 413 or timeout | Downscale the image and retry once |
+| No key (auth.json + env both empty) | command exits `ERROR: no Z.AI key` | Tell caller to `opencode auth login` (Z.AI) or `export ZAI_API_KEY` |
+| HTTP error / API error | exit prints `HTTP <code>: <body>` | Report `Status: failed` + the message; for 413/timeout, ensure Pillow downscaling ran or downscale manually and retry |
+| Service overloaded (Z.AI code 1305) | error body contains `1305` | Image too large or transient — downscale (Pillow) and retry once |
+| Empty/invalid image | `file` reports non-image | Report path + detected type; ask for a valid image |
 | Rate limited (429) | HTTP 429 | Wait and retry once; otherwise report |
 
-## Using a paid model instead (explicit request only)
+## Choosing a different model
 
-Substitute `"model"` with a models.dev-valid `zai` vision model — `glm-4.6v` (cheapest, $0.30/$0.90)
-or `glm-5v-turbo` ($1.20/$4.00) — only when the caller explicitly requests the paid path. The
-default remains free `glm-4.6v-flash`.
+`glm-5v-turbo` is the default (same model as the native multimodal path, best quality). To cut
+cost, set `MODEL = "glm-4.6v"` (cheaper, $0.30/$0.90) in the recipe. The free `glm-4.6v-flash` is
+available but rate-limits frequently — use only when cost is the hard constraint.
 
 ## Caller contract
 
-After executing the recipe, return the vision model's text description to the calling agent, which
-interprets/reasons over it (the calling agent is a text model and cannot see the image directly).
-Do not echo the raw base64 or the full JSON response — return only `choices[0].message.content`.
+Return the vision model's text description (stdout) to the calling agent, which interprets it.
+Do not echo the base64, the API key, or the full JSON — return only the printed content.

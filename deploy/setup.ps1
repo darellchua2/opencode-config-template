@@ -17,6 +17,10 @@
     .\setup.ps1 -Rollback -RollbackTarget latest # Restore most recent backup
     .\setup.ps1 -Rollback -RollbackArg 20260719_070926  # Restore by TIMESTAMP
     .\setup.ps1 -NoZipBackup         # Deploy without creating zip archive
+    .\setup.ps1 -Yes -Quick -Provider zai                  # Headless quick deploy
+    .\setup.ps1 -Yes -EnablePack markitdown,nextjs         # CI: defaults + packs
+    .\setup.ps1 -Yes -Provider openai -EnablePack markitdown -SkillProfile lean
+    .\setup.ps1 -DryRun -Yes -EnablePack autodesk          # Preview a combo
     .\setup.ps1 -Help                # Show detailed help
 
 .NOTES
@@ -59,8 +63,13 @@ param(
     [switch]$Migrate,
     [switch]$Mix,
     # Provider packs (#268): deploy-time MCP toggle. CSV of pack names
-    # (autodesk,microsoft,google,markitdown,nextjs,zai). Empty = no-op.
-    [string]$EnablePack = ""
+    # (autodesk,markitdown,nextjs,docling,chrome-devtools). Empty = no-op.
+    [string]$EnablePack = "",
+    # Skill profile (GIT-333): deploy-time primary visibility. lean (default)
+    # rewrites the DEPLOYED config's permission.skill to 30 visible skills;
+    # full deploys the shipped 87-allow allowlist verbatim.
+    [ValidateSet("lean", "full")]
+    [string]$SkillProfile = "lean"
 )
 
 $ErrorActionPreference = "Continue"
@@ -102,6 +111,8 @@ $DeployDir = Join-Path $RepoDir "deploy"
 $ResolverScript = Join-Path $DeployDir "resolve-models.mjs"
 $MergePacksScript = Join-Path $DeployDir "merge-packs.mjs"
 $PacksDir = Join-Path $DeployDir "packs"
+$ApplySkillProfileScript = Join-Path $DeployDir "apply-skill-profile.mjs"
+$SkillProfilesFile = Join-Path $DeployDir "skill-profiles.json"
 $TuiScript = Join-Path $DeployDir "tui.mjs"
 $AgentTiers = Join-Path $DeployDir "agent-tiers.json"
 $ModelsDefaultMap = Join-Path $DeployDir "models.default.json"
@@ -170,6 +181,41 @@ function Write-LogWarn    { param([string]$Msg) Write-Log "WARNING" $Msg }
 function Write-LogError   { param([string]$Msg) Write-Log "ERROR"   $Msg }
 function Write-LogSuccess { param([string]$Msg) Write-Log "SUCCESS" $Msg }
 function Write-LogDebug   { param([string]$Msg) Write-Log "DEBUG"   $Msg }
+
+# Count active SKILL.md files in a directory, excluding _archived (matches the
+# deploy's _archived skip). Drift-proof skill count for banners/status. BT-157.
+function Get-SkillCount {
+    param([string]$Path)
+    if (-not (Test-Path $Path)) { return 0 }
+    return @(Get-ChildItem -Path $Path -Recurse -Filter "SKILL.md" -File -ErrorAction SilentlyContinue |
+             Where-Object { $_.FullName -notmatch "[\\/]_archived[\\/]" }).Count
+}
+
+function Get-AgentCount {
+    param([string]$Path)
+    if (-not (Test-Path $Path)) { return 0 }
+    return @(Get-ChildItem -Path $Path -Filter "*.md" -File -ErrorAction SilentlyContinue |
+             Where-Object { $_.FullName -notmatch "[\\/]_archived[\\/]" }).Count
+}
+
+# Auto-derive per-category counts from skill frontmatter (category: field),
+# excluding _archived. Prints "Category (N)" lines sorted by count desc. BT-157.
+function Get-SkillCategories {
+    param([string]$Path)
+    if (-not (Test-Path $Path)) { return }
+    Get-ChildItem -Path $Path -Recurse -Filter "SKILL.md" -File -ErrorAction SilentlyContinue |
+        Where-Object { $_.FullName -notmatch "[\\/]_archived[\\/]" } |
+        ForEach-Object {
+            $cat = (Get-Content $_.FullName -ErrorAction SilentlyContinue |
+                    Where-Object { $_ -match '^\s*category:\s*(.+)$' } |
+                    Select-Object -First 1) -replace '^\s*category:\s*',''
+            [pscustomobject]@{ Category = $cat.Trim() }
+        } |
+        Where-Object { $_.Category } |
+        Group-Object Category |
+        Sort-Object Count -Descending |
+        ForEach-Object { "    - {0} ({1})" -f $_.Name, $_.Count }
+}
 
 ################################################################################
 # UTILITY FUNCTIONS
@@ -600,6 +646,10 @@ function New-PreRollbackBackup {
     if (Test-Path $AgentsDestDir) {
         Copy-Item $AgentsDestDir (Join-Path $preDir "agents") -Recurse -Force
     }
+    $vgCfgPre = Join-Path $ConfigDir "vibeguard.config.json"
+    if (Test-Path $vgCfgPre) {
+        Copy-Item $vgCfgPre (Join-Path $preDir "vibeguard.config.json") -Force
+    }
 
     Write-LogSuccess "Pre-rollback backup created: $preDir"
     return $preDir
@@ -870,15 +920,39 @@ USAGE:
   PROVIDER PACKS (deploy-time MCP toggle):
     -EnablePack <csv>    Enable provider pack(s) — flips mcp.<server>.enabled
                          and tools.<ns>* flags ON. Available packs:
-                         autodesk, microsoft, google, markitdown, nextjs, zai
+                         autodesk, markitdown, nextjs, docling, chrome-devtools
                          (comma-separated). No-op if omitted; default OFF.
-                         Example: -EnablePack autodesk,microsoft
+                         Example: -EnablePack autodesk,markitdown
+
+   SKILL PROFILE (deploy-time primary visibility):
+     -SkillProfile <p>    lean (default) | full. lean rewrites the DEPLOYED
+                          config's permission.skill to 30 primary-visible skills
+                          + "*": "deny" (subagents unaffected — they self-scope
+                          via frontmatter allows); full deploys the shipped
+                          87-allow allowlist verbatim.
+
+ ======================================================================
+                     COMMON COMBINATION EXAMPLES
+ ======================================================================
+
+   Model resolution + profile:
+     .\setup.ps1 -Provider anthropic -Yes      # Deploy with Anthropic models
+     .\setup.ps1 -Mix                          # Mix providers per tier
+     .\setup.ps1 -ModelsOnly -Force            # Re-resolve models only
+     .\setup.ps1 -SkillProfile full            # Primary sees all shipped skills
+
+   Headless / CI combos:
+     .\setup.ps1 -Yes -Quick -Provider zai                  # Quick deploy, no prompts
+     .\setup.ps1 -Yes -EnablePack markitdown,nextjs         # Defaults + packs
+     .\setup.ps1 -Yes -Provider openai -EnablePack markitdown -SkillProfile lean
+     .\setup.ps1 -DryRun -Yes -EnablePack autodesk          # Preview a combo
+
 
 =======================================================================
                          CONFIGURED FEATURES
 =======================================================================
 
-    AGENTS (38):
+    AGENTS ($(Get-AgentCount (Join-Path $RepoDir 'opencode_app\.opencode\agents'))):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
@@ -909,8 +983,6 @@ USAGE:
     startup-founder      Startup founder business operations agent
     startup-ceo          Investor-ready pitch decks and board updates
     office-document      Office document specialist: Word, PowerPoint, Excel
-    google-mcp           Google Cloud MCP (BigQuery, Maps, GCE, GKE)
-    microsoft-m365       Microsoft 365 MCP (Teams, Mail, Calendar, SharePoint, etc.)
      nextjs-specialist  Next.js scaffolding + runtime MCP diagnosis
     opentofu-explorer    OpenTofu/Terraform infrastructure management
     cad-specialist       CAD, robotics, hardware design orchestration
@@ -921,89 +993,9 @@ USAGE:
     Usage: opencode --agent build 'implement auth feature'
             opencode --agent explore 'find all API routes'
  
-            SKILLS (126):
-              Framework (19):       test-generator-framework, linting-workflow,
-                                      pr-creation-workflow, pr-merge-workflow,
-                                      error-resolver-workflow, tdd-workflow,
-                                      docx-creation,
-                                      xlsx-specialist, pdf-specialist, frontend-design,
-                                      uiux-review-skill,
-                                      api-design-skill, openapi-contract-adherence-skill,
-                                      performance-optimization-skill, srs-creation-skill,
-                                      brd-creation-skill, technical-design-creation-skill,
-                                      vision-creation-skill, interactive-document-rendering-skill
+            SKILLS ($(Get-SkillCount (Join-Path $RepoDir 'opencode_app\.opencode\skills'))):
 
-            Presentation (3):       pptx-generate-slide-skill, pptx-generate-template-skill,
-                                      pptx-template-modifier-skill
-
-            Office Utilities (2):   ooxml-editing-skill, office-thumbnail-skill
-
-            Language-Specific (8): python-pytest-creator, python-ruff-linter,
-                                  javascript-eslint-linter, changelog-python-cliff,
-                                  python-backend-skill, python-packaging-skill,
-                                  csharp-linter-skill, java-linter-skill
-
-           Framework-Specific (10): nextjs-pr-workflow, nextjs-unit-test-creator,
-                                  nextjs-standard-setup, nextjs-image-usage,
-                                  nextjs-devtools-mcp, amplify-nextjs-deployment,
-                                  typescript-dry-principle, accessibility-a11y-skill,
-                                  react-nextjs-antipatterns-skill,
-                                  threejs-nextjs-skill
-           OpenCode Meta (4):    opencode-agent-creation, opencode-skill-creation,
-                                 opencode-skills-maintainer,
-                                 documentation-consistency-skill
-           OpenTofu (7):         opentofu-aws-explorer, opentofu-keycloak-explorer,
-                                 opentofu-kubernetes-explorer, opentofu-neon-explorer,
-                                 opentofu-provider-setup, opentofu-provisioning-workflow,
-                                 opentofu-ecr-provision
-            Git/Workflow (13):    ascii-diagram-creator, mermaid-diagram-creator,
-                                   ticket-plan-workflow-skill, plan-execution-skill,
-                                   plan-automation-loop-skill,
-                                   git-issue-labeler, git-issue-updater,
-                                   git-semantic-commits, semantic-release-convention,
-                                   git-compact-commits, plan-updater, version-bump-standard,
-                                   git-branch-workflow-setup-skill
-          Documentation (3):    coverage-readme-workflow, docstring-generator,
-                                 documentation-sync-workflow
-
-          JIRA (3):             jira-status-updater, jira-git-integration, jira-ticket-labeler
-          Code Quality (8):     solid-principles, clean-code, clean-architecture,
-                                design-patterns, object-design, code-smells,
-                                complexity-management, deprecated-code-cleanup-skill
-
-       Agent Optimization (7):  continuous-learning, eval-harness,
-                                 strategic-compact, verification-loop,
-                                 search-first, context-budget,
-                                 agent-introspection-debugging
-
-            Autoresearch (4):  autoresearch-core-skill, autoresearch-ml-skill,
-                                autoresearch-code-skill, autoresearch-research-skill
-
-            Startup/Business (3): startup-pitch-deck-skill, startup-business-docs-skill,
-                                  construction-bd-skill
-
-            Configuration (3):    microsoft-m365-config-skill, codegraph-setup-skill,
-                                  markitdown-mcp-skill
-
-              Security (2):     security-audit-skill, authentication-authorization-skill
-
-                 DevOps (4):     docker-containerization-skill, monorepo-management-skill,
-                                 database-migration-skill, logging-observability-skill
-
-      Planning & Alignment (4): grilling-skill, domain-modeling-skill,
-                                grill-with-docs-skill, grill-me-skill
-
- Responsive & Visual Testing (2): wireframer-skill,
-                                   playwright-responsive-audit-skill
-
-    CAD & Hardware Design (14): cad-generation, cad-viewer, cad-step-parts,
-                                 cad-dxf, cad-urdf, cad-srdf, cad-sdf,
-                                 cad-sendcutsend, cad-gcode, cad-bambu-labs,
-                                 cad-implicit, autodesk-aps-skill,
-civil-3d-skill, open3d-skill
-
-  Academic & Research Writing (2): horseshoe-paper-writing-skill,
-                                    research-paper-generation-skill
+$(Get-SkillCategories (Join-Path $RepoDir 'opencode_app\.opencode\skills'))
 
     Run 'opencode --list-skills' for detailed descriptions
     Run 'opencode --skill <name> \"prompt\"' to invoke a skill
@@ -1021,7 +1013,7 @@ civil-3d-skill, open3d-skill
     git                   For version control
 
   API Keys (prompted during setup):
-    ZAI_API_KEY           Required for web-reader, web-search-prime, zread
+    ZAI_API_KEY           Required for web-reader
                           Get from: https://z.ai
 
   GitHub Auth:
@@ -1057,6 +1049,11 @@ function Test-Dependencies {
 
     if (-not (Test-CommandExists "git")) {
         Write-LogWarn "git is not installed (recommended but not required)"
+    }
+
+    if (-not (Test-CommandExists "rg")) {
+        Write-LogWarn "rg (ripgrep) is not installed (recommended but not required)"
+        Write-LogWarn "  Install with: winget install BurntSushi.ripgrep.MSVC | scoop install ripgrep | choco install ripgrep"
     }
 
     if ($missing.Count -gt 0) {
@@ -1733,18 +1730,32 @@ function Set-Configuration {
         # Copy config.json from the single source of truth (opencode_app/opencode.json).
         # Historically this copied deploy/config.json, but maintaining a duplicate
         # caused drift (see PLAN-BT-74 Phase 12.2). The resolver (run later in
-        # Deploy-Agents) patches this file in-place for primary/explore/general models.
+        # Deploy-Agents) patches this file in-place for explore/general models (and
+        # primary only if a provider/mix was chosen — local deploys ship no
+        # baked-in primary; the end user picks at runtime).
         $configSrc = $SourceConfig
         if (Test-Path $configSrc) {
             if (-not $DryRun) { Copy-Item $configSrc $ConfigFile -Force }
             Write-LogSuccess "config.json copied successfully (from $SourceConfig)"
 
+            # Deploy vibeguard secret-masking config (PLAN-GIT-315).
+            $vgSrc = Join-Path $RepoDir "opencode_app\.opencode\vibeguard.config.json"
+            if (Test-Path $vgSrc) {
+                $vgDest = Join-Path $ConfigDir "vibeguard.config.json"
+                if (-not $DryRun) { Copy-Item $vgSrc $vgDest -Force }
+                Write-LogSuccess "vibeguard.config.json deployed (secret masking active)"
+                $script:vgDeployed = $true
+            }
             # Install local Python MCP launchers (PLAN-GIT-262: markitdown-local-mcp).
             # Best-effort — non-fatal on offline/pip-missing.
             Install-LocalMcpLaunchers
 
+            # Install docling-mcp if --enable-pack docling was requested (PLAN-GIT-308).
+            # Heavy (~3-4 GB) — only runs when explicitly opted in.
+            Install-Docling
+
             Write-Host ""
-             Write-Host "Configured 38 agents:" -ForegroundColor Green
+             Write-Host "Configured $(Get-AgentCount (Join-Path $RepoDir 'opencode_app\.opencode\agents')) agents:" -ForegroundColor Green
             Write-Host "    - build (default) - Full-featured coding agent"
             Write-Host "    - plan - Planning agent (read-only)"
             Write-Host "    - explore - Codebase exploration and analysis"
@@ -1752,9 +1763,12 @@ function Set-Configuration {
             Write-Host "    - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
             Write-Host ""
             Write-Host "Configured MCP servers:" -ForegroundColor Green
-            Write-Host "    - Local (auto-start): atlassian, zai-vision-mcp-server, codegraph, mermaid"
-            Write-Host "    - Remote (needs key): web-reader, zread"
-            Write-Host "    - Available but disabled (opt-in): web-search-prime, next-devtools, markitdown"
+            Write-Host "    - Auto-start: codegraph, web-reader"
+            Write-Host "    - Opt-in per-project (.opencode/opencode.json): atlassian"
+            Write-Host "    - Available but disabled (opt-in): next-devtools, markitdown, docling, chrome-devtools"
+            if ($script:vgDeployed) {
+                Write-Host "Secret masking: active (vibeguard)" -ForegroundColor Green
+            }
             Write-Host ""
         } else {
             Write-LogError "config.json source not found: $SourceConfig"
@@ -1808,93 +1822,12 @@ function Deploy-Skills {
         }
          Write-LogSuccess "Skills copied successfully to $SkillsDir"
          
-        $skillCount = @(Get-ChildItem $SkillsDir -Directory -ErrorAction SilentlyContinue).Count
+        $skillCount = Get-SkillCount $SkillsDir
         Write-Host ""
         Write-Host "Deployed $skillCount skills to $SkillsDir" -ForegroundColor Green
         Write-Host ""
-        Write-Host "  Skill Categories:" -ForegroundColor Cyan
-          Write-Host "    Framework (19):"
-        Write-Host "      - test-generator-framework, linting-workflow"
-        Write-Host "      - pr-creation-workflow, pr-merge-workflow"
-        Write-Host "      - error-resolver-workflow, tdd-workflow"
-        Write-Host "      - docx-creation, xlsx-specialist, pdf-specialist"
-        Write-Host "      - frontend-design"
-        Write-Host "      - uiux-review-skill"
-        Write-Host "      - api-design-skill, openapi-contract-adherence-skill"
-        Write-Host "      - performance-optimization-skill"
-        Write-Host "      - srs-creation-skill"
-        Write-Host "      - brd-creation-skill"
-        Write-Host "      - technical-design-creation-skill"
-        Write-Host "      - vision-creation-skill"
-        Write-Host "      - interactive-document-rendering-skill"
-        Write-Host "    Language-Specific (8):"
-        Write-Host "      - python-pytest-creator, python-ruff-linter"
-        Write-Host "      - javascript-eslint-linter, changelog-python-cliff"
-        Write-Host "      - python-backend-skill, python-packaging-skill"
-        Write-Host "      - csharp-linter-skill, java-linter-skill"
-        Write-Host "    Presentation (3):"
-        Write-Host "      - pptx-generate-slide-skill, pptx-generate-template-skill"
-        Write-Host "      - pptx-template-modifier-skill"
-        Write-Host "    Office Utilities (2):"
-        Write-Host "      - ooxml-editing-skill, office-thumbnail-skill"
-        Write-Host "    Framework-Specific (10):"
-        Write-Host "      - nextjs-pr-workflow, nextjs-unit-test-creator"
-        Write-Host "      - nextjs-standard-setup, nextjs-image-usage"
-        Write-Host "      - nextjs-devtools-mcp"
-        Write-Host "      - amplify-nextjs-deployment"
-        Write-Host "      - typescript-dry-principle, accessibility-a11y-skill"
-        Write-Host "      - react-nextjs-antipatterns-skill"
-        Write-Host "      - threejs-nextjs-skill"
-        Write-Host "    OpenCode Meta (4):"
-        Write-Host "      - opencode-agent-creation, opencode-skill-creation"
-        Write-Host "      - opencode-skills-maintainer"
-        Write-Host "      - documentation-consistency-skill"
-        Write-Host "    OpenTofu (7):"
-        Write-Host "      - opentofu-aws-explorer, opentofu-keycloak-explorer"
-        Write-Host "      - opentofu-kubernetes-explorer, opentofu-neon-explorer"
-        Write-Host "      - opentofu-provider-setup, opentofu-provisioning-workflow"
-        Write-Host "      - opentofu-ecr-provision"
-         Write-Host "    Git/Workflow (13):"
-         Write-Host "      - ascii-diagram-creator, mermaid-diagram-creator"
-         Write-Host "      - ticket-plan-workflow-skill, plan-execution-skill"
-         Write-Host "      - plan-automation-loop-skill"
-        Write-Host "      - git-issue-labeler, git-issue-updater"
-        Write-Host "      - git-semantic-commits, semantic-release-convention"
-        Write-Host "      - git-compact-commits"
-        Write-Host "      - plan-updater"
-        Write-Host "      - version-bump-standard"
-        Write-Host "      - git-branch-workflow-setup-skill"
-        Write-Host "    Documentation (3):"
-        Write-Host "      - coverage-readme-workflow, docstring-generator"
-        Write-Host "      - documentation-sync-workflow"
-         Write-Host "    Academic & Research Writing (2):"
-         Write-Host "      - horseshoe-paper-writing-skill, research-paper-generation-skill"
-         Write-Host "    JIRA (3):"
-         Write-Host "      - jira-status-updater, jira-git-integration, jira-ticket-labeler"
-        Write-Host "    Code Quality (8):"
-        Write-Host "      - solid-principles, clean-code, clean-architecture"
-        Write-Host "      - design-patterns, object-design, code-smells"
-        Write-Host "      - complexity-management, deprecated-code-cleanup-skill"
-        Write-Host "    Agent Optimization (7):"
-        Write-Host "      - continuous-learning, eval-harness"
-        Write-Host "      - strategic-compact, verification-loop"
-        Write-Host "      - search-first, context-budget"
-        Write-Host "      - agent-introspection-debugging"
-        Write-Host "    Startup/Business (3):"
-        Write-Host "      - startup-pitch-deck-skill, startup-business-docs-skill"
-        Write-Host "      - construction-bd-skill"
-        Write-Host "    Configuration (3):"
-        Write-Host "      - microsoft-m365-config-skill, codegraph-setup-skill, markitdown-mcp-skill"
-        Write-Host "    Planning & Alignment (4):"
-        Write-Host "      - grilling-skill, domain-modeling-skill"
-        Write-Host "      - grill-with-docs-skill, grill-me-skill"
-        Write-Host "    Responsive & Visual Testing (2):"
-        Write-Host "      - wireframer-skill, playwright-responsive-audit-skill"
-        Write-Host "    CAD & Hardware Design (14):"
-        Write-Host "      - cad-generation-skill, cad-viewer-skill, cad-step-parts-skill"
-        Write-Host "      - cad-dxf-skill, cad-urdf-skill, cad-srdf-skill, cad-sdf-skill"
-        Write-Host "      - cad-sendcutsend-skill, cad-gcode-skill, cad-bambu-labs-skill"
-        Write-Host "      - cad-implicit-skill, autodesk-aps-skill, civil-3d-skill, open3d-skill"
+         Write-Host "  Skill Categories:" -ForegroundColor Cyan
+        Get-SkillCategories $SkillsDir
         Write-Host ""
         Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
         Write-Host ""
@@ -1912,7 +1845,8 @@ function Deploy-Skills {
 # ─────────────────────────────────────────────────────────────────────────────
 
 # Run the model resolver: injects concrete models into deployed agent .md files
-# and patches config.json (primary + explore + general). Sets $LASTEXITCODE.
+# and patches config.json (explore + general always; primary only if a
+# provider/mix chosen — local deploys omit a baked-in primary). Sets $LASTEXITCODE.
 function Invoke-Resolver {
     if (-not (Test-Path $ResolverScript)) {
         Write-LogError "Resolver not found: $ResolverScript"
@@ -1968,6 +1902,34 @@ function Invoke-PackMerger {
 
     Write-LogInfo "Applying provider packs: $EnablePack"
     & node $MergePacksScript --config $targetConfig --packs-dir $PacksDir --packs $EnablePack
+}
+
+# Apply the skill profile (GIT-333): rewrites ONLY the permission.skill block
+# of the DEPLOYED config (never the source opencode_app/opencode.json).
+# lean (default) -> 30 primary-visible skills + "*": "deny"; full -> verified
+# no-op. Mirrors Invoke-PackMerger's dry-run contract (B1).
+function Invoke-SkillProfile {
+    if (-not (Test-Path $ApplySkillProfileScript)) {
+        Write-LogError "Skill-profile applier not found: $ApplySkillProfileScript"
+        return
+    }
+    if (-not (Test-Path $SkillProfilesFile)) {
+        Write-LogError "Skill profiles file not found: $SkillProfilesFile"
+        return
+    }
+
+    $targetConfig = $ConfigFile
+    if ($DryRun) {
+        $targetConfig = Join-Path $DryRunPreviewDir "opencode.json"
+        if (-not (Test-Path $targetConfig)) {
+            Write-LogError "Dry-run preview config not found: $targetConfig"
+            Write-LogError "The resolver must run first to stage the preview. Aborting skill-profile apply."
+            return
+        }
+    }
+
+    Write-LogInfo "Applying skill profile: $SkillProfile"
+    & node $ApplySkillProfileScript --config $targetConfig --profiles $SkillProfilesFile --profile $SkillProfile
 }
 
 # Validate -EnablePack names early (fail fast). Mirrors setup.sh's
@@ -2146,6 +2108,37 @@ function Install-LocalMcpLaunchers {
     }
 }
 
+# Install docling-mcp (heavy ~3-4 GB) — only when --enable-pack docling is
+# requested. Unlike markitdown (local-dir pip install), docling-mcp comes from
+# PyPI. First convert downloads ~hundreds of MB of models from huggingface.co.
+# Mirrors install_docling() in setup.sh.
+function Install-Docling {
+    if (-not ($EnablePack -match '(^|,)docling(,|$)')) {
+        return
+    }
+
+    Write-Host ""
+    Write-LogInfo "Installing docling-mcp[local] (~3-4 GB with models)..."
+
+    # Prerequisite: python + pip
+    $pythonCmd = Get-Command python -ErrorAction SilentlyContinue
+    if (-not $pythonCmd) { $pythonCmd = Get-Command python3 -ErrorAction SilentlyContinue }
+    if (-not $pythonCmd) {
+        Write-LogWarn "python not found - cannot install docling-mcp. Install Python 3.10+ and re-run."
+        return
+    }
+    $python = if ($pythonCmd.Name -eq 'python') { 'python' } else { 'python3' }
+
+    Write-LogInfo "$python -m pip install --user docling-mcp[local]"
+    & $python -m pip install --user --no-warn-script-location "docling-mcp[local]" 2>&1 | Out-Null
+    if ($LASTEXITCODE -eq 0) {
+        Write-LogSuccess "docling-mcp installed"
+        Write-LogInfo "NOTE: first 'docling convert' will download ~hundreds of MB of models from huggingface.co (cached thereafter)."
+    } else {
+        Write-LogWarn "pip install failed for docling-mcp (offline or OOM?). The pack is opt-in - OpenCode will work without it. Re-run setup when online to enable."
+    }
+}
+
 # ─────────────────────────────────────────────────────────────────────────────
 # PLUGIN DEPLOYMENT
 # ─────────────────────────────────────────────────────────────────────────────
@@ -2182,6 +2175,7 @@ function Setup-OpencodeInitShim {
     if ($pathDirs -notcontains $userBin) {
         Write-LogWarn "$userBin is not on your PATH. Add it to use opencode-init."
     }
+    Write-LogInfo "Tip: individual skills/agents can also be installed via: npx github:darellchua2/opencode-config-template add <name>"
 }
 
 function Deploy-Plugins {
@@ -2197,9 +2191,11 @@ function Deploy-Plugins {
         New-Item -ItemType Directory -Path $PluginsDestDir -Force | Out-Null
     }
 
-    # Copy each plugin subdirectory (skip dotfiles, _archived, node_modules).
+    # Copy each plugin file/subdirectory (skip dotfiles, _archived, node_modules).
+    # Mirrors setup.sh which copies BOTH top-level .ts plugin files (e.g.
+    # ponytail-scoped.ts, learnings-autoinject.ts) AND plugin subdirectories.
     $count = 0
-    Get-ChildItem -Path $PluginsSrcDir -Directory -ErrorAction SilentlyContinue | ForEach-Object {
+    Get-ChildItem -Path $PluginsSrcDir -ErrorAction SilentlyContinue | ForEach-Object {
         if ($_.Name -match '^\.|_archived|^node_modules$') { return }
         Copy-Item $_.FullName $PluginsDestDir -Recurse -Force
         $count++
@@ -2258,6 +2254,15 @@ function Deploy-Agents {
             Write-LogError "Provider-pack application failed"
             return
         }
+    }
+
+    # Apply skill profile (-SkillProfile lean|full, default lean). Runs LAST so
+    # the rewrite lands on the final resolved+packed config. Subagents are
+    # unaffected (frontmatter allows, GIT-333 Phase 1).
+    Invoke-SkillProfile
+    if ($LASTEXITCODE -ne 0) {
+        Write-LogError "Skill-profile application failed"
+        return
     }
 
     # Count deployed agents by mode
@@ -2552,6 +2557,8 @@ function Invoke-AutoUpdate {
             $agentsDest = Join-Path $ConfigDir "AGENTS.md"
             if (Test-Path $agentsDest) { Copy-Item $agentsDest (Join-Path $backupDir "AGENTS.md") }
             if (Test-Path $SkillsDir) { Copy-Item $SkillsDir (Join-Path $backupDir "skills") -Recurse }
+            $vgCfgUpd = Join-Path $ConfigDir "vibeguard.config.json"
+            if (Test-Path $vgCfgUpd) { Copy-Item $vgCfgUpd (Join-Path $backupDir "vibeguard.config.json") }
             Remove-OldBackups
         }
 
@@ -2649,8 +2656,16 @@ function Show-Summary {
     $skillCount = @(Get-ChildItem $SkillsDir -Directory -ErrorAction SilentlyContinue).Count
     if ($skillCount -gt 0) {
         Write-Host "  [OK] skills: $skillCount skills deployed to $SkillsDir\" -ForegroundColor Green
+        Write-Host "  [OK] skill profile: $SkillProfile (primary-visible skills in permission.skill)" -ForegroundColor Green
     } else {
         Write-Host "  [X] skills: Not deployed"
+    }
+
+    $vgSummary = Join-Path $ConfigDir "vibeguard.config.json"
+    if (Test-Path $vgSummary) {
+        Write-Host "  [OK] Secret masking: active (vibeguard)" -ForegroundColor Green
+    } else {
+        Write-Host "  [X] Secret masking: vibeguard.config.json not deployed"
     }
 
     Write-Host ""
@@ -2692,34 +2707,30 @@ function Show-NextSteps {
     Write-Host "  2. Start LM Studio: http://127.0.0.1:1234/v1"
     Write-Host "  3. Verify installation: opencode --version"
     Write-Host ""
-    Write-Host "Agents (38):"
+    Write-Host "Agents (36):"
     Write-Host "  - build (default) - Full-featured coding agent"
     Write-Host "  - plan - Planning agent (read-only)"
     Write-Host "  - explore - Codebase exploration and analysis"
     Write-Host "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
     Write-Host "  - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
-    Write-Host "  - ... and 34 more agents"
+    Write-Host "  - ... and $((Get-AgentCount (Join-Path $RepoDir 'opencode_app\.opencode\agents')) - 5) more agents"
     Write-Host ""
     Write-Host "  Usage: opencode --agent <name> `"prompt`""
     Write-Host "         opencode `"prompt`" (uses build)"
      Write-Host ""
     Write-Host "=====================================================================" -ForegroundColor White
-      Write-Host "                     123 Skills Available" -ForegroundColor White
+      Write-Host "                     $(Get-SkillCount (Join-Path $RepoDir 'opencode_app\.opencode\skills')) Skills Available" -ForegroundColor White
      Write-Host "=====================================================================" -ForegroundColor White
+      Write-Host ""
+      Get-SkillCategories (Join-Path $RepoDir 'opencode_app\.opencode\skills')
      Write-Host ""
-     Write-Host "  Framework (19) • Language-Specific (8) • Presentation (3)"
-      Write-Host "  Office Utilities (2) • Framework-Specific (10) • OpenCode Meta (4)"
-      Write-Host "  OpenTofu (7) • Git/Workflow (13) • Documentation (3) • JIRA (3) • Code Quality (8)"
-      Write-Host "  Agent Optimization (7) • Planning & Alignment (4) • Academic & Research Writing (2)"
-     Write-Host "  Responsive & Visual Testing (2)"
-     Write-Host "  CAD & Hardware Design (14)"
-    Write-Host ""
     Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
     Write-Host "  Run 'opencode --skill <name> `"prompt`"' to invoke a skill"
     Write-Host ""
-     Write-Host "MCP Servers (6):"
-     Write-Host "  Local (auto-start): atlassian, zai-vision-mcp-server, codegraph"
-     Write-Host "  Remote (needs key): web-reader, web-search-prime, zread"
+     Write-Host "MCP Servers:"
+     Write-Host "  Auto-start: codegraph, web-reader"
+     Write-Host "  Opt-in per-project: atlassian"
+     Write-Host "  Opt-in global packs: next-devtools, markitdown, docling, chrome-devtools (+ autodesk pack adds 4)"
     Write-Host ""
     Write-Host "  Auth: opencode mcp auth atlassian / opencode mcp auth github"
     Write-Host ""

@@ -1,11 +1,10 @@
 ---
 name: startup-business-docs-skill
-description: "Business document workflow patterns for startup founders — detailed guides for reports, quotations, spreadsheets, presentations, and communications with professional formatting standards."
+description: >-
+  Business document workflows for startup founders — reports, quotations,
+  spreadsheets, presentations with professional formatting.
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers, startup-founders
-  workflow: business-documents
 category: Startup/Business
 ---
 

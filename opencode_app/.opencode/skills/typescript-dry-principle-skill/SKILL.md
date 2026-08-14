@@ -4,8 +4,6 @@ description: Apply DRY principle to eliminate code duplication in TypeScript pro
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: developers
-  workflow: code-refactoring
   protocol: autoresearch-opt-in
 category: Framework-Specific
 ---

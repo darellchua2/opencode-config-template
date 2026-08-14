@@ -3,9 +3,6 @@ name: opentofu-aws-explorer-skill
 description: Explore and manage AWS cloud infrastructure resources using OpenTofu/Terraform
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: cloud-infrastructure
 category: OpenTofu
 ---
 

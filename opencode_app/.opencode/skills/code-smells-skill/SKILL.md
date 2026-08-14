@@ -4,9 +4,6 @@ description: Detect and fix code smells including long methods, large classes, f
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: developers
-  workflow: code-quality
-  languages: language-agnostic
   protocol: autoresearch-opt-in
 category: Code Quality
 ---

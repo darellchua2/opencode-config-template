@@ -1,12 +1,11 @@
 ---
 name: performance-optimization-skill
-description: Identify and fix performance bottlenecks — profiling (cProfile, Chrome DevTools), caching strategies (Redis, memoization, CDN), bundle size analysis, lazy loading, N+1 query detection, and memory leak detection
+description: >-
+  Identify and fix performance bottlenecks — profiling, caching (Redis, CDN,
+  memoization), bundle size, lazy loading, N+1 detection, memory leaks.
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: developers
-  workflow: performance
-  languages: typescript, python, javascript
   protocol: autoresearch-opt-in
 category: Framework
 ---

@@ -1,11 +1,10 @@
 ---
 name: cad-implicit-skill
-description: Create, edit, render, and snapshot browser-native implicit CAD `.implicit.js` and `.implicit.mjs` files using GLSL signed-distance fields, shader primitives, smooth booleans, TPMS fields, and direct CAD Viewer raymarch rendering. Experimental.
+description: >-
+  Create and render browser-native implicit CAD (.implicit.js/.mjs) — GLSL
+  signed-distance fields, smooth booleans, TPMS fields. Experimental.
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: engineers, robotics-developers, hardware-designers, makers
-  workflow: implicit-cad
 category: CAD & Hardware Design
 ---
 

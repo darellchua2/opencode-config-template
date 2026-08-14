@@ -1,12 +1,10 @@
 ---
 name: python-packaging-skill
-description: Configure Python packaging for both applications and libraries — pyproject.toml standards, Poetry, uv, setuptools, hatch, dependency management, virtual environments, publishing to PyPI, and build systems
+description: >-
+  Python packaging for apps and libraries — pyproject.toml, Poetry, uv,
+  setuptools, hatch, dependency management, PyPI publishing.
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: packaging
-  languages: python
 category: Language-Specific
 ---
 

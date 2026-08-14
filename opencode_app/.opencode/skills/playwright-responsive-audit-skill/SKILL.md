@@ -1,11 +1,12 @@
 ---
 name: playwright-responsive-audit-skill
-description: "Methodology for auditing and fixing responsive UI defects in Next.js projects using Playwright. Defines 6 detection assertions, 3 fix-confidence tiers, and a closed detect-fix-re-verify loop. Loaded by responsive-audit-subagent. Not auto-triggered — invoked exclusively via permission.skill by the audit subagent."
+description: >-
+  Responsive-audit methodology — 6 Playwright detection assertions, 3
+  fix-confidence tiers, detect-fix-re-verify loop. Loaded by
+  responsive-audit-subagent only, not auto-triggered.
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: developers
-  workflow: testing
   protocol: autoresearch-opt-in
 category: Responsive & Visual Testing
 ---
@@ -16,7 +17,7 @@ I define the methodology for auditing and fixing responsive UI defects in Next.j
 
 ## When to use me
 
-Loaded exclusively by `responsive-audit-subagent` via `permission.skill`. Not auto-triggered. The primary session orchestrates the closed loop and spawns the subagent per-iteration.
+Loaded exclusively by `responsive-audit-subagent` via `permission.skill`. Not auto-triggered. The primary session spawns the subagent once; the subagent runs the closed loop internally over a persistent PTY session (detect→fix→re-verify), delegating only screenshot review to `image-analyzer-subagent`.
 
 ## Prerequisite: Playwright Setup
 
@@ -588,6 +589,53 @@ Complex restructures that require human judgment or design decisions:
 
 ---
 
+## PTY Execution Strategy (Display-Branched)
+
+The closed loop runs many detect→fix→re-verify iterations. Booting Playwright + chromium fresh each iteration (batch `bash`) wastes 5-15s of cold start per cycle and gives no streaming. Instead, **keep a persistent PTY session** for the test runner and read results incrementally. PTY tools (`pty_spawn`/`pty_read`/`pty_write`/`pty_kill`/`pty_list`) are ungated in opencode (not a permission key) and available to any agent.
+
+### Step L0: Detect Display
+
+```bash
+# DISPLAY set (native X/Wayland) OR xvfb-run available (virtual framebuffer)
+if [ -n "$DISPLAY" ] || command -v xvfb-run >/dev/null 2>&1; then
+  echo "DISPLAY_AVAILABLE"
+else
+  echo "HEADLESS"
+fi
+```
+
+### Strategy A — `watch-ui` (DISPLAY_AVAILABLE)
+
+Interactive Playwright modes auto-re-run on file save, collapsing edit→retest into one live loop. Requires a display (native or `xvfb-run`).
+
+- **Watch-verify:** `pty_spawn` a persistent `npx playwright test --ui` (or `xvfb-run -a npx playwright test --ui`). Edit a `.tsx` → affected tests re-run automatically → `pty_read` the streamed result. No manual re-invocation per iteration.
+- **Spec authoring:** `pty_spawn npx playwright codegen <url>` to record real selectors into `e2e/responsive/*.spec.ts` by driving the page, instead of hand-writing.
+- **Root-cause (Tier 3):** `pty_spawn npx playwright test --debug <spec>` to step through a failing assertion and inspect the DOM at the breakpoint — can promote Tier 3 "report only" to fixable.
+
+> **xvfb caveat:** under pure `xvfb-run` (no forwarded display), `--ui` auto-watch + streamed stdout work, but `codegen`/`--debug` open GUI inspector windows an agent cannot drive interactively. Step-through/interactive recording needs a real or forwarded display. Strategy B's `pty_read` + early-abort gives the same core value headlessly.
+
+### Strategy B — `stream-shell` (HEADLESS, e.g. Docker standalone / CI)
+
+No display → no `--ui`/`--debug`/`codegen`. Still beats batch:
+
+- **Persistent shell:** `pty_spawn` one bash session; run `npx playwright test` there. Re-run via up-arrow / `!!` history — process spawn amortized, shell warm.
+- **Streaming + early-abort:** `pty_read` to see the first failure within seconds; `pty_write "\x03"` (Ctrl+C) to abort once the first defect is confirmed instead of waiting for the full suite.
+- **Live report:** `pty_spawn npx playwright show-report` keeps the HTML report server alive across iterations; query it via webfetch rather than re-opening static HTML per run.
+
+### PTY tool mapping
+
+| Action | Tool |
+|---|---|
+| Start runner / shell / codegen / report | `pty_spawn` (set `title`, e.g. `"PW watch"`) |
+| Read streamed test output | `pty_read` (high offset to tail recent lines) |
+| Abort a run early | `pty_write` with `"\x03"` |
+| Send a re-run command / input | `pty_write` with `"npx playwright test\n"` |
+| End the session | `pty_kill` (cleanup: true) |
+
+> **Fallback:** if `pty_*` tools are unavailable in a deployment, the loop degrades to batch `bash` (the original behavior) — slower but correct. PTY is an optimization, not a dependency.
+
+---
+
 ## Closed-Loop Iteration Pattern
 
 ```
@@ -617,6 +665,8 @@ Complex restructures that require human judgment or design decisions:
 ```
 
 **Max iterations:** 5. If no progress is made in an iteration (delta == 0), stop and escalate remaining Tier 2/3 defects.
+
+**Execution:** Steps 1 (DETECT) and 4 (RE-VERIFY) run against the persistent PTY session from the [PTY Execution Strategy](#pty-execution-strategy-display-branched) — `pty_read` for results, not fresh `bash` per iteration. Strategy A auto-re-runs on file save; Strategy B re-invokes in the warm shell.
 
 ---
 
@@ -707,7 +757,7 @@ All projects should use `storageState: 'e2e/.auth/user.json'` for authenticated 
 | Subagent | Relationship |
 |---|---|
 | `image-analyzer-subagent` | Receives screenshots for visual verification of Tier 2 fixes |
-| `loop-operator-subagent` | Primary session uses this to manage the closed-loop iteration |
+| `loop-operator-subagent` | Optional outer-loop orchestrator. With PTY the detect→fix→re-verify loop is internal to this skill/subagent, so `loop-operator` is only needed for cross-skill orchestration, not the responsive loop itself. |
 
 ## Iteration Protocol (opt-in)
 

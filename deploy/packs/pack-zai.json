@@ -1,9 +1,0 @@
-{
-  "$comment": "Provider pack: Z.AI web-search-prime MCP server. Deep-merged by deploy/merge-packs.mjs when the user passes --enable-pack zai. NOTE: the base opencode.json has no zai-web-search-prime* key in the tools map (the other zai-* servers default to enabled:true), so this pack ADDS the tools key rather than flipping an existing one. Requires ZAI_API_KEY.",
-  "mcp": {
-    "zai-web-search-prime": { "enabled": true }
-  },
-  "tools": {
-    "zai-web-search-prime*": true
-  }
-}
