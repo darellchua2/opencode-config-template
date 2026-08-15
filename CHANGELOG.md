@@ -2,6 +2,44 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.27.0](https://github.com/darellchua2/opencode-config-template/compare/v4.26.3...v4.27.0) (2026-08-15)
+
+### Features
+
+* **agents:** scope subagent-only skills via frontmatter allows ([56ad174](https://github.com/darellchua2/opencode-config-template/commit/56ad174146e34cc131bb927f4974b0c9b65266c8))
+* **config:** default atlassian and dead zai MCP servers to opt-in ([719b3d3](https://github.com/darellchua2/opencode-config-template/commit/719b3d3bef1956e4bf9b655a5b50c4b73ad1c441))
+* **deploy:** add --skill-profile lean|full option ([781ce8e](https://github.com/darellchua2/opencode-config-template/commit/781ce8e88f734626c9d02e4aac065c15a077dcbe))
+* **skills:** add opencode-repo-setup-skill as per-project MCP frontend ([33d4f4c](https://github.com/darellchua2/opencode-config-template/commit/33d4f4c937d222ba86505bfb81eef6f8db768f5b))
+
+### Bug Fixes
+
+* **skills:** add MCP availability guards to JIRA-dependent skills and subagents ([44d605b](https://github.com/darellchua2/opencode-config-template/commit/44d605baadb7c1071f2175c85e0beb5d91099c61))
+* **skills:** correct repo-setup config path and add jq merge procedure ([ed4cf2d](https://github.com/darellchua2/opencode-config-template/commit/ed4cf2d2e5e0befef730640baccb07b87c69c1b7))
+* **skills:** reroute vision MCP references to native vision tier ([03cd313](https://github.com/darellchua2/opencode-config-template/commit/03cd313dd7bbf7f77d3fe1bb03567974ce6872cb)), closes [#294](https://github.com/darellchua2/opencode-config-template/issues/294)
+* **tests:** align docling routing grep with pointer-style deploy AGENTS.md ([3baa2af](https://github.com/darellchua2/opencode-config-template/commit/3baa2af9a38652aa500bcd32774879f94012362e))
+* **tests:** commit skill_profiles count updates for lean-30 (missed in 33d4f4c) ([7ef3eef](https://github.com/darellchua2/opencode-config-template/commit/7ef3eef6ad036b2f1c005466d6a569e2f7595ac8))
+* **tests:** derive Configuration category count from registry.json ([ab6da1a](https://github.com/darellchua2/opencode-config-template/commit/ab6da1a5b906341af7568e63e3fae342a799bea2))
+
+### Code Refactoring
+
+* **agents:** slim subagent descriptions ([ed46ec3](https://github.com/darellchua2/opencode-config-template/commit/ed46ec3607632d3d17a50cbae9622234d0a14535))
+* **mcp:** make autodesk servers pack-only opt-in ([8ed73e3](https://github.com/darellchua2/opencode-config-template/commit/8ed73e317fb6ab074d30c8a4f2f17ab54bfd720a))
+* **mcp:** remove mermaid and web-search-prime servers, go inline-diagram ([161c21d](https://github.com/darellchua2/opencode-config-template/commit/161c21d4ed50f033acd32f30a66f157aca712411))
+* **mcp:** remove redundant zai-vision-mcp-server and zai-zread entries ([eb908f1](https://github.com/darellchua2/opencode-config-template/commit/eb908f133315e4857ba0718096be901b23336d67))
+* **rules:** move CodeGraph/LSP routing to project-level rule blocks ([cdd0ceb](https://github.com/darellchua2/opencode-config-template/commit/cdd0cebcb4f6e57e3d66f00249b89786f2cc9b55))
+* **skills:** enforce lean frontmatter contract across catalog ([fd05c73](https://github.com/darellchua2/opencode-config-template/commit/fd05c7347c1bb29449494055681b36806268027c))
+* **skills:** merge codegraph-setup-skill into repo-setup Step 4 ([a72196a](https://github.com/darellchua2/opencode-config-template/commit/a72196a96759fa2d798dca6208f724adacd50de9))
+
+### Documentation
+
+* **agents:** condense agent and skill frontmatter descriptions ([c804a57](https://github.com/darellchua2/opencode-config-template/commit/c804a572bd36c46221397326c88e7921955fc1c9))
+* **plan:** add PLAN-GIT-333 for skill-profile context reduction ([3aa999f](https://github.com/darellchua2/opencode-config-template/commit/3aa999fa74454e15b87ceccaf64fd3a17c7fe56b))
+* **plan:** extend PLAN-GIT-333 phases 6-8 (MCP opt-in + repo-setup skill) ([7d5b5ac](https://github.com/darellchua2/opencode-config-template/commit/7d5b5ac805b2d1c93832c67ecb4cbda39e7b4def))
+* **plan:** trace PLAN-GIT-333 completion (PR [#334](https://github.com/darellchua2/opencode-config-template/issues/334)) ([8a82e4e](https://github.com/darellchua2/opencode-config-template/commit/8a82e4e1f88b8af75091fe2285e355dbfc16835b))
+* **plan:** trace PLAN-GIT-333 phases 6-8 (PR [#334](https://github.com/darellchua2/opencode-config-template/issues/334) extended) ([60234b6](https://github.com/darellchua2/opencode-config-template/commit/60234b65c22edf95b1c4548e5e4de2b1c2197ae1)), closes [#333](https://github.com/darellchua2/opencode-config-template/issues/333)
+* **setup:** add combination-install examples to setup help ([8414391](https://github.com/darellchua2/opencode-config-template/commit/8414391bf3da7f9051e7bdf242f882eefa953240))
+* sync skill-profile docs and LEARNINGS ([5fa6f15](https://github.com/darellchua2/opencode-config-template/commit/5fa6f15975caa0aca02690f018b4437aaa051dd9))
+
 ## [4.26.3](https://github.com/darellchua2/opencode-config-template/compare/v4.26.2...v4.26.3) (2026-08-12)
 
 ### Bug Fixes
