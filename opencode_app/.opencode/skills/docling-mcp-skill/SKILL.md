@@ -1,12 +1,12 @@
 ---
 name: docling-mcp-skill
-description: "Reference and workflows for docling — a layout-aware document extraction engine for complex tables, multi-column layouts, and scanned PDFs where markitdown returns garbage. Covers CLI-on-demand (codegraph-init analog — detect, ask consent, pip install, convert), optional persistent MCP tier (--enable-pack docling), trust-boundary honesty (HuggingFace model download breaks markitdown's zero-TCP guarantee), consent policy, and escalation routing. Triggers on docling, layout-aware extraction, complex table extraction, scanned PDF OCR, markitdown insufficient."
+description: >-
+  Docling reference and workflows — layout-aware extraction for complex tables,
+  multi-column, scanned PDFs where markitdown fails. CLI and MCP tiers, consent
+  policy. Triggers: docling, scanned PDF OCR, markitdown insufficient.
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: developers
-  workflow: document-conversion
-  scope: binary-doc-layout-extraction
   pattern: cli-on-demand
 category: Configuration
 ---

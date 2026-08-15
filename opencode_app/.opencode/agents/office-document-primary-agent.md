@@ -1,5 +1,7 @@
 ---
-description: Unified primary agent for office document operations (docx, pptx, xlsx). Routes to specialized subagents based on file type.
+description: >-
+  Routes office document operations (docx, pptx, xlsx) to specialized subagents
+  by file type.
 mode: subagent
 steps: 25
 permission:

@@ -3,10 +3,6 @@ name: java-linter-skill
 description: Ensure Java code follows industry standards using Checkstyle, PMD, and SpotBugs with linting-workflow framework
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: code-quality
-  languages: java
 category: Language-Specific
 ---
 

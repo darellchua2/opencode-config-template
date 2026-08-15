@@ -1,5 +1,7 @@
 ---
-description: Specialized subagent for documentation generation. Creates docstrings, README coverage badges, and technical documentation following language-specific standards (PEP 257, Javadoc, JSDoc, XML documentation).
+description: >-
+  Documentation generation — docstrings, README coverage badges, technical docs
+  per language standards (PEP 257, Javadoc, JSDoc, XML).
 mode: subagent
 permission:
   read:
@@ -15,6 +17,9 @@ permission:
     docstring-generator-skill: allow
     coverage-readme-workflow-skill: allow
     markitdown-mcp-skill: allow
+    ascii-diagram-creator-skill: allow
+    horseshoe-paper-writing-skill: allow
+    research-paper-generation-skill: allow
 category: docs
 ---
 

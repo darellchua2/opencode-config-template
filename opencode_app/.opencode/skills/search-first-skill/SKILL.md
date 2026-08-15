@@ -1,12 +1,11 @@
 ---
 name: search-first-skill
-description: Research-before-coding workflow that searches for existing tools, libraries, and patterns before writing custom code, with a structured decision matrix for adopt-extend-compose-or-build choices
+description: >-
+  Research before coding — search existing tools, libraries, patterns first;
+  adopt/extend/compose/build decision matrix.
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: developers, agents
-  workflow: research, decision-making
-  trigger: explicit-only
   protocol: autoresearch-opt-in
 category: Agent Optimization
 ---

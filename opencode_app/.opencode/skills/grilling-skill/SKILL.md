@@ -1,13 +1,10 @@
 ---
 name: grilling-skill
-description: Interview the user relentlessly about a plan or design. Use when the user wants to stress-test a plan before building it, resolve a design decision tree, or uses any 'grill' trigger phrases. Asks one question at a time with a recommended answer.
+description: >-
+  Interview the user relentlessly to stress-test a plan or design — one question
+  at a time with a recommended answer. Any 'grill' trigger phrase.
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers, agents
-  workflow: planning, alignment
-  trigger: auto
-  version: "1"
 category: Planning & Alignment
 ---
 

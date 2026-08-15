@@ -3,9 +3,6 @@ name: opentofu-neon-explorer-skill
 description: Explore and manage Neon Postgres serverless database resources using OpenTofu/Terraform
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: database-management
 category: OpenTofu
 ---
 

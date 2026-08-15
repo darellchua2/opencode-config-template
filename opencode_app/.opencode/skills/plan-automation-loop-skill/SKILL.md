@@ -1,20 +1,13 @@
 ---
 name: plan-automation-loop-skill
-description: >
-  Fully-automated PLAN execution loop. Intended entry point is `/run-plan PLAN-*.md` (a dedicated
-  command that loads this skill — `/goal` stays generic). Implements each phase, then enforces a
-  verification gate — unit tests for newly added code, lint, build/typecheck, and Playwright e2e
-  when the phase touches frontend — records what was done + fixes applied under each step for
-  traceability, marks the phase checkbox, commits, pushes, and advances. Repeats until every phase
-  is complete. Triggers on: run-plan, implement the plan with full automation, fully implement PLAN,
-  execute plan fully, automation loop, implement PLAN-*.md, implement plan and commit per phase.
+description: >-
+  Fully-automated PLAN execution via /run-plan PLAN-*.md — implement phase,
+  verification gate (tests, lint, build, e2e), commit, push, advance until
+  complete. Triggers: run-plan, implement the plan with full automation,
+  automation loop, implement PLAN-*.md.
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: developers, agents
-  workflow: plan-execution, automation, verification, ci-gate, traceability
-  trigger: explicit-only
-  entry: "/run-plan PLAN-*.md"
   protocol: autoresearch-opt-in
 category: Git/Workflow
 ---

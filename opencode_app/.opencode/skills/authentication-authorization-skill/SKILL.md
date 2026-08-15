@@ -1,12 +1,10 @@
 ---
 name: authentication-authorization-skill
-description: Implement authentication and authorization patterns — OAuth2/OIDC flows, JWT best practices, session management, RBAC/ABAC, NextAuth/Auth.js, Passport.js, password hashing, and CSRF protection
+description: >-
+  Implement authentication and authorization — OAuth2/OIDC, JWT, sessions,
+  RBAC/ABAC, NextAuth/Auth.js, Passport.js, password hashing, CSRF.
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: authentication
-  languages: typescript, python
 category: Security
 ---
 

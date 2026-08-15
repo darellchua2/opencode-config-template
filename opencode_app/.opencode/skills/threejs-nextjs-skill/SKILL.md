@@ -1,22 +1,11 @@
 ---
 name: threejs-nextjs-skill
 description: >-
-  Three.js + Next.js (App Router / React 19) integration guidance with
-  MANDATORY version detection. Covers SSR/Server Component pitfalls,
-  Turbopack vs Webpack GLSL/bundler issues, hydration mismatches, StrictMode
-  WebGL context loss, persistent canvas across routes, R3F (React Three Fiber)
-  + drei ecosystem, WebXR/AR/VR via @react-three/xr, and the companion library
-  decision tree (drei, postprocessing, rapier, csg, leva, maath, meshline,
-  troika-three-text, three-mesh-bvh, gltfjsx, zustand). Use when working with
-  three.js, threejs, react-three-fiber, R3F, WebGL, WebXR, ARButton, VRButton,
-  or @react-three/* packages in a Next.js or React 19 project.
+  Three.js + Next.js (App Router, React 19) integration — SSR pitfalls, GLSL
+  bundling, hydration, WebGL context loss, R3F/drei, WebXR, companion-library
+  decision tree. Version detection first.
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers, frontend-developers, graphics-developers
-  workflow: integration-guidance
-  languages: [typescript, javascript]
-  frameworks: [three.js, react-three-fiber, next.js, react]
 category: Framework-Specific
 ---
 

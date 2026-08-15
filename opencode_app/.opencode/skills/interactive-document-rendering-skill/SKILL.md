@@ -1,13 +1,11 @@
 ---
 name: interactive-document-rendering-skill
-description: "Shared rendering standard for interactive HTML and Word (.docx) document outputs across document-creation skills. Defines left-sidebar HTML navigation, dark-mode-aware theming, color-aware text selection, self-contained HTML; and Word auto-TOC, hyperlinked headers/bookmarks, heading style map, and section page-breaks. SCOPE: HTML + DOCX only — .xlsx and .pptx are peer deliverables (linked, not embedded). Image interpretation routes to image-analyzer-subagent."
+description: >-
+  Shared rendering standard for HTML and Word (.docx) outputs across document
+  skills — sidebar HTML navigation, dark mode, self-contained HTML; Word
+  auto-TOC, hyperlinks, page-breaks. HTML and DOCX only.
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers, agents
-  workflow: document-rendering
-  trigger: referenced-by-skill
-  languages: html, markdown
 category: Framework
 ---
 

@@ -64,6 +64,7 @@
       "version-bump-standard-skill": "allow",
 
       "opencode-agent-creation-skill": "allow",
+      "opencode-repo-setup-skill": "allow",
       "opencode-skill-creation-skill": "allow",
       "opencode-skills-maintainer-skill": "allow",
       "agent-introspection-debugging-skill": "allow",
@@ -87,7 +88,6 @@
       "performance-optimization-skill": "allow",
 
       "nextjs-devtools-mcp-skill": "allow",
-      "codegraph-setup-skill": "allow",
       "ascii-diagram-creator-skill": "allow",
       "mermaid-diagram-creator-skill": "allow",
 
@@ -125,16 +125,9 @@
     "tool": {
       "codegraph*": "allow",
       "atlassian*": "allow",
-      "mermaid*": "allow",
       "markitdown*": "deny",
       "docling*": "deny",
       "zai-web-reader*": "allow",
-      "zai-vision-mcp-server*": "deny",
-      "zai-zread*": "deny",
-      "autodesk-revit*": "deny",
-      "autodesk-model-data*": "deny",
-      "autodesk-fusion*": "deny",
-      "autodesk-help*": "deny",
       "next-devtools*": "deny"
     }
   },
@@ -194,7 +187,7 @@
         "mcp-remote",
         "https://mcp.atlassian.com/v1/mcp"
       ],
-      "enabled": true
+      "enabled": false
     },
     "zai-web-reader": {
       "type": "remote",
@@ -204,63 +197,6 @@
       },
       "enabled": true
     },
-    "zai-web-search-prime": {
-      "type": "remote",
-      "url": "https://api.z.ai/api/mcp/web_search_prime/mcp",
-      "headers": {
-        "Authorization": "Bearer {env:ZAI_API_KEY}"
-      },
-      "enabled": false
-    },
-    "zai-vision-mcp-server": {
-      "type": "local",
-      "command": ["npx", "-y", "@z_ai/mcp-server"],
-      "environment": {
-        "Z_AI_API_KEY": "{env:ZAI_API_KEY}",
-        "Z_AI_MODE": "ZAI"
-      },
-      "enabled": true
-    },
-    "zai-zread": {
-      "type": "remote",
-      "url": "https://api.z.ai/api/mcp/zread/mcp",
-      "headers": {
-        "Authorization": "Bearer {env:ZAI_API_KEY}"
-      },
-      "enabled": true
-    },
-    "autodesk-revit": {
-      "type": "remote",
-      "url": "https://mcp.autodesk.com/revit/v1",
-      "headers": {
-        "Authorization": "Bearer {env:AUTODESK_API_KEY}"
-      },
-      "enabled": false
-    },
-    "autodesk-model-data": {
-      "type": "remote",
-      "url": "https://mcp.autodesk.com/model-data/v1",
-      "headers": {
-        "Authorization": "Bearer {env:AUTODESK_API_KEY}"
-      },
-      "enabled": false
-    },
-    "autodesk-fusion": {
-      "type": "remote",
-      "url": "https://mcp.autodesk.com/fusion/v1",
-      "headers": {
-        "Authorization": "Bearer {env:AUTODESK_API_KEY}"
-      },
-      "enabled": false
-    },
-    "autodesk-help": {
-      "type": "remote",
-      "url": "https://mcp.autodesk.com/help/v1",
-      "headers": {
-        "Authorization": "Bearer {env:AUTODESK_API_KEY}"
-      },
-      "enabled": false
-    },
     "next-devtools": {
       "type": "local",
       "command": ["npx", "-y", "next-devtools-mcp@latest"],
@@ -268,14 +204,6 @@
         "NEXT_TELEMETRY_DISABLED": "1"
       },
       "enabled": false
-    },
-    "mermaid": {
-      "type": "local",
-      "command": ["npx", "-y", "@peng-shawn/mermaid-mcp-server"],
-      "environment": {
-        "CONTENT_IMAGE_SUPPORTED": "false"
-      },
-      "enabled": true
     },
     "markitdown": {
       "type": "local",

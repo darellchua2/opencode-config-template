@@ -1,5 +1,7 @@
 ---
-description: TypeScript/JavaScript code review subagent focusing on type safety, modern ES patterns, React/Node best practices, and framework-specific quality analysis
+description: >-
+  TypeScript/JavaScript code review — type safety, modern ES patterns,
+  React/Node best practices.
 mode: subagent
 steps: 25
 permission:
@@ -26,6 +28,8 @@ permission:
     typescript-dry-principle-skill: allow
     continuous-learning-skill: allow
     search-first-skill: allow
+    database-migration-skill: allow
+    deprecated-code-cleanup-skill: allow
 category: review
 ---
 

@@ -1,5 +1,7 @@
 ---
-description: Specialized subagent for code linting and quality checks. Handles Python Ruff, JavaScript/TypeScript ESLint, Java Spring Boot (Checkstyle/SpotBugs), C# .NET 10 (dotnet format/analyzers), and generic linting workflows across multiple programming languages and frameworks.
+description: >-
+  Code linting and quality checks — Python Ruff, JS/TS ESLint, Java
+  Checkstyle/SpotBugs, C# dotnet format/analyzers, generic workflows.
 mode: subagent
 permission:
   read:
@@ -20,6 +22,7 @@ permission:
     python-ruff-linter-skill: allow
     javascript-eslint-linter-skill: allow
     continuous-learning-skill: allow
+    csharp-linter-skill: allow
 category: meta
 ---
 

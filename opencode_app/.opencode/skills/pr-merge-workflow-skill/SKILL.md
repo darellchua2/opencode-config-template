@@ -1,9 +1,14 @@
 ---
 name: pr-merge-workflow-skill
-description: Post-merge workflow triggered by "pr merge to [branch]", "merge the PR", "merge it", "complete the PR". Merges PR, monitors GitHub Actions CI, auto-fixes failures, updates JIRA ticket status, and deletes source branch on success. Do NOT trigger for "create pr" — that is handled by pr-workflow-subagent.
+description: >-
+  Post-merge workflow — merges PR, monitors CI, auto-fixes failures, updates
+  JIRA, deletes source branch. Triggers: 'pr merge to [branch]', 'merge the PR',
+  'complete the PR'. Not 'create pr'.
 metadata:
   protocol: autoresearch-opt-in
 category: Framework
+license: Apache-2.0
+compatibility: opencode
 ---
 
 # PR Merge + Monitor + Fix Workflow

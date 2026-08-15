@@ -3,9 +3,6 @@ name: changelog-python-cliff-skill
 description: Generate automated changelogs for Python projects using git-cliff with PEP 440 versioning support
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: changelog-generation
 category: Language-Specific
 ---
 

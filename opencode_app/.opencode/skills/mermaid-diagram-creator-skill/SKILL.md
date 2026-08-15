@@ -1,24 +1,25 @@
 ---
 name: mermaid-diagram-creator-skill
-description: Create Mermaid diagrams using the Mermaid MCP server — SVG by default, no CLI install needed
+description: >-
+  Create Mermaid diagrams as Markdown fenced blocks (native GitHub/GitLab/VS
+  Code rendering); optional mmdc CLI for standalone SVG/PNG.
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: developers
-  workflow: diagram-generation
   protocol: autoresearch-opt-in
 category: Git/Workflow
 ---
 
 ## What I do
 
-I create professional Mermaid diagrams from natural language descriptions using the Mermaid MCP server. No global CLI install required — `npx` auto-provisions the server.
+I create professional Mermaid diagrams from natural language descriptions — no MCP server, no rendering service, zero tool overhead.
 
 1. **Parse Diagram Request**: Analyze the user's description to understand diagram type and structure
-2. **Generate Mermaid Syntax**: Create valid Mermaid `.mmd` source code
-3. **Render via MCP**: Use the `generate` tool from the Mermaid MCP server to produce SVG (default) or PNG
-4. **Save Source Files**: Preserve `.mmd` files for future editing
-5. **Handle Complex Diagrams**: Split large diagrams into multiple files when needed
+2. **Generate Mermaid Syntax**: Create valid Mermaid source code
+3. **Embed Inline (default)**: Write a fenced ` ```mermaid ` block directly into the target `.md` file — GitHub, GitLab, and VS Code preview render it natively
+4. **Optional File Render**: When a standalone image is required, render via `npx -y @mermaid-js/mermaid-cli` (`mmdc`)
+5. **Preserve Sources**: Keep `.mmd` files alongside rendered output when file rendering is used
+6. **Handle Complex Diagrams**: Split large diagrams into multiple blocks/files when needed
 
 Supported diagram types:
 - Flowcharts (TD, LR, BT, RL)
@@ -43,43 +44,26 @@ Use this workflow when:
 - You need to document code logic or system flows visually
 - You want diagrams that can be edited later (source `.mmd` files preserved)
 
-## MCP Server
+## Rendering (no MCP)
 
-This skill uses the **Mermaid MCP server** (`@peng-shawn/mermaid-mcp-server`), which is pre-configured in `config.json` / `opencode.json`.
+**Default — inline block.** For diagrams integrated into Markdown (READMEs, PLAN files, ADRs), write the diagram directly into the `.md` as a fenced code block. GitHub/GitLab/VS Code render it natively; the source stays text (diffable, greppable, zero tokens beyond the diagram itself):
 
-- **npm**: `@peng-shawn/mermaid-mcp-server`
-- **GitHub**: https://github.com/peng-shawn/mermaid-mcp-server
-- **License**: MIT
-- **Rendering engine**: Puppeteer (headless Chrome)
-- **Config**: `CONTENT_IMAGE_SUPPORTED=false` — saves files to disk instead of inline images
+````
+```mermaid
+flowchart TD
+    A[Start] --> B{Decision}
+```
+````
 
-The MCP server exposes a single tool: **`generate`**
+**Optional — standalone file via `mmdc`.** Only when an actual image file is needed (pandoc/LaTeX pipelines, slide decks, contexts that don't render mermaid):
 
-### `generate` Tool Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `code` | string | Yes | — | Mermaid syntax code |
-| `name` | string | No | `"diagram"` | Output filename (without extension) |
-| `folder` | string | No | `"diagrams"` | Output directory path |
-| `outputFormat` | string | No | `"png"` | `"svg"` or `"png"` |
-| `theme` | string | No | `"default"` | `"default"`, `"dark"`, `"forest"`, `"neutral"`, `"null"` |
-| `backgroundColor` | string | No | `"white"` | Background color (e.g., `"white"`, `"transparent"`) |
-
-### Configuration (already in config.json)
-
-```json
-"mermaid": {
-  "type": "local",
-  "command": ["npx", "-y", "@peng-shawn/mermaid-mcp-server"],
-  "environment": {
-    "CONTENT_IMAGE_SUPPORTED": "false"
-  },
-  "enabled": true
-}
+```bash
+npx -y @mermaid-js/mermaid-cli -i diagram.mmd -o diagram.svg -b white
 ```
 
-Tool permission: `"mermaid*": true`
+- `mmdc` flags: `-t <theme>` (default/dark/forest/neutral), `-b <background>` (white/transparent), output format inferred from extension (`.svg`/`.png`)
+- First `npx` run downloads mermaid-cli (needs Node 18+); rendering uses Puppeteer (headless Chrome)
+- Also available: paste the syntax into https://mermaid.live for a quick visual check without any install
 
 ## Steps
 
@@ -136,39 +120,21 @@ flowchart TD
 EOF
 ```
 
-### Step 5: Render via MCP `generate` Tool
+### Step 5: Deliver the Diagram
 
-Call the `generate` tool with the Mermaid code. Use SVG as the default format:
+**Default — inline**: write the fenced ` ```mermaid ` block directly into the target `.md` (PLAN, README, ADR). No tool calls needed.
 
-**Example: SVG (default, recommended)**:
-```
-Tool: generate
-Parameters:
-  code: "flowchart TD\n    A[Start] --> B{Decision}\n    B -->|Yes| C[Action 1]\n    B -->|No| D[Action 2]\n    C --> E[End]\n    D --> E"
-  name: "architecture"
-  folder: "PLANS/PLAN-GIT-136"
-  outputFormat: "svg"
-  theme: "default"
-  backgroundColor: "white"
-```
+**Standalone file** (only when an image file is required):
 
-**Example: PNG (when raster images are needed)**:
-```
-Tool: generate
-Parameters:
-  code: "flowchart TD\n    A[Start] --> B[Process]\n    ..."
-  name: "architecture"
-  folder: "PLANS/PLAN-GIT-136"
-  outputFormat: "png"
-  theme: "default"
-  backgroundColor: "white"
+```bash
+# Save the .mmd source first (same content as the block), then render:
+npx -y @mermaid-js/mermaid-cli -i PLANS/PLAN-GIT-136/architecture.mmd -o PLANS/PLAN-GIT-136/architecture.svg -b white
 ```
 
 ### Step 6: Verify and Report
 
-- Verify the output file was created successfully
-- Display the file paths to the user
-- Report both the `.mmd` source and rendered file
+- Inline: confirm the block is inside the target `.md` and fenced correctly (```mermaid)
+- File: verify the rendered output exists and report both `.mmd` source + rendered file paths
 
 ```bash
 ls -la PLANS/PLAN-GIT-136/architecture.*
@@ -325,18 +291,9 @@ PLANS/PLAN-GIT-136/
 
 ## Common Issues
 
-### MCP Server Not Starting
+### mmdc / Puppeteer / Chrome Issues
 
-**Issue**: `generate` tool not available
-
-**Solution**: The MCP server auto-starts via `npx`. Ensure:
-- Node.js 18+ is installed
-- The `mermaid` entry exists in `config.json` with `"enabled": true`
-- `"mermaid*": true` is in the `tools` section
-
-### Puppeteer/Chrome Issues
-
-**Issue**: Browser-related errors (Linux headless environments)
+**Issue**: Browser-related errors rendering files (Linux headless environments)
 
 **Solution**:
 ```bash
@@ -351,6 +308,8 @@ For Docker, add to Dockerfile:
 ```dockerfile
 RUN apt-get update && apt-get install -y chromium && rm -rf /var/lib/apt/lists/*
 ```
+
+Note: inline ` ```mermaid ` blocks are unaffected — they render client-side (GitHub/VS Code), no local browser needed.
 
 ### Mermaid Syntax Errors
 
@@ -376,45 +335,31 @@ RUN apt-get update && apt-get install -y chromium && rm -rf /var/lib/apt/lists/*
 
 ### ticket-plan-workflow-skill
 
-When creating plans for GitHub issues or JIRA tickets, diagrams are stored alongside PLAN files:
+When creating plans for GitHub issues or JIRA tickets, embed the diagram inline in the PLAN.md:
 
-**GitHub Issues**:
+````
+```mermaid
+flowchart TD
+    A[Start] --> B{Decision}
 ```
-generate tool:
-  code: <mermaid syntax>
-  name: "flow"
-  folder: "PLANS/PLAN-GIT-136"
-  outputFormat: "svg"
-```
+````
 
-Then reference in PLAN.md:
+Or, if a standalone file is needed: save `<name>.mmd` in `PLANS/PLAN-GIT-136/`, render with `mmdc`, then reference in PLAN.md:
 ```markdown
 ![Flow Diagram](./PLAN-GIT-136/flow.svg)
-```
-
-**JIRA Tickets**:
-```
-generate tool:
-  code: <mermaid syntax>
-  name: "architecture"
-  folder: "PLANS/PLAN-PROJ-123"
-  outputFormat: "svg"
 ```
 
 ## Troubleshooting Checklist
 
 Before creating the diagram:
-- [ ] Mermaid MCP server is configured and enabled in config.json
-- [ ] `mermaid*` tool permission is set to `true`
-- [ ] Output directory path is determined
+- [ ] Output target determined (inline `.md` block vs standalone file)
 - [ ] Diagram type is appropriate for the content
 - [ ] Mermaid syntax is valid
 
 After creating the diagram:
-- [ ] `.mmd` source file saved
-- [ ] Rendered file (.svg or .png) was created successfully
-- [ ] Files are in correct directory
-- [ ] File paths reported to user
+- [ ] Inline block fenced correctly, or rendered file (.svg/.png) created
+- [ ] `.mmd` source preserved when file rendering was used
+- [ ] Location/paths reported to user
 
 ## Iteration Protocol (opt-in)
 

@@ -246,13 +246,13 @@ Not every project needs all 36 agents + 130 skills. <!-- count: hand-maintained 
 
 | Preset | Agents | Skills | MCPs | Use for |
 |--------|--------|--------|------|---------|
-| `core` | explorer | git-semantic-commits, continuous-learning | codegraph, mermaid | Minimal baseline |
-| `review` | code-review + architecture + 5 language reviewers | 9 Code Quality | codegraph | Code quality gates |
-| `frontend` | nextjs-specialist + uiux-reviewer + responsive-audit | 14 (Next.js/React/Three.js/a11y) | next-devtools, chrome-devtools, codegraph, mermaid | Web frontend |
-| `backend` | python-reviewer | 10 (Python/DB/API/security/docker) | codegraph | Server / devops-lite |
-| `docs` | documentation + coverage + docx/pptx/xlsx + office-doc | 15 (document ladder) | mermaid | Document generation |
-| `devops` | repo-ops + opentofu-explorer | 26 (release/IaC/JIRA) | codegraph | Git / infra / release |
-| `business` | startup-founder + ceo + discovery + requirements + technical-design | 12 (BD/pitch/planning) | — | BD / founder workflows |
+| `core` | explorer | git-semantic-commits, continuous-learning | codegraph | Minimal baseline |
+| `review` | code-review + architecture + 5 language reviewers | 25 (Code Quality + auth/perf/logging/eval) | codegraph | Code quality gates |
+| `frontend` | nextjs-specialist + uiux-reviewer + responsive-audit | 19 (Next.js/React/Three.js/a11y) | next-devtools, chrome-devtools, codegraph | Web frontend |
+| `backend` | python-reviewer | 17 (Python/DB/API/security/docker) | codegraph | Server / devops-lite |
+| `docs` | documentation + coverage + docx/pptx/xlsx + office-doc | 21 (document ladder) | — (inline mermaid blocks need no MCP) | Document generation |
+| `devops` | repo-ops + opentofu-explorer | 31 (release/IaC/JIRA) | codegraph | Git / infra / release |
+| `business` | startup-founder + ceo + discovery + requirements + technical-design | 32 (BD/pitch/planning) | — | BD / founder workflows |
 | `research` | autoresearch-{ml,code,research} + loop-operator | 11 (autoresearch + papers) | codegraph | Autonomous loops (ml needs GPU) |
 | `cad` | cad-specialist | 14 (CAD & Hardware Design) | — | CAD / robotics / hardware |
 
@@ -326,18 +326,32 @@ nvm install 24
 
 ## MCP Servers
 
-The configuration ships 15 MCP server entries. **6 are enabled by default:**
+The configuration ships 7 MCP server entries. **2 are enabled by default:**
 
 | Server | Type | Purpose |
 |--------|------|---------|
 | `codegraph` | local (npx) | Pre-indexed code knowledge graph |
-| `atlassian` | local (npx) | JIRA and Confluence |
-| `zai-vision-mcp-server` | local (npx) | Image/video analysis |
-| `mermaid` | local (npx) | Mermaid diagram rendering (SVG) |
 | `zai-web-reader` | remote | Web page content extraction |
-| `zai-zread` | remote | GitHub repository search/reading |
 
-The remaining 9 (Autodesk, `next-devtools`, `web-search-prime`, `markitdown`, `docling`, `chrome-devtools`) are `enabled: false` and opt-in. To enable one, set `"enabled": true` (and grant its tools in the `permission.tool` block) in `config.json`.
+The remaining 5 are `enabled: false` and opt-in:
+
+| Server | Type | Purpose |
+|--------|------|---------|
+| `atlassian` | local (npx mcp-remote) | JIRA and Confluence (first use opens browser OAuth) |
+| `next-devtools` | local (npx) | Next.js DevTools integration |
+| `markitdown` | local | Document-to-Markdown (local-only) |
+| `docling` | local | Layout-aware document extraction (~3-4 GB) |
+| `chrome-devtools` | local | Live Chrome automation |
+
+The 4 Autodesk servers are **not shipped in the base config** — the `autodesk` provider pack below adds their full definitions at deploy time (needs `AUTODESK_API_KEY`).
+
+To enable one **for a single project**, add a `.opencode/opencode.json` in the repo (project config merges over the global one — project wins):
+
+```json
+{ "mcp": { "atlassian": { "enabled": true } } }
+```
+
+To enable one **globally**, set `"enabled": true` in `config.json`, or use a provider pack below. The `opencode-repo-setup-skill` automates per-project enablement interactively.
 
 #### Provider Packs — deploy-time MCP toggle (#268)
 
@@ -345,11 +359,10 @@ Instead of editing 4–9 JSON entries to enable a logical group of MCP servers, 
 
 | Pack | Servers enabled | Requires |
 |------|----------------|----------|
-| `autodesk` | autodesk-revit, autodesk-model-data, autodesk-fusion, autodesk-help | `AUTODESK_API_KEY` |
+| `autodesk` | **adds** autodesk-revit, autodesk-model-data, autodesk-fusion, autodesk-help (not in base config) | `AUTODESK_API_KEY` |
 | `markitdown` | markitdown | Python launcher (auto-installed by `setup.sh`; baked into Docker image) |
 | `docling` | docling | Python + `docling-mcp[local]` (~3-4 GB; first convert downloads models from huggingface.co) |
 | `nextjs` | next-devtools | A running Next.js dev server |
-| `zai` | zai-web-search-prime | `ZAI_API_KEY` |
 | `chrome-devtools` | chrome-devtools | Chrome stable installed locally (privacy-hardened: telemetry + CrUX OFF by default) |
 
 ```bash
@@ -368,6 +381,25 @@ docker compose build --build-arg OPENCODE_PACKS=autodesk,markitdown
 
 Default state of every pack is **OFF** — existing deployments are unaffected unless a pack is explicitly requested. Empty/omitted `--enable-pack` is a no-op. Unknown pack names exit non-zero with a clear error. See [`PLAN.md`](PLAN.md) (issue #268) for the full design and the opencode-tooling review that shaped it.
 
+#### Skill Profiles — deploy-time primary visibility (#333)
+
+Every allowed skill's `description` is injected into the primary session's context at startup (~90 tokens each). The shipped `opencode_app/opencode.json` allowlist (88 allows) is the **full** profile. For a context-lean primary, deploy with a **lean** profile: only 30 primary-visible skills + `"*": "deny"` (~3.9k tokens saved per session, measured).
+
+```bash
+./deploy/setup.sh                                # default: lean (30 primary-visible skills)
+./deploy/setup.sh --skill-profile full           # opt back in: shipped 88-allow allowlist verbatim
+./deploy/setup.sh --skill-profile lean --dry-run # preview the deployed permission.skill block
+./deploy/setup.ps1 -SkillProfile full            # Windows parity
+```
+
+Key properties:
+
+- Only the **deployed** copy's `permission.skill` block is rewritten (`deploy/apply-skill-profile.mjs`); the shipped `opencode.json` is never modified — `full` is a verified no-op.
+- **Subagents are profile-immune.** All 130 skills stay on disk and every skill has either a frontmatter `permission.skill: allow` consumer agent or a lean slot — nothing is orphaned under lean.
+- Lean-hidden skills cannot be `@`-loaded by the primary until re-exposed; re-exposing any skill is a one-line edit to `deploy/skill-profiles.json`.
+- Typo-guarded: a lean key that doesn't match a real skill directory or the shipped allowlist fails the deploy closed.
+
+
 > **Note — `markitdown` MCP server (PLAN-GIT-262).** Privacy-hardened document-to-Markdown converter (PDF/DOCX/PPTX/XLSX/XLS/Outlook MSG + image EXIF). Vendored launcher at `opencode_app/mcp-servers/markitdown-local-mcp/` depends **only** on local converter extras — no `markitdown[all]`, no Azure SDKs, no Google Speech, no YouTube API. `enable_plugins=False` is hard-coded. User-supplied `http:`/`https:` URIs are fetched via a single `requests.get()` (no telemetry headers, no Microsoft endpoints — equivalent to built-in `webfetch`). See [`opencode_app/mcp-servers/markitdown-local-mcp/README.md`](opencode_app/mcp-servers/markitdown-local-mcp/README.md) for the full trust-boundary analysis.
 
 > **Note — `filesystem` MCP server has been permanently removed.** OpenCode's built-in `read`/`write`/`edit`/`glob`/`grep`/`bash` tools already provide full file I/O, so `@modelcontextprotocol/server-filesystem` was redundant and caused tool-selection ambiguity (the model would call `read_mcp_resource` instead of the built-in `Read` tool). Do not re-add it to project `opencode.json` files.
@@ -377,7 +409,7 @@ Default state of every pack is **OFF** — existing deployments are unaffected u
 > - **`chrome-devtools`** — Google's `chrome-devtools-mcp` sends usage statistics and Chrome UX Report (CrUX) trace URLs to Google **by default**, plus polls the npm registry for updates. Hardened with `--no-usage-statistics`, `--no-performance-crux`, `--redact-network-headers` (strips sensitive request headers before they reach the LLM), and `CHROME_DEVTOOLS_MCP_NO_UPDATE_CHECKS=1` (kills the update poll).
 > - **`next-devtools`** — Vercel's `next-devtools-mcp` collects anonymous telemetry (tool names, error events, session metadata) by default, storing a local client ID in `~/.next-devtools-mcp/`. Hardened with `NEXT_TELEMETRY_DISABLED=1`.
 >
-> The enabled remote/`zai-*` servers send data **by design** (that is their function, not telemetry); `codegraph` and `mermaid` are purely local with no telemetry layer. `markitdown` and `docling` are already pinned to local-only conversion (`MARKITDOWN_ENABLE_PLUGINS=false`, `DOCLING_CONVERSION_MODE=local`). One unavoidable residual: every `npx -y <pkg>` first run hits the npm registry to download — not telemetry, but it is a phone-home; pre-install packages globally (`npm i -g`) and drop `npx` to avoid it.
+> The enabled remote/`zai-*` servers send data **by design** (that is their function, not telemetry); `codegraph` is purely local with no telemetry layer. Mermaid diagrams ship as inline fenced code blocks (rendered client-side by GitHub/VS Code — no MCP server); `markitdown` and `docling` are already pinned to local-only conversion (`MARKITDOWN_ENABLE_PLUGINS=false`, `DOCLING_CONVERSION_MODE=local`). One unavoidable residual: every `npx -y <pkg>` first run hits the npm registry to download — not telemetry, but it is a phone-home; pre-install packages globally (`npm i -g`) and drop `npx` to avoid it.
 
 ## Language Server Protocol (LSP)
 
@@ -518,7 +550,7 @@ This repository implements **skill modularization** with 130 skills organized ac
 
 > **Registry-derived (PLAN-GIT-286):** every skill + agent now carries a `category:` frontmatter field, which `deploy/build-registry.mjs` reads to emit `deploy/registry.json` — the single source of truth consumed by the `opencode-init` project-scoped installer and (regenerable into) this category table. To refresh after editing frontmatter: `node deploy/build-registry.mjs` (CI fails on drift via `--check`).
 
-> **Migration Complete (BT-142):** The `pptx-specialist-*` stack has been migrated to chenyu's JSON-in-PPTX architecture. Final skill count is **123** (−1 `pptx-specialist-skill` decomposed, +3 chenyu skills, +2 new decomposition skills, +2 Academic & Research Writing skills added post-migration). See `PLANS/PLAN-BT-142.md` for the full plan. The legacy `pptx-specialist-skill` has been removed; all PPTX operations now route through `pptx-specialist-subagent` → `pptx-generate-slide-skill` / `pptx-generate-template-skill` / `pptx-template-modifier-skill`. Post-#283: +1 `zai-vision-analysis-skill` (Z.AI direct-API vision, free `glm-4.6v-flash`) → **125**; later **126** after `plan-automation-loop-skill` was added (Git/Workflow — `/run-plan` full-automation loop). Subsequent additions brought the total to **130**, including `zai-image-generation-skill` (Media Generation — Z.AI GLM-Image text-to-image, saves a PNG file).
+> **Migration Complete (BT-142):** The `pptx-specialist-*` stack has been migrated to chenyu's JSON-in-PPTX architecture. Final skill count is **123** (−1 `pptx-specialist-skill` decomposed, +3 chenyu skills, +2 new decomposition skills, +2 Academic & Research Writing skills added post-migration). See `PLANS/PLAN-BT-142.md` for the full plan. The legacy `pptx-specialist-skill` has been removed; all PPTX operations now route through `pptx-specialist-subagent` → `pptx-generate-slide-skill` / `pptx-generate-template-skill` / `pptx-template-modifier-skill`. Post-#283: +1 `zai-vision-analysis-skill` (Z.AI direct-API vision, free `glm-4.6v-flash`) → **125**; later **126** after `plan-automation-loop-skill` was added (Git/Workflow — `/run-plan` full-automation loop). Subsequent additions brought the total to **130**, including `zai-image-generation-skill` (Media Generation — Z.AI GLM-Image text-to-image, saves a PNG file). Post-#333: +1 `opencode-repo-setup-skill` (OpenCode Meta — per-repo MCP/project-config setup frontend) → **131**. Post-GIT-333: −1 `codegraph-setup-skill` (merged into `opencode-repo-setup-skill` §Step 4) → **130**.
 
 ### Skill Categories
 
@@ -529,7 +561,7 @@ This repository implements **skill modularization** with 130 skills organized ac
 | **Office Utilities** (2) | ooxml-editing-skill, office-thumbnail-skill | Generic Office OOXML surgical edits and visual thumbnail/conversion |
 | **Language-Specific** (9) | python-pytest-creator, python-ruff-linter, javascript-eslint-linter, changelog-python-cliff, python-backend-skill, python-packaging-skill, csharp-linter-skill, java-linter-skill, fastapi-pydantic-orm-patterns-skill | Language-specific test, linting, project scaffolding, packaging, and backend patterns |
 | **Framework-Specific** (11) | nextjs-pr-workflow, nextjs-unit-test-creator, nextjs-standard-setup, nextjs-image-usage, nextjs-devtools-mcp, amplify-nextjs-deployment, typescript-dry-principle, accessibility-a11y-skill, react-hooks-antipatterns-skill, react-render-antipatterns-skill, threejs-nextjs-skill | Next.js 16, React 19, TypeScript, accessibility, Three.js integration, and AWS Amplify deployment |
-| **OpenCode Meta** (4) | opencode-agent-creation, opencode-skill-creation, opencode-skills-maintainer, documentation-consistency-skill | Agent and skill creation/maintenance, documentation consistency auditing |
+| **OpenCode Meta** (5) | opencode-agent-creation, opencode-skill-creation, opencode-skills-maintainer, opencode-repo-setup, documentation-consistency-skill | Agent and skill creation/maintenance, documentation consistency auditing, per-repo MCP/project-config setup |
 | **OpenTofu** (7) | opentofu-aws-explorer, opentofu-keycloak-explorer, opentofu-kubernetes-explorer, opentofu-neon-explorer, opentofu-provider-setup, opentofu-provisioning-workflow, opentofu-ecr-provision | Infrastructure as Code |
 | **Git/Workflow** (13) | ascii-diagram-creator, mermaid-diagram-creator, ticket-plan-workflow-skill, plan-execution-skill, plan-automation-loop-skill, git-issue-labeler, git-issue-updater, git-semantic-commits, semantic-release-convention, git-compact-commits, plan-updater, version-bump-standard, git-branch-workflow-setup-skill | Diagrams, git operations, release conventions, version bumping, compact commits, branch workflow orchestration, and fully-automated per-phase plan execution (lint+build+test+e2e gate → per-step traceability → commit → push) via `/run-plan` |
 | **Documentation** (3) | coverage-readme-workflow, docstring-generator, documentation-sync-workflow | Documentation generation |
@@ -539,7 +571,7 @@ This repository implements **skill modularization** with 130 skills organized ac
 | **Agent Optimization** (7) | continuous-learning, eval-harness, strategic-compact, verification-loop, search-first, context-budget, agent-introspection-debugging | AI agent session optimization, research-first workflow, context auditing, and agent debugging |
 | **Autoresearch** (4) | autoresearch-core-skill, autoresearch-ml-skill, autoresearch-code-skill, autoresearch-research-skill | Autonomous research loops: 5-stage Understand→Hypothesize→Experiment→Evaluate→Log methodology. ML training (GPU), code optimization, literature review. Evaluated by mechanical `{"pass":bool,"score":N}` — no LLM self-judgment. Ported from uditgoenka/autoresearch + karpathy/autoresearch (MIT). |
 | **Startup/Business** (3) | startup-pitch-deck-skill, startup-business-docs-skill, construction-bd-skill | Startup pitch decks, business documentation, construction proposals |
-| **Configuration** (3) | codegraph-setup-skill, markitdown-mcp-skill, docling-mcp-skill | CodeGraph, markitdown, and docling MCP setup |
+| **Configuration** (2) | markitdown-mcp-skill, docling-mcp-skill | markitdown and docling MCP setup (CodeGraph init lives in `opencode-repo-setup-skill`) |
 | **Security** (2) | security-audit-skill, authentication-authorization-skill | Security auditing, vulnerability scanning, and auth implementation |
 | **DevOps** (5) | docker-containerization-skill, monorepo-management-skill, database-migration-skill, logging-observability-skill, aws-iac-safety-skill | Containerization, monorepos, database migrations, observability, and IaC safety |
 | **Planning & Alignment** (4) | grilling-skill, domain-modeling-skill, grill-with-docs-skill, grill-me-skill | Relentless interview/grilling sessions and domain model (CONTEXT.md glossary + ADR) capture |

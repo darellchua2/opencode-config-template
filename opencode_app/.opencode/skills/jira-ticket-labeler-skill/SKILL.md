@@ -3,9 +3,6 @@ name: jira-ticket-labeler-skill
 description: Assess and classify JIRA tickets with appropriate issue types (Bug, Story, Task, Epic), priorities, and components using Atlassian MCP tools
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers, maintainers, project managers
-  workflow: issue-management
 category: JIRA
 ---
 
@@ -30,7 +27,10 @@ Use this when:
 
 ## Prerequisites
 
-- Atlassian MCP server configured and connected
+- `atlassian` MCP server enabled in this session — it is **disabled by default** (opt-in). If `atlassian_*` tools are absent from your tool list, do NOT attempt or hallucinate them:
+  - Interactive: offer per-project enable via `opencode-repo-setup-skill` (effective next session).
+  - Fallback: classification/label-mapping is analytical and can proceed without MCP; only ticket creation/reads (`atlassian_createJiraIssue`, `atlassian_getJiraIssue`) need the server or the REST fallback (`curl -u email:token`).
+  - Otherwise: return the classification and report creation as skipped.
 - JIRA project access with create/edit permissions
 - Valid JIRA project key (e.g., "IBIS", "PROJ")
 

@@ -1,5 +1,9 @@
 ---
-description: Specialized subagent for git repository operations — repository setup, release workflows, branch protection, GitHub Actions, labels, semantic versioning, PR workflows, and applying git/gh best practices across repositories. Triggers on "repo setup", "branch protection", "release workflow", "version bump", "repo audit", "repo onboarding", "gh labels", "git best practices".
+description: >-
+  Git repository operations — setup, release workflows, branch protection,
+  GitHub Actions, labels, semver, PR workflows, git/gh best practices. Triggers:
+  repo setup, branch protection, release workflow, version bump, repo audit, gh
+  labels.
 mode: subagent
 permission:
   read:
@@ -101,6 +105,8 @@ Load these skills to apply the correct standards and conventions:
 - **documentation-sync-workflow**: Keep docs synchronized when adding skills/subagents
 - **documentation-consistency**: Audit documentation consistency across files
 - **plan-updater / plan-execution**: Track and execute PLAN.md phases
+
+> **JIRA skills MCP dependency:** `jira-git-integration`, `jira-status-updater`, `jira-ticket-labeler`, and the JIRA branch of `ticket-plan-workflow`/`git-issue-updater` require the `atlassian` MCP server, which is **disabled by default** (opt-in). If `atlassian_*` tools are absent from your tool list, do NOT attempt them — each of those skills carries its own MCP Availability Guard (enable via `opencode-repo-setup-skill` next session, REST fallback, or skip + report). GitHub-side operations are unaffected.
 
 ## Repository Setup Workflow
 

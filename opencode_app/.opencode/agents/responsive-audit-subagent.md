@@ -1,5 +1,8 @@
 ---
-description: "Responsive UI audit and fix subagent. Audits Next.js pages for responsive defects using Playwright (6 detection assertions across mobile/tablet/desktop breakpoints), applies fixes by confidence tier (Tier 1 auto-fix, Tier 2 propose+verify, Tier 3 report), and re-verifies after each fix. Delegates screenshot review to image-analyzer-subagent. Runs the detect→fix→re-verify loop internally over a persistent PTY watch session (display-branched); the primary session spawns this subagent once."
+description: >-
+  Audits and fixes responsive defects in Next.js pages via Playwright
+  (mobile/tablet/desktop) — tiered fixes (auto-fix, propose+verify, report),
+  re-verification, screenshot review via image-analyzer.
 mode: subagent
 steps: 12
 permission:

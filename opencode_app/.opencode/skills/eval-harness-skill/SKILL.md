@@ -4,9 +4,6 @@ description: Evaluate code quality, skill effectiveness, and implementation corr
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: developers, QA engineers, agents
-  workflow: evaluation, quality-assurance
-  trigger: explicit-only
   protocol: autoresearch-opt-in
 category: Agent Optimization
 ---

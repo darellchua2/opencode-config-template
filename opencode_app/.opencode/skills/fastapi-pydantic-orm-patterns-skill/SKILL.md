@@ -1,13 +1,11 @@
 ---
 name: fastapi-pydantic-orm-patterns-skill
-description: Backend Python patterns — Pydantic v2 conventions (ConfigDict, Annotated types, serializers), FastAPI architecture (layered, DI, config), ORM pitfalls (migration syntax errors, N+1 queries), defensive coding (broad except, auth early-return, encryption validation), multi-tenant isolation, and race-free state transitions
+description: >-
+  Backend Python patterns — Pydantic v2 conventions, layered FastAPI
+  architecture, ORM pitfalls (N+1, migration syntax), defensive coding,
+  multi-tenant isolation.
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: backend-api-development
-  languages: python
-  frameworks: fastapi, pydantic, sqlalchemy
 category: Language-Specific
 ---
 

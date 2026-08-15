@@ -1,5 +1,8 @@
 ---
-description: Specialized subagent for diagnosing and resolving errors, exceptions, and stack traces. Native multimodal (zai/glm-5v-turbo) — sees error screenshots directly, no external vision API. ONLY triggered on explicit user invocation - not auto-triggered for general error handling.
+description: >-
+  Diagnoses and resolves errors, exceptions, stack traces. Native multimodal
+  (zai/glm-5v-turbo) — reads error screenshots directly. Explicit user
+  invocation only.
 mode: subagent
 permission:
   read:

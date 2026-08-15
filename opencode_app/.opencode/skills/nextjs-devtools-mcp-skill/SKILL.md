@@ -1,12 +1,11 @@
 ---
 name: nextjs-devtools-mcp-skill
-description: Reference and workflows for the next-devtools-mcp server — Next.js 16+ runtime diagnosis via MCP. Covers opencode.json configuration, tool reference (get_errors, get_logs, get_page_metadata, get_project_metadata, get_routes, get_server_action_by_id), diagnosis workflows, and troubleshooting.
+description: >-
+  next-devtools-mcp reference — Next.js 16+ runtime diagnosis via MCP
+  (get_errors, get_logs, get_routes, server actions); config and workflows.
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: developers
-  workflow: frontend
-  scope: nextjs-runtime
   pattern: mcp-diagnosis
 category: Framework-Specific
 ---

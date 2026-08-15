@@ -1,11 +1,12 @@
 ---
 name: autoresearch-code-skill
-description: "Autonomous code optimization loop — modify → verify (benchmark) → keep/revert against any code metric (test coverage, bundle size, runtime, error count). TDD-flavored: test-pass maps to pass, pass-count maps to score."
+description: >-
+  Autonomous code optimization loop — modify, verify by benchmark, keep/revert
+  against any metric (coverage, bundle size, runtime, error count).
+  TDD-flavored.
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: developers
-  workflow: autonomous-iteration
   protocol: autoresearch-default-on
 category: Autoresearch
 ---

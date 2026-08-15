@@ -1,11 +1,11 @@
 ---
 name: ticket-plan-workflow-skill
-description: Unified ticket/issue planning workflow for GitHub Issues and JIRA, with structured description, branch creation, PLAN.md generation, and phased execution
+description: >-
+  Unified GitHub Issues and JIRA planning — structured description, branch,
+  PLAN.md, phased execution. Triggers: create issue, new issue, jira ticket, bug
+  report, feature request, create plan, ticket with plan.
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: unified-planning
 category: Git/Workflow
 ---
 
@@ -53,7 +53,18 @@ Use this workflow when:
 - Active Atlassian/JIRA account with project access
 - Git repository initialized with remote configured
 - Write access to repository
-- Atlassian MCP server configured
+- `atlassian` MCP server enabled in this session (opt-in — see MCP Availability Guard)
+
+## MCP Availability Guard (JIRA steps)
+
+The `atlassian` MCP server is **disabled by default**. Before any JIRA step, check whether `atlassian_*` tools exist in your tool list:
+
+- **Present** → proceed normally.
+- **Absent** → do NOT attempt or hallucinate `atlassian_*` calls. Options, in order:
+  1. Interactive: offer per-project enable via `opencode-repo-setup-skill` (writes `"mcp":{"atlassian":{"enabled":true}}` into the project `opencode.json`; effective next session — this session must degrade).
+  2. REST fallback: API token + `curl -u email:token` against `https://<site>.atlassian.net` (discover cloudId: `curl https://<site>.atlassian.net/_edge/tenant_info`).
+  3. Degrade gracefully: run the GitHub-only flow, report JIRA steps as skipped.
+- Headless/CI: skip option 1; use option 2 if credentials exist, else option 3.
 
 ## Steps
 
@@ -68,6 +79,8 @@ Use this workflow when:
 # If user says "create ticket" → Ask which platform
 
 # Auto-detect: Check for JIRA project access
+# ONLY if atlassian_* tools exist in your tool list (see MCP Availability Guard);
+# otherwise treat JIRA as unavailable and default to GitHub
 atlassian_getVisibleJiraProjects --cloudId "$CLOUD_ID" 2>/dev/null
 
 # Prompt user if ambiguous

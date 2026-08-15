@@ -1,5 +1,7 @@
 ---
-description: Specialized subagent for OpenTofu/Terraform infrastructure management. Explores and provisions resources across Kubernetes, Neon, AWS, Keycloak, manages ECR repositories, and handles provider setup with proper state management.
+description: >-
+  OpenTofu/Terraform infrastructure — Kubernetes, Neon, AWS, Keycloak, ECR
+  provisioning; provider setup with proper state management.
 mode: subagent
 steps: 20
 permission:
@@ -20,6 +22,8 @@ permission:
     opentofu-provisioning-workflow-skill: allow
     opentofu-provider-setup-skill: allow
     opentofu-ecr-provision-skill: allow
+    aws-iac-safety-skill: allow
+    docker-containerization-skill: allow
 category: devops
 ---
 

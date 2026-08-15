@@ -1,11 +1,10 @@
 ---
 name: pptx-generate-slide-skill
-description: "Populate the PowerPoint template with structured JSON data using a python-pptx based engine. Uses template.pptx Slide Master layouts with proper placeholders. Do NOT use for creating presentations from scratch."
+description: >-
+  Fill a PowerPoint template with structured JSON via python-pptx Slide Master
+  layouts. Not for presentations from scratch.
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: presentation-generation
 category: Presentation
 ---
 

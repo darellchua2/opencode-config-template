@@ -1,16 +1,11 @@
 ---
 name: autodesk-aps-skill
 description: >-
-  Autodesk Platform Services (APS) API integration — authentication (OAuth
-  2-legged/3-legged), Data Management, Model Derivative, Viewer, Design
-  Automation, Webhooks. Revit API, Fusion 360 API, AutoCAD .NET API add-in
-  development. MCP server configuration. Use for APS/Forge REST APIs, Revit
-  plugins, Fusion 360 add-ins, AutoCAD .NET plugins.
+  Autodesk Platform Services (APS/Forge) REST APIs — OAuth, Data Management,
+  Model Derivative, Viewer, Design Automation, Webhooks; Revit, Fusion 360,
+  AutoCAD add-in development.
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers, bim-developers, cad-developers
-  workflow: api-integration
 category: CAD & Hardware Design
 ---
 
@@ -578,7 +573,9 @@ interface WorkitemResult {
 }
 ```
 
-## MCP Servers (Beta / Coming Soon)
+## MCP Servers (Beta)
+
+In this configurator the 4 servers are **not shipped in the base config** — enable them wholesale via `./deploy/setup.sh --enable-pack autodesk` (Docker: `--build-arg OPENCODE_PACKS=autodesk`; needs `AUTODESK_API_KEY`). For standalone setups, add the entries below manually.
 
 | Server | Status | Tools Pattern | Description |
 |--------|--------|---------------|-------------|

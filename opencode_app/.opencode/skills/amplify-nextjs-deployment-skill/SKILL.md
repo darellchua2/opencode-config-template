@@ -1,12 +1,11 @@
 ---
 name: amplify-nextjs-deployment-skill
-description: Deploy and troubleshoot Next.js 16+ applications on AWS Amplify Hosting — build spec (amplify.yml), SSR Lambda env-var injection, CloudFront OAC, Route53 DNS, GitHub Actions deploy triggers, post-deploy verification, and rollback strategy
+description: >-
+  Deploy and troubleshoot Next.js 16+ on AWS Amplify Hosting — amplify.yml, SSR
+  Lambda env vars, CloudFront OAC, Route53 DNS, deploy triggers, rollback.
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: frontend-developers
-  workflow: deployment
-  scope: nextjs-amplify-hosting
   pattern: amplify-deployment
 category: Framework-Specific
 ---

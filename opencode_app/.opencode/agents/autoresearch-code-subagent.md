@@ -1,5 +1,7 @@
 ---
-description: "Autonomous code optimization subagent — runs the modify → verify (benchmark) → keep/revert loop against any code metric (coverage, bundle size, runtime, error count). Full repo edit. TDD-flavored: test-pass maps to pass, pass-count maps to score."
+description: >-
+  Autonomous code optimization loop — modify, verify by benchmark, keep/revert
+  against any metric (coverage, bundle size, runtime, errors). Full repo edit.
 mode: subagent
 steps: 50
 permission:

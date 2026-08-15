@@ -1,14 +1,12 @@
 ---
 name: continuous-learning-skill
-description: Extract and store reusable patterns, decisions, and insights from coding sessions with confidence scoring, project scoping, and instinct evolution for future reference and skill improvement
+description: >-
+  Extract and store reusable patterns, decisions, insights from coding sessions
+  — confidence scoring, project scoping, memory-hygiene procedure.
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: developers, agents
-  workflow: learning, optimization
-  trigger: explicit-only
   protocol: autoresearch-opt-in
-  version: "2"
 category: Agent Optimization
 ---
 

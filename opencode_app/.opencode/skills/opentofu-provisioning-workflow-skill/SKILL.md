@@ -3,9 +3,6 @@ name: opentofu-provisioning-workflow-skill
 description: Infrastructure as Code development patterns, resource lifecycle management, and state management workflows with OpenTofu
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: infrastructure-provisioning
 category: OpenTofu
 ---
 

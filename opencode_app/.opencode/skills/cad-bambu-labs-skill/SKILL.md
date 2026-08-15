@@ -3,9 +3,6 @@ name: cad-bambu-labs-skill
 description: Dry-run, upload, and cautiously initiate local Bambu Lab print jobs from validated plain `.gcode`, using Bambu LAN FTPS/MQTT handoffs.
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: engineers, robotics-developers, hardware-designers, makers
-  workflow: bambu-printing
 category: CAD & Hardware Design
 ---
 

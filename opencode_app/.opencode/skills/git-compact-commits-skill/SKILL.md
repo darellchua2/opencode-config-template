@@ -1,19 +1,12 @@
 ---
 name: git-compact-commits-skill
 description: >-
-  Write concise, compact Git commit messages within strict word and character
-  budgets. Triggers when user says: "compact commit", "short commit message",
-  "concise commit", "commit word limit", "brief commit", "terse commit",
-  "make commit shorter", "git commit best practices". Combines related changes
-  into single commits by semantic grouping, enforces 150-word body and 72-char
-  subject limits, and provides commitlint CI/CD configuration. Use for brief,
-  space-efficient commits — NOT for conventional commit format/structure (use
-  git-semantic-commits-skill for that).
+  Write concise commit messages within strict budgets — 72-char subject,
+  150-word body; semantic grouping of related changes. Triggers: compact commit,
+  short commit message, concise commit, brief commit, terse commit. Not
+  conventional-commit structure (git-semantic-commits-skill).
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers, maintainers
-  workflow: commit-compact-authoring
 category: Git/Workflow
 ---
 

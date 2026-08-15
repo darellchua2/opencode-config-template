@@ -1,12 +1,11 @@
 ---
 name: accessibility-a11y-skill
-description: Implement and audit web accessibility — WCAG 2.1 compliance, ARIA patterns, keyboard navigation, color contrast, screen reader testing, automated audits with axe-core and Lighthouse, semantic HTML, and focus management
+description: >-
+  Implement and audit web accessibility — WCAG 2.1, ARIA, keyboard navigation,
+  contrast, screen readers, axe-core/Lighthouse audits, semantic HTML, focus
+  management.
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: accessibility
-  languages: typescript, javascript, html, css
 category: Framework-Specific
 ---
 

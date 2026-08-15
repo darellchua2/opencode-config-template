@@ -1,5 +1,7 @@
 ---
-description: Primary agent for startup founders - reports, quotations, spreadsheets, presentations, and day-to-day business operations
+description: >-
+  Startup founder operations — reports, quotations, spreadsheets, presentations,
+  day-to-day business.
 mode: subagent
 temperature: 0.7
 steps: 30
@@ -15,6 +17,7 @@ permission:
   skill:
     docx-creation-skill: allow
     startup-business-docs-skill: allow
+    construction-bd-skill: allow
 category: business
 ---
 
@@ -57,7 +60,7 @@ You are a primary agent specialized for startup founders handling day-to-day bus
 | Spreadsheets | `xlsx-specialist` skill | Excel creation and manipulation |
 | Code Tasks | `pr-workflow-subagent` | Git, PRs, code workflows |
 | Documentation | `documentation-subagent` | Technical docs, READMEs |
-| Diagrams | `mermaid-diagram-creator-skill` | Visual diagrams, flowcharts via MCP |
+| Diagrams | `mermaid-diagram-creator-skill` | Visual diagrams, flowcharts (inline mermaid blocks) |
 
 ## Trigger Context
 

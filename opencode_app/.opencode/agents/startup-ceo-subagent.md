@@ -1,5 +1,7 @@
 ---
-description: Specialized subagent for startup-style PowerPoint presentations (pitch decks, investor slides, board updates)
+description: >-
+  Startup-style PowerPoint presentations — pitch decks, investor slides, board
+  updates.
 mode: subagent
 steps: 12
 permission:

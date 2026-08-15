@@ -1,18 +1,12 @@
 ---
 name: research-paper-generation-skill
 description: >-
-  Generate submission-ready research papers from codebase + verified experimental
-  data. Triggers on: "research paper", "academic paper", "write paper",
-  "paper draft", "submission-ready", "journal submission", "conference paper".
-  Orchestrates autoresearch-research-subagent, B&W diagram generation, DOCX
-  conversion, and folder organization. Covers three framing strategies (ML
-  methodology, built environment framework, application/system) with reference
-  validation, pandoc DOCX conversion, and a mandatory verification checklist.
+  Generate submission-ready research papers from codebase and verified
+  experimental data — three framing strategies, reference validation, pandoc
+  DOCX conversion. Triggers: research paper, academic paper, write paper, paper
+  draft, journal submission, conference paper.
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: researchers
-  workflow: research
 category: Academic & Research Writing
 ---
 
@@ -90,9 +84,9 @@ The .md uses:
 
 ### Step 5 — Diagram Generation
 
-Render mermaid blocks as **B&W academic-style PNGs** using the `mermaid_generate`
-MCP tool. See **§3 B&W Academic Diagram Conventions** for the exact theme and
-copy-paste init template.
+Render mermaid blocks as **B&W academic-style PNGs** using the `mmdc` CLI
+(`npx -y @mermaid-js/mermaid-cli`). See **§3 B&W Academic Diagram Conventions**
+for the exact theme and copy-paste init template.
 
 Each diagram goes into the paper's `assets/` subfolder:
 
@@ -100,7 +94,7 @@ Each diagram goes into the paper's `assets/` subfolder:
 docs/research/papers/v<N>-<framing>/assets/<diagram-name>.png
 ```
 
-**Important**: The `mermaid_generate` tool has transient `ENOENT` errors —
+**Important**: `mmdc` has transient `ENOENT` errors —
 always retry failed renders up to **3 times** before giving up.
 
 ### Step 6 — DOCX Conversion
@@ -241,13 +235,19 @@ graph TD
     style E stroke-width:2px
 ```
 
-### mermaid_generate Tool Retry Policy
+### mmdc Render Command and Retry Policy
 
-The `mermaid_generate` MCP tool has **transient `ENOENT` errors** (the
+Render each `.mmd` source with `npx -y @mermaid-js/mermaid-cli`:
+
+```bash
+npx -y @mermaid-js/mermaid-cli -i <diagram>.mmd -o assets/<diagram>.png -b white
+```
+
+`mmdc` has **transient `ENOENT` errors** (the
 underlying mermaid-cli occasionally fails to find its puppeteer browser on first
 invocation). **Always retry failed renders up to 3 times** with a brief pause
-between attempts. If all 3 attempts fail, fall back to writing the mermaid
-source and rendering manually via `npx mmdc -i input.mmd -o output.png`.
+between attempts. If all 3 attempts fail, keep the mermaid source blocks in the
+.md and report that rendering must be run manually.
 
 ---
 
@@ -752,8 +752,8 @@ Subagent writes `PAPER-framework-built-env.md` with:
   flywheel, extension protocol.
 
 **Step 5 — Diagram Generation:**
-For each mermaid block, prepend the B&W init template (§3) and call
-`mermaid_generate` with `outputFormat: 'png'`, saving to:
+For each mermaid block, prepend the B&W init template (§3), save as `.mmd`
+source, and render with `mmdc` (`npx -y @mermaid-js/mermaid-cli`, §3), saving to:
 - `assets/framework-architecture.png`
 - `assets/pseudo-label-flywheel.png`
 - `assets/extension-protocol.png`

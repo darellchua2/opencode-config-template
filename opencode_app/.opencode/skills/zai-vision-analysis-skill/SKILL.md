@@ -1,12 +1,11 @@
 ---
 name: zai-vision-analysis-skill
-description: Analyze images/screenshots/PDFs via direct Z.AI vision API call using glm-5v-turbo (default). Two endpoints — coding-plan (key from auth.json) preferred, PAAS ($ZAI_API_KEY) fallback. Use as the API fallback when native multimodal (image-analyzer-subagent / vision MCP server) is unavailable, or whenever a text-model agent needs image content. Triggers on image analysis, screenshot analysis, vision, describe image, OCR, diagram understanding.
+description: >-
+  Analyze images/screenshots/PDFs via direct Z.AI vision API (glm-5v-turbo) —
+  fallback when native multimodal is unavailable. Triggers: image analysis,
+  screenshot analysis, vision, describe image, OCR.
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: agents
-  workflow: vision
-  requires: ZAI_API_KEY or opencode auth (zai / zai-coding-plan)
 category: Responsive & Visual Testing
 ---
 

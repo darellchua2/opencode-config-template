@@ -1,11 +1,10 @@
 ---
 name: documentation-sync-workflow-skill
-description: Ensure documentation files stay synchronized when adding new skills or subagents to the repository. Updates setup.sh, setup.ps1, README.md, and AGENTS.md with accurate counts and listings.
+description: >-
+  Sync docs when adding skills or subagents — updates setup.sh, setup.ps1,
+  README.md, AGENTS.md counts and listings.
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: documentation
 category: Documentation
 ---
 

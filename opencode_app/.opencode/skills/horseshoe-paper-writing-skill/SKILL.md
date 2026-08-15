@@ -1,23 +1,12 @@
 ---
 name: horseshoe-paper-writing-skill
 description: >-
-  Write submission-ready engineering research papers using the Horseshoe
-  Diagram Method — a U-shaped narrative structure where the Introduction and
-  Conclusion are mirror-image "arms" that must align point-for-point, with
-  Methods/Results as the connecting bridge at the bottom. Pairs the horseshoe
-  narrative with a standardized journal-submission format covering section
-  order, reference styles (ASCE / Elsevier / IEEE / Springer / MDPI), B&W
-  academic diagram conventions, table formatting, formula-usage rules, and
-  ML-paper diagramming guidance (when to draw system architecture vs.
-  layer-level vs. data-flow). Triggers on: "horseshoe paper", "horseshoe
-  diagram method", "mirror intro conclusion", "engineering paper structure",
-  "journal paper draft", "write paper horseshoe".
+  Write submission-ready engineering papers via the Horseshoe Diagram Method —
+  mirror-image Introduction/Conclusion, Methods/Results bridge; journal formats,
+  reference styles, B&W diagram conventions. Triggers: horseshoe paper,
+  horseshoe diagram method, journal paper draft.
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: researchers
-  workflow: writing
-  venue_class: ASCE, Elsevier built-environment, IEEE, Springer, MDPI
 category: Academic & Research Writing
 ---
 
@@ -536,7 +525,7 @@ render poorly in grayscale. See `research-paper-generation-skill` §3 for:
 - Shape differentiation rules (use shapes, never color alone, to distinguish
   node types).
 - Line styles (solid for forward flow, dashed for feedback / skip).
-- The `mermaid_generate` retry policy (3 attempts on `ENOENT` errors).
+- The `mmdc` render + retry policy (3 attempts on `ENOENT` errors).
 
 For matplotlib-based results figures (loss curves, ROC, confusion matrices),
 use hatching (`//`, `\\`, `xx`), grayscale colormaps (`Greys`, `binary`),
@@ -788,7 +777,7 @@ the paper is horseshoe-compliant.
 |------|-----|
 | Source data gathering, framing, B&W diagrams, DOCX conversion, verification | `research-paper-generation-skill` (companion) |
 | Literature search & reference validation | `autoresearch-research-subagent` (Tier 2, web-only) |
-| B&W academic diagrams | `research-paper-generation-skill` §3 + `mermaid_generate` |
+| B&W academic diagrams | `research-paper-generation-skill` §3 + `mmdc` |
 | DOCX conversion (pandoc) | `research-paper-generation-skill` §4 |
 | Section drafts (intro, methodology, etc.) | `section-templates/*.md` in this skill's folder |
 | Mirror audit (§5) | Run manually using the pairing-table template |
@@ -841,7 +830,7 @@ graph TD
 ```
 
 A rendered PNG lives at `assets/horseshoe-diagram.png` (generated once via
-`mermaid_generate`). Reference it in working notes / appendices, not in the
+`mmdc`). Reference it in working notes / appendices, not in the
 manuscript itself.
 
 ---

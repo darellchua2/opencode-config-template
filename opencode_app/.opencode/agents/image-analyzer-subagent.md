@@ -1,5 +1,7 @@
 ---
-description: "Shared image analysis utility. PRIMARY: native multimodal on zai/glm-5v-turbo (sees images directly). FALLBACK: direct Z.AI vision API call to glm-5v-turbo when native perception is unavailable (vision MCP server not connected, 'model does not support image input', or text-only session). Accepts image/screenshot paths or URLs and returns STRICTLY BOUNDED structured analysis to minimize caller context. Used by primary agent directly and delegable by subagents with task permission."
+description: >-
+  Image analysis utility — native multimodal (zai/glm-5v-turbo) with direct Z.AI
+  vision API fallback. Takes paths/URLs; returns bounded structured analysis.
 mode: subagent
 
 permission:

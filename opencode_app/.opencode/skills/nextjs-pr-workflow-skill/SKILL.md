@@ -1,11 +1,11 @@
 ---
 name: nextjs-pr-workflow-skill
-description: Next.js PR workflow with quality checks (lint/build/test), semantic versioning labels (major/minor/patch), coverage badges, and JIRA integration via pr-creation-workflow framework
+description: >-
+  Next.js PR workflow — lint/build/test gates, semver labels, coverage badges,
+  JIRA integration via pr-creation-workflow framework.
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: developers
-  workflow: nextjs-pr
   protocol: autoresearch-opt-in
 category: Framework-Specific
 ---

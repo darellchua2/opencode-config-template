@@ -3,10 +3,6 @@ name: object-design-skill
 description: Apply responsibility-driven design with object stereotypes, value objects, entities, aggregates, and encapsulation - language-agnostic
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: design
-  languages: language-agnostic
 category: Code Quality
 ---
 

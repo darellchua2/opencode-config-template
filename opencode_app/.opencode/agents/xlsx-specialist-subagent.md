@@ -1,5 +1,7 @@
 ---
-description: Specialized subagent for spreadsheet operations (.xlsx, .csv). Creates, reads, edits, and converts tabular data files.
+description: >-
+  Spreadsheet operations (.xlsx, .csv) — create, read, edit, convert tabular
+  data files.
 mode: subagent
 hidden: true
 steps: 15

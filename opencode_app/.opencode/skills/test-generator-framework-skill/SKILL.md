@@ -4,8 +4,6 @@ description: Generic test generation framework supporting multiple languages and
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  audience: developers
-  workflow: testing-framework
   protocol: autoresearch-opt-in
 category: Framework
 ---

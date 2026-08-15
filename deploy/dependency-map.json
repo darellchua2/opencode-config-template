@@ -3,7 +3,6 @@
   "impliesMcp": {
     "nextjs-devtools-mcp-skill": ["next-devtools"],
     "markitdown-mcp-skill": ["markitdown"],
-    "docling-mcp-skill": ["docling"],
-    "codegraph-setup-skill": ["codegraph"]
+    "docling-mcp-skill": ["docling"]
   }
 }

@@ -15,6 +15,25 @@ migration, and how to revert.
 - To switch provider: `./deploy/setup.sh --provider anthropic` (interactive:
   `./deploy/setup.sh` and answer the provider prompt).
 - To re-resolve models only: `./deploy/setup.sh --models-only`.
+- **Behavior change (#333): deploys now default to the `lean` skill profile** —
+  the primary session sees 30 primary-visible skills instead of 88 (~3.9k
+  tokens less startup context). Opt back in with `--skill-profile full`
+  (PowerShell: `-SkillProfile full`). Subagents are unaffected under either
+  profile; re-running setup applies the profile to your deployed config.
+- **Behavior change (#333): auto-start MCP servers reduced 6 → 2** —
+  `codegraph` and `zai-web-reader` stay on; `atlassian` is now
+  opt-in (project config or global flip). `zai-vision-mcp-server` and
+  `zai-zread` were later **removed entirely** — native-multimodal vision
+  agents + `gh`/`webfetch` cover their use cases. The `mermaid` MCP server
+  and `zai-web-search-prime` were also removed (diagrams ship as inline
+  fenced code blocks rendered client-side; built-in `webfetch` covers
+  search-free reading). The 4 `autodesk-*` servers were also removed from
+  the base config — the `autodesk` provider pack now carries their full
+  definitions (`--enable-pack autodesk`, needs `AUTODESK_API_KEY`).
+  Enable per-project by
+  adding `<repo>/opencode.json` with `{"mcp":{"atlassian":{"enabled":true}}}`
+  (project wins over global; `opencode-repo-setup-skill` automates this), or
+  flip `enabled: true` in your global config to restore the old behavior.
 
 ---
 
@@ -172,7 +191,7 @@ docker compose build --build-arg OPENCODE_PROVIDER=anthropic
 
 ### Provider Packs (build-time MCP toggle, #268)
 
-v2.0 also adds **provider packs** — build-time toggles that enable groups of opt-in MCP servers (Autodesk, `markitdown`, `next-devtools`, `zai-web-search-prime`) in one shot. The merge runs after model resolution and only flips `mcp.*.enabled` + `tools.*` ON; it never affects an already-enabled server.
+v2.0 also adds **provider packs** — build-time toggles that enable groups of opt-in MCP servers (Autodesk, `markitdown`, `next-devtools`) in one shot. The merge runs after model resolution and only flips `mcp.*.enabled` + `tools.*` ON; it never affects an already-enabled server.
 
 ```bash
 # Enable one or more packs at build time

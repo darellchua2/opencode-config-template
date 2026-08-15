@@ -3,9 +3,6 @@ name: opentofu-keycloak-explorer-skill
 description: Explore and manage Keycloak identity and access management resources using OpenTofu/Terraform
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: identity-management
 category: OpenTofu
 ---
 

@@ -17,6 +17,10 @@
     .\setup.ps1 -Rollback -RollbackTarget latest # Restore most recent backup
     .\setup.ps1 -Rollback -RollbackArg 20260719_070926  # Restore by TIMESTAMP
     .\setup.ps1 -NoZipBackup         # Deploy without creating zip archive
+    .\setup.ps1 -Yes -Quick -Provider zai                  # Headless quick deploy
+    .\setup.ps1 -Yes -EnablePack markitdown,nextjs         # CI: defaults + packs
+    .\setup.ps1 -Yes -Provider openai -EnablePack markitdown -SkillProfile lean
+    .\setup.ps1 -DryRun -Yes -EnablePack autodesk          # Preview a combo
     .\setup.ps1 -Help                # Show detailed help
 
 .NOTES
@@ -59,8 +63,13 @@ param(
     [switch]$Migrate,
     [switch]$Mix,
     # Provider packs (#268): deploy-time MCP toggle. CSV of pack names
-    # (autodesk,markitdown,nextjs,zai,docling,chrome-devtools). Empty = no-op.
-    [string]$EnablePack = ""
+    # (autodesk,markitdown,nextjs,docling,chrome-devtools). Empty = no-op.
+    [string]$EnablePack = "",
+    # Skill profile (GIT-333): deploy-time primary visibility. lean (default)
+    # rewrites the DEPLOYED config's permission.skill to 30 visible skills;
+    # full deploys the shipped 87-allow allowlist verbatim.
+    [ValidateSet("lean", "full")]
+    [string]$SkillProfile = "lean"
 )
 
 $ErrorActionPreference = "Continue"
@@ -102,6 +111,8 @@ $DeployDir = Join-Path $RepoDir "deploy"
 $ResolverScript = Join-Path $DeployDir "resolve-models.mjs"
 $MergePacksScript = Join-Path $DeployDir "merge-packs.mjs"
 $PacksDir = Join-Path $DeployDir "packs"
+$ApplySkillProfileScript = Join-Path $DeployDir "apply-skill-profile.mjs"
+$SkillProfilesFile = Join-Path $DeployDir "skill-profiles.json"
 $TuiScript = Join-Path $DeployDir "tui.mjs"
 $AgentTiers = Join-Path $DeployDir "agent-tiers.json"
 $ModelsDefaultMap = Join-Path $DeployDir "models.default.json"
@@ -909,9 +920,33 @@ USAGE:
   PROVIDER PACKS (deploy-time MCP toggle):
     -EnablePack <csv>    Enable provider pack(s) — flips mcp.<server>.enabled
                          and tools.<ns>* flags ON. Available packs:
-                         autodesk, markitdown, nextjs, zai, docling, chrome-devtools
+                         autodesk, markitdown, nextjs, docling, chrome-devtools
                          (comma-separated). No-op if omitted; default OFF.
                          Example: -EnablePack autodesk,markitdown
+
+   SKILL PROFILE (deploy-time primary visibility):
+     -SkillProfile <p>    lean (default) | full. lean rewrites the DEPLOYED
+                          config's permission.skill to 30 primary-visible skills
+                          + "*": "deny" (subagents unaffected — they self-scope
+                          via frontmatter allows); full deploys the shipped
+                          87-allow allowlist verbatim.
+
+ ======================================================================
+                     COMMON COMBINATION EXAMPLES
+ ======================================================================
+
+   Model resolution + profile:
+     .\setup.ps1 -Provider anthropic -Yes      # Deploy with Anthropic models
+     .\setup.ps1 -Mix                          # Mix providers per tier
+     .\setup.ps1 -ModelsOnly -Force            # Re-resolve models only
+     .\setup.ps1 -SkillProfile full            # Primary sees all shipped skills
+
+   Headless / CI combos:
+     .\setup.ps1 -Yes -Quick -Provider zai                  # Quick deploy, no prompts
+     .\setup.ps1 -Yes -EnablePack markitdown,nextjs         # Defaults + packs
+     .\setup.ps1 -Yes -Provider openai -EnablePack markitdown -SkillProfile lean
+     .\setup.ps1 -DryRun -Yes -EnablePack autodesk          # Preview a combo
+
 
 =======================================================================
                          CONFIGURED FEATURES
@@ -978,7 +1013,7 @@ $(Get-SkillCategories (Join-Path $RepoDir 'opencode_app\.opencode\skills'))
     git                   For version control
 
   API Keys (prompted during setup):
-    ZAI_API_KEY           Required for web-reader, web-search-prime, zread
+    ZAI_API_KEY           Required for web-reader
                           Get from: https://z.ai
 
   GitHub Auth:
@@ -1728,9 +1763,9 @@ function Set-Configuration {
             Write-Host "    - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
             Write-Host ""
             Write-Host "Configured MCP servers:" -ForegroundColor Green
-            Write-Host "    - Local (auto-start): atlassian, zai-vision-mcp-server, codegraph, mermaid"
-            Write-Host "    - Remote (needs key): web-reader, zread"
-            Write-Host "    - Available but disabled (opt-in): web-search-prime, next-devtools, markitdown, docling, chrome-devtools"
+            Write-Host "    - Auto-start: codegraph, web-reader"
+            Write-Host "    - Opt-in per-project (.opencode/opencode.json): atlassian"
+            Write-Host "    - Available but disabled (opt-in): next-devtools, markitdown, docling, chrome-devtools"
             if ($script:vgDeployed) {
                 Write-Host "Secret masking: active (vibeguard)" -ForegroundColor Green
             }
@@ -1867,6 +1902,34 @@ function Invoke-PackMerger {
 
     Write-LogInfo "Applying provider packs: $EnablePack"
     & node $MergePacksScript --config $targetConfig --packs-dir $PacksDir --packs $EnablePack
+}
+
+# Apply the skill profile (GIT-333): rewrites ONLY the permission.skill block
+# of the DEPLOYED config (never the source opencode_app/opencode.json).
+# lean (default) -> 30 primary-visible skills + "*": "deny"; full -> verified
+# no-op. Mirrors Invoke-PackMerger's dry-run contract (B1).
+function Invoke-SkillProfile {
+    if (-not (Test-Path $ApplySkillProfileScript)) {
+        Write-LogError "Skill-profile applier not found: $ApplySkillProfileScript"
+        return
+    }
+    if (-not (Test-Path $SkillProfilesFile)) {
+        Write-LogError "Skill profiles file not found: $SkillProfilesFile"
+        return
+    }
+
+    $targetConfig = $ConfigFile
+    if ($DryRun) {
+        $targetConfig = Join-Path $DryRunPreviewDir "opencode.json"
+        if (-not (Test-Path $targetConfig)) {
+            Write-LogError "Dry-run preview config not found: $targetConfig"
+            Write-LogError "The resolver must run first to stage the preview. Aborting skill-profile apply."
+            return
+        }
+    }
+
+    Write-LogInfo "Applying skill profile: $SkillProfile"
+    & node $ApplySkillProfileScript --config $targetConfig --profiles $SkillProfilesFile --profile $SkillProfile
 }
 
 # Validate -EnablePack names early (fail fast). Mirrors setup.sh's
@@ -2191,6 +2254,15 @@ function Deploy-Agents {
             Write-LogError "Provider-pack application failed"
             return
         }
+    }
+
+    # Apply skill profile (-SkillProfile lean|full, default lean). Runs LAST so
+    # the rewrite lands on the final resolved+packed config. Subagents are
+    # unaffected (frontmatter allows, GIT-333 Phase 1).
+    Invoke-SkillProfile
+    if ($LASTEXITCODE -ne 0) {
+        Write-LogError "Skill-profile application failed"
+        return
     }
 
     # Count deployed agents by mode
@@ -2584,6 +2656,7 @@ function Show-Summary {
     $skillCount = @(Get-ChildItem $SkillsDir -Directory -ErrorAction SilentlyContinue).Count
     if ($skillCount -gt 0) {
         Write-Host "  [OK] skills: $skillCount skills deployed to $SkillsDir\" -ForegroundColor Green
+        Write-Host "  [OK] skill profile: $SkillProfile (primary-visible skills in permission.skill)" -ForegroundColor Green
     } else {
         Write-Host "  [X] skills: Not deployed"
     }
@@ -2654,9 +2727,10 @@ function Show-NextSteps {
     Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
     Write-Host "  Run 'opencode --skill <name> `"prompt`"' to invoke a skill"
     Write-Host ""
-     Write-Host "MCP Servers (6):"
-     Write-Host "  Local (auto-start): atlassian, zai-vision-mcp-server, codegraph"
-     Write-Host "  Remote (needs key): web-reader, web-search-prime, zread"
+     Write-Host "MCP Servers:"
+     Write-Host "  Auto-start: codegraph, web-reader"
+     Write-Host "  Opt-in per-project: atlassian"
+     Write-Host "  Opt-in global packs: next-devtools, markitdown, docling, chrome-devtools (+ autodesk pack adds 4)"
     Write-Host ""
     Write-Host "  Auth: opencode mcp auth atlassian / opencode mcp auth github"
     Write-Host ""

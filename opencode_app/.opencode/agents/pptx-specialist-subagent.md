@@ -1,5 +1,8 @@
 ---
-description: Specialized agent for PowerPoint presentation tasks. Orchestrates a 3-skill pipeline (generate-template → generate-slide → template-modifier) that fills a user-supplied Slide Master template, embeds a hidden JSON schema at ppt/template_schema.json, and uses image-analyzer-subagent for post-render visual verification. NEVER builds PPTX from scratch.
+description: >-
+  PowerPoint pipeline (generate-template, generate-slide, template-modifier) —
+  fills user-supplied Slide Master templates, embeds hidden JSON schema,
+  image-analyzer verification. Never builds from scratch.
 mode: subagent
 steps: 30
 permission:

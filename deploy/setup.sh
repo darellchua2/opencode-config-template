@@ -51,7 +51,7 @@
 #   - curl (for downloading)
 #   - Node.js v20+ and npm (for opencode-ai and MCP servers)
 #   - nvm recommended (for Node.js version management on macOS/Linux)
-#   - ZAI_API_KEY (required for web-reader, web-search-prime, zread MCP servers)
+#   - ZAI_API_KEY (required for web-reader MCP server)
 #   - LM Studio running on http://127.0.0.1:1234/v1 (local LLM inference)
 #
 ################################################################################
@@ -98,6 +98,8 @@ DEPLOY_DIR="${REPO_DIR}/deploy"
 RESOLVER_SCRIPT="${DEPLOY_DIR}/resolve-models.mjs"
 MERGE_PACKS_SCRIPT="${DEPLOY_DIR}/merge-packs.mjs"
 PACKS_DIR="${DEPLOY_DIR}/packs"
+APPLY_SKILL_PROFILE_SCRIPT="${DEPLOY_DIR}/apply-skill-profile.mjs"
+SKILL_PROFILES_FILE="${DEPLOY_DIR}/skill-profiles.json"
 TUI_SCRIPT="${DEPLOY_DIR}/tui.mjs"
 AGENT_TIERS="${DEPLOY_DIR}/agent-tiers.json"
 MODELS_DEFAULT_MAP="${DEPLOY_DIR}/models.default.json"
@@ -340,7 +342,8 @@ MODELS_ONLY=false        # --models-only (provider + resolve only)
 FORCE_RESOLVE=false      # --force (ignore preserve-edits)
 MIGRATE_ONLY=false       # --migrate (migration + resolve only)
 MIX_MODE=false           # --mix (per-category provider/model editor)
-ENABLE_PACK=""           # --enable-pack <csv> (provider packs: autodesk,markitdown,nextjs,zai,docling,chrome-devtools)
+ENABLE_PACK=""           # --enable-pack <csv> (provider packs: autodesk,markitdown,nextjs,docling,chrome-devtools)
+SKILL_PROFILE="lean"     # --skill-profile lean|full (default lean: primary sees 30 skills; full = shipped 87 verbatim)
 
 # API Keys (initialize to empty to avoid unbound variable errors)
 # Capture from environment if they exist
@@ -573,9 +576,16 @@ USAGE:
   PROVIDER PACKS (deploy-time MCP toggle):
     --enable-pack <csv>   Enable provider pack(s) — flips mcp.<server>.enabled
                           and tools.<ns>* flags ON for the named packs. Available
-                          packs: autodesk, markitdown, nextjs, zai, docling, chrome-devtools
+                          packs: autodesk, markitdown, nextjs, docling, chrome-devtools
                           (comma-separated, e.g. --enable-pack autodesk,markitdown).
                           No-op if omitted; default state of every pack is OFF.
+
+  SKILL PROFILE (deploy-time primary visibility):
+    --skill-profile <p>   lean (default) | full. lean rewrites the DEPLOYED
+                           config's permission.skill to 30 primary-visible
+                           skills + "*": "deny" (subagents unaffected — they
+                           self-scope via frontmatter allows); full deploys the
+                           shipped 87-allow allowlist verbatim.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
                             EXAMPLES
@@ -594,6 +604,18 @@ USAGE:
     ./setup.sh --enable-pack autodesk             # Enable all 4 Autodesk MCP servers
     ./setup.sh --enable-pack autodesk,markitdown   # Enable multiple packs
     ./setup.sh --quick --enable-pack markitdown   # Combine with other modes
+
+  Model resolution + skill profile:
+    ./setup.sh --provider anthropic -y            # Deploy with Anthropic models
+    ./setup.sh --mix                              # Mix providers per tier (interactive)
+    ./setup.sh --models-only --force              # Re-resolve models only
+    ./setup.sh --skill-profile full               # Primary sees all shipped skills
+
+  Common combinations (headless / CI):
+    ./setup.sh -y -q --provider zai                  # Quick deploy, Z.AI, no prompts
+    ./setup.sh -y --enable-pack markitdown,nextjs    # Defaults + packs, non-interactive
+    ./setup.sh -y --provider openai --enable-pack markitdown --skill-profile lean
+    ./setup.sh --dry-run -y --enable-pack autodesk   # Preview a combo before running
 
   Preview and update:
     ./setup.sh --dry-run            # Preview what would be done
@@ -664,30 +686,23 @@ USAGE:
     Usage: opencode --agent build "implement auth feature"
            opencode --agent explore "find all API routes"
 
-  MCP SERVERS (15):
-    Auto-start (local npx servers):
+  MCP SERVERS (7):
+    Auto-start (enabled by default):
       codegraph           Pre-indexed code knowledge graph (100% local)
-      atlassian          JIRA and Confluence integration
-      zai-vision-mcp-server     Image analysis and video processing
-      mermaid            Mermaid diagram rendering (SVG/PNG)
+      zai-web-reader      Web page content extraction (remote, needs ZAI_API_KEY)
 
-    Available but disabled (opt-in — set enabled: true in config.json):
+    Available but disabled (opt-in — enable per-project via
+    opencode.json or opencode-repo-setup-skill):
+      atlassian           JIRA and Confluence integration (first use opens browser OAuth)
       next-devtools      Next.js DevTools integration
       markitdown         Document-to-Markdown (local-only, privacy-hardened)
       docling            Layout-aware document extraction (heavy ~3-4 GB)
       chrome-devtools    Live Chrome automation: perf traces, network/console, Lighthouse, heap snapshots
                           (privacy-hardened: telemetry + CrUX OFF; throwaway profile; enable via --enable-pack chrome-devtools)
 
-    Remote (requires ZAI_API_KEY):
-      web-reader         Web page content extraction
-      web-search-prime   Web search capabilities
-      zread              GitHub repository search and file reading
-
-    Autodesk (requires Autodesk access token):
-      autodesk-revit     Revit model data and APIs
-      autodesk-fusion    Fusion 360 integration
-      autodesk-model-data  Autodesk Model Data API
-      autodesk-help      Autodesk Help knowledge base
+    Autodesk (4 servers, requires AUTODESK_API_KEY):
+      not shipped in the base config — added wholesale via
+      ./setup.sh --enable-pack autodesk (revit, model-data, fusion, help)
 
     SKILLS ($(count_skills "${REPO_DIR}/opencode_app/.opencode/skills")):
 
@@ -710,7 +725,7 @@ $(print_skill_categories "${REPO_DIR}/opencode_app/.opencode/skills")
     git                   For version control integration
 
   API Keys (prompted during setup):
-     ZAI_API_KEY           Required for: web-reader, web-search-prime, zread
+     ZAI_API_KEY           Required for: web-reader
                            Get from: https://z.ai
 
    GitHub Auth:
@@ -858,10 +873,19 @@ parse_arguments() {
                 # Accept any value including "" (empty = no-op, handled by
                 # merge-packs.mjs). Only error if no following token at all.
                 if [ $# -lt 2 ]; then
-                    log_error "--enable-pack requires an argument (csv: autodesk,markitdown,nextjs,zai,docling,chrome-devtools)"
+                    log_error "--enable-pack requires an argument (csv: autodesk,markitdown,nextjs,docling,chrome-devtools)"
                     exit 1
                 fi
                 ENABLE_PACK="$2"
+                shift 2
+                ;;
+            --skill-profile)
+                if [ -n "$2" ] && { [ "$2" = "lean" ] || [ "$2" = "full" ]; }; then
+                    SKILL_PROFILE="$2"
+                else
+                    log_error "--skill-profile requires an argument (lean|full)"
+                    exit 1
+                fi
                 shift 2
                 ;;
             *)
@@ -2435,10 +2459,10 @@ setup_config() {
         echo "    - ... and $(($(count_agents "${REPO_DIR}/opencode_app/.opencode/agents") - 5)) more agents"
             echo ""
              echo "✓ Configured MCP servers:"
-             echo "    Local (auto-start): atlassian, zai-vision-mcp-server, codegraph, mermaid"
-             echo "    Remote (needs key): web-reader, web-search-prime, zread"
-              echo "    Available but disabled (opt-in): next-devtools, markitdown, autodesk-*, docling, chrome-devtools"
-              echo "    Enable a group with: ./setup.sh --enable-pack <autodesk|markitdown|nextjs|zai|docling|chrome-devtools>"
+             echo "    Auto-start: codegraph, web-reader"
+              echo "    Opt-in per-project (.opencode/opencode.json): atlassian"
+              echo "    Available but disabled (opt-in): next-devtools, markitdown, docling, chrome-devtools"
+              echo "    Enable a group with: ./setup.sh --enable-pack <autodesk|markitdown|nextjs|docling|chrome-devtools>"
             echo ""
         else
             log_error "config.json source not found: ${SOURCE_CONFIG}"
@@ -2857,6 +2881,45 @@ deploy_plugins() {
 # ─────────────────────────────────────────────────────────────────────────────
 # AGENT DEPLOYMENT (v2.0 — resolver-driven)
 # ─────────────────────────────────────────────────────────────────────────────
+# Apply the skill profile (GIT-333): rewrites ONLY the permission.skill block
+# of the DEPLOYED config (never the source opencode_app/opencode.json).
+#   lean (default) -> 30 primary-visible skills + "*": "deny"
+#   full           -> verified no-op (shipped 87-allow allowlist stays verbatim)
+# Mirrors run_pack_merger's dry-run contract (B1): in dry-run the resolver
+# stages the preview config at $DRY_RUN_PREVIEW_DIR/opencode.json — patch that.
+run_skill_profile() {
+    if [ ! -f "$APPLY_SKILL_PROFILE_SCRIPT" ]; then
+        log_error "Skill-profile applier not found: ${APPLY_SKILL_PROFILE_SCRIPT}"
+        return 1
+    fi
+    if [ ! -f "$SKILL_PROFILES_FILE" ]; then
+        log_error "Skill profiles file not found: ${SKILL_PROFILES_FILE}"
+        return 1
+    fi
+
+    local target_config="$CONFIG_FILE"
+    if [ "$DRY_RUN" = true ]; then
+        target_config="${DRY_RUN_PREVIEW_DIR}/opencode.json"
+        if [ ! -f "$target_config" ]; then
+            log_error "Dry-run preview config not found: ${target_config}"
+            log_error "The resolver must run first to stage the preview. Aborting skill-profile apply."
+            return 1
+        fi
+    fi
+
+    log_info "Applying skill profile: ${SKILL_PROFILE}"
+    node "$APPLY_SKILL_PROFILE_SCRIPT" \
+        --config "$target_config" \
+        --profiles "$SKILL_PROFILES_FILE" \
+        --profile "$SKILL_PROFILE"
+    local rc=$?
+    if [ "$rc" -ne 0 ]; then
+        log_error "Skill-profile application failed (exit ${rc})"
+        return 1
+    fi
+    return 0
+}
+
 deploy_agents() {
     echo ""
     log_info "Setting up agents (v2.0 model resolution)..."
@@ -2895,6 +2958,16 @@ deploy_agents() {
     rc=$?
     if [ "$rc" -ne 0 ]; then
         log_error "Provider-pack application failed (exit ${rc})"
+        return 1
+    fi
+
+    # Apply skill profile (--skill-profile lean|full, default lean). Runs LAST
+    # so the rewrite lands on the final resolved+packed config. Subagents are
+    # unaffected (frontmatter allows, GIT-333 Phase 1).
+    run_skill_profile
+    rc=$?
+    if [ "$rc" -ne 0 ]; then
+        log_error "Skill-profile application failed (exit ${rc})"
         return 1
     fi
 
@@ -3414,13 +3487,10 @@ print_summary() {
     # MCP servers configured
     if [ -f "$CONFIG_FILE" ]; then
          echo "✓ Configured MCP servers:"
-         echo "    - atlassian - JIRA and Confluence integration (auto-start)"
-         echo "    - web-reader - Web page reading (needs ZAI_API_KEY)"
-         echo "    - web-search-prime - Web search (needs ZAI_API_KEY)"
-         echo "    - zai-vision-mcp-server - Image analysis (auto-start)"
-         echo "    - zread - GitHub repo search (needs ZAI_API_KEY)"
          echo "    - codegraph - Code knowledge graph (auto-start)"
-         echo "    - mermaid - Diagram rendering SVG/PNG (auto-start)"
+         echo "    - web-reader - Web page reading (auto-start, needs ZAI_API_KEY)"
+         echo "    - atlassian - JIRA and Confluence (opt-in per-project)"
+
          echo "    - markitdown - Document-to-Markdown, local-only, opt-in"
 
     # Secret masking
@@ -3433,6 +3503,7 @@ print_summary() {
     if [ -d "$SKILLS_DIR" ] && [ "$(ls -A "${SKILLS_DIR}" 2>/dev/null)" ]; then
         local skill_count=$(count_skills "${SKILLS_DIR}")
         echo "✓ skills: ${skill_count} skills deployed to ${SKILLS_DIR}/"
+        echo "✓ skill profile: ${SKILL_PROFILE} (primary-visible skills in permission.skill)"
         print_skill_categories "${SKILLS_DIR}"
 
     else
@@ -3508,11 +3579,12 @@ print_next_steps() {
     echo "  Run 'opencode --skill <name> \"prompt\"' to use a skill"
     echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-     echo "                     🔌 MCP Servers (6)"
+     echo "                     🔌 MCP Servers (3)"
      echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
      echo ""
-     echo "  Local (auto-start): atlassian, zai-vision-mcp-server, codegraph"
-     echo "  Remote (needs key): web-reader, web-search-prime, zread"
+     echo "  Auto-start: codegraph, web-reader"
+      echo "  Opt-in per-project: atlassian"
+     echo "  Opt-in global packs: next-devtools, markitdown, docling, chrome-devtools"
     echo ""
     echo "  Auth: opencode mcp auth atlassian / opencode mcp auth github"
     echo ""

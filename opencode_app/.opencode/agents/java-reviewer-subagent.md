@@ -1,5 +1,7 @@
 ---
-description: Java code review subagent focusing on Effective Java idioms, concurrency safety via java.util.concurrent, exception handling, generics, and modern Java (records, sealed classes, pattern matching) for thorough Java quality analysis
+description: >-
+  Java code review — Effective Java idioms, java.util.concurrent, exception
+  handling, generics, modern Java (records, sealed classes, pattern matching).
 mode: subagent
 steps: 25
 permission:
@@ -22,6 +24,7 @@ permission:
     code-smells-skill: allow
     continuous-learning-skill: allow
     search-first-skill: allow
+    java-linter-skill: allow
 category: review
 ---
 

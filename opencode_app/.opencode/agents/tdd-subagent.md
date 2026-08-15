@@ -1,5 +1,7 @@
 ---
-description: Specialized subagent for Test Driven Development workflow guidance. Guides through red-green-refactor cycle for multiple languages and frameworks.
+description: >-
+  Test Driven Development guidance — red-green-refactor cycle across languages
+  and frameworks.
 mode: subagent
 permission:
   read:

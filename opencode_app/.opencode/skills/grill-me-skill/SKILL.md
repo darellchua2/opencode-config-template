@@ -1,13 +1,10 @@
 ---
 name: grill-me-skill
-description: A relentless interview to sharpen a plan or design. User-invoked orchestrator that runs grilling-skill WITHOUT doc capture. Use when you want a grilling session but don't need CONTEXT.md or ADR artifacts.
+description: >-
+  Relentless plan-sharpening interview WITHOUT doc capture — runs grilling-skill
+  only. Grilling without CONTEXT.md/ADR artifacts.
 license: Apache-2.0
 compatibility: opencode
-metadata:
-  audience: developers
-  workflow: planning, alignment
-  trigger: explicit-only
-  version: "1"
 category: Planning & Alignment
 ---
 

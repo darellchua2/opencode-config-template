@@ -1,11 +1,8 @@
 ---
 description: >-
-  Specialized subagent for ALL CAD, engineering, robotics, and hardware design
-  tasks. Orchestrates 14 skills: parametric CAD generation (STEP/STL/3MF/GLB),
-  DXF drawings, robot descriptions (URDF/SRDF/SDF), G-code slicing, 3D printing
-  (Bambu Labs), SendCutSend validation, CAD Viewer previews, Autodesk Platform
-  Services API integration, Civil 3D workflows, and Open3D 3D data processing.
-  Routes to the appropriate skill based on task type.
+  CAD/engineering/robotics specialist orchestrating 14 skills — parametric CAD
+  (STEP/STL/3MF/GLB), DXF, URDF/SRDF/SDF, G-code slicing, 3D printing,
+  SendCutSend, Civil 3D. Routes by task type.
 mode: subagent
 permission:
   read:
@@ -166,7 +163,7 @@ Use these defaults unless the user specifies otherwise:
 
 ## Autodesk MCP Servers
 
-When Autodesk MCP servers are configured (`autodesk-revit`, `autodesk-fusion`, `autodesk-model-data`, `autodesk-help`), use them for live model data access. Load `autodesk-aps-skill` for REST API patterns when MCP servers are unavailable or for cloud API integration (Data Management, Model Derivative, Design Automation).
+The 4 Autodesk MCP servers (`autodesk-revit`, `autodesk-fusion`, `autodesk-model-data`, `autodesk-help`) are **not shipped by default** — they are added wholesale via `./deploy/setup.sh --enable-pack autodesk` (Docker: `OPENCODE_PACKS=autodesk`) and require `AUTODESK_API_KEY`. When `autodesk-*` tools appear in your tool list, use them for live model data access. Otherwise load `autodesk-aps-skill` for REST API patterns (Data Management, Model Derivative, Design Automation).
 
 ## CodeGraph Integration
 

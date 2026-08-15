@@ -1,5 +1,7 @@
 ---
-description: Comprehensive code review subagent combining SOLID principles, clean code, code smells, design patterns, and object design for thorough quality analysis. Ideal for pre-commit reviews and quality gates.
+description: >-
+  Code review combining SOLID, clean code, code smells, design patterns, object
+  design — pre-commit reviews and quality gates.
 mode: subagent
 steps: 30
 permission:
@@ -37,6 +39,10 @@ permission:
     typescript-dry-principle-skill: allow
     continuous-learning-skill: allow
     context-budget-skill: allow
+    authentication-authorization-skill: allow
+    eval-harness-skill: allow
+    logging-observability-skill: allow
+    performance-optimization-skill: allow
 category: review
 ---
 

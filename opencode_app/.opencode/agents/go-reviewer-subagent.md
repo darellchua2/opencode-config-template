@@ -1,5 +1,7 @@
 ---
-description: Go code review subagent focusing on Go idioms, concurrency safety, error handling, and effective Go patterns for thorough Go quality analysis
+description: >-
+  Go code review — idioms, concurrency safety, error handling, effective Go
+  patterns.
 mode: subagent
 steps: 25
 permission:
