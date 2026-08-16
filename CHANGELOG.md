@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.28.0](https://github.com/darellchua2/opencode-config-template/compare/v4.27.0...v4.28.0) (2026-08-16)
+
+### Features
+
+* **plugins:** add opencode-scheduler@1.3.0 for cron-style scheduled jobs ([ef187ab](https://github.com/darellchua2/opencode-config-template/commit/ef187abfcfacba7c0c4570dc075c1abfce2b2ac1))
+
 ## [4.27.0](https://github.com/darellchua2/opencode-config-template/compare/v4.26.3...v4.27.0) (2026-08-15)
 
 ### Features
