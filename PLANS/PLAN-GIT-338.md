@@ -105,7 +105,8 @@ Reviewer family = 8 agents / 1,732 lines with ~58 lines of word-identical boiler
 
 - [x] **4.3** Full verification: `node deploy/build-registry.mjs --check`; full bats suite; `bash -n deploy/setup.sh`; commit docs `docs: sync counts after reviewer/linter consolidation`.
     — **Done:** build-registry --check OK (agents=32, skills=127, no drift); bats 304/304; bash -n OK; deploy/ sweep for deleted skill names clean (skill-profiles.json + dependency-map.json untouched, as planned); fixes: none
-- [ ] **4.4** Push GIT-338; open PR to main (base) referencing #338; note breaking-change major bump expectation in PR body (two `feat!` commits).
+- [x] **4.4** Push GIT-338; open PR to main (base) referencing #338; note breaking-change major bump expectation in PR body (two `feat!` commits).
+    — **Done:** PR #339 opened (base main, closes #338) with breaking-change section calling out the two feat! commits and removed `npx add` names; branch fully pushed; fixes: none
 
 ---
 
