@@ -38,7 +38,7 @@ Set these in the root `.env` file (copied from `.env.example`):
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `ZAI_API_KEY` | Yes | — | Z.AI API key (primary LLM provider) |
+| `ZAI_API_KEY` | Yes | — | Z.AI API key (primary LLM provider; also auths web-reader + web-search MCP) |
 | `GEMINI_API_KEY` | No | — | Gemini API key (secondary provider) |
 | `OPENCODE_PORT` | No | `4097` | External host port |
 

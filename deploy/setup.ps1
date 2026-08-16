@@ -1013,7 +1013,7 @@ $(Get-SkillCategories (Join-Path $RepoDir 'opencode_app\.opencode\skills'))
     git                   For version control
 
   API Keys (prompted during setup):
-    ZAI_API_KEY           Required for web-reader
+    ZAI_API_KEY           Required for web-reader, web-search
                           Get from: https://z.ai
 
   GitHub Auth:
@@ -1763,7 +1763,7 @@ function Set-Configuration {
             Write-Host "    - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
             Write-Host ""
             Write-Host "Configured MCP servers:" -ForegroundColor Green
-            Write-Host "    - Auto-start: codegraph, web-reader"
+            Write-Host "    - Auto-start: codegraph, web-reader, web-search"
             Write-Host "    - Opt-in per-project (.opencode/opencode.json): atlassian"
             Write-Host "    - Available but disabled (opt-in): next-devtools, markitdown, docling, chrome-devtools"
             if ($script:vgDeployed) {
@@ -2728,7 +2728,7 @@ function Show-NextSteps {
     Write-Host "  Run 'opencode --skill <name> `"prompt`"' to invoke a skill"
     Write-Host ""
      Write-Host "MCP Servers:"
-     Write-Host "  Auto-start: codegraph, web-reader"
+     Write-Host "  Auto-start: codegraph, web-reader, web-search"
      Write-Host "  Opt-in per-project: atlassian"
      Write-Host "  Opt-in global packs: next-devtools, markitdown, docling, chrome-devtools (+ autodesk pack adds 4)"
     Write-Host ""

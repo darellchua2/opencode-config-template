@@ -11,12 +11,14 @@
 # Note: deploy/setup.ps1 and setup.sh banner refs
 # refer to the AUTO-START count, not the total — those are
 # intentionally different and not asserted here.
-# UPDATE (PLAN-GIT-333 Phase 6): auto-start is now 2 (codegraph,
-# zai-web-reader). atlassian is opt-in per-project
+# UPDATE (PLAN-GIT-333 Phase 6): atlassian is opt-in per-project
 # (opencode-repo-setup-skill). zai-vision-mcp-server / zai-zread,
-# mermaid, and zai-web-search-prime were removed entirely
-# (native vision tier, inline mermaid blocks, gh/webfetch cover them).
-# Banner refs must say 2.
+# mermaid were removed entirely (native vision tier, inline mermaid
+# blocks, gh/webfetch cover them).
+# UPDATE (GIT-336): zai-web-search re-added and enabled — deliberate
+# reversal of 161c21d removal ("no consumers" falsified by #336).
+# Auto-start is now 3 (codegraph, zai-web-reader, zai-web-search).
+# setup.sh banner "(N)" counts non-pack servers (auto-start + atlassian) = 4.
 
 CONFIG="opencode_app/opencode.json"
 
@@ -55,8 +57,10 @@ actual_mcp_count() {
   python3 -c "import json; d=json.load(open('${CONFIG}')); assert 'zai-vision-mcp-server' not in d['mcp'], 'zai-vision-mcp-server must be removed'; assert 'zai-zread' not in d['mcp'], 'zai-zread must be removed'"
 }
 
-@test "mcp_count_mermaid_web_search_removed" {
-  python3 -c "import json; d=json.load(open('${CONFIG}')); assert 'mermaid' not in d['mcp'], 'mermaid MCP must be removed (inline blocks + mmdc)'; assert 'zai-web-search-prime' not in d['mcp'], 'zai-web-search-prime must be removed'"
+@test "mcp_count_mermaid_removed_web_search_present" {
+  # GIT-336 — zai-web-search re-added (enabled) as deliberate reversal of 161c21d
+  # ("no consumers" falsified by issue #336 demand; no websearch plugin supports Z.AI).
+  python3 -c "import json; d=json.load(open('${CONFIG}')); assert 'mermaid' not in d['mcp'], 'mermaid MCP must be removed (inline blocks + mmdc)'; assert d['mcp']['zai-web-search']['enabled'] is True, 'zai-web-search must be present and enabled (GIT-336)'"
 }
 
 @test "mcp_count_autodesk_not_shipped" {
@@ -70,11 +74,11 @@ for k in ('autodesk-revit','autodesk-model-data','autodesk-fusion','autodesk-hel
 "
 }
 
-@test "mcp_count_auto_start_is_two" {
-  # Two auto-start servers: codegraph, zai-web-reader.
+@test "mcp_count_auto_start_is_three" {
+  # Three auto-start servers: codegraph, zai-web-reader, zai-web-search (GIT-336).
   # atlassian is opt-in (Phase 6); zai-vision-mcp-server / zai-zread /
-  # mermaid / web-search-prime removed.
+  # mermaid remain removed.
   auto_count=$(python3 -c "import json; d=json.load(open('${CONFIG}')); print(sum(1 for v in d['mcp'].values() if v.get('enabled')))")
   echo "Auto-start (enabled) MCP count: ${auto_count}" >&3
-  [ "$auto_count" = "2" ]
+  [ "$auto_count" = "3" ]
 }
