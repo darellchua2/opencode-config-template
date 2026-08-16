@@ -20,11 +20,7 @@ permission:
     "*": deny
     explore: allow
     general: allow
-    python-reviewer-subagent: allow
-    typescript-reviewer-subagent: allow
-    go-reviewer-subagent: allow
-    rust-reviewer-subagent: allow
-    java-reviewer-subagent: allow
+    language-reviewer-subagent: allow
     image-analyzer-subagent: allow
   skill:
     solid-principles-skill: allow
@@ -253,19 +249,11 @@ If `.codegraph/` does not exist, fall back to grep/glob/read — the Mandatory I
 
 ## Language-Specific Reviewer Delegation
 
-When the codebase is primarily a single language, delegate to the language-specific reviewer for deeper analysis:
+When the codebase is primarily a single language, delegate to the language-specific reviewer for deeper analysis. The `language-reviewer-subagent` covers Python, TypeScript/JavaScript, Go, Rust, and Java — it detects the language(s) from the file set and applies the matching checklist (see its Language Detection & Scope table).
 
-| Language | Subagent | When to Delegate |
-|----------|----------|-----------------|
-| Python | `python-reviewer-subagent` | `*.py` files dominate, or Python framework detected (FastAPI, Django, Flask) |
-| TypeScript/JS | `typescript-reviewer-subagent` | `*.ts`, `*.tsx`, `*.js`, `*.jsx` files dominate, or React/Next.js/Node detected |
-| Go | `go-reviewer-subagent` | `*.go` files dominate, or Go modules detected |
-| Rust | `rust-reviewer-subagent` | `*.rs` files dominate, or Cargo.toml detected |
-| Java | `java-reviewer-subagent` | `*.java` files dominate, or pom.xml/build.gradle detected |
+**Delegation criteria**: If >60% of review files are a single language (or any language the specialist covers), delegate to `language-reviewer-subagent`. For codebases in languages it does not cover, handle files directly.
 
-**Delegation criteria**: If >60% of review files are a single language, delegate to that language reviewer. For mixed-language codebases, delegate language-specific files to appropriate reviewers and handle remaining files directly.
-
-**How to delegate**: Use Task tool with the appropriate subagent name. Pass the file list, review context, and severity rubric in the Task prompt.
+**How to delegate**: Use Task tool with `language-reviewer-subagent`. Pass the file list, review context, and severity rubric in the Task prompt.
 
 ## Built-in Subagent Delegation
 
