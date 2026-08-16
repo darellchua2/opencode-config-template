@@ -196,7 +196,7 @@ If the task names a language explicitly, use that language's section. For multi-
 
 **React Anti-Patterns**: Use `react-hooks-antipatterns-skill` (hooks: stale state, StrictMode, useCallback/useMemo traps) and `react-render-antipatterns-skill` (render: fragment keys, JSON.parse, visibility toggle) to detect runtime issues.
 
-**TypeScript DRY**: Use `typescript-dry-principle` to detect duplicate type definitions and duplicated status mappings that drift across components.
+**TypeScript DRY**: Use `typescript-dry-principle-skill` to detect duplicate type definitions and duplicated status mappings that drift across components.
 
 ## Go Review Checklist
 
