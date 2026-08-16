@@ -19,10 +19,8 @@ permission:
     loop-operator-subagent: allow
   skill:
     linting-workflow-skill: allow
-    python-ruff-linter-skill: allow
-    javascript-eslint-linter-skill: allow
+    language-linting-skill: allow
     continuous-learning-skill: allow
-    csharp-linter-skill: allow
 category: meta
 ---
 
@@ -46,10 +44,10 @@ category: meta
 
 You are a linting specialist. Analyze code quality and enforce best practices using appropriate linters for the codebase:
 
-- Python: Use python-ruff-linter for fast, comprehensive linting
-- JavaScript/TypeScript: Use javascript-eslint-linter for ES6+ and JSX support
-- Java Spring Boot: Use Checkstyle (style), SpotBugs (bugs), PMD (patterns), and spring-javaformat (Spring conventions)
-- C# .NET 10: Use `dotnet format`, StyleCop analyzers, Roslyn analyzers, and .NET code quality analyzers
+- Python: Ruff for fast, comprehensive linting (see `language-linting-skill`)
+- JavaScript/TypeScript: ESLint for ES6+ and JSX support (see `language-linting-skill`)
+- Java Spring Boot: Checkstyle (style), SpotBugs (bugs), PMD (patterns), and spring-javaformat (Spring conventions) — see `language-linting-skill`
+- C# .NET 10: `dotnet format`, StyleCop analyzers, Roslyn analyzers, and .NET code quality analyzers — see `language-linting-skill`
 - Generic: Use linting-workflow for cross-language linting with auto-fix
 
 ## CodeGraph Integration
@@ -255,7 +253,7 @@ When a project contains multiple languages:
 ## Workflow
 
 1. Detect programming language(s) in the codebase (scan file extensions, build files)
-2. Select appropriate linter skill or built-in knowledge (python-ruff-linter, javascript-eslint-linter, or linting-workflow)
+2. Select appropriate linter skill (language-linting-skill for per-language rules, or linting-workflow for generic linting)
 3. Run auto-fix pass first
 4. Re-run linter to capture remaining issues
 5. Classify issues by severity (Error/Warning/Info)

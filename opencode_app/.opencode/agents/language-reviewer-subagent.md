@@ -32,7 +32,7 @@ permission:
     react-render-antipatterns-skill: allow
     typescript-dry-principle-skill: allow
     deprecated-code-cleanup-skill: allow
-    java-linter-skill: allow
+    language-linting-skill: allow
     continuous-learning-skill: allow
     search-first-skill: allow
 category: review
@@ -406,7 +406,7 @@ If the task names a language explicitly, use that language's section. For multi-
 | **Micronaut** | Compile-time DI (no reflection), `@Singleton` vs `@Context` scope, AOP via `@Around`, proper HTTP filters, no `@Inject` on private fields (compile-time constraints) |
 | **Jakarta EE** | CDI scopes correct (`@RequestScoped`, `@SessionScoped`, `@ApplicationScoped`), JPA session management (no `LazyInitializationException`), EJB patterns (`@Stateless` vs `@Singleton`), Bean Validation on JAX-RS endpoints, proper `persistence.xml` config |
 
-**Java Linting**: Use `java-linter-skill` for Checkstyle/SpotBugs/PMD command guidance and rule references.
+**Java Linting**: Use `language-linting-skill` for Checkstyle/SpotBugs/PMD command guidance and rule references.
 
 ## Severity Scoring
 
