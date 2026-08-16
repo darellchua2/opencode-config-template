@@ -55,16 +55,10 @@ Capabilities:
 - Perceive error screenshots directly (native multimodal — no skill/API call)
 - Provide actionable solutions with code examples
 
-Workflow:
-1. Identify error type (runtime, compilation, test, infrastructure)
-2. Parse error information (message, stack trace, context)
-3. Analyze root cause using error patterns
-4. Provide structured solution:
-   - Summary of the issue
-   - Root cause explanation
-   - Step-by-step fix with code examples
-   - Prevention recommendations
-5. Verify fix if applicable
+Workflow: follow `error-resolver-workflow-skill` — the source of truth for the 5-step
+identify→parse→analyze→solve→verify workflow, the structured solution format
+(Summary, Root Cause, Fix, Prevention), and per-language error-pattern tables
+(JS/TS, Python, Infrastructure). This subagent orchestrates and applies the fixes.
 
 Screenshot analysis (native multimodal):
 - You run on `zai/glm-5v-turbo` and **see error screenshots directly** — no skill, no curl, no

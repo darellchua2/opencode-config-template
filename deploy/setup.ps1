@@ -960,11 +960,7 @@ USAGE:
     scout                External docs and dependency research
     explorer             Codebase exploration and analysis (subagent)
     code-review          Code review with SOLID/clean-code analysis
-    python-reviewer      Python code review (PEP 8, type hints, async)
-    typescript-reviewer  TypeScript/JS code review (type safety, React/Next)
-    go-reviewer          Go code review (idioms, concurrency, errors)
-    rust-reviewer        Rust code review (ownership, unsafe, Result/Option)
-    java-reviewer        Java code review (Effective Java, concurrency, Spring)
+    language-reviewer    Multi-language code review (Python, TS/JS, Go, Rust, Java)
     testing              Test generation with framework detection
     pr-workflow          PR creation with quality gates and JIRA integration
     linting              Code linting with auto-fix for Python/JS/TS

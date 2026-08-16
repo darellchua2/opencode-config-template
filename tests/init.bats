@@ -38,7 +38,7 @@ teardown() { rm -rf "$TMP_PROJ"; }
 
 @test "--list agents --category review filters to reviewers" {
   count=$($INIT --list agents --category review 2>/dev/null | jq_len)
-  [ "$count" = "7" ]
+  [ "$count" = "3" ]
 }
 
 @test "--list skills is valid JSON matching registry count" {
@@ -63,24 +63,24 @@ teardown() { rm -rf "$TMP_PROJ"; }
   avail=$(echo "$out" | jq_get "d['modelAvailable']")
   echo "skills=$skills delegates=$delegates avail=$avail" >&3
   [ "$skills" = "16" ]
-  [ "$delegates" -ge 5 ]
+  [ "$delegates" -ge 4 ]
   [ "$avail" = "True" ]
 }
 
-@test "--expand review resolves transitive closure (8 agents incl. image-analyzer)" {
+@test "--expand review resolves transitive closure (4 agents incl. image-analyzer)" {
   agents=$($INIT --expand review 2>/dev/null | jq_get "len(d['agents'])")
   has_img=$($INIT --expand review 2>/dev/null | jq_get "'image-analyzer-subagent' in d['agents']")
   echo "agents=$agents has_image-analyzer=$has_img" >&3
-  [ "$agents" = "8" ]
+  [ "$agents" = "4" ]
   [ "$has_img" = "True" ]
 }
 
-@test "install review --yes lands exactly 8 agents + 25 skills + codegraph (resolver deps)" {
+@test "install review --yes lands exactly 4 agents + 25 skills + codegraph (resolver deps)" {
   run $INIT --project "$TMP_PROJ" --preset review --yes
   [ "$status" -eq 0 ]
   agent_files=$(ls "$TMP_PROJ/.opencode/agents/" | wc -l)
   skill_dirs=$(ls "$TMP_PROJ/.opencode/skills/" | wc -l)
-  [ "$agent_files" -eq 8 ]
+  [ "$agent_files" -eq 4 ]
   [ "$skill_dirs" -eq 25 ]
 }
 
@@ -110,13 +110,13 @@ teardown() { rm -rf "$TMP_PROJ"; }
   run $INIT --project "$TMP_PROJ" --preset review --yes
   [ "$status" -eq 0 ]
   agent_files=$(ls "$TMP_PROJ/.opencode/agents/" | wc -l)
-  [ "$agent_files" -eq 8 ]
+  [ "$agent_files" -eq 4 ]
 }
 
 @test "--prune removes previously-installed entries absent from the new set" {
   $INIT --project "$TMP_PROJ" --preset review --yes >/dev/null 2>&1
   before=$(ls "$TMP_PROJ/.opencode/agents/" | wc -l)
-  [ "$before" -eq 8 ]
+  [ "$before" -eq 4 ]
   # switch to docs (disjoint agents) with --prune
   $INIT --project "$TMP_PROJ" --preset docs --yes --prune >/dev/null 2>&1
   # code-review-subagent should be gone (not in docs closure)

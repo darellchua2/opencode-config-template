@@ -76,28 +76,19 @@ Accept from the primary session:
 
 Run against the persistent PTY session (see PTY Execution Model) — not fresh `bash`. `pty_spawn` the runner once; `pty_read` the streamed results.
 
-For each target page, at each breakpoint, run the 6 detection assertions:
-
-1. **Horizontal overflow** — `scrollWidth > clientWidth`
-2. **Element clipping** — interactive elements extending beyond parent bounds
-3. **Breakpoint visibility toggle** — responsive show/hide classes in correct state
-4. **Tap-target size** (touch only) — interactive elements >= 44x44px
-5. **Text truncation** — text cut off with content loss
-6. **Layout-shift** — CLS delta after initial render
+For each target page, at each breakpoint, run the 6 detection assertions defined in
+`playwright-responsive-audit-skill` (the skill is the source of truth for assertion definitions
+and thresholds): horizontal overflow, element clipping, breakpoint visibility toggle, tap-target
+size, text truncation, layout-shift.
 
 ### Step 3: Classify Defects
 
-Categorize each defect by fix-confidence tier:
-
-| Tier | Confidence | Action |
-|---|---|---|
-| **Tier 1** | High — mechanical Tailwind fix | Apply directly |
-| **Tier 2** | Medium — structural change | Apply + verify via screenshot |
-| **Tier 3** | Low — complex restructure | Report only |
+Categorize each defect by the 3 fix-confidence tiers defined in `playwright-responsive-audit-skill`
+(Tier 1 high-confidence mechanical, Tier 2 structural, Tier 3 complex restructure).
 
 ### Step 4: Apply Fixes
 
-- **Tier 1:** Apply mechanical Tailwind breakpoint additions (`grid-cols-1 sm:grid-cols-2`, `flex-col sm:flex-row`, `w-full max-w-[X]`, `min-w-[44px]`, etc.)
+- **Tier 1:** Apply mechanical Tailwind breakpoint fixes per the skill's fix-pattern reference.
 - **Tier 2:** Apply structural transforms (table→card, sidebar toggle, responsive dialog sizing). After applying, capture a screenshot and delegate to `image-analyzer-subagent` for visual verification.
 - **Tier 3:** Document with severity and recommended approach. Do not auto-fix.
 

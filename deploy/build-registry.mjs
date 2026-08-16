@@ -13,7 +13,8 @@
 //                      `permission.skill:` then indented `  <name>: allow`
 //                      `metadata:` then indented `  audience: …` / `  workflow: …`
 //   (c) absent keys:   e.g. explorer-subagent has no `task` key at all
-// Descriptions are single-line. No YAML anchors/multiline strings are used.
+// Descriptions are single-line scalars or folded block scalars (`description: >-`
+// with deeper-indented continuation lines, space-joined). No YAML anchors are used.
 //
 // Output shape (deploy/registry.json):
 //   { "$comment": …, "generatedAt": …, "agents": [...], "skills": [...] }
@@ -66,10 +67,18 @@ function parseFrontmatter(fmLines) {
   const root = {};
   const stack = []; // [{ depth, key }]
   const unquote = (s) => s.trim().replace(/^['"]|['"]$/g, "");
+  let fold = null; // { indent, target, key, parts } while consuming a block scalar
   for (const raw of fmLines) {
     const trimmed = raw.trim();
-    if (trimmed === "" || trimmed.startsWith("#")) continue;
     const indent = raw.length - raw.replace(/^\s+/, "").length;
+    if (fold) {
+      if (trimmed === "") continue; // blank inside block: paragraph sep, keep folding
+      if (indent > fold.indent) { fold.parts.push(trimmed); continue; }
+      // ponytail: space-join covers folded `>-`; repo has no literal `|` blocks needing \n
+      fold.target[fold.key] = fold.parts.join(" ");
+      fold = null; // this line ends the block — process it normally below
+    }
+    if (trimmed === "" || trimmed.startsWith("#")) continue;
     const depth = Math.floor(indent / 2);
     let key, val;
     const mapMatch = trimmed.match(/^([^:]+):\s*$/); // "key:" → map marker
@@ -81,6 +90,14 @@ function parseFrontmatter(fmLines) {
       if (ci === -1) continue; // not key:value, skip
       key = unquote(trimmed.slice(0, ci));
       val = unquote(trimmed.slice(ci + 2));
+      if (/^[>|][+-]?$/.test(val)) {
+        // block scalar (e.g. `description: >-`): fold deeper-indented lines into one string
+        while (stack.length && stack[stack.length - 1].depth >= depth) stack.pop();
+        let parent = root;
+        for (const frame of stack) parent = parent[frame.key];
+        fold = { indent, target: parent, key, parts: [] };
+        continue;
+      }
     }
     // pop stack until parent is at depth-1
     while (stack.length && stack[stack.length - 1].depth >= depth) stack.pop();
@@ -93,6 +110,7 @@ function parseFrontmatter(fmLines) {
       parent[key] = val;
     }
   }
+  if (fold) fold.target[fold.key] = fold.parts.join(" ");
   return root;
 }
 

@@ -3,7 +3,7 @@
   "name": "backend",
   "description": "Server/devops-lite: Python backend/packaging, DB migrations, API design, security, auth, docker, observability.",
   "agents": [
-    "python-reviewer-subagent"
+    "language-reviewer-subagent"
   ],
   "skills": [
     "api-design-skill",
