@@ -191,22 +191,22 @@
       ],
       "enabled": false
     },
- "zai-web-reader": {
-  "type": "remote",
-  "url": "https://api.z.ai/api/mcp/web_reader/mcp",
-  "headers": {
-   "Authorization": "Bearer {env:ZAI_API_KEY}"
-  },
-  "enabled": true
- },
- "zai-web-search": {
-  "type": "remote",
-  "url": "https://api.z.ai/api/mcp/web_search_prime/mcp",
-  "headers": {
-   "Authorization": "Bearer {env:ZAI_API_KEY}"
-  },
-  "enabled": true
- },
+    "zai-web-reader": {
+        "type": "remote",
+        "url": "https://api.z.ai/api/mcp/web_reader/mcp",
+        "headers": {
+            "Authorization": "Bearer {env:ZAI_API_KEY}"
+        },
+        "enabled": true
+    },
+    "zai-web-search": {
+        "type": "remote",
+        "url": "https://api.z.ai/api/mcp/web_search_prime/mcp",
+        "headers": {
+            "Authorization": "Bearer {env:ZAI_API_KEY}"
+        },
+        "enabled": true
+    },
     "next-devtools": {
       "type": "local",
       "command": ["npx", "-y", "next-devtools-mcp@latest"],

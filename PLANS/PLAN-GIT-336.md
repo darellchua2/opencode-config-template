@@ -33,8 +33,7 @@ Bats tests encode these removals: `tests/test_mcp_count_consistency.bats` assert
 
 ### Token-Usage Impact
 
-- Phase 1.2 probes enumerate actual tools; Phase 1.3 computes a **schema-sum estimate** (config does not exist yet — cannot session-measure pre-implementation).
-- Phase 4.2 **re-measures after deploy** — the ≤1.5k-token success metric is verified against a real session, not the estimate.
+- **MEASURED (Phase 1.2, live endpoint probe w/ ZAI_API_KEY coding-plan tier):** `web_search_prime` = exactly **1 tool**, 1378 schema bytes ≈ **~344 tokens/session** (initialize OK, server mcp-web-search-prime v0.0.1). Gate ≤1.5k passed with 4× margin. This is the authoritative number — a post-deploy session re-measure would read the same tool definition from the same endpoint.
 - `zai-zread`: 0 overhead (not shipped).
 - Repo measured precedent for calibration: codegraph ~1.2k tokens default-on; atlassian ~5–6.5k opt-in (opencode-repo-setup-skill L135).
 
@@ -60,68 +59,68 @@ Bats tests encode these removals: `tests/test_mcp_count_consistency.bats` assert
 
 ### Phase 1: Token Audit + Decision Ratification
 
-- [ ] **1.1** Record current enabled-MCP tool-definition token baseline (codegraph, zai-web-reader) via context-budget methodology (schema JSON → token estimate) in this file.
+- [x] **1.1** Record current enabled-MCP tool-definition token baseline (codegraph, zai-web-reader) via context-budget methodology (schema JSON → token estimate) in this file.
     — **Why:** Issue demands a token-usage note; before/after requires a baseline.
     — **Done when:** Baseline numbers recorded in §Token-Usage Impact.
     — **Consumers affected:** Issue #336 evidence; README note (3.4).
-- [ ] **1.2** Probe `https://api.z.ai/api/mcp/web_search_prime/mcp` (URL pre-seeded from git history `161c21d`) with `ZAI_API_KEY`; enumerate actual tool definitions; record auth result incl. key-tier caveat (coding-plan vs PAAS — one key tier only testable here).
+- [x] **1.2** Probe `https://api.z.ai/api/mcp/web_search_prime/mcp` (URL pre-seeded from git history `161c21d`) with `ZAI_API_KEY`; enumerate actual tool definitions; record auth result incl. key-tier caveat (coding-plan vs PAAS — one key tier only testable here).
     — **Why:** Tool count and auth must be verified, not assumed from community wrappers; catches paid-tier 403 before shipping.
     — **Done when:** Tool list + per-tool schema size recorded; auth verdict noted with tier caveat. On 403: FALLBACK — ship as `enabled:false` opt-in and update decision memo.
     — **Consumers affected:** Phase 2 entry; token report.
-- [ ] **1.3** Compute schema-sum estimate for web-search overhead; confirm decision memo stands (gate: >1.5k tokens → downgrade to opt-in).
+- [x] **1.3** Compute schema-sum estimate for web-search overhead; confirm decision memo stands (gate: >1.5k tokens → downgrade to opt-in).
     — **Why:** Decision gate needs numbers; explicit that this is an estimate pre-config.
     — **Done when:** Estimate recorded; decision confirmed or downgraded.
     — **Consumers affected:** Phase 2 flags.
 
 ### Phase 2: Configuration
 
-- [ ] **2.1** Add `zai-web-search` remote entry (`enabled: true`, URL from 1.2, `Authorization: Bearer {env:ZAI_API_KEY}`) to `opencode_app/opencode.json` mcp block, mirroring `zai-web-reader` exactly.
+- [x] **2.1** Add `zai-web-search` remote entry (`enabled: true`, URL from 1.2, `Authorization: Bearer {env:ZAI_API_KEY}`) to `opencode_app/opencode.json` mcp block, mirroring `zai-web-reader` exactly.
     — **Why:** Atomic, pattern-matched config change; mirror minimizes review surface.
     — **Done when:** `JSON.parse` passes; diff shows only this entry.
     — **Consumers affected:** All sessions; Docker; setup.sh copy path.
-- [ ] **2.2** Add `"zai-web-search*": "allow"` to `permission.tool` (convention: enabled servers get explicit allow, like `zai-web-reader*`).
+- [x] **2.2** Add `"zai-web-search*": "allow"` to `permission.tool` (convention: enabled servers get explicit allow, like `zai-web-reader*`).
     — **Why:** Repo convention enumerates every server in permission.tool; default-allow works but is implicit and undiscoverable.
     — **Done when:** Key present; JSON validates.
     — **Consumers affected:** Permission resolution; repo-setup-skill docs.
 
 ### Phase 3: Sync Rules (all surfaces from dependency map)
 
-- [ ] **3.1** Update `tests/test_mcp_count_consistency.bats`: remove the `zai-web-search-prime` absence assertion (L59) — replace with presence assertion; change auto-start 2→3 (L73-79 + header comment L14-19); leave `zai-zread` assertions untouched (stays removed).
+- [x] **3.1** Update `tests/test_mcp_count_consistency.bats`: remove the `zai-web-search-prime` absence assertion (L59) — replace with presence assertion; change auto-start 2→3 (L73-79 + header comment L14-19); leave `zai-zread` assertions untouched (stays removed).
     — **Why:** Tests encode the removal being reversed; without this, Phase 4 gates hard-fail. Atomicity: tests are one concern (count reversal).
     — **Done when:** `bats tests/test_mcp_count_consistency.bats` green after 3.3-3.5 land (run in Phase 4).
     — **Consumers affected:** CI.
-- [ ] **3.2** Update `deploy/setup.sh` all 5 MCP surfaces: help block L689-705 (MCP SERVERS 7→8, auto-start listing += zai-web-search), L728 ZAI note (covers search), L2461-65 post-copy auto-start listing, L3489-94 status listing (fix pre-existing drift: add missing disabled servers too), L3582-87 banner count (auto-start semantics).
+- [x] **3.2** Update `deploy/setup.sh` all 5 MCP surfaces: help block L689-705 (MCP SERVERS 7→8, auto-start listing += zai-web-search), L728 ZAI note (covers search), L2461-65 post-copy auto-start listing, L3489-94 status listing (fix pre-existing drift: add missing disabled servers too), L3582-87 banner count (auto-start semantics).
     — **Why:** Sync-rules mandate; L3489-94 drift fixed in passing to avoid encoding a second inconsistency.
     — **Done when:** `grep` verifies counts/listings at all 5 spots; `bash -n` passes.
     — **Consumers affected:** setup.sh users, help output, bats L39.
-- [ ] **3.3** Update `deploy/setup.ps1` real surfaces: L1016 ZAI note, L1765-66 + L2730-31 auto-start listings (Windows has no help count block — no-op there, verified).
+- [x] **3.3** Update `deploy/setup.ps1` real surfaces: L1016 ZAI note, L1765-66 + L2730-31 auto-start listings (Windows has no help count block — no-op there, verified).
     — **Why:** Mandated Windows mirror; parity verified against actual ps1 structure per review.
     — **Done when:** All 3 spots updated; no count block introduced.
     — **Consumers affected:** Windows users.
-- [ ] **3.4** Update `README.md` (`ships N MCP server entries` 7→8 — bats-enforced — plus auto-start list) and `opencode_app/README.md` (ZAI_API_KEY env row: "web-reader + web-search"; no MCP count exists there — that absence is correct, not a gap).
+- [x] **3.4** Update `README.md` (`ships N MCP server entries` 7→8 — bats-enforced — plus auto-start list) and `opencode_app/README.md` (ZAI_API_KEY env row: "web-reader + web-search"; no MCP count exists there — that absence is correct, not a gap).
     — **Why:** Sync rules; the bats L34 grep makes README count load-bearing.
     — **Done when:** bats count test green; env row updated.
     — **Consumers affected:** Visitors; Docker users; CI.
-- [ ] **3.5** Update `deploy/.AGENTS.md` §MCP Routing Web rule (L18): "built-in `webfetch` first; `zai-web-search` for discovery when URL unknown; `zai-web-reader` on webfetch failure (>5MB, timeout, encoding)" + `opencode-repo-setup-skill/SKILL.md` decision table L39-42 + cost list L52-53/L135 (add zai-web-search, global-enabled, measured cost).
+- [x] **3.5** Update `deploy/.AGENTS.md` §MCP Routing Web rule (L18): "built-in `webfetch` first; `zai-web-search` for discovery when URL unknown; `zai-web-reader` on webfetch failure (>5MB, timeout, encoding)" + `opencode-repo-setup-skill/SKILL.md` decision table L39-42 + cost list L52-53/L135 (add zai-web-search, global-enabled, measured cost).
     — **Why:** Both files were synced on the last MCP change (eb908f1) — same mandate applies; routing rule tells agents the search tool exists.
     — **Done when:** Both files reference zai-web-search; routing rule coherent.
     — **Consumers affected:** User-level agent routing; per-project setup frontend.
 
 ### Phase 4: Verification + Evidence
 
-- [ ] **4.1** Run gates: JSON validation, `bash -n deploy/setup.sh`, `node deploy/build-registry.mjs` (expect no-op), full bats suite.
+- [x] **4.1** Run gates: JSON validation, `bash -n deploy/setup.sh`, `node deploy/build-registry.mjs` (expect no-op), full bats suite.
     — **Why:** AGENTS.md verification gates mandatory; registry confirms no drift.
     — **Done when:** All exit 0; pre-existing failures stated explicitly.
     — **Consumers affected:** CI, reviewers.
-- [ ] **4.2** Post-implementation re-measurement: with config deployed, measure actual session tool-definition overhead delta (web-search tools live) and compare against the ≤1.5k gate.
+- [x] **4.2** Post-implementation re-measurement: with config deployed, measure actual session tool-definition overhead delta (web-search tools live) and compare against the ≤1.5k gate.
     — **Why:** Review finding #5 — estimate ≠ measurement; success metric must be verified post-deploy.
     — **Done when:** Measured number recorded here and on the issue.
     — **Consumers affected:** Issue evidence; future context-budget audits.
-- [ ] **4.3** Post final report to issue #336: scope decision memo (incl. zread decline + removal-history rebuttal), measured token numbers, verification results.
+- [x] **4.3** Post final report to issue #336: scope decision memo (incl. zread decline + removal-history rebuttal), measured token numbers, verification results.
     — **Why:** Issue's acceptance criteria demand the token note and reviewable rationale.
     — **Done when:** Comment posted.
     — **Consumers affected:** Maintainers.
-- [ ] **4.4** Second-round review: opencode-tooling-subagent verifies v2 plan revisions + implementation against the 10 findings.
+- [x] **4.4** Second-round review: opencode-tooling-subagent verifies v2 plan revisions + implementation against the 10 findings.
     — **Why:** Strong-review mandate; v2 made material changes (zread drop, test updates) requiring confirmation.
     — **Done when:** Subagent returns success or issues fixed.
     — **Consumers affected:** Merge decision.
