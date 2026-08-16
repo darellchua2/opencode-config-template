@@ -249,7 +249,7 @@ Not every project needs all 32 agents + 127 skills. <!-- count: hand-maintained 
 | `core` | explorer | git-semantic-commits, continuous-learning | codegraph | Minimal baseline |
 | `review` | code-review + architecture + language-reviewer | 25 (Code Quality + auth/perf/logging/eval) | codegraph | Code quality gates |
 | `frontend` | nextjs-specialist + uiux-reviewer + responsive-audit | 19 (Next.js/React/Three.js/a11y) | next-devtools, chrome-devtools, codegraph | Web frontend |
-| `backend` | language-reviewer | 17 (Python/DB/API/security/docker) | codegraph | Server / devops-lite |
+| `backend` | language-reviewer | 22 (Python/DB/API/security/docker) | codegraph | Server / devops-lite |
 | `docs` | documentation + coverage + docx/pptx/xlsx + office-doc | 21 (document ladder) | — (inline mermaid blocks need no MCP) | Document generation |
 | `devops` | repo-ops + opentofu-explorer | 31 (release/IaC/JIRA) | codegraph | Git / infra / release |
 | `business` | startup-founder + ceo + discovery + requirements + technical-design | 32 (BD/pitch/planning) | — | BD / founder workflows |
@@ -384,7 +384,7 @@ Default state of every pack is **OFF** — existing deployments are unaffected u
 
 #### Skill Profiles — deploy-time primary visibility (#333)
 
-Every allowed skill's `description` is injected into the primary session's context at startup (~90 tokens each). The shipped `opencode_app/opencode.json` allowlist (88 allows) is the **full** profile. For a context-lean primary, deploy with a **lean** profile: only 30 primary-visible skills + `"*": "deny"` (~3.9k tokens saved per session, measured).
+Every allowed skill's `description` is injected into the primary session's context at startup (~90 tokens each). The shipped `opencode_app/opencode.json` allowlist (87 allows) is the **full** profile. For a context-lean primary, deploy with a **lean** profile: only 30 primary-visible skills + `"*": "deny"` (~3.9k tokens saved per session, measured).
 
 ```bash
 ./deploy/setup.sh                                # default: lean (30 primary-visible skills)
@@ -456,7 +456,7 @@ Set `OPENCODE_DISABLE_LSP_DOWNLOAD=true` to prevent auto-downloads. See the [ful
 
 ### When to prefer a CLI check instead
 
-For one-off validation the docs recommend running the compiler/linter directly (e.g. `tsc --noEmit`, `pyright`, `ruff`) — no persistent server, lower overhead. This repo's existing `*-linter-skill` skills already take that approach. Use LSP when you want **continuous** feedback during agent editing sessions.
+For one-off validation the docs recommend running the compiler/linter directly (e.g. `tsc --noEmit`, `pyright`, `ruff`) — no persistent server, lower overhead. This repo's `language-linting-skill` already takes that approach. Use LSP when you want **continuous** feedback during agent editing sessions.
 
 ## Knowledge Persistence
 
