@@ -254,3 +254,9 @@ The vendored ruleset + adapted instruction builder live in `opencode_app/.openco
 3. `command.execute.before` hook persists `/learnings-on|off|refresh` per session.
 
 No `opencode.json` change required — local plugins are glob-discovered. No conflict with `opencode-superlocalmemory` (different store: markdown vs vectors; different hook: `experimental.chat.system.transform` vs `tui.prompt.append`). Reference: `opencode_app/.opencode/plugins/learnings-autoinject.README.md`.
+
+## Scheduler Plugin (cron jobs)
+
+[`opencode-scheduler@1.3.0`](https://github.com/different-ai/opencode-scheduler) (in `opencode.json` `plugin[]`) runs recurring agent jobs via the **OS-native scheduler** — launchd (macOS), systemd (Linux), Task Scheduler (Windows), with cron fallback. Jobs are workdir-scoped, supervised (no overlap, optional `timeoutSeconds` SIGTERM→SIGKILL), and forced non-interactive (`OPENCODE_PERMISSION` denies question prompts so headless runs never hang). Manage in natural language: *"Schedule a daily job at 9am to…"*, list/update/run-now/logs/delete.
+
+**Docker caveat:** the standalone container has no systemd/launchd (and usually no cron), so scheduled jobs do not fire in-container. For the Docker deployment, schedule on the host instead (host cron/systemd timer calling `docker compose exec` / `opencode run`). User-space deploys via `setup.sh` work natively.
