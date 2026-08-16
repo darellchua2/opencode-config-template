@@ -2,6 +2,36 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.0.0](https://github.com/darellchua2/opencode-config-template/compare/v4.29.0...v5.0.0) (2026-08-16)
+
+### ⚠ BREAKING CHANGES
+
+* **skills:** npx add python-ruff-linter-skill|javascript-eslint-linter-skill|java-linter-skill|csharp-linter-skill names removed; use language-linting-skill. Skills 130 -> 127. Plan: PLANS/PLAN-GIT-338.md Phase 2. Gate: build-registry --check + bats 304/304 green.
+* **agents:** npx add <lang>-reviewer-subagent names are removed; use
+language-reviewer-subagent. Presets review/backend swap to the merged agent.
+
+Plan: PLANS/PLAN-GIT-338.md. Gate: registry --check OK (agents=32), bats
+304/304, bash -n setup.sh OK. Trace: per-step Done lines in PLAN.
+
+### Features
+
+* **agents:** merge language reviewers into language-reviewer-subagent ([9dc23ed](https://github.com/darellchua2/opencode-config-template/commit/9dc23edb3efbb74adc5b2420f7a4f695cabcb95a))
+* **skills:** merge per-language linter skills into language-linting-skill ([63c3bf2](https://github.com/darellchua2/opencode-config-template/commit/63c3bf21f46f56a0450d269bd21d9d8b9a896566))
+
+### Bug Fixes
+
+* **deploy:** fold YAML block-scalar descriptions in registry parser ([c52d8c4](https://github.com/darellchua2/opencode-config-template/commit/c52d8c4249081f0aaabf7fc9b51b6c7d29cea8d9)), closes [#339](https://github.com/darellchua2/opencode-config-template/issues/339)
+
+### Code Refactoring
+
+* **agents:** extract duplicated agent knowledge into skills ([0227077](https://github.com/darellchua2/opencode-config-template/commit/0227077f4efa82b1249daa50c410302a13be403d))
+
+### Documentation
+
+* **plan:** add PLAN-GIT-338.md for GIT-338 ([5c989a8](https://github.com/darellchua2/opencode-config-template/commit/5c989a8c898777c1003a168b9456bc72219b29a0))
+* **plan:** trace Phase 4 completion (PR [#339](https://github.com/darellchua2/opencode-config-template/issues/339)) ([06ce413](https://github.com/darellchua2/opencode-config-template/commit/06ce413e20f2dcbf8fc8540523d4f5793de69802))
+* sync counts after reviewer/linter consolidation ([705c759](https://github.com/darellchua2/opencode-config-template/commit/705c7592691d4f1081b744cbc73baa3ba5bba210))
+
 ## [4.29.0](https://github.com/darellchua2/opencode-config-template/compare/v4.28.0...v4.29.0) (2026-08-16)
 
 ### Features
