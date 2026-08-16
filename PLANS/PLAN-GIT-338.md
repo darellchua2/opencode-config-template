@@ -97,9 +97,14 @@ Reviewer family = 8 agents / 1,732 lines with ~58 lines of word-identical boiler
 
 ### Phase 4: Regen, verify, release
 
-- [ ] **4.1** Refresh stale `docs/registry.json` (currently 129 vs 130 — pre-existing drift) via build-site.mjs or documented regen path.
-- [ ] **4.2** Doc-sync sweep: counts/listings across setup.sh/ps1, README.md (agents 32, Language-Specific 6), opencode_app/README.md if affected; invoke `documentation-sync-workflow-skill` checklist or delegate to opencode-tooling-subagent.
-- [ ] **4.3** Full verification: `node deploy/build-registry.mjs --check`; full bats suite; `bash -n deploy/setup.sh`; commit docs `docs: sync counts after reviewer/linter consolidation`.
+- [x] **4.1** Refresh stale `docs/registry.json` (currently 129 vs 130 — pre-existing drift) via build-site.mjs or documented regen path.
+    — **Done:** `node deploy/build-site.mjs` rebuilt docs/index.html (32 agents, 127 skills) + docs/registry.json; discovered both are gitignored build artifacts (.gitignore:35-36) so the "stale" file was a local artifact, never committed — no commit needed; fixes: none
+
+- [x] **4.2** Doc-sync sweep: counts/listings across setup.sh/ps1, README.md (agents 32, Language-Specific 6), opencode_app/README.md if affected; invoke `documentation-sync-workflow-skill` checklist or delegate to opencode-tooling-subagent.
+    — **Done:** README 26 (36→32 agents), 27 (130→127 skills), 241, 399, 550, 554 (appended GIT-338 ledger entry → 127); opencode_app/README 25-26 (32/127), 185 (24/36 → 22/32 task-perm stat, counted from disk); setup.sh/ps1 need nothing (dynamic counts, listing already updated Phase 1); no stale reviewer/linter names anywhere in hand-maintained docs; files: README.md, opencode_app/README.md; fixes: none
+
+- [x] **4.3** Full verification: `node deploy/build-registry.mjs --check`; full bats suite; `bash -n deploy/setup.sh`; commit docs `docs: sync counts after reviewer/linter consolidation`.
+    — **Done:** build-registry --check OK (agents=32, skills=127, no drift); bats 304/304; bash -n OK; deploy/ sweep for deleted skill names clean (skill-profiles.json + dependency-map.json untouched, as planned); fixes: none
 - [ ] **4.4** Push GIT-338; open PR to main (base) referencing #338; note breaking-change major bump expectation in PR body (two `feat!` commits).
 
 ---
