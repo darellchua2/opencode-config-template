@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.29.0](https://github.com/darellchua2/opencode-config-template/compare/v4.28.0...v4.29.0) (2026-08-16)
+
+### Features
+
+* **mcp:** add zai-web-search server enabled by default (GIT-336) ([730c933](https://github.com/darellchua2/opencode-config-template/commit/730c933a3f3583020df45d0edc9cb3420fa0dfe6)), closes [#336](https://github.com/darellchua2/opencode-config-template/issues/336)
+
+### Documentation
+
+* **plan): tick GIT-336 steps, record measured 344-token result; style(mcp:** normalize zai block indent ([c298143](https://github.com/darellchua2/opencode-config-template/commit/c298143595bd273af1f97e4bfd825da2df787e54))
+* **plan:** add PLAN-GIT-336.md for GIT-336 ([2be71cf](https://github.com/darellchua2/opencode-config-template/commit/2be71cf7f5df1c1746d7218aa1d87e0d324d40a7))
+* **plan:** revise PLAN-GIT-336 per strong review (v2) ([0fb3b58](https://github.com/darellchua2/opencode-config-template/commit/0fb3b58c2f67790a21c98a4232460a712cc5f5d0))
+
 ## [4.28.0](https://github.com/darellchua2/opencode-config-template/compare/v4.27.0...v4.28.0) (2026-08-16)
 
 ### Features
