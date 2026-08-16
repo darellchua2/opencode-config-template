@@ -686,10 +686,11 @@ USAGE:
     Usage: opencode --agent build "implement auth feature"
            opencode --agent explore "find all API routes"
 
-  MCP SERVERS (7):
+  MCP SERVERS (8):
     Auto-start (enabled by default):
       codegraph           Pre-indexed code knowledge graph (100% local)
       zai-web-reader      Web page content extraction (remote, needs ZAI_API_KEY)
+      zai-web-search      Web search with cited results (remote, needs ZAI_API_KEY)
 
     Available but disabled (opt-in — enable per-project via
     opencode.json or opencode-repo-setup-skill):
@@ -725,7 +726,7 @@ $(print_skill_categories "${REPO_DIR}/opencode_app/.opencode/skills")
     git                   For version control integration
 
   API Keys (prompted during setup):
-     ZAI_API_KEY           Required for: web-reader
+     ZAI_API_KEY           Required for: web-reader, web-search
                            Get from: https://z.ai
 
    GitHub Auth:
@@ -2459,7 +2460,7 @@ setup_config() {
         echo "    - ... and $(($(count_agents "${REPO_DIR}/opencode_app/.opencode/agents") - 5)) more agents"
             echo ""
              echo "✓ Configured MCP servers:"
-             echo "    Auto-start: codegraph, web-reader"
+              echo "    Auto-start: codegraph, web-reader, web-search"
               echo "    Opt-in per-project (.opencode/opencode.json): atlassian"
               echo "    Available but disabled (opt-in): next-devtools, markitdown, docling, chrome-devtools"
               echo "    Enable a group with: ./setup.sh --enable-pack <autodesk|markitdown|nextjs|docling|chrome-devtools>"
@@ -3489,9 +3490,12 @@ print_summary() {
          echo "✓ Configured MCP servers:"
          echo "    - codegraph - Code knowledge graph (auto-start)"
          echo "    - web-reader - Web page reading (auto-start, needs ZAI_API_KEY)"
+         echo "    - web-search - Web search with cited results (auto-start, needs ZAI_API_KEY)"
          echo "    - atlassian - JIRA and Confluence (opt-in per-project)"
-
+         echo "    - next-devtools - Next.js DevTools (opt-in)"
          echo "    - markitdown - Document-to-Markdown, local-only, opt-in"
+         echo "    - docling - Layout-aware document extraction, opt-in (~3-4 GB)"
+         echo "    - chrome-devtools - Live Chrome automation, opt-in"
 
     # Secret masking
     if [ -f "${CONFIG_DIR}/vibeguard.config.json" ]; then
@@ -3579,10 +3583,10 @@ print_next_steps() {
     echo "  Run 'opencode --skill <name> \"prompt\"' to use a skill"
     echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-     echo "                     🔌 MCP Servers (3)"
+     echo "                     🔌 MCP Servers (4)"
      echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
      echo ""
-     echo "  Auto-start: codegraph, web-reader"
+     echo "  Auto-start: codegraph, web-reader, web-search"
       echo "  Opt-in per-project: atlassian"
      echo "  Opt-in global packs: next-devtools, markitdown, docling, chrome-devtools"
     echo ""

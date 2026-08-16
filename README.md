@@ -326,12 +326,13 @@ nvm install 24
 
 ## MCP Servers
 
-The configuration ships 7 MCP server entries. **2 are enabled by default:**
+The configuration ships 8 MCP server entries. **3 are enabled by default:**
 
 | Server | Type | Purpose |
 |--------|------|---------|
 | `codegraph` | local (npx) | Pre-indexed code knowledge graph |
 | `zai-web-reader` | remote | Web page content extraction |
+| `zai-web-search` | remote | Web search with cited results (GIT-336) |
 
 The remaining 5 are `enabled: false` and opt-in:
 
