@@ -73,15 +73,27 @@ Reviewer family = 8 agents / 1,732 lines with ~58 lines of word-identical boiler
 
 ### Phase 3: Agent slimming (thin-agent pattern)
 
-- [ ] **3.1** `linting-subagent.md`: delete `## Java Spring Boot Linting` + `## C# .NET 10 Linting` (76-197; content absorbed in 2.1); add pointer line: "Loaded skill: `language-linting-skill` — the source of truth for per-language linting rules, configs, and commands; this subagent orchestrates detection and workflow." Regenerate registry (skills unchanged — description/skill-list edits only if frontmatter touched).
-- [ ] **3.2** `responsive-audit-subagent.md`: delete 6 detection assertions + 3-tier table + Tailwind fix examples (~79-103, 23L — verbatim dup in playwright-responsive-audit-skill:780L); add source-of-truth pointer; keep PTY model, screenshot delegation, return contract.
-- [ ] **3.3** `error-resolver-subagent.md`: delete 5-step workflow detail (58-67 — verbatim dup in error-resolver-workflow-skill); add pointer; keep trigger phrases, multimodal note, ponytail lens.
-- [ ] **3.4** `docx-creation-subagent.md`: delete Critical Rules (69-74 — dup in docx-creation-skill); add pointer.
-- [ ] **3.5** `coverage-subagent.md`: delete badge color table (53-57 — dup in coverage-readme-workflow-skill); add pointer.
+- [x] **3.1** `linting-subagent.md`: delete `## Java Spring Boot Linting` + `## C# .NET 10 Linting` (76-197; content absorbed in 2.1); add pointer line: "Loaded skill: `language-linting-skill` — the source of truth for per-language linting rules, configs, and commands; this subagent orchestrates detection and workflow." Regenerate registry (skills unchanged — description/skill-list edits only if frontmatter touched).
+    — **Done:** Deleted both sections (280→163 lines, −117); added uiux-style "Loaded skill" pointer; registry check no drift (frontmatter untouched); files: linting-subagent.md; fixes: none
+
+- [x] **3.2** `responsive-audit-subagent.md`: delete 6 detection assertions + 3-tier table + Tailwind fix examples (~79-103, 23L — verbatim dup in playwright-responsive-audit-skill:780L); add source-of-truth pointer; keep PTY model, screenshot delegation, return contract.
+    — **Done:** Assertion list → pointer w/ assertion names; tier table → tier-name pointer (Tier 1/2/3 semantics kept — Return Contract references them); Tier 1 examples dropped, tier actions kept (188→179 lines); PTY/screenshot/return-contract untouched; files: responsive-audit-subagent.md; fixes: none
+
+- [x] **3.3** `error-resolver-subagent.md`: delete 5-step workflow detail (58-67 — verbatim dup in error-resolver-workflow-skill); add pointer; keep trigger phrases, multimodal note, ponytail lens.
+    — **Done:** 5-step list → pointer to error-resolver-workflow-skill as source of truth (119→113 lines); trigger phrases/multimodal note/ponytail lens untouched; files: error-resolver-subagent.md; fixes: none
+
+- [x] **3.4** `docx-creation-subagent.md`: delete Critical Rules (69-74 — dup in docx-creation-skill); add pointer.
+    — **Done:** 5 docx-js rule bullets → 1 pointer line (99→96 lines); files: docx-creation-subagent.md; fixes: none
+
+- [x] **3.5** `coverage-subagent.md`: delete badge color table (53-57 — dup in coverage-readme-workflow-skill); add pointer.
+    — **Done:** 4-line badge table → 1 pointer line w/ thresholds preserved inline (94→91 lines); files: coverage-subagent.md; fixes: none
     — **Why (3.1-3.5):** repo pattern is thin-agent + fat-skill (uiux-reviewer exemplar); ~170L removed, zero knowledge loss (all content verified present in paired skills)
     — **Done when:** each slimmed agent retains routing/workflow/return-contract; paired skill contains the deleted knowledge; registry + bats green
     — **Consumers affected:** agent token footprint only (no wiring changes — skills already in allowlists)
-- [ ] **3.6** Commit `refactor(agents): extract duplicated agent knowledge into skills`.
+    — **Gate:** registry --check OK (agents=32, skills=127, no drift); bats 304/304; total −138L across 5 agents
+
+- [x] **3.6** Commit `refactor(agents): extract duplicated agent knowledge into skills`.
+    — **Done:** Committed + pushed with Phase 3 traceability in this commit.
 
 ### Phase 4: Regen, verify, release
 

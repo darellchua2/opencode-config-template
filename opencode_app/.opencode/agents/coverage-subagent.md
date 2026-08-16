@@ -50,11 +50,8 @@ Workflow:
 6. Update README.md with badge and coverage details
 7. Handle edge cases (missing config, zero coverage)
 
-Badge Color Standards:
-- brightgreen (>=80%): Excellent
-- yellow (60-79%): Good
-- orange (40-59%): Needs attention
-- red (<40%): Requires action
+Badge Color Standards: defined in `coverage-readme-workflow-skill` (brightgreen ≥80%,
+yellow 60-79%, orange 40-59%, red <40%) — the skill is the source of truth.
 
 Delegation:
 - Test execution: Request from parent agent
