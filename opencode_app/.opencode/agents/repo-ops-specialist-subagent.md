@@ -37,6 +37,7 @@ permission:
     plan-execution-skill: allow
     search-first-skill: allow
     continuous-learning-skill: allow
+    ponytail-debt-skill: allow
 category: devops
 ---
 

@@ -39,6 +39,9 @@ permission:
     eval-harness-skill: allow
     logging-observability-skill: allow
     performance-optimization-skill: allow
+    blast-radius-skill: allow
+    ponytail-audit-skill: allow
+    ponytail-review-skill: allow
 category: review
 ---
 

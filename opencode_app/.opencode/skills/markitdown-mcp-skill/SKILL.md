@@ -1,9 +1,6 @@
 ---
 name: markitdown-mcp-skill
-description: >-
-  markitdown MCP server reference — local document-to-Markdown conversion (PDF,
-  DOCX, PPTX, XLSX, MSG, HTML, EPUB, IPYNB, ZIP); config, tool reference,
-  decision tree, fallbacks.
+description: "markitdown MCP reference — local docs-to-Markdown (PDF, DOCX, PPTX, XLSX, HTML, EPUB): config, decision tree, fallbacks."
 license: Apache-2.0
 compatibility: opencode
 metadata:

@@ -41,6 +41,15 @@ Use this skill when:
 
 ## Core Workflow
 
+### Step 0: Verbatim playbook discipline (anti-drift)
+
+Before executing, transcribe the matched PLAN's steps into the session todolist VERBATIM, ahead of any task-specific todos:
+
+- Copy plan steps word-for-word — no paraphrasing, reordering, or merging during transcription.
+- A step you decide to skip STAYS in the todolist, annotated `skip: <reason>`. Silently deleting it is drift.
+- Task-specific todos are appended AFTER the transcribed plan steps, never interleaved.
+- At each phase boundary, diff the todolist against the PLAN file: every deviation must be a visible `skip:` entry or a completed step.
+
 ### Step 1: Detect Current PLAN
 
 Identify the PLAN file for the current branch:

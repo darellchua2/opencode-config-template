@@ -1,10 +1,6 @@
 ---
 name: git-compact-commits-skill
-description: >-
-  Write concise commit messages within strict budgets — 72-char subject,
-  150-word body; semantic grouping of related changes. Triggers: compact commit,
-  short commit message, concise commit, brief commit, terse commit. Not
-  conventional-commit structure (git-semantic-commits-skill).
+description: "Concise commits within strict budgets — 72-char subject, 150-word body, semantic grouping. Triggers: compact commit, concise commit, terse commit."
 license: Apache-2.0
 compatibility: opencode
 category: Git/Workflow

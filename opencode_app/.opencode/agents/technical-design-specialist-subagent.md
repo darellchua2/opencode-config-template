@@ -30,6 +30,8 @@ permission:
     api-design-skill: allow
     openapi-contract-adherence-skill: allow
     markitdown-mcp-skill: allow
+    unslop-skill: allow
+    technical-writing-skill: allow
 category: business
 ---
 
