@@ -1,6 +1,6 @@
 ---
 name: ponytail-debt-skill
-description: Harvest `ponytail:` comments into a debt ledger — ceiling and upgrade trigger per marker; flag no-trigger rot. Triggers: ponytail shortcuts, what did ponytail defer, tech debt markers.
+description: "Harvest `ponytail:` comments into a debt ledger — ceiling and upgrade trigger per marker; flag no-trigger rot. Triggers: ponytail shortcuts, what did ponytail defer, tech debt markers."
 license: MIT
 compatibility: opencode
 category: Code Quality

@@ -1,6 +1,6 @@
 ---
 name: blast-radius-skill
-description: Find what a change could break beyond the diff and prove the one safety fact by running real code — 5-step evidence ladder. Triggers: blast radius, what could this break, pre-ship safety check.
+description: "Find what a change could break beyond the diff and prove the one safety fact by running real code — 5-step evidence ladder. Triggers: blast radius, what could this break, pre-ship safety check."
 license: MIT
 compatibility: opencode
 category: Code Quality

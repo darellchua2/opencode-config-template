@@ -1,6 +1,6 @@
 ---
 name: ponytail-audit-skill
-description: Whole-repo over-engineering audit — ranked delete/stdlib/native/yagni/shrink findings with net removable count. One-shot report, applies nothing. Triggers: audit for over-engineering, find bloat, what can I delete.
+description: "Whole-repo over-engineering audit — ranked delete/stdlib/native/yagni/shrink findings with net removable count. One-shot report, applies nothing. Triggers: audit for over-engineering, find bloat, what can I delete."
 license: MIT
 compatibility: opencode
 category: Code Quality

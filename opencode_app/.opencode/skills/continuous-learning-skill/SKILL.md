@@ -1,8 +1,6 @@
 ---
 name: continuous-learning-skill
-description: >-
-  Extract and store reusable patterns, decisions, insights from coding sessions
-  — confidence scoring, project scoping, memory-hygiene procedure.
+description: "Extract and store reusable patterns, decisions, insights from coding sessions — project scoping, memory-hygiene procedure."
 license: Apache-2.0
 compatibility: opencode
 metadata:

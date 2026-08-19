@@ -1,6 +1,6 @@
 ---
 name: unslop-skill
-description: Strip AI-tell prose — 31-pattern catalog (delve, tapestry, 'not X but X', em-dash abuse) with find-and-replace fixes. Triggers: unslop, de-AI-ify, humanize text, remove AI writing tells.
+description: "Strip AI-tell prose — 31-pattern catalog (delve, tapestry, 'not X but X', em-dash abuse) with find-and-replace fixes. Triggers: unslop, de-AI-ify, humanize text, remove AI writing tells."
 license: MIT
 compatibility: opencode
 category: docs

@@ -247,7 +247,7 @@ Not every project needs all 32 agents + 133 skills. <!-- count: hand-maintained 
 | Preset | Agents | Skills | MCPs | Use for |
 |--------|--------|--------|------|---------|
 | `core` | explorer | git-semantic-commits, continuous-learning | codegraph | Minimal baseline |
-| `review` | code-review + architecture + language-reviewer | 25 (Code Quality + auth/perf/logging/eval) | codegraph | Code quality gates |
+| `review` | code-review + architecture + language-reviewer | 28 (Code Quality + auth/perf/logging/eval) | codegraph | Code quality gates |
 | `frontend` | nextjs-specialist + uiux-reviewer + responsive-audit | 19 (Next.js/React/Three.js/a11y) | next-devtools, chrome-devtools, codegraph | Web frontend |
 | `backend` | language-reviewer | 22 (Python/DB/API/security/docker) | codegraph | Server / devops-lite |
 | `docs` | documentation + coverage + docx/pptx/xlsx + office-doc | 21 (document ladder) | — (inline mermaid blocks need no MCP) | Document generation |

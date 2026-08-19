@@ -1,6 +1,6 @@
 ---
 name: ponytail-review-skill
-description: Diff-only over-engineering review — flag reinvented stdlib, unneeded deps, speculative abstractions with concrete replacements. Triggers: over-engineered diff, simplify this change, review for bloat.
+description: "Diff-only over-engineering review — flag reinvented stdlib, unneeded deps, speculative abstractions with concrete replacements. Triggers: over-engineered diff, simplify this change, review for bloat."
 license: MIT
 compatibility: opencode
 category: Code Quality
