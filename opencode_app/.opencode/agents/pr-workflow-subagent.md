@@ -23,11 +23,12 @@ permission:
     pr-creation-workflow-skill: allow
     nextjs-pr-workflow-skill: allow
     jira-status-updater-skill: allow
-    jira-ticket-labeler-skill: allow
     plan-updater-skill: allow
     changelog-python-cliff-skill: allow
     search-first-skill: allow
     version-bump-standard-skill: allow
+    unslop-skill: allow
+    blast-radius-skill: allow
 category: meta
 ---
 

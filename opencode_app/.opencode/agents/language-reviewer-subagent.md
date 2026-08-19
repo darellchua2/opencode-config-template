@@ -35,6 +35,7 @@ permission:
     language-linting-skill: allow
     continuous-learning-skill: allow
     search-first-skill: allow
+    blast-radius-skill: allow
 category: review
 ---
 

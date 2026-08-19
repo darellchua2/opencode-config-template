@@ -31,6 +31,8 @@ permission:
     docx-creation-skill: allow
     xlsx-specialist-skill: allow
     markitdown-mcp-skill: allow
+    unslop-skill: allow
+    technical-writing-skill: allow
 category: business
 ---
 

@@ -31,6 +31,8 @@ permission:
     xlsx-specialist-skill: allow
     search-first-skill: allow
     markitdown-mcp-skill: allow
+    unslop-skill: allow
+    technical-writing-skill: allow
 category: business
 ---
 

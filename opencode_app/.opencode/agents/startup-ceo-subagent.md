@@ -11,6 +11,7 @@ permission:
   websearch: allow
   skill:
     startup-pitch-deck-skill: allow
+    unslop-skill: allow
   task:
     "*": deny
     "pptx-specialist-subagent": allow
