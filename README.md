@@ -249,11 +249,11 @@ Not every project needs all 32 agents + 133 skills. <!-- count: hand-maintained 
 | `core` | explorer | git-semantic-commits, continuous-learning | codegraph | Minimal baseline |
 | `review` | code-review + architecture + language-reviewer | 28 (Code Quality + auth/perf/logging/eval) | codegraph | Code quality gates |
 | `frontend` | nextjs-specialist + uiux-reviewer + responsive-audit | 19 (Next.js/React/Three.js/a11y) | next-devtools, chrome-devtools, codegraph | Web frontend |
-| `backend` | language-reviewer | 22 (Python/DB/API/security/docker) | codegraph | Server / devops-lite |
-| `docs` | documentation + coverage + docx/pptx/xlsx + office-doc | 21 (document ladder) | — (inline mermaid blocks need no MCP) | Document generation |
-| `devops` | repo-ops + opentofu-explorer | 31 (release/IaC/JIRA) | codegraph | Git / infra / release |
-| `business` | startup-founder + ceo + discovery + requirements + technical-design | 32 (BD/pitch/planning) | — | BD / founder workflows |
-| `research` | autoresearch-{ml,code,research} + loop-operator | 11 (autoresearch + papers) | codegraph | Autonomous loops (ml needs GPU) |
+| `backend` | language-reviewer | 23 (Python/DB/API/security/docker) | codegraph | Server / devops-lite |
+| `docs` | documentation + coverage + docx/pptx/xlsx + office-doc | 23 (document ladder) | — (inline mermaid blocks need no MCP) | Document generation |
+| `devops` | repo-ops + opentofu-explorer | 32 (release/IaC/JIRA) | codegraph | Git / infra / release |
+| `business` | startup-founder + ceo + discovery + requirements + technical-design | 36 (BD/pitch/planning) | — | BD / founder workflows |
+| `research` | autoresearch-{ml,code,research} + loop-operator | 12 (autoresearch + papers) | codegraph | Autonomous loops (ml needs GPU) |
 | `cad` | cad-specialist | 14 (CAD & Hardware Design) | — | CAD / robotics / hardware |
 
 Member counts include transitive deps auto-pulled by the resolver (a preset's agent `permission.task` delegates + `permission.skill` requirements). Run `opencode-init --expand <preset>` to see the exact resolved set.
@@ -384,10 +384,10 @@ Default state of every pack is **OFF** — existing deployments are unaffected u
 
 #### Skill Profiles — deploy-time primary visibility (#333)
 
-Every allowed skill's `description` is injected into the primary session's context at startup (~90 tokens each). The shipped `opencode_app/opencode.json` allowlist (87 allows) is the **full** profile. For a context-lean primary, deploy with a **lean** profile: only 30 primary-visible skills + `"*": "deny"` (~3.9k tokens saved per session, measured).
+Every allowed skill's `description` is injected into the primary session's context at startup (~90 tokens each). The shipped `opencode_app/opencode.json` allowlist (93 allows) is the **full** profile. For a context-lean primary, deploy with a **lean** profile: only 36 primary-visible skills + `"*": "deny"` (~3.9k tokens saved per session, measured).
 
 ```bash
-./deploy/setup.sh                                # default: lean (30 primary-visible skills)
+./deploy/setup.sh                                # default: lean (36 primary-visible skills)
 ./deploy/setup.sh --skill-profile full           # opt back in: shipped 88-allow allowlist verbatim
 ./deploy/setup.sh --skill-profile lean --dry-run # preview the deployed permission.skill block
 ./deploy/setup.ps1 -SkillProfile full            # Windows parity
@@ -568,7 +568,7 @@ This repository implements **skill modularization** with 133 skills organized ac
 | **Documentation** (5) | coverage-readme-workflow, docstring-generator, documentation-sync-workflow, unslop-skill, technical-writing-skill | Documentation generation |
 | **Academic & Research Writing** (2) | horseshoe-paper-writing-skill, research-paper-generation-skill | Academic & research paper writing (Horseshoe Diagram Method, journal-submission formats; codebase→paper generation) |
 | **JIRA** (3) | jira-status-updater, jira-git-integration, jira-ticket-labeler | JIRA integration via MCP server |
-| **Code Quality** (11) | solid-principles, clean-code, clean-architecture, design-patterns, object-design, code-smells, complexity-management, deprecated-code-cleanup-skill, blast-radius-skill, ponytail-audit-skill, ponytail-review-skill, ponytail-debt-skill | Code quality analysis, patterns, and @deprecated code cleanup |
+| **Code Quality** (12) | solid-principles, clean-code, clean-architecture, design-patterns, object-design, code-smells, complexity-management, deprecated-code-cleanup-skill, blast-radius-skill, ponytail-audit-skill, ponytail-review-skill, ponytail-debt-skill | Code quality analysis, patterns, and @deprecated code cleanup |
 | **Agent Optimization** (7) | continuous-learning, eval-harness, strategic-compact, verification-loop, search-first, context-budget, agent-introspection-debugging | AI agent session optimization, research-first workflow, context auditing, and agent debugging |
 | **Autoresearch** (4) | autoresearch-core-skill, autoresearch-ml-skill, autoresearch-code-skill, autoresearch-research-skill | Autonomous research loops: 5-stage Understand→Hypothesize→Experiment→Evaluate→Log methodology. ML training (GPU), code optimization, literature review. Evaluated by mechanical `{"pass":bool,"score":N}` — no LLM self-judgment. Ported from uditgoenka/autoresearch + karpathy/autoresearch (MIT). |
 | **Startup/Business** (3) | startup-pitch-deck-skill, startup-business-docs-skill, construction-bd-skill | Startup pitch decks, business documentation, construction proposals |
@@ -610,12 +610,12 @@ This repository implements **skill modularization** with 133 skills organized ac
 | **coverage-subagent** | Coverage reporting | coverage-readme-workflow | — |
 | **opentofu-explorer-subagent** | Infrastructure as code | 7 OpenTofu skills (AWS, K8s, Keycloak, Neon, ECR) | — |
 | **architecture-review-subagent** | Architecture and design patterns | clean-architecture, design-patterns, complexity-management, continuous-learning, verification-loop | `explore` |
-| **code-review-subagent** | Comprehensive code review | All 7 Code Quality skills + continuous-learning, complexity-management | `explore`, `general` |
+| **code-review-subagent** | Comprehensive code review | 9 Code Quality skills (incl. blast-radius evidence grading, ponytail lean lens) + continuous-learning, complexity-management | `explore`, `general` |
 | **repo-ops-specialist-subagent** | Git repository operations | version-bump-standard, semantic-release-convention, pr-creation-workflow, pr-merge-workflow, git-issue-labeler | `explore`, `general` |
 | **error-resolver-subagent** | Error diagnosis and resolution | error-resolver-workflow | — |
 | **nextjs-specialist-subagent** | Next.js scaffolding + runtime MCP diagnosis + project audit | nextjs-standard-setup, nextjs-devtools-mcp, docstring-generator, nextjs-image-usage, react-hooks-antipatterns, react-render-antipatterns, amplify-nextjs-deployment | — |
 | **opencode-tooling-subagent** | Skills, agents, and rules creation + doc sync | opencode-skill-creation, opencode-agent-creation, opencode-skills-maintainer, documentation-sync-workflow | — |
-| **docx-creation-subagent** | Word document creation | docx-creation | — |
+| **docx-creation-subagent** | Word document creation | docx-creation, unslop-skill, horseshoe-paper-writing-skill | — |
 | **image-analyzer-subagent** | Image analysis (native multimodal `zai/glm-5v-turbo`) | (built-in vision) | — |
 | **responsive-audit-subagent** | Responsive UI audit and fix | playwright-responsive-audit-skill | `explore`, `general`, `image-analyzer-subagent` |
 | **cad-specialist-subagent** | CAD, robotics, hardware design — orchestrates 14 CAD/engineering skills | cad-generation, cad-viewer, cad-step-parts, cad-dxf, cad-urdf, cad-srdf, cad-sdf, cad-sendcutsend, cad-gcode, cad-bambu-labs, cad-implicit, autodesk-aps-skill, civil-3d-skill, open3d-skill | — |

@@ -29,7 +29,7 @@ permission:
     autoresearch-core-skill: allow
     autoresearch-ml-skill: allow
     strategic-compact-skill: allow
-    "blast-radius-skill": allow
+    blast-radius-skill: allow
 category: research
 ---
 

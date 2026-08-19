@@ -17,6 +17,7 @@ permission:
     docx-creation-skill: allow
     markitdown-mcp-skill: allow
     unslop-skill: allow
+    horseshoe-paper-writing-skill: allow
 category: docs
 ---
 

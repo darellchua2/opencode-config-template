@@ -3,7 +3,7 @@ name: technical-writing-skill
 description: "Standards reference for docs authors — Diataxis, Google developer-docs style, Simplified Technical English, Global English. Triggers: docs style guide, doc-type choice, writing standards, terminology consistency."
 license: MIT
 compatibility: opencode
-category: docs
+category: Documentation
 ---
 
 <!--
