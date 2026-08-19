@@ -3,6 +3,7 @@
   "lean": [
     "agent-introspection-debugging-skill",
     "api-design-skill",
+    "blast-radius-skill",
     "context-budget-skill",
     "continuous-learning-skill",
     "docling-mcp-skill",
@@ -27,7 +28,9 @@
     "plan-updater-skill",
     "security-audit-skill",
     "strategic-compact-skill",
+    "technical-writing-skill",
     "ticket-plan-workflow-skill",
+    "unslop-skill",
     "wireframer-skill",
     "zai-image-generation-skill",
     "zai-vision-analysis-skill"
