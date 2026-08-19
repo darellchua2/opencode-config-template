@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.1.0](https://github.com/darellchua2/opencode-config-template/compare/v5.0.0...v5.1.0) (2026-08-19)
+
+### Features
+
+* **agents:** wire skills into subagent allowlists ([cca4bab](https://github.com/darellchua2/opencode-config-template/commit/cca4bab998b8cd7025c0286e7611bf848a5c4eeb))
+* **skills:** add pstack router patterns to plan skills ([21bd40b](https://github.com/darellchua2/opencode-config-template/commit/21bd40bd11017b1c4d7e6fa3eb3e2d0637ea5322))
+* **skills:** vendor ponytail satellite skills (audit, review, debt) ([24a97ea](https://github.com/darellchua2/opencode-config-template/commit/24a97eabed278b095562648dcd7df4290ffd483a))
+* **skills:** vendor pstack core 3 (unslop, technical-writing, blast-radius) ([8296738](https://github.com/darellchua2/opencode-config-template/commit/8296738207d9dae8b1b9e47b77ac63061b482d64))
+
+### Bug Fixes
+
+* **docs:** address review findings — category casing, preset/profile counts, lean orphan ([ba9b171](https://github.com/darellchua2/opencode-config-template/commit/ba9b1715632d82b38a6ae3d2c0b4f200c189f85f))
+
+### Code Refactoring
+
+* **skills:** trim high-multiplier skill descriptions ([2062621](https://github.com/darellchua2/opencode-config-template/commit/20626213ecbec673e0a694c0a18490c2165f6ff7))
+
+### Documentation
+
+* fix stale counts and linter-skill reference after GIT-338 ([43e9f68](https://github.com/darellchua2/opencode-config-template/commit/43e9f68a24ba2ef522de32e4a67f6ed79bb0cdfe))
+* **plan:** add PLAN-GIT-341.md for GIT-341 ([0862912](https://github.com/darellchua2/opencode-config-template/commit/0862912bb0e3048e5645185850ee80e2d7d1f4c5))
+
 ## [5.0.0](https://github.com/darellchua2/opencode-config-template/compare/v4.29.0...v5.0.0) (2026-08-16)
 
 ### ⚠ BREAKING CHANGES
