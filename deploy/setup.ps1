@@ -910,7 +910,7 @@ USAGE:
 
   MODEL RESOLUTION (v2.0):
     -Provider <name>     Non-interactive provider preset: zai|anthropic|openai|
-                         openrouter|lmstudio (writes ~/.config/opencode/models.json)
+                         openrouter (writes ~/.config/opencode/models.json)
     -ModelsOnly          Provider selection + model resolution only (no other setup)
     -Migrate             Run v1.x -> v2.0 migration + model resolution only
     -Force               Re-resolve all agents (ignore preserved hand-edits)
@@ -1016,9 +1016,6 @@ $(Get-SkillCategories (Join-Path $RepoDir 'opencode_app\.opencode\skills'))
     GitHub CLI (gh)      Recommended for GitHub MCP features
                          Install: https://cli.github.com/
                          Or use OAuth: opencode mcp auth github
-
-  Local Services:
-    LM Studio             Running on http://127.0.0.1:1234/v1
 
 =======================================================================
 
@@ -2272,7 +2269,7 @@ function Deploy-Agents {
 
     Write-LogSuccess "Deployed $agentCount agents ($subagentCount subagents) to $AgentsDestDir"
     Write-Host "  Models resolved via tier registry."
-    Write-Host "  Change provider: ./setup.ps1 -Provider <zai|anthropic|openai|openrouter|lmstudio>"
+    Write-Host "  Change provider: ./setup.ps1 -Provider <zai|anthropic|openai|openrouter>"
     Write-Host "  Pin per-agent:   ~/.config/opencode/agent-overrides.json"
 }
 
@@ -2700,8 +2697,7 @@ function Show-NextSteps {
     Write-Host ""
     Write-Host "Next Steps:"
     Write-Host "  1. Restart terminal or run: . $PROFILE"
-    Write-Host "  2. Start LM Studio: http://127.0.0.1:1234/v1"
-    Write-Host "  3. Verify installation: opencode --version"
+    Write-Host "  2. Verify installation: opencode --version"
     Write-Host ""
     Write-Host "Agents (36):"
     Write-Host "  - build (default) - Full-featured coding agent"

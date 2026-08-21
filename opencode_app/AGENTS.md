@@ -7,7 +7,7 @@ This file contains instructions for OpenCode running in Docker standalone mode.
 This is a **containerized OpenCode instance** running as a web endpoint. Key differences from user-space mode:
 
 - No local filesystem access beyond `/app` and mounted volumes
-- MCP servers that require local GUI apps (LM Studio, etc.) are disabled
+- MCP servers that require local GUI apps are disabled
 - API keys are injected at runtime via `docker-entrypoint.sh`
 - All agents and skills are loaded from `.opencode/` within the container
 

@@ -2,7 +2,7 @@
 
 v2.0 is a **major breaking change**. Agent models are no longer hardcoded per
 agent file — they are resolved at deploy time from a tier registry, so you can
-switch providers (Z.AI / Anthropic / OpenAI / OpenRouter / local LM Studio)
+switch providers (Z.AI / Anthropic / OpenAI / OpenRouter / local llama.cpp / vLLM)
 without editing every agent file. This guide covers what changed, the automatic
 migration, and how to revert.
 
@@ -114,7 +114,6 @@ Preview without changing anything:
 ./deploy/setup.sh --provider anthropic
 ./deploy/setup.sh --provider openai
 ./deploy/setup.sh --provider openrouter
-./deploy/setup.sh --provider lmstudio
 ./deploy/setup.sh --provider zai          # default
 ```
 

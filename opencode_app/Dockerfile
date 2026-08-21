@@ -4,7 +4,7 @@ LABEL org.opencontainers.image.title="opencode-config-template" \
       org.opencontainers.image.description="OpenCode standalone web endpoint - configurable agent/skill runner" \
       org.opencontainers.image.source="https://github.com/darellchua2/opencode-config-template"
 
-ARG OPENCODE_VERSION=1.18.11
+ARG OPENCODE_VERSION=1.18.20
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -79,8 +79,27 @@ RUN if [ -n "$OPENCODE_PACKS" ]; then \
         echo "OPENCODE_PACKS empty — skipping provider-pack merge" ; \
     fi
 
+# Inside the container, 127.0.0.1 is the container itself. Local LLM services
+# live in sibling compose containers, so rewrite provider baseURLs to use Docker
+# service names. Host-based deploys (setup.sh) keep 127.0.0.1 in the source file.
+RUN python3 - <<'PYEOF'
+import json
+path = "/app/opencode.json"
+with open(path) as f:
+    cfg = json.load(f)
+providers = cfg.get("provider", {})
+if "local-llm" in providers:
+    providers["local-llm"]["options"]["baseURL"] = "http://llm-server:8080/v1"
+if "vllm" in providers:
+    providers["vllm"]["options"]["baseURL"] = "http://vllm-server:8000/v1"
+with open(path, "w") as f:
+    json.dump(cfg, f, indent=2)
+print("Patched local-llm/vllm baseURLs for Docker networking")
+PYEOF
+
 RUN chmod +x /app/docker-entrypoint.sh \
     && mkdir -p /home/opencode/.local/share/opencode \
+    && mkdir -p /home/opencode/.cache \
     && chown -R opencode:opencode /app /home/opencode
 
 # PLAN-GIT-262: bake the privacy-hardened markitdown MCP launcher into the

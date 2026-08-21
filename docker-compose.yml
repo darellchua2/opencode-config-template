@@ -4,25 +4,15 @@ services:
       context: .
       dockerfile: opencode_app/Dockerfile
       args:
-        # OpenCode CLI version — override via .env (OPENCODE_VERSION=1.x.y)
-        # Defaults to Dockerfile ARG if unset
         OPENCODE_VERSION: ${OPENCODE_VERSION:-1.18.11}
     container_name: opencode
     env_file: .env
     ports:
       - "${OPENCODE_PORT:-4097}:4096"
     volumes:
-      # OpenCode internal state (sessions, history, auth)
       - opencode-data:/home/opencode/.local/share/opencode
-      # Primary workspace — set WORKSPACE_DIR in .env (e.g. ~/VSCODE)
       - ${WORKSPACE_DIR:-~/Projects}:/workspace
-      # ── Additional workspace mounts (uncomment as needed) ──────────
-      # - ~/other-project:/workspace-extra/project-name
-      # - ~/another-dir:/workspace-extra/another
-      # ───────────────────────────────────────────────────────────────
-      # GitHub SSH keys (read-only staging, copied in entrypoint)
       - ~/.ssh:/tmp/ssh-host:ro
-      # Persistent tool caches (survive container rebuilds)
       - npm-cache:/home/opencode/.npm
       - pip-cache:/home/opencode/.cache/pip
     restart: unless-stopped
@@ -33,7 +23,79 @@ services:
       retries: 3
       start_period: 20s
 
+  llm-server:
+    profiles: ["llm"]
+    image: ghcr.io/ggml-org/llama.cpp:server-cuda
+    container_name: opencode-llm-server
+    ports:
+      - "${LLM_PORT:-17851}:8080"
+    volumes:
+      - ${LOCAL_LLM_MODEL_PATH:-~/.local/share/opencode/models}:/models:ro
+    environment:
+      - MODEL_PATH=/models/${LLM_MODEL:-gemma-4-E4B_q4_0-it.gguf}
+      - MMPROJ_PATH=/models/${LLM_MMPROJ:-gemma-4-E4B-it-mmproj.gguf}
+      - HOST=0.0.0.0
+      - PORT=8080
+      - N_GPU_LAYERS=${N_GPU_LAYERS:-999}
+      - CTX_SIZE=${CTX_SIZE:-100000}
+    command: >
+      -m /models/${LLM_MODEL:-gemma-4-E4B_q4_0-it.gguf}
+      --mmproj /models/${LLM_MMPROJ:-gemma-4-E4B-it-mmproj.gguf}
+      --host 0.0.0.0
+      --port 8080
+      -ngl ${N_GPU_LAYERS:-999}
+      -c ${CTX_SIZE:-100000}
+      --jinja
+      --verbose
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    restart: unless-stopped
+
+  vllm-server:
+    profiles: ["vllm"]
+    image: vllm/vllm-openai:latest
+    container_name: opencode-vllm-server
+    ports:
+      - "${VLLM_PORT:-17852}:8000"
+    volumes:
+      - ${VLLM_MODEL_PATH:-~/.cache/huggingface}:/root/.cache/huggingface
+    environment:
+      - MODEL_NAME=${VLLM_MODEL:-google/gemma-4-E4B-it-qat-w4a16-ct}
+      - HF_HOME=/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    command: >
+      --model ${VLLM_MODEL:-google/gemma-4-E4B-it-qat-w4a16-ct}
+      --host 0.0.0.0
+      --port 8000
+      --max-model-len ${VLLM_MAX_MODEL_LEN:-100000}
+      --gpu-memory-utilization ${VLLM_GPU_MEMORY_UTIL:-0.99}
+    restart: unless-stopped
+
+  docling-serve:
+    profiles: ["docling"]
+    image: quay.io/docling-project/docling-serve-cpu:latest
+    container_name: opencode-docling
+    ports:
+      - "${DOCLING_PORT:-8751}:5001"
+    environment:
+      - DOCLING_SERVE_ENABLE_UI=1
+    volumes:
+      - docling-cache:/root/.cache/docling
+    restart: unless-stopped
+
 volumes:
   opencode-data:
   npm-cache:
   pip-cache:
+  docling-cache:

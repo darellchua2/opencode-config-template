@@ -8,6 +8,13 @@ AUTH_DIR="/home/opencode/.local/share/opencode"
 AUTH_FILE="${AUTH_DIR}/auth.json"
 mkdir -p "${AUTH_DIR}"
 
+# Ensure cache dir exists and is writable (defensive against volume mounts)
+CACHE_DIR="/home/opencode/.cache"
+mkdir -p "${CACHE_DIR}"
+if [ -d "${CACHE_DIR}" ] && [ "$(stat -c '%U' "${CACHE_DIR}" 2>/dev/null)" = "root" ]; then
+    echo "WARNING: ${CACHE_DIR} is owned by root; this may break opencode cache writes"
+fi
+
 python3 << PYEOF
 import json, os
 

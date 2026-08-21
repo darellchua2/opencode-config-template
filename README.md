@@ -70,7 +70,7 @@ Two setup scripts are provided for different platforms:
 ./deploy/setup.sh --update
 
 # v2.0 model resolution
-./deploy/setup.sh --provider anthropic      # swap provider (zai|anthropic|openai|openrouter|lmstudio)
+./deploy/setup.sh --provider anthropic      # swap provider (zai|anthropic|openai|openrouter)
 ./deploy/setup.sh --mix                     # mix providers per category (e.g. vision on OpenAI, rest on Z.AI)
 ./deploy/setup.sh --models-only             # re-resolve models only
 ./deploy/setup.sh --migrate                 # run v1.x -> v2.0 migration
@@ -86,7 +86,7 @@ concrete model is resolved at deploy time. Swap providers without editing agent
 files:
 
 ```bash
-./deploy/setup.sh --provider anthropic      # or: openai, openrouter, lmstudio, zai (default)
+./deploy/setup.sh --provider anthropic      # or: openai, openrouter, zai (default)
 ```
 
 Override files (precedence highest-first; see `MIGRATION.md`):
@@ -287,7 +287,6 @@ What lands in the target project: `<project>/.opencode/opencode.json` (scoped `p
 - **Node.js v20+** and **npm** (required for MCP servers)
   - Setup scripts can install Node.js for you on all platforms
   - On macOS/Linux, nvm is recommended for version management
-- **LM Studio** running locally on port 1234 (for local LLM)
 - **Z.AI API Key** (required for Z.AI MCP services)
 - **GitHub CLI** (recommended for GitHub MCP authentication)
 - **ripgrep (`rg`)** (recommended for faster content search; falls back to `grep` if absent)
