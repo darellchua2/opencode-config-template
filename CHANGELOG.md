@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.2.0](https://github.com/darellchua2/opencode-config-template/compare/v5.1.0...v5.2.0) (2026-08-21)
+
+### Features
+
+* **local-llm:** replace LM Studio with llama.cpp/vLLM backends ([eea2a76](https://github.com/darellchua2/opencode-config-template/commit/eea2a76bb7a1eddfa1e4739e5cb0362ec4fcaed0))
+
+### Bug Fixes
+
+* **plugins:** add mcp-resource-guard against MCP resource tool loops ([ad2bdf9](https://github.com/darellchua2/opencode-config-template/commit/ad2bdf9dae25fe4995f38d672d3007e0c4b0a9cb)), closes [anomalyco/opencode#23045](https://github.com/anomalyco/opencode/issues/23045)
+
 ## [5.1.0](https://github.com/darellchua2/opencode-config-template/compare/v5.0.0...v5.1.0) (2026-08-19)
 
 ### Features
