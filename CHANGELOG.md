@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.3.0](https://github.com/darellchua2/opencode-config-template/compare/v5.2.0...v5.3.0) (2026-08-26)
+
+### Features
+
+* **models:** switch fast tier to glm-5.3-flash ([0acc81a](https://github.com/darellchua2/opencode-config-template/commit/0acc81a89200864f95baf04f45c61b80ae263057)), closes [#343](https://github.com/darellchua2/opencode-config-template/issues/343)
+
 ## [5.2.0](https://github.com/darellchua2/opencode-config-template/compare/v5.1.0...v5.2.0) (2026-08-21)
 
 ### Features
