@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.4.0](https://github.com/darellchua2/opencode-config-template/compare/v5.3.0...v5.4.0) (2026-08-26)
+
+### Features
+
+* **agents:** split reviewer charters, unblock permission-blocked skills ([#344](https://github.com/darellchua2/opencode-config-template/issues/344)) ([3db6383](https://github.com/darellchua2/opencode-config-template/commit/3db638322396f36b342edcccab282a6421cd8ab9))
+
+### Bug Fixes
+
+* **test:** bump reviewer skill-count assertions ([#344](https://github.com/darellchua2/opencode-config-template/issues/344)) ([ff47865](https://github.com/darellchua2/opencode-config-template/commit/ff478658c26b18de2ab9dc0d930929cb7a0a0420))
+
+### Documentation
+
+* **agents:** sync codegraph table, human-readable replies rule ([#344](https://github.com/darellchua2/opencode-config-template/issues/344)) ([a31febb](https://github.com/darellchua2/opencode-config-template/commit/a31febba2dd6b17444b54813eaae3292a944a36a))
+
 ## [5.3.0](https://github.com/darellchua2/opencode-config-template/compare/v5.2.0...v5.3.0) (2026-08-26)
 
 ### Features
