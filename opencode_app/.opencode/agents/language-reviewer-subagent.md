@@ -417,13 +417,13 @@ If the task names a language explicitly, use that language's section. For multi-
 | **Major** | Missing type hints/annotations on public API; blocking call in async/reactive code; missing error wrap/context; broad `except Exception`/`catch (Exception)` masking; raw types; missing `@Transactional` on multi-write method; excessive cloning; `Arc<Mutex>` where unnecessary; missing error boundary; incorrect hook usage; shared mutable state without synchronization; resource leak | **WARN** |
 | **Minor** | Style/naming inconsistency; missing docstring/Javadoc on public API; unnecessary `var`/allocation; missing `gofmt`; inconsistent import style; `@Autowired` field injection instead of constructor | **NOTE** |
 
-## Mandatory Consumer Coverage Gate
+## Direct-Caller Verification Gate (mirrors code-review)
 
-**Blocking gate, not optional.** Before approving any changed symbol, you MUST enumerate its consumers and verify none are broken. Mirrors the gold standard in `code-review-subagent.md:201-227`.
+**Blocking gate, not optional.** Before approving any changed symbol, you MUST enumerate its direct consumers and verify none are broken. Mirrors the gate in `code-review-subagent.md` §"Direct-Caller Verification (diff scope)".
 
-- **Impact (mandatory)**: Run `codegraph_impact` on changed files. If `.codegraph/` is absent, do NOT skip — use `grep -r`/`glob` to find every file that imports or references the changed symbol.
-- **Consumer enumeration (mandatory)**: For every changed public/exported symbol, enumerate its consumers via `codegraph_callers`. If `.codegraph/` is absent, use the language-specific grep patterns below.
-- **Gate rule**: If any changed symbol has uninspected downstream consumers, report it under Critical/Major issues. **Return `Status: partial` if consumer coverage is incomplete; only return `success` when all consumers of all changed symbols are inspected.**
+- **Consumer enumeration (mandatory)**: For every changed public/exported symbol, enumerate its direct callers/consumers via `codegraph_callers`. If `.codegraph/` is absent, do NOT skip — use the language-specific grep patterns below.
+- **Transitive impact (context only)**: The transitive `codegraph_impact` deep-dive belongs to architecture-review-subagent; report uninspected transitive consumers only when found incidentally — never fail the review over them.
+- **Gate rule**: If any changed symbol has uninspected direct consumers, report it under Critical/Major issues. **Return `Status: partial` if direct-consumer coverage is incomplete; only return `success` when all consumers of all changed symbols are inspected.**
 
 ### Python grep patterns
 

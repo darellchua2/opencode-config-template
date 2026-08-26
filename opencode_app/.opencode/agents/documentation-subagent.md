@@ -3,6 +3,7 @@ description: >-
   Documentation generation — docstrings, README coverage badges, technical docs
   per language standards (PEP 257, Javadoc, JSDoc, XML).
 mode: subagent
+steps: 20
 permission:
   read:
     "*": allow

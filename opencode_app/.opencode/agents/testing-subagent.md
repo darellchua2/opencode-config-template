@@ -3,6 +3,7 @@ description: >-
   Test generation — Python pytest, Next.js unit tests, generic frameworks,
   following best practices.
 mode: subagent
+steps: 15
 permission:
   read:
     "*": allow
@@ -10,7 +11,7 @@ permission:
   edit: allow
   glob: allow
   grep: allow
-  bash: deny
+  bash: allow
   webfetch: allow
   websearch: allow
   task:
@@ -83,8 +84,10 @@ Workflow:
    - Boundary conditions
    - Integration scenarios
 5. Ensure tests follow project conventions and naming patterns
-6. Provide test execution and coverage guidance
+6. Run the generated test suite (`npm test`, `pytest`, etc.) to verify pass/fail and capture coverage output
 7. Update branch-specific PLAN.md (invoke plan-updater skill)
+
+Bash runs the project's own test suite and coverage commands only; never modify source code — test files are your write scope (frontmatter `edit: allow`); never touch `.env`.
 
 For TDD adoption, guide developers through red-green-refactor cycle before generating tests. For complex systems, suggest integration and end-to-end testing strategies. Always prioritize test coverage of critical functionality.
 

@@ -4,6 +4,7 @@ description: >-
   (STEP/STL/3MF/GLB), DXF, URDF/SRDF/SDF, G-code slicing, 3D printing,
   SendCutSend, Civil 3D. Routes by task type.
 mode: subagent
+steps: 30
 permission:
   read:
     "*": allow

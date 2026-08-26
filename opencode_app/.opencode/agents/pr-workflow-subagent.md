@@ -3,6 +3,7 @@ description: >-
   PR workflows with framework-specific quality gates — PR creation,
   lint/build/test, semantic versioning, JIRA integration.
 mode: subagent
+steps: 30
 permission:
   read:
     "*": allow
