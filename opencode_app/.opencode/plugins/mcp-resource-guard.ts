@@ -15,7 +15,7 @@
 // the `read` key.  A scoped deny like  read: { "*": "allow", "mcp:*": "deny" }
 // denies at RUNTIME but does NOT hide them from the LLM tool list.
 //
-// The fast-tier model (glm-5-turbo) used by the explore agent sees the tool,
+// The fast-tier model (glm-5.3-flash) used by the explore agent sees the tool,
 // calls it, hallucinates a "files" server name (from training data about
 // Claude Code's filesystem MCP convention), gets "server not connected",
 // retries → unbounded loop wasting context and tokens.

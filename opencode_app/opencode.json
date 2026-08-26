@@ -192,6 +192,19 @@
                             "image"
                         ]
                     }
+                },
+                "glm-5.3-flash": {
+                    "name": "GLM-5.3 Flash",
+                    "modalities": {
+                        "input": [
+                            "text",
+                            "image"
+                        ]
+                    },
+                    "limit": {
+                        "context": 1000000,
+                        "output": 131072
+                    }
                 }
             }
         }
@@ -301,7 +314,7 @@
             }
         },
         "explore": {
-            "model": "zai-coding-plan/glm-5-turbo",
+            "model": "zai-coding-plan/glm-5.3-flash",
             "permission": {
                 "read": {
                     "*": "allow",

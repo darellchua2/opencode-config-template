@@ -38,7 +38,7 @@ Tiers live in `deploy/agent-tiers.json`; models are resolved at deploy time from
 |------|----------------|---------|
 | `primary` | `glm-5.3` (1M ctx) | Primary session only — never for subagents. |
 | `reasoning` | `glm-5.3` (200k) | Correctness-critical: reviewers (code/architecture/language incl. java/uiux), repo-ops-specialist, tdd, opentofu-explorer, loop-operator, opencode-tooling, technical-design-specialist, discovery-specialist, requirements-specialist, autoresearch-ml, autoresearch-code |
-| `fast` | `glm-5-turbo` (200k) | Exploratory/low-impact: explorer, testing, nextjs/cad/office-docs specialists, document creators, pr-workflow, autoresearch-research |
+| `fast` | `glm-5.3-flash` (1M) | Exploratory/low-impact: explorer, testing, nextjs/cad/office-docs specialists, document creators, pr-workflow, autoresearch-research |
 | `docs` | `glm-4.7` (204k) | documentation, linting, coverage |
 | `vision` | `zai/glm-5v-turbo` (128k) | Native multimodal: `image-analyzer-subagent` + `error-resolver-subagent` (see fallback below) |
 

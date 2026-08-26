@@ -157,7 +157,7 @@ hand:
   "primary": "zai-coding-plan/glm-5.3",
   "tiers": {
     "reasoning": "zai-coding-plan/glm-5.3",
-    "fast": "zai-coding-plan/glm-5-turbo",
+    "fast": "zai-coding-plan/glm-5.3-flash",
     "docs": "zai-coding-plan/glm-4.7",
     "vision": "openai/gpt-5"
   }
