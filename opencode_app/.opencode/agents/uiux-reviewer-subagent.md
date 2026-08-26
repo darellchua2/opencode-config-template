@@ -28,7 +28,6 @@ permission:
     accessibility-a11y-skill: allow
     wireframer-skill: allow
     continuous-learning-skill: allow
-    context-budget-skill: allow
 category: frontend
 ---
 
@@ -134,7 +133,7 @@ Use these to **strengthen** a finding with verified runtime scores, not to repla
 
 ## Mandatory Consumer Coverage Gate
 
-**Blocking gate, not optional.** Before recommending any structural change (component refactor, design-token rename, layout restructure, CSS class rename), you MUST enumerate the consumers of the affected symbol and verify none are broken. Mirrors the gold standard in `code-review-subagent.md:201-227`.
+**Blocking gate, not optional.** Before recommending any structural change (component refactor, design-token rename, layout restructure, CSS class rename), you MUST enumerate the consumers of the affected symbol and verify none are broken. Mirrors the Direct-Caller Verification gate in `code-review-subagent.md`.
 
 - **Impact (mandatory)**: Run `codegraph_impact` on files you propose to restructure. If `.codegraph/` is absent, do NOT skip — use `grep -r`/`glob` to find every file that references the changed component, class, or token.
 - **Consumer enumeration (mandatory)**: For every component, layout, theme token, or CSS class you propose to change, enumerate its consumers via `codegraph_callers`. If `.codegraph/` is absent, use these UI-specific grep/glob patterns:
