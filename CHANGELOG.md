@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.7.0](https://github.com/darellchua2/opencode-config-template/compare/v5.6.0...v5.7.0) (2026-08-27)
+
+### Features
+
+* **command:** add /run-worktree-pipeline with worktree-pipeline-skill ([#354](https://github.com/darellchua2/opencode-config-template/issues/354)) ([5607c2a](https://github.com/darellchua2/opencode-config-template/commit/5607c2a305924c2d1ad2c60abedb7bcf0e1495e2)), closes [#351](https://github.com/darellchua2/opencode-config-template/issues/351)
+
 ## [5.6.0](https://github.com/darellchua2/opencode-config-template/compare/v5.5.0...v5.6.0) (2026-08-27)
 
 ### Features
