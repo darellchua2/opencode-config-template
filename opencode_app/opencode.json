@@ -180,35 +180,9 @@
                         "output": 32768
                     }
                 }
-            }
-        },
-        "zai-coding-plan": {
-            "models": {
-                "glm-5v-turbo": {
-                    "name": "GLM-5V Turbo (vision)",
-                    "modalities": {
-                        "input": [
-                            "text",
-                            "image"
-                        ]
-                    }
-                },
-                "glm-5.3-flash": {
-                    "name": "GLM-5.3 Flash",
-                    "modalities": {
-                        "input": [
-                            "text",
-                            "image"
-                        ]
-                    },
-                    "limit": {
-                        "context": 1000000,
-                        "output": 131072
-                    }
-                }
-            }
-        }
-    },
+             }
+         }
+     },
     "mcp": {
         "codegraph": {
             "type": "local",
