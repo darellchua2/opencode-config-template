@@ -12,19 +12,21 @@ category: Responsive & Visual Testing
 ## What I do
 
 I give an agent a single ready-to-run command that calls the **Z.AI vision API directly** with
-**`glm-5v-turbo`** (the same vision model the native multimodal path uses), returning the model's
-text description of an image. This is the **API fallback** for when native multimodal perception is
-unavailable — e.g. the `image-analyzer-subagent` runtime reports "model does not support image
-input", the vision MCP server isn't connected, or a text-model agent needs image content.
+**`glm-5v-turbo`** (a different model from the native `glm-5.3-flash` multimodal path), returning
+the model's text description of an image. This is the **API fallback** for when native multimodal
+perception is unavailable — e.g. the `image-analyzer-subagent` runtime reports "model does not
+support image input", the vision MCP server isn't connected, or a text-model agent needs image
+content.
 
 The calling agent (typically a text model) runs the command with `bash`, then reasons over the
 returned description.
 
 ## Why a direct API call
 
-OpenCode routes `zai/glm-5v-turbo` through its provider catalog for native multimodal agents, but
-that path can fail at runtime (provider mis-route, MCP server not connected, text-only session). A
-direct Z.AI API call works regardless of the OpenCode model layer, so it is a reliable fallback.
+OpenCode's native multimodal agents run on provider-catalog vision models (now
+`zai-coding-plan/glm-5.3-flash`), but that path can fail at runtime (provider mis-route, MCP
+server not connected, text-only session). A direct Z.AI API call works regardless of the OpenCode
+model layer, so it is a reliable fallback.
 It also serves any text-model agent that has `bash` but no image perception.
 
 ## Prerequisite — key + endpoint
@@ -110,8 +112,9 @@ The description is printed to stdout (`choices[0].message.content`).
 
 ## Choosing a different model
 
-`glm-5v-turbo` is the default (same model as the native multimodal path, best quality). To cut
-cost, set `MODEL = "glm-4.6v"` (cheaper, $0.30/$0.90) in the recipe. The free `glm-4.6v-flash` is
+`glm-5v-turbo` is the default (a dedicated vision model, best quality on the pay-as-you-go API;
+the native path now runs `glm-5.3-flash`). To cut cost, set `MODEL = "glm-4.6v"` (cheaper,
+$0.30/$0.90) in the recipe. The free `glm-4.6v-flash` is
 available but rate-limits frequently — use only when cost is the hard constraint.
 
 ## Caller contract

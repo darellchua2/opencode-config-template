@@ -583,7 +583,7 @@ USAGE:
 
   SKILL PROFILE (deploy-time primary visibility):
     --skill-profile <p>   lean (default) | full. lean rewrites the DEPLOYED
-                           config's permission.skill to 36 primary-visible
+                           config's permission.skill to 37 primary-visible
                            skills + "*": "deny" (subagents unaffected — they
                            self-scope via frontmatter allows); full deploys the
                            shipped 93-allow allowlist verbatim.
@@ -3205,7 +3205,7 @@ deploy_plugins() {
 # ─────────────────────────────────────────────────────────────────────────────
 # Apply the skill profile (GIT-333): rewrites ONLY the permission.skill block
 # of the DEPLOYED config (never the source opencode_app/opencode.json).
-#   lean (default) -> 36 primary-visible skills + "*": "deny"
+#   lean (default) -> 37 primary-visible skills + "*": "deny"
 #   full           -> verified no-op (shipped 93-allow allowlist stays verbatim)
 # Mirrors run_pack_merger's dry-run contract (B1): in dry-run the resolver
 # stages the preview config at $DRY_RUN_PREVIEW_DIR/opencode.json — patch that.
@@ -3790,7 +3790,8 @@ print_summary() {
     # config.json status
     if [ -f "$CONFIG_FILE" ]; then
         echo "✓ config.json: Copied to ${CONFIG_DIR}/"
-        echo "    - Model: zai-coding-plan/glm-4.7"
+        primary_model=$(node -pe "JSON.parse(require('fs').readFileSync('${REPO_DIR}/deploy/models.default.json','utf8')).primary" 2>/dev/null || echo "zai-coding-plan/glm-5.3")
+        echo "    - Model: ${primary_model}"
         echo "    - Default agent: build"
     else
         echo "✗ config.json: Not copied"

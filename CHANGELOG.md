@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.7.0](https://github.com/darellchua2/opencode-config-template/compare/v5.6.0...v5.7.0) (2026-08-27)
+
+### Features
+
+* **command:** add /run-worktree-pipeline with worktree-pipeline-skill ([#354](https://github.com/darellchua2/opencode-config-template/issues/354)) ([5607c2a](https://github.com/darellchua2/opencode-config-template/commit/5607c2a305924c2d1ad2c60abedb7bcf0e1495e2)), closes [#351](https://github.com/darellchua2/opencode-config-template/issues/351)
+
+## [5.6.0](https://github.com/darellchua2/opencode-config-template/compare/v5.5.0...v5.6.0) (2026-08-27)
+
+### Features
+
+* **agents:** delegate pre-PR docstring sweep to documentation-subagent ([#353](https://github.com/darellchua2/opencode-config-template/issues/353)) ([bb1650e](https://github.com/darellchua2/opencode-config-template/commit/bb1650ecbdd24ec070929ec066ec2a5900e5e317)), closes [#350](https://github.com/darellchua2/opencode-config-template/issues/350)
+
+## [5.5.0](https://github.com/darellchua2/opencode-config-template/compare/v5.4.1...v5.5.0) (2026-08-27)
+
+### Features
+
+* **models:** switch vision and docs tiers to native zai-coding-plan/glm-5.3-flash ([#352](https://github.com/darellchua2/opencode-config-template/issues/352)) ([b07bba8](https://github.com/darellchua2/opencode-config-template/commit/b07bba89368a0bb886f9b7938ed1f87166559a34)), closes [#349](https://github.com/darellchua2/opencode-config-template/issues/349)
+
+## [5.4.1](https://github.com/darellchua2/opencode-config-template/compare/v5.4.0...v5.4.1) (2026-08-27)
+
+### Bug Fixes
+
+* **docs:** remove stale plans ([fd4e2b6](https://github.com/darellchua2/opencode-config-template/commit/fd4e2b61506912f4f7881cccfc5f106067784e01))
+
 ## [5.4.0](https://github.com/darellchua2/opencode-config-template/compare/v5.3.0...v5.4.0) (2026-08-26)
 
 ### Features
