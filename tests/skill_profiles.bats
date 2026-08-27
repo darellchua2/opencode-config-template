@@ -2,9 +2,9 @@
 # GIT-333: skill-profile mechanism coverage.
 #   1. every lean key in deploy/skill-profiles.json matches a real skill dir
 #   2. lean ⊆ shipped allowlist in opencode_app/opencode.json (typo guard)
-#   3. lean count == 30
+#   3. lean count == 37
 #   4. apply-skill-profile.mjs lean rewrites a scratch deployed config to
-#      exactly 36 allows + "*": "deny"; full leaves the shipped block verbatim.
+#      exactly 37 allows + "*": "deny"; full leaves the shipped block verbatim.
 # Note: these tests intentionally do NOT assert the shipped allowlist size
 # (count-drift tests own disk counts; allowlist size is profile-dependent).
 
@@ -22,9 +22,9 @@ lean_keys() {
     node -e "console.log(require('${PROJECT_ROOT}/deploy/skill-profiles.json').lean.join('\n'))"
 }
 
-@test "skill-profiles: lean has exactly 36 keys" {
+@test "skill-profiles: lean has exactly 37 keys" {
     count=$(lean_keys | wc -l)
-    [ "$count" -eq 36 ]
+    [ "$count" -eq 37 ]
 }
 
 @test "skill-profiles: every lean key matches a skill dir on disk" {
@@ -43,7 +43,7 @@ console.log(p.lean.filter(k=>!a.includes(k)).join(' '));")
     [ -z "$bad" ] || { echo "not in shipped allowlist: $bad"; return 1; }
 }
 
-@test "apply-skill-profile: lean rewrites scratch deployed config to 36 allows + * deny" {
+@test "apply-skill-profile: lean rewrites scratch deployed config to 37 allows + * deny" {
     scratch="${TEST_HOME}/opencode.json"
     cp "${PROJECT_ROOT}/opencode_app/opencode.json" "$scratch"
     run node "${PROJECT_ROOT}/deploy/apply-skill-profile.mjs" \
@@ -57,7 +57,7 @@ const k=Object.keys(c.permission.skill);
 const allows=k.filter(x=>x!=='*');
 console.log(allows.length, c.permission.skill['*']==='deny' ? 'deny-ok' : 'no-deny');")
     echo "result: $out"
-    [ "$out" = "36 deny-ok" ]
+    [ "$out" = "37 deny-ok" ]
 }
 
 @test "apply-skill-profile: full is a verified no-op on a fresh copy" {

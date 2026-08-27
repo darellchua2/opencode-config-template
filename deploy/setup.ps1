@@ -926,7 +926,7 @@ USAGE:
 
    SKILL PROFILE (deploy-time primary visibility):
      -SkillProfile <p>    lean (default) | full. lean rewrites the DEPLOYED
-                          config's permission.skill to 36 primary-visible skills
+                          config's permission.skill to 37 primary-visible skills
                           + "*": "deny" (subagents unaffected — they self-scope
                           via frontmatter allows); full deploys the shipped
                           93-allow allowlist verbatim.
@@ -1899,7 +1899,7 @@ function Invoke-PackMerger {
 
 # Apply the skill profile (GIT-333): rewrites ONLY the permission.skill block
 # of the DEPLOYED config (never the source opencode_app/opencode.json).
-# lean (default) -> 36 primary-visible skills + "*": "deny"; full -> verified
+# lean (default) -> 37 primary-visible skills + "*": "deny"; full -> verified
 # no-op. Mirrors Invoke-PackMerger's dry-run contract (B1).
 function Invoke-SkillProfile {
     if (-not (Test-Path $ApplySkillProfileScript)) {
