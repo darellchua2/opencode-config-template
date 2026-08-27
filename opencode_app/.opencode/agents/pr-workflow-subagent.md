@@ -107,11 +107,14 @@ Built-in Subagent Delegation:
   - Generate coverage report while preparing PR description
   - Collect JIRA ticket info while running build checks
 - Delegate to `documentation-subagent` for the pre-PR docstring sweep:
-  - Diff-scope only: hand it the PR-diff file list; it fills missing docstrings (PEP 257 / Javadoc / JSDoc/TSDoc / C# XML)
+  - Diff-scope only: hand it the PR-diff file list; it fills missing docstrings (PEP 257 / Javadoc / JSDoc-TSDoc / C# XML)
   - You compute the diff, re-run lint, and make the semantic commit — the delegate has `bash: deny`
+- Delegate to `image-analyzer-subagent` for visual PR artifacts:
+  - Attaching PR screenshots/images to JIRA tickets (step 6)
+  - Reviewing generated diagram or screenshot diffs when they appear in the PR
 - Use `explore` via Task tool with subagent_type="explore" for discovery, `general` via subagent_type="general" for parallel work
 
-Note: Subagent-to-subagent chaining is not used here. Use `explore` for discovery tasks, `general` for parallel quality checks, and `documentation-subagent` for the diff-scope docstring sweep. Skills handle the actual PR creation workflows (pr-creation-workflow, nextjs-pr-workflow).
+Note: Subagent-to-subagent chaining is not used here. Use `explore` for discovery tasks, `general` for parallel quality checks, `documentation-subagent` for the diff-scope docstring sweep, and `image-analyzer-subagent` for image-heavy PR artifacts. Skills handle the actual PR creation workflows (pr-creation-workflow, nextjs-pr-workflow).
 
 Workflow:
 1. Detect project framework (Next.js, Python, or other)
