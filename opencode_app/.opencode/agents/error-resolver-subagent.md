@@ -4,6 +4,7 @@ description: >-
   (zai-coding-plan/glm-5.3-flash) — reads error screenshots directly. Explicit
   user invocation only.
 mode: subagent
+steps: 25
 permission:
   read:
     "*": allow

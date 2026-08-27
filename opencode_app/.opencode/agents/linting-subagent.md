@@ -3,6 +3,7 @@ description: >-
   Code linting and quality checks — Python Ruff, JS/TS ESLint, Java
   Checkstyle/SpotBugs, C# dotnet format/analyzers, generic workflows.
 mode: subagent
+steps: 25
 permission:
   read:
     "*": allow
@@ -10,7 +11,7 @@ permission:
   edit: allow
   glob: allow
   grep: allow
-  bash: deny
+  bash: allow
   webfetch: allow
   websearch: allow
   task:
@@ -83,6 +84,10 @@ orchestrates detection, workflow, and reporting.
 | ERROR | Code will fail or has bugs | Must fix before merge |
 | WARNING | Potential issues or bad patterns | Should fix, can defer |
 | INFO | Style/suggestions | Optional improvement |
+
+## Bash Usage Policy
+
+Bash is for linting tooling only: run linters/formatters (`ruff`, `eslint`/`npx eslint`, `mvn`/`gradle` Checkstyle/SpotBugs/PMD, `dotnet format`) and their auto-fix passes. Auto-fix writes to source files are part of the job (frontmatter `edit: allow` covers them); never touch `.env` files or anything outside the delegated task scope. Do not install global tooling — if a linter binary is missing, report it under Issues instead.
 
 ## Auto-Fix Strategy
 

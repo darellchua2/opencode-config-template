@@ -4,6 +4,7 @@ description: >-
   React Compiler), runtime diagnosis via next-devtools-mcp, proactive audit.
   Routes to skills by task type.
 mode: subagent
+steps: 30
 permission:
   read:
     "*": allow

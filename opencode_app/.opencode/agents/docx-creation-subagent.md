@@ -3,6 +3,7 @@ description: >-
   Word document creation — create, read, edit, convert .docx with professional
   formatting, tracked changes, comments, images.
 mode: subagent
+steps: 20
 permission:
   read:
     "*": allow
@@ -10,7 +11,7 @@ permission:
   edit: allow
   glob: allow
   grep: allow
-  bash: deny
+  bash: allow
   webfetch: allow
   websearch: allow
   skill:
@@ -73,8 +74,9 @@ Critical Rules: `docx-creation-skill` is the source of truth for docx-js specifi
 consult it before writing document-generation code.
 
 Delegation:
-- Bash commands (pandoc, python scripts): Request from parent agent
-- File operations: Request from parent agent
+- File operations outside the delegated output path: Request from parent agent
+
+Bash runs document tooling only (`python scripts/unpack.py` / `pack.py`, pandoc, docx-js build scripts); keep all writes inside the delegated output path, never touch `.env`.
 
 Provide complete, professional documents. Follow docx-creation skill guidelines.
 

@@ -3,6 +3,7 @@ description: >-
   Image analysis utility — native multimodal (zai-coding-plan/glm-5.3-flash) with direct
   Z.AI vision API fallback. Takes paths/URLs; returns bounded structured analysis.
 mode: subagent
+steps: 10
 
 permission:
   read:
