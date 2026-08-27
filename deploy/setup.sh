@@ -3790,7 +3790,8 @@ print_summary() {
     # config.json status
     if [ -f "$CONFIG_FILE" ]; then
         echo "✓ config.json: Copied to ${CONFIG_DIR}/"
-        echo "    - Model: zai-coding-plan/glm-4.7"
+        primary_model=$(node -pe "JSON.parse(require('fs').readFileSync('${REPO_DIR}/deploy/models.default.json','utf8')).primary" 2>/dev/null || echo "zai-coding-plan/glm-5.3")
+        echo "    - Model: ${primary_model}"
         echo "    - Default agent: build"
     else
         echo "✗ config.json: Not copied"

@@ -180,9 +180,9 @@
                         "output": 32768
                     }
                 }
-             }
-         }
-     },
+            }
+        }
+    },
     "mcp": {
         "codegraph": {
             "type": "local",
