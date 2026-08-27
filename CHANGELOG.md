@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.6.0](https://github.com/darellchua2/opencode-config-template/compare/v5.5.0...v5.6.0) (2026-08-27)
+
+### Features
+
+* **agents:** delegate pre-PR docstring sweep to documentation-subagent ([#353](https://github.com/darellchua2/opencode-config-template/issues/353)) ([bb1650e](https://github.com/darellchua2/opencode-config-template/commit/bb1650ecbdd24ec070929ec066ec2a5900e5e317)), closes [#350](https://github.com/darellchua2/opencode-config-template/issues/350)
+
 ## [5.5.0](https://github.com/darellchua2/opencode-config-template/compare/v5.4.1...v5.5.0) (2026-08-27)
 
 ### Features
