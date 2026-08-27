@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.7.1](https://github.com/darellchua2/opencode-config-template/compare/v5.7.0...v5.7.1) (2026-08-27)
+
+### Bug Fixes
+
+* **agents:** unblock linting/docx/tdd/testing bash, align language-reviewer gate ([#347](https://github.com/darellchua2/opencode-config-template/issues/347)) ([#348](https://github.com/darellchua2/opencode-config-template/issues/348)) ([57303c8](https://github.com/darellchua2/opencode-config-template/commit/57303c80b3959cd659ddeb52c2096345269c8ca7)), closes [#345](https://github.com/darellchua2/opencode-config-template/issues/345)
+
 ## [5.7.0](https://github.com/darellchua2/opencode-config-template/compare/v5.6.0...v5.7.0) (2026-08-27)
 
 ### Features
