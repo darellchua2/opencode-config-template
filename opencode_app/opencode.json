@@ -68,6 +68,7 @@
             "nextjs-pr-workflow-skill": "allow",
             "semantic-release-convention-skill": "allow",
             "version-bump-standard-skill": "allow",
+            "worktree-pipeline-skill": "allow",
             "opencode-agent-creation-skill": "allow",
             "opencode-repo-setup-skill": "allow",
             "opencode-skill-creation-skill": "allow",
@@ -139,6 +140,11 @@
         "run-plan": {
             "description": "Fully-automated plan execution loop \u2014 implement PLAN*.md phase-by-phase (lint+build+test+e2e gate, then commit + push per phase). Deliberate trigger; /goal stays generic.",
             "template": "Load the skill `plan-automation-loop-skill` and run it to fully implement the plan file given as the argument: $ARGUMENTS",
+            "agent": "build"
+        },
+        "run-worktree-pipeline": {
+            "description": "Tracker-ticket-to-merged-PR pipeline via git worktrees \u2014 sync, plan, 3-subagent review, /run-plan, code review, PR merge. Usage: /run-worktree-pipeline [base-branch] <ticket-refs...>",
+            "template": "Load the skill `worktree-pipeline-skill` and run it with the arguments: $ARGUMENTS",
             "agent": "build"
         }
     },
