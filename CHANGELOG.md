@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.4.1](https://github.com/darellchua2/opencode-config-template/compare/v5.4.0...v5.4.1) (2026-08-27)
+
+### Bug Fixes
+
+* **docs:** remove stale plans ([fd4e2b6](https://github.com/darellchua2/opencode-config-template/commit/fd4e2b61506912f4f7881cccfc5f106067784e01))
+
 ## [5.4.0](https://github.com/darellchua2/opencode-config-template/compare/v5.3.0...v5.4.0) (2026-08-26)
 
 ### Features
