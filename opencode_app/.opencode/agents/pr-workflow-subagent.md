@@ -15,6 +15,7 @@ permission:
   websearch: allow
   task:
     "*": deny
+    documentation-subagent: allow
     explore: allow
     general: allow
     image-analyzer-subagent: allow
@@ -105,13 +106,23 @@ Built-in Subagent Delegation:
   - Run lint + typecheck in parallel (both are independent reads)
   - Generate coverage report while preparing PR description
   - Collect JIRA ticket info while running build checks
+- Delegate to `documentation-subagent` for the pre-PR docstring sweep:
+  - Diff-scope only: hand it the PR-diff file list; it fills missing docstrings (PEP 257 / Javadoc / JSDoc-TSDoc / C# XML)
+  - You compute the diff, re-run lint, and make the semantic commit — the delegate has `bash: deny`
+- Delegate to `image-analyzer-subagent` for visual PR artifacts:
+  - Attaching PR screenshots/images to JIRA tickets (step 6)
+  - Reviewing generated diagram or screenshot diffs when they appear in the PR
 - Use `explore` via Task tool with subagent_type="explore" for discovery, `general` via subagent_type="general" for parallel work
 
-Note: Subagent-to-subagent chaining is not used here. Use `explore` for discovery tasks and `general` for parallel quality checks. Skills handle the actual PR creation workflows (pr-creation-workflow, nextjs-pr-workflow).
+Note: Subagent-to-subagent chaining is not used here. Use `explore` for discovery tasks, `general` for parallel quality checks, `documentation-subagent` for the diff-scope docstring sweep, and `image-analyzer-subagent` for image-heavy PR artifacts. Skills handle the actual PR creation workflows (pr-creation-workflow, nextjs-pr-workflow).
 
 Workflow:
 1. Detect project framework (Next.js, Python, or other)
 2. Run framework-specific quality checks (lint, build, test)
+2.5. Docstring sweep (delegate to documentation-subagent — division of labor, the delegate has `bash: deny`):
+    - Compute the PR-diff file list yourself (`git diff --name-only <base>...HEAD`) and pass ONLY that list in the Task prompt
+    - documentation-subagent scans those files for new/changed public symbols missing docstrings and fills them per language standard (Python PEP 257, Javadoc, JSDoc/TSDoc, C# XML) — docstrings only, no README/coverage work
+    - Re-run lint (and tests where doctests exist) after the edits, then commit docstring additions with semantic format before PR creation
 3. Generate coverage badges if applicable
 4. Update branch-specific PLAN.md (invoke plan-updater skill)
 5. Create PR using appropriate workflow:
