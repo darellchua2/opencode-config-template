@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.5.0](https://github.com/darellchua2/opencode-config-template/compare/v5.4.1...v5.5.0) (2026-08-27)
+
+### Features
+
+* **models:** switch vision and docs tiers to native zai-coding-plan/glm-5.3-flash ([#352](https://github.com/darellchua2/opencode-config-template/issues/352)) ([b07bba8](https://github.com/darellchua2/opencode-config-template/commit/b07bba89368a0bb886f9b7938ed1f87166559a34)), closes [#349](https://github.com/darellchua2/opencode-config-template/issues/349)
+
 ## [5.4.1](https://github.com/darellchua2/opencode-config-template/compare/v5.4.0...v5.4.1) (2026-08-27)
 
 ### Bug Fixes
