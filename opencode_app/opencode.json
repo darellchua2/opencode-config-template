@@ -187,6 +187,64 @@
                     }
                 }
             }
+        },
+        "zai-custom": {
+            "npm": "@ai-sdk/openai-compatible",
+            "name": "Z.AI Coding Plan (Custom)",
+            "options": {
+                "baseURL": "https://api.z.ai/api/coding/paas/v4",
+                "apiKey": "{env:ZAI_API_KEY}"
+            },
+            "models": {
+                "glm-5.3-flash": {
+                    "name": "GLM-5.3 Flash (Custom)",
+                    "attachment": true,
+                    "reasoning": true,
+                    "tool_call": true,
+                    "cost": {
+                        "input": 0,
+                        "output": 0,
+                        "cache_read": 0,
+                        "cache_write": 0
+                    },
+                    "limit": {
+                        "context": 1000000,
+                        "output": 131072
+                    },
+                    "modalities": {
+                        "input": [
+                            "text",
+                            "image"
+                        ],
+                        "output": [
+                            "text"
+                        ]
+                    }
+                },
+                "glm-5.3": {
+                    "name": "GLM-5.3 (Custom)",
+                    "reasoning": true,
+                    "tool_call": true,
+                    "cost": {
+                        "input": 0,
+                        "output": 0,
+                        "cache_read": 0,
+                        "cache_write": 0
+                    },
+                    "limit": {
+                        "context": 1000000,
+                        "output": 131072
+                    },
+                    "modalities": {
+                        "input": [
+                            "text"
+                        ],
+                        "output": [
+                            "text"
+                        ]
+                    }
+                }
+            }
         }
     },
     "mcp": {

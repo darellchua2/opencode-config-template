@@ -10,6 +10,17 @@
       "vision": "zai-coding-plan/glm-5.3-flash"
     }
   },
+  "zai-custom": {
+    "$comment": "User-owned copy of zai-coding-plan declared via provider.zai-custom in opencode.json (same Z.AI coding endpoint) so OpenWork and other OpenCode-config consumers can see GLM models without the built-in provider.",
+    "label": "Z.AI Coding Plan (Custom)",
+    "primary": "zai-custom/glm-5.3",
+    "tiers": {
+      "reasoning": "zai-custom/glm-5.3",
+      "fast": "zai-custom/glm-5.3-flash",
+      "docs": "zai-custom/glm-5.3-flash",
+      "vision": "zai-custom/glm-5.3-flash"
+    }
+  },
   "anthropic": {
     "label": "Anthropic (Claude)",
     "primary": "anthropic/claude-opus-4-8",
