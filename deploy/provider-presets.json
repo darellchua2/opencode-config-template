@@ -6,8 +6,8 @@
     "tiers": {
       "reasoning": "zai-coding-plan/glm-5.3",
       "fast": "zai-coding-plan/glm-5.3-flash",
-      "docs": "zai-coding-plan/glm-4.7",
-      "vision": "zai/glm-4.6v"
+      "docs": "zai-coding-plan/glm-5.3-flash",
+      "vision": "zai-coding-plan/glm-5.3-flash"
     }
   },
   "anthropic": {

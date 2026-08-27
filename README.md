@@ -100,10 +100,12 @@ Override files (precedence highest-first; see `MIGRATION.md`):
 | `deploy/models.default.json` | Z.AI defaults |
 
 > **Vision tier (Z.AI):** `image-analyzer-subagent` + `error-resolver-subagent` run on
-> `zai/glm-5v-turbo` (native multimodal), served by the `zai` API provider — separate from the
-> `zai-coding-plan` subscription. They see images/screenshots directly (no external vision API).
-> Requires `opencode auth login` (Z.AI) or `ZAI_API_KEY` (auto-injected in Docker via
-> `docker-entrypoint.sh`). See `AGENTS.md` § Subagent Model Tiering.
+> `zai-coding-plan/glm-5.3-flash` (native multimodal — image/video/pdf input, 1M ctx), natively
+> mapped by models.dev under the `zai-coding-plan` subscription. They see images/screenshots
+> directly (no external vision API). When native perception is unavailable, the
+> `zai-vision-analysis-skill` fallback calls `glm-5v-turbo` (pay-as-you-go `zai` provider — a
+> different model) via direct API. Requires `opencode auth login` (Z.AI) or `ZAI_API_KEY`
+> (auto-injected in Docker via `docker-entrypoint.sh`). See `AGENTS.md` § Subagent Model Tiering.
 
 ### Windows (PowerShell)
 
@@ -615,7 +617,7 @@ This repository implements **skill modularization** with 133 skills organized ac
 | **nextjs-specialist-subagent** | Next.js scaffolding + runtime MCP diagnosis + project audit | nextjs-standard-setup, nextjs-devtools-mcp, docstring-generator, nextjs-image-usage, react-hooks-antipatterns, react-render-antipatterns, amplify-nextjs-deployment | — |
 | **opencode-tooling-subagent** | Skills, agents, and rules creation + doc sync | opencode-skill-creation, opencode-agent-creation, opencode-skills-maintainer, documentation-sync-workflow | — |
 | **docx-creation-subagent** | Word document creation | docx-creation, unslop-skill, horseshoe-paper-writing-skill | — |
-| **image-analyzer-subagent** | Image analysis (native multimodal `zai/glm-5v-turbo`) | (built-in vision) | — |
+| **image-analyzer-subagent** | Image analysis (native multimodal `zai-coding-plan/glm-5.3-flash`) | (built-in vision) | — |
 | **responsive-audit-subagent** | Responsive UI audit and fix | playwright-responsive-audit-skill | `explore`, `general`, `image-analyzer-subagent` |
 | **cad-specialist-subagent** | CAD, robotics, hardware design — orchestrates 14 CAD/engineering skills | cad-generation, cad-viewer, cad-step-parts, cad-dxf, cad-urdf, cad-srdf, cad-sdf, cad-sendcutsend, cad-gcode, cad-bambu-labs, cad-implicit, autodesk-aps-skill, civil-3d-skill, open3d-skill | — |
 | **explorer-subagent** | Fast codebase exploration and analysis | (built-in search capabilities) | — |
