@@ -26,12 +26,14 @@ Usage: `/run-worktree-pipeline [base-branch] <ticket-refs...>`
 ## Step 1 — Parse arguments
 
 - First token is a **base-branch** iff it fails the ticket regex
-  `^(#\d+|[\w.-]+/[\w.-]+#\d+|[A-Z][A-Z0-9]+-\d+)$`.
+  `^(#\d+|[\w.-]+/[\w.-]+#\d+|[A-Z][A-Z0-9]+-\d+)$` **and is not purely
+  numeric**.
 - Bare numerics (`351`) auto-normalize to GitHub issue refs (`#351`).
 - Zero ticket refs → print usage and stop.
 - The base-branch sets **both** where feat branches are cut from AND the PR
   target. Default (omitted): repo default branch via
-  `git symbolic-ref refs/remotes/origin/HEAD` (short name; fallback `main`).
+  `git symbolic-ref --short refs/remotes/origin/HEAD` (yields
+  `origin/<base>`; strip the prefix; fallback `main`).
 - **Ticket order = execution order** (sequential; never parallel worktrees).
   Before starting a ticket, if its body contains `blocked-by: <ref>` naming a
   ticket that is not yet merged, skip it and report why (no JIRA link
@@ -51,7 +53,7 @@ Usage: `/run-worktree-pipeline [base-branch] <ticket-refs...>`
    guard; GitHub issue or JIRA per ref format — tracker-agnostic).
 4. **Worktree**: locate the **main** checkout via
    `git worktree list --porcelain | sed -n 's/^worktree //p' | head -1`
-   (NOT `$(git revparse --show-toplevel)` — that nests when invoked from a
+   (NOT `$(git rev-parse --show-toplevel)` — that nests when invoked from a
    worktree). Create `git worktree add <main-repo>/../worktrees/<KEY> feat/<KEY>`
    — **always, even when the ticket is in this repo**. Worktrees-root is
    user-overridable. Pre-flight `git worktree list` for stale `<KEY>` entries.
@@ -59,9 +61,11 @@ Usage: `/run-worktree-pipeline [base-branch] <ticket-refs...>`
    latest `origin/<base>` content **in the worktree**; if stale, update the
    ticket and note deltas before proceeding.
 6. **PLAN** — drive `ticket-plan-workflow-skill` with this entry contract:
-   - Enter at **Step 5.5** (adopt/rename existing PLAN) with
-     `BRANCH_NAME=feat/<KEY>` — the skill assumes the branch equals the ticket
-     key and defines that variable in its Step 5, which we skip.
+   - That skill has **no branch-creation step and never sets
+     `$BRANCH_NAME`** — it only *uses* it (its Step 7 pushes
+     `git push -u origin "$BRANCH_NAME"`). We cut `feat/<KEY>` in Step 2
+     above and export `BRANCH_NAME=feat/<KEY>` before entering.
+   - Enter at **Step 5.5** (adopt/rename existing PLAN).
    - Run 5.5 → 5.6 (BRD/SRS draft linking) → 6 (generate) → 6.5 (atomicity
      gate). Note: 5.5 searches `PLANS/` relative to the worktree cwd — drafts
      must be **committed to `<base>`** to be adoptable here; uncommitted
@@ -69,7 +73,9 @@ Usage: `/run-worktree-pipeline [base-branch] <ticket-refs...>`
    - Then run its **Step 7 yourself**: commit + push the PLAN on
      `feat/<KEY>`. /run-plan commits implementation phases, not the PLAN —
      an untracked PLAN file would be lost on worktree removal.
-   - Skip its Step 5, Step 7.5 release-tooling signal, and Step 9
+   - Skip its Step 8 (initial ticket progress comment — execution follows
+     immediately here; ticket updates flow through Step 5 re-validation and
+     pr-workflow), its Step 7.5 branch-workflow setup signal, and its Step 9
      interactive prompt.
 7. **Plan review**: Task-delegate the PLAN file to
    `requirements-specialist-subagent` + `coverage-subagent` +

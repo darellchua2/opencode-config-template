@@ -389,7 +389,7 @@ Every allowed skill's `description` is injected into the primary session's conte
 
 ```bash
 ./deploy/setup.sh                                # default: lean (37 primary-visible skills)
-./deploy/setup.sh --skill-profile full           # opt back in: shipped 88-allow allowlist verbatim
+./deploy/setup.sh --skill-profile full           # opt back in: shipped allowlist verbatim
 ./deploy/setup.sh --skill-profile lean --dry-run # preview the deployed permission.skill block
 ./deploy/setup.ps1 -SkillProfile full            # Windows parity
 ```
