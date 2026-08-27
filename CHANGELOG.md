@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.8.0](https://github.com/darellchua2/opencode-config-template/compare/v5.7.1...v5.8.0) (2026-08-27)
+
+### Features
+
+* **deploy:** add zai-custom provider mirroring zai-coding-plan ([59177de](https://github.com/darellchua2/opencode-config-template/commit/59177de94d06ac0ed20fe5b8e2a6ae84204d762d))
+
 ## [5.7.1](https://github.com/darellchua2/opencode-config-template/compare/v5.7.0...v5.7.1) (2026-08-27)
 
 ### Bug Fixes
