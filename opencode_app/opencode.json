@@ -119,7 +119,15 @@
             "fastapi-pydantic-orm-patterns-skill": "allow",
             "aws-iac-safety-skill": "allow",
             "react-hooks-antipatterns-skill": "allow",
-            "react-render-antipatterns-skill": "allow"
+            "react-render-antipatterns-skill": "allow",
+            "gsap-core": "allow",
+            "gsap-timeline": "allow",
+            "gsap-scrolltrigger": "allow",
+            "gsap-plugins": "allow",
+            "gsap-utils": "allow",
+            "gsap-react": "allow",
+            "gsap-performance": "allow",
+            "gsap-frameworks": "allow"
         },
         "tool": {
             "codegraph*": "allow",
