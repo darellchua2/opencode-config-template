@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.9.0](https://github.com/darellchua2/opencode-config-template/compare/v5.8.0...v5.9.0) (2026-08-28)
+
+### Features
+
+* **skills:** vendor 8 official GSAP animation skills from greensock/gsap-skills ([a965e47](https://github.com/darellchua2/opencode-config-template/commit/a965e47ca83c64ae69d78f445036727d190a37b8))
+
 ## [5.8.0](https://github.com/darellchua2/opencode-config-template/compare/v5.7.1...v5.8.0) (2026-08-27)
 
 ### Features
