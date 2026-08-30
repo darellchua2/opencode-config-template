@@ -15,6 +15,13 @@
     "@bastiangx/opencode-unmoji@1.0.0"
   ],
   "instructions": ["AGENTS.md"],
+  "attachment": {
+    "image": {
+      "max_width": 6000,
+      "max_height": 6000,
+      "max_base64_bytes": 7000000
+    }
+  },
   "permission": {
     "read": {
       "mcp:*": "deny",
@@ -27,6 +34,9 @@
 
       "zai-vision-analysis-skill": "allow",
       "zai-image-generation-skill": "allow",
+      "zai-video-skill": "allow",
+      "zai-asr-skill": "allow",
+      "zai-ocr-skill": "allow",
       "openapi-contract-adherence-skill": "allow",
       "markitdown-mcp-skill": "allow",
       "docling-mcp-skill": "allow",
@@ -128,6 +138,8 @@
       "markitdown*": "deny",
       "docling*": "deny",
       "zai-web-reader*": "allow",
+      "zai-web-search-prime*": "allow",
+      "zai-vision-mcp*": "allow",
       "next-devtools*": "deny"
     }
   },
@@ -165,6 +177,29 @@
           }
         }
       }
+    },
+    "zai-custom-plan": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Z.AI (custom)",
+      "options": {
+        "baseURL": "https://api.z.ai/api/coding/paas/v4",
+        "apiKey": "{env:ZAI_API_KEY}"
+      },
+      "models": {
+        "glm-5.3": {
+          "name": "GLM-5.3",
+          "limit": { "context": 1000000, "output": 131072 }
+        },
+        "glm-5.3-flash": {
+          "name": "GLM-5.3 Flash",
+          "limit": { "context": 1000000, "output": 131072 },
+          "attachment": true,
+          "modalities": {
+            "input": ["text", "image"],
+            "output": ["text"]
+          }
+        }
+      }
     }
   },
   "mcp": {
@@ -196,6 +231,23 @@
         "Authorization": "Bearer {env:ZAI_API_KEY}"
       },
       "enabled": true
+    },
+    "zai-web-search-prime": {
+      "type": "remote",
+      "url": "https://api.z.ai/api/mcp/web_search_prime/mcp",
+      "headers": {
+        "Authorization": "Bearer {env:ZAI_API_KEY}"
+      },
+      "enabled": true
+    },
+    "zai-vision-mcp": {
+      "type": "local",
+      "command": ["npx", "-y", "@z_ai/mcp-server"],
+      "environment": {
+        "Z_AI_API_KEY": "{env:ZAI_API_KEY}",
+        "Z_AI_MODE": "ZAI"
+      },
+      "enabled": false
     },
     "next-devtools": {
       "type": "local",

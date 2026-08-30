@@ -5,7 +5,7 @@
     "reasoning": "zai-coding-plan/glm-5.3",
     "fast": "zai-coding-plan/glm-5-turbo",
     "docs": "zai-coding-plan/glm-4.7",
-    "vision": "zai-coding-plan/glm-5v-turbo",
+    "vision": "zai-custom-plan/glm-5.3-flash",
     "long-context": "zai-coding-plan/glm-5.3"
   }
 }

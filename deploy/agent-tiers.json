@@ -1,5 +1,5 @@
 {
-  "$comment": "Central registry mapping each agent (filename stem, no .md) to its model tier. Source agent .md files are model-free; the deploy-time resolver (resolve-models.mjs) reads this to inject a concrete model. Tiers: reasoning (correctness-critical), fast (exploratory/low-impact), docs (text/lint/reporting), vision (native multimodal), long-context (large-context research loops — shares the primary model's 1M ctx but is the designated subagent tier for autoresearch loops; subagents never use the `primary` tier directly). NOTE (#294): image-analyzer-subagent and error-resolver-subagent BOTH moved to the `vision` tier (native multimodal zai/glm-5v-turbo) — they see images/screenshots directly, no external vision API. Nothing uses glm-4.6v-flash or zai-vision-analysis-skill anymore (the skill is now orphaned and can be retired).",
+  "$comment": "Central registry mapping each agent (filename stem, no .md) to its model tier. Source agent .md files are model-free; the deploy-time resolver (resolve-models.mjs) reads this to inject a concrete model. Tiers: reasoning (correctness-critical), fast (exploratory/low-impact), docs (text/lint/reporting), vision (native multimodal), long-context (large-context research loops — shares the primary model's 1M ctx but is the designated subagent tier for autoresearch loops; subagents never use the `primary` tier directly). NOTE (#294): image-analyzer-subagent and error-resolver-subagent BOTH moved to the `vision` tier (native multimodal). NOTE (#357): vision tier is now `zai-custom-plan/glm-5.3-flash` — the coding-plan endpoint's verified multimodal model (was zai/glm-5v-turbo, a models.dev catalog ID absent from Z.AI's official enums whose shipped entry lacked `attachment: true`); zai-media-subagent joins the vision tier. Nothing uses glm-4.6v-flash or zai-vision-analysis-skill anymore (the skill is now orphaned and can be retired).",
   "tiers": {
     "architecture-review-subagent": "reasoning",
     "code-review-subagent": "reasoning",
@@ -41,6 +41,8 @@
 
     "error-resolver-subagent": "vision",
 
-    "image-analyzer-subagent": "vision"
+    "image-analyzer-subagent": "vision",
+
+    "zai-media-subagent": "vision"
   }
 }
