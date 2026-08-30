@@ -18,6 +18,13 @@
     "instructions": [
         "AGENTS.md"
     ],
+    "attachment": {
+        "image": {
+            "max_width": 6000,
+            "max_height": 6000,
+            "max_base64_bytes": 7000000
+        }
+    },
     "permission": {
         "read": {
             "mcp:*": "deny",
@@ -29,6 +36,9 @@
             "*": "deny",
             "zai-vision-analysis-skill": "allow",
             "zai-image-generation-skill": "allow",
+            "zai-video-skill": "allow",
+            "zai-asr-skill": "allow",
+            "zai-ocr-skill": "allow",
             "unslop-skill": "allow",
             "technical-writing-skill": "allow",
             "blast-radius-skill": "allow",
@@ -136,6 +146,7 @@
             "docling*": "deny",
             "zai-web-reader*": "allow",
             "zai-web-search*": "allow",
+            "zai-vision-mcp*": "allow",
             "next-devtools*": "deny"
         }
     },
@@ -292,6 +303,19 @@
                 "Authorization": "Bearer {env:ZAI_API_KEY}"
             },
             "enabled": true
+        },
+        "zai-vision-mcp": {
+            "type": "local",
+            "command": [
+                "npx",
+                "-y",
+                "@z_ai/mcp-server"
+            ],
+            "environment": {
+                "Z_AI_API_KEY": "{env:ZAI_API_KEY}",
+                "Z_AI_MODE": "ZAI"
+            },
+            "enabled": false
         },
         "next-devtools": {
             "type": "local",

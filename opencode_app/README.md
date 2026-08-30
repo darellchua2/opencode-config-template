@@ -22,8 +22,8 @@ opencode_app/
 ├── AGENTS.md              # Agent instructions for container mode
 ├── .dockerignore          # Excludes _archived, .env, node_modules
 └── .opencode/
-    ├── agents/            # 32 agent .md files (single source of truth)
-    └── skills/            # 142 skill directories + _common/ shared + _archived/ legacy
+    ├── agents/            # 33 agent .md files (single source of truth)
+    └── skills/            # 145 skill directories + _common/ shared + _archived/ legacy
 ```
 
 ## How It Works

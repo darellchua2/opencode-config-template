@@ -176,6 +176,31 @@ Then `./deploy/setup.sh --models-only`.
 > all categories and overrides any hand-mixed `models.json`. To use a mixed map,
 > resolve **without** `--provider` (mixing is stored in `models.json`).
 
+### Personal config: small_model + vision fallback (GIT-357)
+
+Two settings are deliberately **not shipped** — add them to
+`~/.config/opencode/opencode.json` after deploy if you want them:
+
+**1. `small_model`** — the resolver has no small_model support (local deploys omit
+top-level model keys so you pick the primary at runtime). For cheap title/utility
+generation on the GLM Coding Plan:
+
+```json
+{ "small_model": "zai-coding-plan/glm-5.3-flash" }
+```
+
+**2. Vision fallback** — the shipped vision tier is
+`zai-coding-plan/glm-5.3-flash` (native models.dev catalog entry with
+`attachment: true`; docs-verified multimodal). If the plan endpoint ever rejects
+image parts, repoint the vision tier at the **pay-as-you-go** model via
+`~/.config/opencode/models.json` instead of editing provider config:
+
+```json
+{ "tiers": { "vision": "zai/glm-5.3-flash" } }
+```
+
+Then `./deploy/setup.sh --models-only`.
+
 ---
 
 ## Docker
