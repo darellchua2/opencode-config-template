@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.10.0](https://github.com/darellchua2/opencode-config-template/compare/v5.9.0...v5.10.0) (2026-08-30)
+
+### Features
+
+* **agents:** add zai-media-subagent + zai media skills, repoint vision refs ([#357](https://github.com/darellchua2/opencode-config-template/issues/357)) ([41a8b42](https://github.com/darellchua2/opencode-config-template/commit/41a8b42e82848d430bec4f708ee9a52930313b1b))
+* **config:** add zai-custom-plan provider, vision tier repoint, zai MCP servers ([#357](https://github.com/darellchua2/opencode-config-template/issues/357)) ([b326df6](https://github.com/darellchua2/opencode-config-template/commit/b326df61d2119bfbbad6e613cc7fba53b1c325ff))
+
+### Documentation
+
+* **plan:** add PLANS/PLAN-GIT-357.md for GIT-357 ([9035129](https://github.com/darellchua2/opencode-config-template/commit/903512957af8857765e66c99904291401b6de46b))
+* **plan:** complete PLAN-GIT-357 checkboxes ([43ae96a](https://github.com/darellchua2/opencode-config-template/commit/43ae96a9c7982f888f430deff5bb7d283dcebef5))
+* sync counts/tables for GIT-357 (133 skills, 37 agents, 9 MCP) ([#357](https://github.com/darellchua2/opencode-config-template/issues/357)) ([29c253d](https://github.com/darellchua2/opencode-config-template/commit/29c253d8a6e6fc9791cd798b316cba4b8f72ad29))
+* sync stale count claims to ground truth (105-allow, 45-lean, 145 skills, 33 agents) ([8ebbb4f](https://github.com/darellchua2/opencode-config-template/commit/8ebbb4f505e73697c0cdf8837726ced8e17bdb15))
+
 ## [5.9.0](https://github.com/darellchua2/opencode-config-template/compare/v5.8.0...v5.9.0) (2026-08-28)
 
 ### Features
