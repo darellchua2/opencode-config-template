@@ -1,7 +1,7 @@
 ---
 description: >-
   Diagnoses and resolves errors, exceptions, stack traces. Native multimodal
-  (zai/glm-5v-turbo) — reads error screenshots directly. Explicit user
+  (zai-custom-plan/glm-5.3-flash) — reads error screenshots directly. Explicit user
   invocation only.
 mode: subagent
 permission:
@@ -67,7 +67,7 @@ Workflow:
 5. Verify fix if applicable
 
 Screenshot analysis (native multimodal):
-- You run on `zai/glm-5v-turbo` and **see error screenshots directly** — no skill, no curl, no
+- You run on `zai-custom-plan/glm-5.3-flash` and **see error screenshots directly** — no skill, no curl, no
   external vision API. Do NOT invoke `zai-vision-analysis-skill` or `glm-4.6v-flash` (that free
   endpoint was retired due to rate-limiting).
 - For an error screenshot, read the error message + stack trace verbatim and the UI/failure state
