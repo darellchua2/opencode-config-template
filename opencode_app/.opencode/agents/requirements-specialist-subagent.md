@@ -1,8 +1,9 @@
 ---
 description: >-
   Drafts BRDs (BABOK/IIBA, sponsor scope) and SRS (IEEE 830, internal scope)
-  from discovery interviews. Triggers: create brd/srs/prd, business or software
-  requirements, functional spec, specification.
+  from discovery interviews; grills requirements gaps surfaced by reviewers
+  (Mode R). Triggers: create brd/srs/prd, business or software requirements,
+  functional spec, specification, requirements gaps from review.
 mode: subagent
 steps: 50
 permission:
@@ -31,6 +32,8 @@ permission:
     xlsx-specialist-skill: allow
     search-first-skill: allow
     markitdown-mcp-skill: allow
+    unslop-skill: allow
+    technical-writing-skill: allow
 category: business
 ---
 
@@ -87,6 +90,7 @@ Invoke this subagent when the user uses phrases like:
 - **BRD path**: "create brd" / "business requirements" / "stakeholder requirements" / "business need" / "business requirements document" / "write a brd"
 - **SRS path**: "create srs" / "draft an srs" / "write an srs" / "software requirements" / "software requirements specification" / "functional spec" / "feature spec" / "specification"
 - Back-compat (route to SRS): "create prd" / "product requirement" / "product requirement document" / "product doc" / "PRD"
+- **Review-gap path (Mode R)**: "grill requirements gaps from review" / "clarify requirements gaps" / "reviewer found requirements gaps"
 
 > **Back-compat note:** the legacy "PRD" triggers route to the SRS skill (NOT BRD). PRD was the wrong label for BA→dev handoff; SRS (IEEE 830) is the proper-software-house standard. BRD is a distinct, new document type — there is no prd→brd alias.
 
@@ -103,6 +107,15 @@ The **primary agent** conducts the requirements interview (using its own `questi
 
 ### Mode B — Relay questions via Return Contract
 If the delegation prompt lacks interview answers, this subagent drafts the **first round of section questions** and returns them in the Return Contract as `Questions for the user`. The primary agent relays them, collects answers, and re-delegates. Do NOT loop or stall waiting for answers that will never arrive mid-run.
+
+### Mode R — Review-gap grilling (from reviewer Requirements Gaps)
+Reviewers (`architecture-review-subagent`, `code-review-subagent`) surface ambiguous or missing requirements as a structured **Requirements Gaps** array instead of silently assuming. The PRIMARY relays that array here; this subagent runs a grilling pass on it and returns one question per gap. Mode R does NOT initiate BRD/SRS drafting — document work happens only via a separate Mode A delegation after answers, or as a scoped addendum to an existing SRS when the primary instructs it.
+
+**Input** (from delegation prompt): the reviewers' `Requirements Gaps` array — each item carries `source` (file:line | PLAN step | design assumption), `blocked_check` (which review gate/check could not be evaluated), `suggested_question`, `recommended_answer` — plus review context (reviewer name, verdict, reviewed files, PLAN path if any).
+
+**Behavior**: for each gap, apply `grilling-skill` methodology — sharpen `suggested_question` into one concrete question with a recommended answer grounded in the gap's evidence, then return them all.
+
+**Output**: Return Contract variant below (`Questions for the user`, one per gap). Bound: max 2 relay rounds per review.
 
 ### Override rule
 Everywhere this document says "confirm", "prompt the user", "ask for clarification", or "wait for feedback", do this instead: read the value from the delegation prompt; if missing, use a documented default and note it, or return `Status: partial` with the gap. Surface open decisions in the Return Contract for the primary agent to relay.
@@ -192,8 +205,8 @@ If a referenced diagram/screenshot must be interpreted, **delegate to `image-ana
 When your task is complete, return ONLY this structure:
 
 **Status:** [success | partial | failed]
-**Output:** docs/{brd|srs}/{BRD|SRS}-draft-{slug}.md
-**Summary:** {BRD|SRS} drafted across 4 parts; written to docs/{brd|srs}/
+**Output:** docs/{brd|srs}/{BRD|SRS}-draft-{slug}.md — OR, in **Mode R**: `Questions for the user (N gaps): [1) <question> → recommendation; 2) …]`
+**Summary:** {BRD|SRS} drafted across 4 parts; written to docs/{brd|srs}/ — OR, in Mode R: N grilling questions returned for relay
 **Issues:** [blockers, warnings, or "None"]
 
 Do NOT return:

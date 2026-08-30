@@ -1,329 +1,405 @@
 {
-  "$schema": "https://opencode.ai/config.json",
-  "default_agent": "build",
-  "subagent_depth": 3,
-  "plugin": [
-    "@franlol/opencode-md-table-formatter@0.0.6",
-    "@tarquinen/opencode-dcp@3.2.8-beta0",
-    "opencode-superlocalmemory@0.1.2",
-    "@mohak34/opencode-notifier@0.2.8",
-    "opencode-pty@0.3.6",
-    "opencode-vibeguard@0.1.0",
-    "opencode-gemini-auth@1.4.15",
-    "opencode-goal-plugin@0.7.0",
-    "@nick-vi/opencode-type-inject@1.5.2",
-    "@bastiangx/opencode-unmoji@1.0.0"
-  ],
-  "instructions": ["AGENTS.md"],
-  "attachment": {
-    "image": {
-      "max_width": 6000,
-      "max_height": 6000,
-      "max_base64_bytes": 7000000
-    }
-  },
-  "permission": {
-    "read": {
-      "mcp:*": "deny",
-      "*.env": "deny",
-      "*.env.*": "deny",
-      "*.env.example": "allow"
-    },
-    "skill": {
-      "*": "deny",
-
-      "zai-vision-analysis-skill": "allow",
-      "zai-image-generation-skill": "allow",
-      "zai-video-skill": "allow",
-      "zai-asr-skill": "allow",
-      "zai-ocr-skill": "allow",
-      "openapi-contract-adherence-skill": "allow",
-      "markitdown-mcp-skill": "allow",
-      "docling-mcp-skill": "allow",
-      "git-branch-workflow-setup-skill": "allow",
-      "git-semantic-commits-skill": "allow",
-      "documentation-sync-workflow-skill": "allow",
-      "ticket-plan-workflow-skill": "allow",
-      "grilling-skill": "allow",
-      "linting-workflow-skill": "allow",
-
-      "grill-me-skill": "allow",
-      "grill-with-docs-skill": "allow",
-      "wireframer-skill": "allow",
-      "vision-creation-skill": "allow",
-      "srs-creation-skill": "allow",
-      "brd-creation-skill": "allow",
-      "technical-design-creation-skill": "allow",
-      "domain-modeling-skill": "allow",
-      "research-paper-generation-skill": "allow",
-      "horseshoe-paper-writing-skill": "allow",
-
-      "git-compact-commits-skill": "allow",
-      "git-issue-labeler-skill": "allow",
-      "git-issue-updater-skill": "allow",
-      "jira-git-integration-skill": "allow",
-      "jira-status-updater-skill": "allow",
-      "jira-ticket-labeler-skill": "allow",
-      "plan-execution-skill": "allow",
-      "plan-automation-loop-skill": "allow",
-      "plan-updater-skill": "allow",
-      "pr-creation-workflow-skill": "allow",
-      "pr-merge-workflow-skill": "allow",
-      "nextjs-pr-workflow-skill": "allow",
-      "semantic-release-convention-skill": "allow",
-      "version-bump-standard-skill": "allow",
-
-      "opencode-agent-creation-skill": "allow",
-      "opencode-repo-setup-skill": "allow",
-      "opencode-skill-creation-skill": "allow",
-      "opencode-skills-maintainer-skill": "allow",
-      "agent-introspection-debugging-skill": "allow",
-      "documentation-consistency-skill": "allow",
-
-      "context-budget-skill": "allow",
-      "strategic-compact-skill": "allow",
-      "continuous-learning-skill": "allow",
-      "verification-loop-skill": "allow",
-      "eval-harness-skill": "allow",
-
-      "clean-code-skill": "allow",
-      "clean-architecture-skill": "allow",
-      "solid-principles-skill": "allow",
-      "design-patterns-skill": "allow",
-      "code-smells-skill": "allow",
-      "complexity-management-skill": "allow",
-      "object-design-skill": "allow",
-      "search-first-skill": "allow",
-      "security-audit-skill": "allow",
-      "performance-optimization-skill": "allow",
-
-      "nextjs-devtools-mcp-skill": "allow",
-      "ascii-diagram-creator-skill": "allow",
-      "mermaid-diagram-creator-skill": "allow",
-
-      "api-design-skill": "allow",
-      "authentication-authorization-skill": "allow",
-      "database-migration-skill": "allow",
-      "docker-containerization-skill": "allow",
-      "logging-observability-skill": "allow",
-      "tdd-workflow-skill": "allow",
-      "deprecated-code-cleanup-skill": "allow",
-      "error-resolver-workflow-skill": "allow",
-
-      "docx-creation-skill": "allow",
-      "pdf-specialist-skill": "allow",
-      "xlsx-specialist-skill": "allow",
-
-      "construction-bd-skill": "allow",
-      "startup-business-docs-skill": "allow",
-      "startup-pitch-deck-skill": "allow",
-      "python-packaging-skill": "allow",
-      "python-backend-skill": "allow",
-      "csharp-linter-skill": "allow",
-      "java-linter-skill": "allow",
-      "typescript-dry-principle-skill": "allow",
-      "monorepo-management-skill": "allow",
-      "threejs-nextjs-skill": "allow",
-      "frontend-design-skill": "allow",
-      "accessibility-a11y-skill": "allow",
-      "changelog-python-cliff-skill": "allow",
-      "fastapi-pydantic-orm-patterns-skill": "allow",
-      "aws-iac-safety-skill": "allow",
-      "react-hooks-antipatterns-skill": "allow",
-      "react-render-antipatterns-skill": "allow"
-    },
-    "tool": {
-      "codegraph*": "allow",
-      "atlassian*": "allow",
-      "markitdown*": "deny",
-      "docling*": "deny",
-      "zai-web-reader*": "allow",
-      "zai-web-search-prime*": "allow",
-      "zai-vision-mcp*": "allow",
-      "next-devtools*": "deny"
-    }
-  },
-  "command": {
-    "goal": {
-      "description": "Set a session-scoped goal and auto-continue until complete.",
-      "template": "$ARGUMENTS",
-      "agent": "build"
-    },
-    "run-plan": {
-      "description": "Fully-automated plan execution loop — implement PLAN*.md phase-by-phase (lint+build+test+e2e gate, then commit + push per phase). Deliberate trigger; /goal stays generic.",
-      "template": "Load the skill `plan-automation-loop-skill` and run it to fully implement the plan file given as the argument: $ARGUMENTS",
-      "agent": "build"
-    }
-  },
-  "provider": {
-    "lmstudio": {
-      "npm": "@ai-sdk/openai-compatible",
-      "name": "LM Studio (local)",
-      "options": {
-        "baseURL": "http://127.0.0.1:1234/v1"
-      },
-      "models": {
-        "openai/gpt-oss-20b": {
-          "name": "GPT-OSS 20B (local)"
+    "$schema": "https://opencode.ai/config.json",
+    "default_agent": "build",
+    "subagent_depth": 3,
+    "plugin": [
+        "@franlol/opencode-md-table-formatter@0.0.6",
+        "@tarquinen/opencode-dcp@3.1.15",
+        "opencode-superlocalmemory@0.1.2",
+        "@mohak34/opencode-notifier@0.2.8",
+        "opencode-pty@0.3.6",
+        "opencode-vibeguard@0.1.0",
+        "opencode-gemini-auth@1.4.15",
+        "opencode-goal-plugin@0.8.1",
+        "@nick-vi/opencode-type-inject@1.5.2",
+        "@bastiangx/opencode-unmoji@1.0.0",
+        "opencode-scheduler@1.3.0"
+    ],
+    "instructions": [
+        "AGENTS.md"
+    ],
+    "attachment": {
+        "image": {
+            "max_width": 6000,
+            "max_height": 6000,
+            "max_base64_bytes": 7000000
         }
-      }
     },
-    "zai-coding-plan": {
-      "models": {
-        "glm-5v-turbo": {
-          "name": "GLM-5V Turbo (vision)",
-          "modalities": {
-            "input": ["text", "image"]
-          }
-        }
-      }
-    },
-    "zai-custom-plan": {
-      "npm": "@ai-sdk/openai-compatible",
-      "name": "Z.AI (custom)",
-      "options": {
-        "baseURL": "https://api.z.ai/api/coding/paas/v4",
-        "apiKey": "{env:ZAI_API_KEY}"
-      },
-      "models": {
-        "glm-5.3": {
-          "name": "GLM-5.3",
-          "limit": { "context": 1000000, "output": 131072 }
+    "permission": {
+        "read": {
+            "mcp:*": "deny",
+            "*.env": "deny",
+            "*.env.*": "deny",
+            "*.env.example": "allow"
         },
-        "glm-5.3-flash": {
-          "name": "GLM-5.3 Flash",
-          "limit": { "context": 1000000, "output": 131072 },
-          "attachment": true,
-          "modalities": {
-            "input": ["text", "image"],
-            "output": ["text"]
-          }
+        "skill": {
+            "*": "deny",
+            "zai-vision-analysis-skill": "allow",
+            "zai-image-generation-skill": "allow",
+            "zai-video-skill": "allow",
+            "zai-asr-skill": "allow",
+            "zai-ocr-skill": "allow",
+            "unslop-skill": "allow",
+            "technical-writing-skill": "allow",
+            "blast-radius-skill": "allow",
+            "ponytail-audit-skill": "allow",
+            "ponytail-review-skill": "allow",
+            "ponytail-debt-skill": "allow",
+            "openapi-contract-adherence-skill": "allow",
+            "markitdown-mcp-skill": "allow",
+            "docling-mcp-skill": "allow",
+            "git-branch-workflow-setup-skill": "allow",
+            "git-semantic-commits-skill": "allow",
+            "documentation-sync-workflow-skill": "allow",
+            "ticket-plan-workflow-skill": "allow",
+            "grilling-skill": "allow",
+            "linting-workflow-skill": "allow",
+            "grill-me-skill": "allow",
+            "grill-with-docs-skill": "allow",
+            "wireframer-skill": "allow",
+            "vision-creation-skill": "allow",
+            "srs-creation-skill": "allow",
+            "brd-creation-skill": "allow",
+            "technical-design-creation-skill": "allow",
+            "domain-modeling-skill": "allow",
+            "research-paper-generation-skill": "allow",
+            "horseshoe-paper-writing-skill": "allow",
+            "git-compact-commits-skill": "allow",
+            "git-issue-labeler-skill": "allow",
+            "git-issue-updater-skill": "allow",
+            "jira-git-integration-skill": "allow",
+            "jira-status-updater-skill": "allow",
+            "jira-ticket-labeler-skill": "allow",
+            "plan-execution-skill": "allow",
+            "plan-automation-loop-skill": "allow",
+            "plan-updater-skill": "allow",
+            "pr-creation-workflow-skill": "allow",
+            "pr-merge-workflow-skill": "allow",
+            "nextjs-pr-workflow-skill": "allow",
+            "semantic-release-convention-skill": "allow",
+            "version-bump-standard-skill": "allow",
+            "worktree-pipeline-skill": "allow",
+            "opencode-agent-creation-skill": "allow",
+            "opencode-repo-setup-skill": "allow",
+            "opencode-skill-creation-skill": "allow",
+            "opencode-skills-maintainer-skill": "allow",
+            "agent-introspection-debugging-skill": "allow",
+            "documentation-consistency-skill": "allow",
+            "context-budget-skill": "allow",
+            "strategic-compact-skill": "allow",
+            "continuous-learning-skill": "allow",
+            "verification-loop-skill": "allow",
+            "eval-harness-skill": "allow",
+            "clean-code-skill": "allow",
+            "clean-architecture-skill": "allow",
+            "solid-principles-skill": "allow",
+            "design-patterns-skill": "allow",
+            "code-smells-skill": "allow",
+            "complexity-management-skill": "allow",
+            "object-design-skill": "allow",
+            "search-first-skill": "allow",
+            "security-audit-skill": "allow",
+            "performance-optimization-skill": "allow",
+            "nextjs-devtools-mcp-skill": "allow",
+            "ascii-diagram-creator-skill": "allow",
+            "mermaid-diagram-creator-skill": "allow",
+            "api-design-skill": "allow",
+            "authentication-authorization-skill": "allow",
+            "database-migration-skill": "allow",
+            "docker-containerization-skill": "allow",
+            "logging-observability-skill": "allow",
+            "tdd-workflow-skill": "allow",
+            "deprecated-code-cleanup-skill": "allow",
+            "error-resolver-workflow-skill": "allow",
+            "docx-creation-skill": "allow",
+            "pdf-specialist-skill": "allow",
+            "xlsx-specialist-skill": "allow",
+            "construction-bd-skill": "allow",
+            "startup-business-docs-skill": "allow",
+            "startup-pitch-deck-skill": "allow",
+            "python-packaging-skill": "allow",
+            "python-backend-skill": "allow",
+            "language-linting-skill": "allow",
+            "typescript-dry-principle-skill": "allow",
+            "monorepo-management-skill": "allow",
+            "threejs-nextjs-skill": "allow",
+            "frontend-design-skill": "allow",
+            "accessibility-a11y-skill": "allow",
+            "changelog-python-cliff-skill": "allow",
+            "fastapi-pydantic-orm-patterns-skill": "allow",
+            "aws-iac-safety-skill": "allow",
+            "react-hooks-antipatterns-skill": "allow",
+            "react-render-antipatterns-skill": "allow",
+            "gsap-core": "allow",
+            "gsap-timeline": "allow",
+            "gsap-scrolltrigger": "allow",
+            "gsap-plugins": "allow",
+            "gsap-utils": "allow",
+            "gsap-react": "allow",
+            "gsap-performance": "allow",
+            "gsap-frameworks": "allow"
+        },
+        "tool": {
+            "codegraph*": "allow",
+            "atlassian*": "allow",
+            "markitdown*": "deny",
+            "docling*": "deny",
+            "zai-web-reader*": "allow",
+            "zai-web-search*": "allow",
+            "zai-vision-mcp*": "allow",
+            "next-devtools*": "deny"
         }
-      }
+    },
+    "command": {
+        "goal": {
+            "description": "Set a session-scoped goal and auto-continue until complete.",
+            "template": "$ARGUMENTS",
+            "agent": "build"
+        },
+        "run-plan": {
+            "description": "Fully-automated plan execution loop \u2014 implement PLAN*.md phase-by-phase (lint+build+test+e2e gate, then commit + push per phase). Deliberate trigger; /goal stays generic.",
+            "template": "Load the skill `plan-automation-loop-skill` and run it to fully implement the plan file given as the argument: $ARGUMENTS",
+            "agent": "build"
+        },
+        "run-worktree-pipeline": {
+            "description": "Tracker-ticket-to-merged-PR pipeline via git worktrees \u2014 sync, plan, 3-subagent review, /run-plan, code review, PR merge. Usage: /run-worktree-pipeline [base-branch] <ticket-refs...>",
+            "template": "Load the skill `worktree-pipeline-skill` and run it with the arguments: $ARGUMENTS",
+            "agent": "build"
+        }
+    },
+    "provider": {
+        "local-llm": {
+            "npm": "@ai-sdk/openai-compatible",
+            "name": "Local LLM (llama.cpp)",
+            "options": {
+                "baseURL": "http://127.0.0.1:17851/v1"
+            },
+            "models": {
+                "local/gemma-4-E4B-q4_0": {
+                    "name": "gemma-4-E4B (local q4_0)",
+                    "modalities": {
+                        "input": [
+                            "text",
+                            "image"
+                        ]
+                    }
+                }
+            }
+        },
+        "vllm": {
+            "npm": "@ai-sdk/openai-compatible",
+            "name": "Local LLM (vLLM)",
+            "options": {
+                "baseURL": "http://127.0.0.1:17852/v1"
+            },
+            "models": {
+                "local/nemotron-3-nano": {
+                    "name": "Nemotron-3-Nano-4B-FP8 (vLLM)",
+                    "modalities": {
+                        "input": [
+                            "text"
+                        ]
+                    },
+                    "limit": {
+                        "context": 200000,
+                        "output": 32768
+                    }
+                }
+            }
+        },
+        "zai-custom": {
+            "npm": "@ai-sdk/openai-compatible",
+            "name": "Z.AI Coding Plan (Custom)",
+            "options": {
+                "baseURL": "https://api.z.ai/api/coding/paas/v4",
+                "apiKey": "{env:ZAI_API_KEY}"
+            },
+            "models": {
+                "glm-5.3-flash": {
+                    "name": "GLM-5.3 Flash (Custom)",
+                    "attachment": true,
+                    "reasoning": true,
+                    "tool_call": true,
+                    "cost": {
+                        "input": 0,
+                        "output": 0,
+                        "cache_read": 0,
+                        "cache_write": 0
+                    },
+                    "limit": {
+                        "context": 1000000,
+                        "output": 131072
+                    },
+                    "modalities": {
+                        "input": [
+                            "text",
+                            "image"
+                        ],
+                        "output": [
+                            "text"
+                        ]
+                    }
+                },
+                "glm-5.3": {
+                    "name": "GLM-5.3 (Custom)",
+                    "reasoning": true,
+                    "tool_call": true,
+                    "cost": {
+                        "input": 0,
+                        "output": 0,
+                        "cache_read": 0,
+                        "cache_write": 0
+                    },
+                    "limit": {
+                        "context": 1000000,
+                        "output": 131072
+                    },
+                    "modalities": {
+                        "input": [
+                            "text"
+                        ],
+                        "output": [
+                            "text"
+                        ]
+                    }
+                }
+            }
+        }
+    },
+    "mcp": {
+        "codegraph": {
+            "type": "local",
+            "command": [
+                "npx",
+                "-y",
+                "@colbymchenry/codegraph",
+                "serve",
+                "--mcp"
+            ],
+            "enabled": true
+        },
+        "atlassian": {
+            "type": "local",
+            "command": [
+                "npx",
+                "-y",
+                "mcp-remote",
+                "https://mcp.atlassian.com/v1/mcp"
+            ],
+            "enabled": false
+        },
+        "zai-web-reader": {
+            "type": "remote",
+            "url": "https://api.z.ai/api/mcp/web_reader/mcp",
+            "headers": {
+                "Authorization": "Bearer {env:ZAI_API_KEY}"
+            },
+            "enabled": true
+        },
+        "zai-web-search": {
+            "type": "remote",
+            "url": "https://api.z.ai/api/mcp/web_search_prime/mcp",
+            "headers": {
+                "Authorization": "Bearer {env:ZAI_API_KEY}"
+            },
+            "enabled": true
+        },
+        "zai-vision-mcp": {
+            "type": "local",
+            "command": [
+                "npx",
+                "-y",
+                "@z_ai/mcp-server"
+            ],
+            "environment": {
+                "Z_AI_API_KEY": "{env:ZAI_API_KEY}",
+                "Z_AI_MODE": "ZAI"
+            },
+            "enabled": false
+        },
+        "next-devtools": {
+            "type": "local",
+            "command": [
+                "npx",
+                "-y",
+                "next-devtools-mcp@latest"
+            ],
+            "environment": {
+                "NEXT_TELEMETRY_DISABLED": "1"
+            },
+            "enabled": false
+        },
+        "markitdown": {
+            "type": "local",
+            "command": [
+                "markitdown-local-mcp"
+            ],
+            "environment": {
+                "MARKITDOWN_ENABLE_PLUGINS": "false"
+            },
+            "enabled": false
+        },
+        "docling": {
+            "type": "local",
+            "command": [
+                "docling-mcp-server"
+            ],
+            "environment": {
+                "DOCLING_CONVERSION_MODE": "local"
+            },
+            "enabled": false
+        },
+        "chrome-devtools": {
+            "type": "local",
+            "command": [
+                "npx",
+                "-y",
+                "chrome-devtools-mcp@latest",
+                "--no-usage-statistics",
+                "--no-performance-crux",
+                "--redact-network-headers",
+                "--isolated"
+            ],
+            "environment": {
+                "CHROME_DEVTOOLS_MCP_NO_UPDATE_CHECKS": "1"
+            },
+            "enabled": false
+        }
+    },
+    "agent": {
+        "build": {
+            "permission": {
+                "task": {
+                    "*": "allow"
+                }
+            }
+        },
+        "plan": {
+            "permission": {
+                "edit": "ask",
+                "bash": "ask",
+                "task": {
+                    "*": "allow"
+                }
+            }
+        },
+        "explore": {
+            "model": "zai-coding-plan/glm-5.3-flash",
+            "permission": {
+                "read": {
+                    "*": "allow",
+                    "mcp:*": "deny"
+                }
+            }
+        },
+        "general": {
+            "model": "zai-coding-plan/glm-5.3",
+            "permission": {
+                "read": {
+                    "*": "allow",
+                    "mcp:*": "deny"
+                }
+            }
+        }
     }
-  },
-  "mcp": {
-    "codegraph": {
-      "type": "local",
-      "command": [
-        "npx",
-        "-y",
-        "@colbymchenry/codegraph",
-        "serve",
-        "--mcp"
-      ],
-      "enabled": true
-    },
-    "atlassian": {
-      "type": "local",
-      "command": [
-        "npx",
-        "-y",
-        "mcp-remote",
-        "https://mcp.atlassian.com/v1/mcp"
-      ],
-      "enabled": false
-    },
-    "zai-web-reader": {
-      "type": "remote",
-      "url": "https://api.z.ai/api/mcp/web_reader/mcp",
-      "headers": {
-        "Authorization": "Bearer {env:ZAI_API_KEY}"
-      },
-      "enabled": true
-    },
-    "zai-web-search-prime": {
-      "type": "remote",
-      "url": "https://api.z.ai/api/mcp/web_search_prime/mcp",
-      "headers": {
-        "Authorization": "Bearer {env:ZAI_API_KEY}"
-      },
-      "enabled": true
-    },
-    "zai-vision-mcp": {
-      "type": "local",
-      "command": ["npx", "-y", "@z_ai/mcp-server"],
-      "environment": {
-        "Z_AI_API_KEY": "{env:ZAI_API_KEY}",
-        "Z_AI_MODE": "ZAI"
-      },
-      "enabled": false
-    },
-    "next-devtools": {
-      "type": "local",
-      "command": ["npx", "-y", "next-devtools-mcp@latest"],
-      "environment": {
-        "NEXT_TELEMETRY_DISABLED": "1"
-      },
-      "enabled": false
-    },
-    "markitdown": {
-      "type": "local",
-      "command": ["markitdown-local-mcp"],
-      "environment": {
-        "MARKITDOWN_ENABLE_PLUGINS": "false"
-      },
-      "enabled": false
-    },
-    "docling": {
-      "type": "local",
-      "command": ["docling-mcp-server"],
-      "environment": {
-        "DOCLING_CONVERSION_MODE": "local"
-      },
-      "enabled": false
-    },
-    "chrome-devtools": {
-      "type": "local",
-      "command": [
-        "npx",
-        "-y",
-        "chrome-devtools-mcp@latest",
-        "--no-usage-statistics",
-        "--no-performance-crux",
-        "--redact-network-headers",
-        "--isolated"
-      ],
-      "environment": {
-        "CHROME_DEVTOOLS_MCP_NO_UPDATE_CHECKS": "1"
-      },
-      "enabled": false
-    }
-  },
-  "agent": {
-    "build": {
-      "permission": {
-        "task": {
-          "*": "allow"
-        }
-      }
-    },
-    "plan": {
-      "permission": {
-        "edit": "ask",
-        "bash": "ask",
-        "task": {
-          "*": "allow"
-        }
-      }
-    },
-    "explore": {
-      "model": "zai-coding-plan/glm-5-turbo",
-      "permission": {
-        "read": {
-          "*": "allow",
-          "mcp:*": "deny"
-        }
-      }
-    },
-    "general": {
-      "model": "zai-coding-plan/glm-5.3",
-      "permission": {
-        "read": {
-          "*": "allow",
-          "mcp:*": "deny"
-        }
-      }
-    }
-  }
 }

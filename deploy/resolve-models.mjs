@@ -289,6 +289,8 @@ async function main() {
         "source opencode.json agent.general": configObj.agent && configObj.agent.general && configObj.agent.general.model,
       };
       if (primary) configObj.model = primary;
+      // ponytail: clear stale explicit primary (e.g. removed models.json override)
+      else delete configObj.model;
       configObj.agent = configObj.agent || {};
       if (exploreModel) {
         configObj.agent.explore = configObj.agent.explore || {};

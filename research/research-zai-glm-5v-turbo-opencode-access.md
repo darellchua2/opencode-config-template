@@ -154,7 +154,7 @@ This coexists with your existing `zai-coding-plan` credential (both are stored i
 
 *Optional* — if you prefer to pin the key/endpoint in config (or alias the provider) instead of
 `/connect`, a custom `@ai-sdk/openai-compatible` provider works (this is the exact mechanism the
-repo's existing `lmstudio` provider and OpenCode's `ollama`/`Atomic Chat`/`Helicone` examples use;
+repo's existing `local-llm` provider and OpenCode's `ollama`/`Atomic Chat`/`Helicone` examples use;
 the package is bundled in `provider.ts` `BUNDLED_PROVIDERS["@ai-sdk/openai-compatible"]`):
 
 ```jsonc
@@ -315,7 +315,7 @@ model.
   multimodal `content` array; `thinking`, streaming, tool-calling; 200K context. No `X-Title`.
 - **https://opencode.ai/docs/providers** — "OpenCode uses the AI SDK and Models.dev"; `baseURL`
   override, `blacklist`/`whitelist`; custom-provider pattern (`"npm":"@ai-sdk/openai-compatible"` +
-  `options.baseURL` + `models` map) via LM Studio / Ollama / llama.cpp / Atomic Chat / Helicone
+  `options.baseURL` + `models` map) via Ollama / llama.cpp / Atomic Chat / Helicone
   examples; `options.headers` for custom headers.
 - **https://opencode.ai/docs/models** — model IDs are `provider_id/model_id`; built-in names "can be
   found on Models.dev"; model-loading priority.

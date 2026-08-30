@@ -52,7 +52,6 @@
 #   - Node.js v20+ and npm (for opencode-ai and MCP servers)
 #   - nvm recommended (for Node.js version management on macOS/Linux)
 #   - ZAI_API_KEY (required for web-reader MCP server)
-#   - LM Studio running on http://127.0.0.1:1234/v1 (local LLM inference)
 #
 ################################################################################
 
@@ -343,7 +342,9 @@ FORCE_RESOLVE=false      # --force (ignore preserve-edits)
 MIGRATE_ONLY=false       # --migrate (migration + resolve only)
 MIX_MODE=false           # --mix (per-category provider/model editor)
 ENABLE_PACK=""           # --enable-pack <csv> (provider packs: autodesk,markitdown,nextjs,docling,chrome-devtools)
-SKILL_PROFILE="lean"     # --skill-profile lean|full (default lean: primary sees 30 skills; full = shipped 90 verbatim)
+SKILL_PROFILE="lean"     # --skill-profile lean|full (default lean: primary sees 45 skills; full = shipped 104 verbatim)
+ENABLE_LOCAL_LLM=false   # --enable-local-llm (gemma-4-E4B via llama.cpp, requires NVIDIA GPU)
+ENABLE_VLLM=false        # --enable-vllm (vLLM Docker server, requires >12GB VRAM)
 
 # API Keys (initialize to empty to avoid unbound variable errors)
 # Capture from environment if they exist
@@ -566,7 +567,7 @@ USAGE:
 
   MODEL RESOLUTION (v2.0):
     --provider <name>     Non-interactive provider preset: zai|anthropic|openai|
-                          openrouter|lmstudio (writes ~/.config/opencode/models.json)
+                          openrouter|local-llm|vllm (writes ~/.config/opencode/models.json)
     --models-only         Provider selection + model resolution only (no other setup)
     --migrate             Run v1.x -> v2.0 migration + model resolution only
     --force               Re-resolve all agents (ignore preserved hand-edits)
@@ -582,10 +583,24 @@ USAGE:
 
   SKILL PROFILE (deploy-time primary visibility):
     --skill-profile <p>   lean (default) | full. lean rewrites the DEPLOYED
-                           config's permission.skill to 30 primary-visible
+                           config's permission.skill to 37 primary-visible
                            skills + "*": "deny" (subagents unaffected — they
                            self-scope via frontmatter allows); full deploys the
-                           shipped 90-allow allowlist verbatim.
+                           shipped 104-allow allowlist verbatim.
+
+  LOCAL LLM (gemma-4-E4B via llama.cpp in Docker):
+    --enable-local-llm   Install local LLM inference server. Requires NVIDIA GPU,
+                           nvidia-container-toolkit, ~5GB disk for GGUF model.
+                           Starts via: docker compose --profile llm up -d
+    --local-llm          Shorthand for --enable-local-llm --provider local-llm
+                           (recommended one-liner for 12GB GPUs)
+
+  VLLM (vLLM Docker server):
+    --enable-vllm        Install vLLM Docker container. Requires NVIDIA GPU with
+                          >=12GB VRAM for gemma-4-E4B-it-qat-w4a16-ct.
+                           Starts via: docker compose --profile vllm up -d
+    --vllm               Shorthand for --enable-vllm --provider vllm
+                           (recommended one-liner for 16GB+ GPUs)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
                             EXAMPLES
@@ -653,11 +668,7 @@ USAGE:
     scout                External docs and dependency research
     explorer             Codebase exploration and analysis (subagent)
     code-review          Code review with SOLID/clean-code analysis
-    python-reviewer      Python code review (PEP 8, type hints, async)
-    typescript-reviewer  TypeScript/JS code review (type safety, React/Next)
-    go-reviewer          Go code review (idioms, concurrency, errors)
-    rust-reviewer        Rust code review (ownership, unsafe, Result/Option)
-    java-reviewer        Java code review (Effective Java, concurrency, Spring)
+    language-reviewer    Multi-language code review (Python, TS/JS, Go, Rust, Java)
     testing              Test generation with framework detection
     pr-workflow          PR creation with quality gates and JIRA integration
     linting              Code linting with auto-fix for Python/JS/TS
@@ -690,7 +701,7 @@ USAGE:
     Auto-start (enabled by default):
       codegraph           Pre-indexed code knowledge graph (100% local)
       zai-web-reader      Web page content extraction (remote, needs ZAI_API_KEY)
-      zai-web-search-prime Web search (remote, needs ZAI_API_KEY, GLM Coding Plan exclusive)
+      zai-web-search      Web search with cited results (remote, needs ZAI_API_KEY)
 
     Available but disabled (opt-in — enable per-project via
     opencode.json or opencode-repo-setup-skill):
@@ -727,17 +738,13 @@ $(print_skill_categories "${REPO_DIR}/opencode_app/.opencode/skills")
     git                   For version control integration
 
   API Keys (prompted during setup):
-     ZAI_API_KEY           Required for: web-reader
+     ZAI_API_KEY           Required for: web-reader, web-search
                            Get from: https://z.ai
 
    GitHub Auth:
      GitHub CLI (gh)      Recommended for GitHub MCP features
                            Install: https://cli.github.com/
                            Or use OAuth: opencode mcp auth github
-
-  Local Services:
-    LM Studio             Running on http://127.0.0.1:1234/v1
-                           Local LLM inference server
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
                             FILE LOCATIONS
@@ -850,7 +857,7 @@ parse_arguments() {
                 if [ -n "$2" ]; then
                     PROVIDER="$2"
                 else
-                    log_error "--provider requires an argument (zai|anthropic|openai|openrouter|lmstudio)"
+                    log_error "--provider requires an argument (zai|anthropic|openai|openrouter|local-llm|vllm)"
                     exit 1
                 fi
                 shift 2
@@ -889,6 +896,24 @@ parse_arguments() {
                     exit 1
                 fi
                 shift 2
+                ;;
+            --enable-local-llm)
+                ENABLE_LOCAL_LLM=true
+                shift
+                ;;
+            --enable-vllm)
+                ENABLE_VLLM=true
+                shift
+                ;;
+            --local-llm)
+                ENABLE_LOCAL_LLM=true
+                PROVIDER="local-llm"
+                shift
+                ;;
+            --vllm)
+                ENABLE_VLLM=true
+                PROVIDER="vllm"
+                shift
                 ;;
             *)
                 log_error "Unknown option: $1"
@@ -2462,7 +2487,7 @@ setup_config() {
         echo "    - ... and $(($(count_agents "${REPO_DIR}/opencode_app/.opencode/agents") - 6)) more agents"
             echo ""
              echo "✓ Configured MCP servers:"
-             echo "    Auto-start: codegraph, web-reader, web-search-prime"
+             echo "    Auto-start: codegraph, web-reader, web-search"
               echo "    Opt-in per-project (.opencode/opencode.json): atlassian"
               echo "    Available but disabled (opt-in): zai-vision-mcp, next-devtools, markitdown, docling, chrome-devtools"
               echo "    Enable a group with: ./setup.sh --enable-pack <autodesk|markitdown|nextjs|docling|chrome-devtools>"
@@ -2606,6 +2631,302 @@ install_docling() {
     else
         log_warn "pip install failed for docling-mcp (offline or OOM?). The pack is opt-in — OpenCode will work without it. Re-run setup when online to enable."
     fi
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# LOCAL LLM SETUP (gemma-4-E4B via llama.cpp)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Setup local LLM inference via llama.cpp in Docker.
+# Requires: NVIDIA GPU, nvidia-container-toolkit, ~5GB disk for GGUF model.
+# Model: google/gemma-4-E4B-it-qat-q4_0-gguf (~5GB, fits 12GB VRAM).
+setup_local_llm() {
+    if [ "$ENABLE_LOCAL_LLM" != true ]; then
+        return 0
+    fi
+
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "              🤖 Local LLM Setup (gemma-4-E4B)"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    echo "This installs a local LLM inference server using llama.cpp with GPU"
+    echo "offload. The model (gemma-4-E4B q4_0) requires ~5GB disk and ~6GB VRAM."
+    echo ""
+
+    # Step 1: Check for NVIDIA GPU
+    log_info "Checking for NVIDIA GPU..."
+    if ! command_exists nvidia-smi; then
+        log_error "nvidia-smi not found. No NVIDIA GPU detected."
+        log_info "Local LLM requires an NVIDIA GPU with CUDA support."
+        log_info "Install NVIDIA drivers: https://developer.nvidia.com/cuda-downloads"
+        return 1
+    fi
+
+    local gpu_name
+    gpu_name=$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | head -1)
+    local vram_mb
+    vram_mb=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>/dev/null | head -1)
+    log_success "GPU found: ${gpu_name} (${vram_mb}MB VRAM)"
+
+    # Warn if VRAM < 8GB (model needs ~6GB, but headroom is good)
+    if [ -n "$vram_mb" ] && [ "$vram_mb" -lt 8192 ]; then
+        log_warn "VRAM < 8GB. gemma-4-E4B q4_0 needs ~6GB; tight fit expected."
+        if ! prompt_yes_no "Continue anyway?" "n"; then
+            log_info "Local LLM setup skipped"
+            return 0
+        fi
+    fi
+
+    # Step 2: Check for nvidia-container-toolkit (Docker GPU support)
+    log_info "Checking for nvidia-container-toolkit..."
+    if ! dpkg -l nvidia-container-toolkit >/dev/null 2>&1 && \
+       ! rpm -q nvidia-container-toolkit >/dev/null 2>&1; then
+        log_warn "nvidia-container-toolkit not installed."
+
+        if prompt_yes_no "Install nvidia-container-toolkit?" "y"; then
+            case "$PACKAGE_MANAGER" in
+                apt:*)
+                    run_cmd "sudo apt-get update && sudo apt-get install -y nvidia-container-toolkit"
+                    run_cmd "sudo nvidia-ctk runtime configure --runtime=docker"
+                    run_cmd "sudo systemctl restart docker"
+                    ;;
+                dnf:*)
+                    run_cmd "sudo dnf install -y nvidia-container-toolkit"
+                    run_cmd "sudo nvidia-ctk runtime configure --runtime=docker"
+                    run_cmd "sudo systemctl restart docker"
+                    ;;
+                pacman:*)
+                    run_cmd "sudo pacman -S --noconfirm nvidia-container-toolkit"
+                    ;;
+                *)
+                    log_error "Unsupported package manager. Install manually:"
+                    log_info "  https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html"
+                    return 1
+                    ;;
+            esac
+            log_success "nvidia-container-toolkit installed"
+        else
+            log_warn "Docker GPU access may not work without nvidia-container-toolkit"
+        fi
+    else
+        log_success "nvidia-container-toolkit already installed"
+    fi
+
+    # Step 3: Create model directory and download GGUF model
+    local model_dir="${HOME}/.local/share/opencode/models"
+    local model_file="gemma-4-E4B_q4_0-it.gguf"
+    local model_path="${model_dir}/${model_file}"
+
+    log_info "Model directory: ${model_dir}"
+    run_cmd "mkdir -p ${model_dir}"
+
+    if [ -f "$model_path" ]; then
+        local existing_size
+        existing_size=$(du -h "$model_path" 2>/dev/null | cut -f1)
+        log_success "Model already exists: ${model_path} (${existing_size})"
+
+        if ! prompt_yes_no "Re-download model?" "n"; then
+            log_info "Using existing model"
+        else
+            run_cmd "rm -f ${model_path}"
+            download_gguf_model "$model_dir" "$model_file" || return 1
+        fi
+    else
+        download_gguf_model "$model_dir" "$model_file" || return 1
+    fi
+
+    # Step 3b: Download mmproj.gguf for vision support
+    local mmproj_file="gemma-4-E4B-it-mmproj.gguf"
+    local mmproj_path="${model_dir}/${mmproj_file}"
+    if [ -f "$mmproj_path" ]; then
+        local mmproj_size
+        mmproj_size=$(du -h "$mmproj_path" 2>/dev/null | cut -f1)
+        log_success "mmproj already exists: ${mmproj_path} (${mmproj_size})"
+        if prompt_yes_no "Re-download mmproj.gguf?" "n"; then
+            run_cmd "rm -f ${mmproj_path}"
+            download_gguf_model "$model_dir" "$mmproj_file" || log_warn "mmproj download failed; vision support may not work"
+        fi
+    else
+        download_gguf_model "$model_dir" "$mmproj_file" || log_warn "mmproj download failed; vision support may not work"
+    fi
+
+    # Step 4: Configure .env file for Docker compose
+    setup_local_llm_env
+
+    # Step 5: Pull llama.cpp CUDA Docker image
+    log_info "Pulling llama.cpp server image (CUDA)..."
+    if command_exists docker; then
+        run_cmd "docker pull ghcr.io/ggml-org/llama.cpp:server-cuda"
+        log_success "llama.cpp CUDA image pulled"
+
+        echo ""
+        echo "✓ Local LLM configured!"
+        echo ""
+        echo "  To start the LLM server:"
+        echo "    cd $(dirname "${REPO_DIR}")/docker-compose.yml  # or wherever you deploy"
+        echo "    docker compose --profile llm up -d"
+        echo ""
+        echo "  Server will be available at: http://localhost:${LLM_PORT:-17851}/v1"
+        echo ""
+        echo "  OpenCode config (opencode.json): set llm.base_url to this endpoint"
+        echo ""
+    else
+        log_warn "Docker not found. Install Docker to use the LLM server container."
+        log_info "Manual alternative: pip install llama-cpp-python[server,cuda]"
+    fi
+
+    return 0
+}
+
+# Download GGUF model from HuggingFace using huggingface_hub or curl fallback
+download_gguf_model() {
+    local dest_dir="$1"
+    local model_file="$2"
+
+    log_info "Downloading gemma-4-E4B q4_0 GGUF model (~5GB)..."
+    log_info "Source: google/gemma-4-E4B-it-qat-q4_0-gguf on HuggingFace"
+
+    # Try huggingface_hub Python package first (resumes, shows progress)
+    if python3 -c "from huggingface_hub import hf_hub_download" 2>/dev/null; then
+        log_info "Using huggingface_hub for download (supports resume)..."
+        python3 -c "
+from huggingface_hub import hf_hub_download
+path = hf_hub_download(
+    repo_id='google/gemma-4-E4B-it-qat-q4_0-gguf',
+    filename='${model_file}',
+    local_dir='${dest_dir}'
+)
+print(f'Downloaded: {path}')
+" 2>/dev/null
+        if [ $? -eq 0 ] && [ -f "${dest_dir}/${model_file}" ]; then
+            log_success "Model downloaded: ${dest_dir}/${model_file}"
+            return 0
+        fi
+        log_warn "huggingface_hub download failed, trying curl fallback..."
+    fi
+
+    # Fallback: direct URL (HuggingFace CDN)
+    local hf_url="https://huggingface.co/google/gemma-4-E4B-it-qat-q4_0-gguf/resolve/main/${model_file}"
+    if download_file "$hf_url" "${dest_dir}/${model_file}"; then
+        log_success "Model downloaded: ${dest_dir}/${model_file}"
+        return 0
+    fi
+
+    log_error "Failed to download model. Check network or download manually:"
+    log_info "  URL: https://huggingface.co/google/gemma-4-E4B-it-qat-q4_0-gguf/tree/main"
+    return 1
+}
+
+# Write/update .env file with local LLM configuration
+setup_local_llm_env() {
+    local env_file="${REPO_DIR}/.env"
+    local env_example="${REPO_DIR}/.env.example"
+
+    log_info "Updating .env with LLM configuration..."
+
+    # Create .env from example if it doesn't exist
+    if [ ! -f "$env_file" ] && [ -f "$env_example" ]; then
+        cp "$env_example" "$env_file"
+        log_info "Created .env from .env.example"
+    fi
+
+    # Helper to set/replace env var in .env file
+    set_env_var() {
+        local key="$1"
+        local value="$2"
+        local file="$3"
+
+        if grep -qE "^${key}=" "$file" 2>/dev/null; then
+            sed -i "s|^${key}=.*|${key}=${value}|g" "$file"
+        else
+            echo "${key}=${value}" >> "$file"
+        fi
+    }
+
+    if [ -f "$env_file" ]; then
+        set_env_var "LLM_PORT" "${LLM_PORT:-17851}" "$env_file"
+        set_env_var "LLM_MODEL" "${LLM_MODEL:-gemma-4-E4B_q4_0-it.gguf}" "$env_file"
+        set_env_var "LLM_MMPROJ" "${LLM_MMPROJ:-gemma-4-E4B-it-mmproj.gguf}" "$env_file"
+        set_env_var "LOCAL_LLM_MODEL_PATH" "${LOCAL_LLM_MODEL_PATH:-~/.local/share/opencode/models}" "$env_file"
+        set_env_var "N_GPU_LAYERS" "${N_GPU_LAYERS:-999}" "$env_file"
+        set_env_var "CTX_SIZE" "${CTX_SIZE:-130000}" "$env_file"
+        set_env_var "VLLM_PORT" "${VLLM_PORT:-17852}" "$env_file"
+        set_env_var "VLLM_MODEL" "${VLLM_MODEL:-google/gemma-4-E4B-it-qat-w4a16-ct}" "$env_file"
+        set_env_var "VLLM_MODEL_PATH" "${VLLM_MODEL_PATH:-~/.cache/huggingface}" "$env_file"
+        set_env_var "VLLM_MAX_MODEL_LEN" "${VLLM_MAX_MODEL_LEN:-130000}" "$env_file"
+        set_env_var "VLLM_GPU_MEMORY_UTIL" "${VLLM_GPU_MEMORY_UTIL:-0.99}" "$env_file"
+        log_success ".env updated with LLM configuration"
+    else
+        log_warn ".env not found — LLM config written to docker-compose defaults only"
+    fi
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# VLLM SETUP (vLLM Docker server)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Setup vLLM inference server in Docker.
+# Requires: NVIDIA GPU with sufficient VRAM (gemma-4-E4B-it-qat-w4a16-ct ~8-10GB).
+# Smaller than the bf16 variant but still may not fit on 12GB cards depending on
+# activation spikes. Default model is the smallest available gemma-4-E4B variant.
+setup_vllm() {
+    if [ "$ENABLE_VLLM" != true ]; then
+        return 0
+    fi
+
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "              🤖 vLLM Server Setup"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    echo "This installs vLLM as a Docker container with OpenAI-compatible API."
+    echo "Default model: google/gemma-4-E4B-it-qat-w4a16-ct (smallest gemma-4-E4B"
+    echo "variant, ~8-10GB VRAM). Tight fit on 12GB cards."
+    echo ""
+
+    # Check NVIDIA GPU
+    log_info "Checking for NVIDIA GPU..."
+    if ! command_exists nvidia-smi; then
+        log_error "nvidia-smi not found. No NVIDIA GPU detected."
+        return 1
+    fi
+
+    local vram_mb
+    vram_mb=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>/dev/null | head -1)
+    local gpu_name
+    gpu_name=$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | head -1)
+    log_success "GPU found: ${gpu_name} (${vram_mb}MB VRAM)"
+
+    if [ -n "$vram_mb" ] && [ "$vram_mb" -lt 12288 ]; then
+        log_warn "VRAM < 12GB. vLLM with gemma-4-E4B-it-qat-w4a16-ct may OOM."
+        if ! prompt_yes_no "Continue anyway?" "n"; then
+            log_info "vLLM setup skipped"
+            return 0
+        fi
+    fi
+
+    # Pull vLLM image
+    if command_exists docker; then
+        log_info "Pulling vLLM image (~10GB) and model weights..."
+        run_cmd "docker pull vllm/vllm-openai:latest"
+        log_success "vLLM image pulled"
+
+        echo ""
+        echo "✓ vLLM configured!"
+        echo ""
+        echo "  To start vLLM:"
+        echo "    docker compose --profile vllm up -d"
+        echo ""
+        echo "  Server will be available at: http://localhost:${VLLM_PORT:-17852}/v1"
+        echo ""
+        echo "  OpenCode config: provider 'vllm' is pre-wired to this endpoint"
+        echo ""
+    else
+        log_warn "Docker not found. Install Docker to use the vLLM container."
+    fi
+
+    return 0
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -2886,8 +3207,8 @@ deploy_plugins() {
 # ─────────────────────────────────────────────────────────────────────────────
 # Apply the skill profile (GIT-333): rewrites ONLY the permission.skill block
 # of the DEPLOYED config (never the source opencode_app/opencode.json).
-#   lean (default) -> 30 primary-visible skills + "*": "deny"
-#   full           -> verified no-op (shipped 90-allow allowlist stays verbatim)
+#   lean (default) -> 37 primary-visible skills + "*": "deny"
+#   full           -> verified no-op (shipped 104-allow allowlist stays verbatim)
 # Mirrors run_pack_merger's dry-run contract (B1): in dry-run the resolver
 # stages the preview config at $DRY_RUN_PREVIEW_DIR/opencode.json — patch that.
 run_skill_profile() {
@@ -2988,7 +3309,7 @@ deploy_agents() {
 
     log_success "Deployed ${agent_count} agents (${subagent_count} subagents) to ${AGENTS_DEST_DIR}"
     echo "  Models resolved via tier registry."
-    echo "  Change provider: ./setup.sh --provider <zai|anthropic|openai|openrouter|lmstudio>"
+    echo "  Change provider: ./setup.sh --provider <zai|anthropic|openai|openrouter>"
     echo "  Pin per-agent:   ~/.config/opencode/agent-overrides.json"
     return 0
 }
@@ -3471,7 +3792,8 @@ print_summary() {
     # config.json status
     if [ -f "$CONFIG_FILE" ]; then
         echo "✓ config.json: Copied to ${CONFIG_DIR}/"
-        echo "    - Model: zai-coding-plan/glm-4.7"
+        primary_model=$(node -pe "JSON.parse(require('fs').readFileSync('${REPO_DIR}/deploy/models.default.json','utf8')).primary" 2>/dev/null || echo "zai-coding-plan/glm-5.3")
+        echo "    - Model: ${primary_model}"
         echo "    - Default agent: build"
     else
         echo "✗ config.json: Not copied"
@@ -3493,9 +3815,12 @@ print_summary() {
          echo "✓ Configured MCP servers:"
          echo "    - codegraph - Code knowledge graph (auto-start)"
          echo "    - web-reader - Web page reading (auto-start, needs ZAI_API_KEY)"
+         echo "    - web-search - Web search with cited results (auto-start, needs ZAI_API_KEY)"
          echo "    - atlassian - JIRA and Confluence (opt-in per-project)"
-
+         echo "    - next-devtools - Next.js DevTools (opt-in)"
          echo "    - markitdown - Document-to-Markdown, local-only, opt-in"
+         echo "    - docling - Layout-aware document extraction, opt-in (~3-4 GB)"
+         echo "    - chrome-devtools - Live Chrome automation, opt-in"
 
     # Secret masking
     if [ -f "${CONFIG_DIR}/vibeguard.config.json" ]; then
@@ -3555,8 +3880,7 @@ print_next_steps() {
     if is_windows; then
         echo "     (Environment variables were set via setx - open a NEW terminal to use them)"
     fi
-    echo "  2. Start LM Studio: http://127.0.0.1:1234/v1"
-    echo "  3. Verify installation: opencode --version"
+    echo "  2. Verify installation: opencode --version"
     echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo "                        🚀 Quick Start"
@@ -3584,10 +3908,10 @@ print_next_steps() {
     echo "  Run 'opencode --skill <name> \"prompt\"' to use a skill"
     echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-     echo "                     🔌 MCP Servers (3)"
+     echo "                     🔌 MCP Servers (4)"
      echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
      echo ""
-     echo "  Auto-start: codegraph, web-reader, web-search-prime"
+     echo "  Auto-start: codegraph, web-reader, web-search"
       echo "  Opt-in per-project: atlassian"
      echo "  Opt-in global packs: zai-vision-mcp, next-devtools, markitdown, docling, chrome-devtools"
     echo ""
@@ -3851,6 +4175,8 @@ main() {
     fi
 
     setup_config || true
+    setup_local_llm || true
+    setup_vllm || true
     setup_model_provider || true
     deploy_agents || true
     deploy_plugins || true

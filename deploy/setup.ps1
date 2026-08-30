@@ -67,7 +67,7 @@ param(
     [string]$EnablePack = "",
     # Skill profile (GIT-333): deploy-time primary visibility. lean (default)
     # rewrites the DEPLOYED config's permission.skill to 30 visible skills;
-    # full deploys the shipped 90-allow allowlist verbatim.
+    # full deploys the shipped 104-allow allowlist verbatim.
     [ValidateSet("lean", "full")]
     [string]$SkillProfile = "lean"
 )
@@ -910,7 +910,7 @@ USAGE:
 
   MODEL RESOLUTION (v2.0):
     -Provider <name>     Non-interactive provider preset: zai|anthropic|openai|
-                         openrouter|lmstudio (writes ~/.config/opencode/models.json)
+                         openrouter (writes ~/.config/opencode/models.json)
     -ModelsOnly          Provider selection + model resolution only (no other setup)
     -Migrate             Run v1.x -> v2.0 migration + model resolution only
     -Force               Re-resolve all agents (ignore preserved hand-edits)
@@ -926,10 +926,10 @@ USAGE:
 
    SKILL PROFILE (deploy-time primary visibility):
      -SkillProfile <p>    lean (default) | full. lean rewrites the DEPLOYED
-                          config's permission.skill to 30 primary-visible skills
+                          config's permission.skill to 37 primary-visible skills
                           + "*": "deny" (subagents unaffected — they self-scope
                           via frontmatter allows); full deploys the shipped
-                          90-allow allowlist verbatim.
+                          104-allow allowlist verbatim.
 
  ======================================================================
                      COMMON COMBINATION EXAMPLES
@@ -960,11 +960,7 @@ USAGE:
     scout                External docs and dependency research
     explorer             Codebase exploration and analysis (subagent)
     code-review          Code review with SOLID/clean-code analysis
-    python-reviewer      Python code review (PEP 8, type hints, async)
-    typescript-reviewer  TypeScript/JS code review (type safety, React/Next)
-    go-reviewer          Go code review (idioms, concurrency, errors)
-    rust-reviewer        Rust code review (ownership, unsafe, Result/Option)
-    java-reviewer        Java code review (Effective Java, concurrency, Spring)
+    language-reviewer    Multi-language code review (Python, TS/JS, Go, Rust, Java)
     testing              Test generation with framework detection
     pr-workflow          PR creation with quality gates and JIRA integration
     linting              Code linting with auto-fix for Python/JS/TS
@@ -1013,16 +1009,13 @@ $(Get-SkillCategories (Join-Path $RepoDir 'opencode_app\.opencode\skills'))
     git                   For version control
 
   API Keys (prompted during setup):
-    ZAI_API_KEY           Required for web-reader
+    ZAI_API_KEY           Required for web-reader, web-search
                           Get from: https://z.ai
 
   GitHub Auth:
     GitHub CLI (gh)      Recommended for GitHub MCP features
                          Install: https://cli.github.com/
                          Or use OAuth: opencode mcp auth github
-
-  Local Services:
-    LM Studio             Running on http://127.0.0.1:1234/v1
 
 =======================================================================
 
@@ -1763,7 +1756,7 @@ function Set-Configuration {
             Write-Host "    - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
             Write-Host ""
             Write-Host "Configured MCP servers:" -ForegroundColor Green
-            Write-Host "    - Auto-start: codegraph, web-reader, web-search-prime"
+            Write-Host "    - Auto-start: codegraph, web-reader, web-search"
             Write-Host "    - Opt-in per-project (.opencode/opencode.json): atlassian"
             Write-Host "    - Available but disabled (opt-in): zai-vision-mcp, next-devtools, markitdown, docling, chrome-devtools"
             if ($script:vgDeployed) {
@@ -1906,7 +1899,7 @@ function Invoke-PackMerger {
 
 # Apply the skill profile (GIT-333): rewrites ONLY the permission.skill block
 # of the DEPLOYED config (never the source opencode_app/opencode.json).
-# lean (default) -> 30 primary-visible skills + "*": "deny"; full -> verified
+# lean (default) -> 37 primary-visible skills + "*": "deny"; full -> verified
 # no-op. Mirrors Invoke-PackMerger's dry-run contract (B1).
 function Invoke-SkillProfile {
     if (-not (Test-Path $ApplySkillProfileScript)) {
@@ -2276,7 +2269,7 @@ function Deploy-Agents {
 
     Write-LogSuccess "Deployed $agentCount agents ($subagentCount subagents) to $AgentsDestDir"
     Write-Host "  Models resolved via tier registry."
-    Write-Host "  Change provider: ./setup.ps1 -Provider <zai|anthropic|openai|openrouter|lmstudio>"
+    Write-Host "  Change provider: ./setup.ps1 -Provider <zai|anthropic|openai|openrouter>"
     Write-Host "  Pin per-agent:   ~/.config/opencode/agent-overrides.json"
 }
 
@@ -2704,8 +2697,7 @@ function Show-NextSteps {
     Write-Host ""
     Write-Host "Next Steps:"
     Write-Host "  1. Restart terminal or run: . $PROFILE"
-    Write-Host "  2. Start LM Studio: http://127.0.0.1:1234/v1"
-    Write-Host "  3. Verify installation: opencode --version"
+    Write-Host "  2. Verify installation: opencode --version"
     Write-Host ""
     Write-Host "Agents ($(Get-AgentCount (Join-Path $RepoDir 'opencode_app\.opencode\agents'))):"
     Write-Host "  - build (default) - Full-featured coding agent"
@@ -2729,7 +2721,7 @@ function Show-NextSteps {
     Write-Host "  Run 'opencode --skill <name> `"prompt`"' to invoke a skill"
     Write-Host ""
      Write-Host "MCP Servers:"
-     Write-Host "  Auto-start: codegraph, web-reader, web-search-prime"
+     Write-Host "  Auto-start: codegraph, web-reader, web-search"
      Write-Host "  Opt-in per-project: atlassian"
      Write-Host "  Opt-in global packs: zai-vision-mcp, next-devtools, markitdown, docling, chrome-devtools (+ autodesk pack adds 4)"
     Write-Host ""

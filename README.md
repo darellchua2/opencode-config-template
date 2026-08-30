@@ -23,8 +23,8 @@ opencode-config-template/
 │   ├── AGENTS.md                # Container-specific instructions
 │   ├── .dockerignore
 │   ├── .opencode/
-│   │       ├── agents/              # 36 subagent .md files
-│   │       └── skills/              # 130 skill directories
+│   │       ├── agents/              # 32 subagent .md files
+│   │       └── skills/              # 142 skill directories
 │   └── README.md                # Docker usage guide
 ├── docker-compose.yml           # Docker Compose service definition
 ├── .env.example                 # Environment variable template
@@ -70,7 +70,7 @@ Two setup scripts are provided for different platforms:
 ./deploy/setup.sh --update
 
 # v2.0 model resolution
-./deploy/setup.sh --provider anthropic      # swap provider (zai|anthropic|openai|openrouter|lmstudio)
+./deploy/setup.sh --provider anthropic      # swap provider (zai|anthropic|openai|openrouter)
 ./deploy/setup.sh --mix                     # mix providers per category (e.g. vision on OpenAI, rest on Z.AI)
 ./deploy/setup.sh --models-only             # re-resolve models only
 ./deploy/setup.sh --migrate                 # run v1.x -> v2.0 migration
@@ -86,7 +86,7 @@ concrete model is resolved at deploy time. Swap providers without editing agent
 files:
 
 ```bash
-./deploy/setup.sh --provider anthropic      # or: openai, openrouter, lmstudio, zai (default)
+./deploy/setup.sh --provider anthropic      # or: openai, openrouter, zai (default)
 ```
 
 Override files (precedence highest-first; see `MIGRATION.md`):
@@ -100,10 +100,12 @@ Override files (precedence highest-first; see `MIGRATION.md`):
 | `deploy/models.default.json` | Z.AI defaults |
 
 > **Vision tier (Z.AI):** `image-analyzer-subagent` + `error-resolver-subagent` + `zai-media-subagent` run on
-> `zai-custom-plan/glm-5.3-flash` (native multimodal), served by the custom `zai-custom-plan` provider on the
-> `zai-coding-plan` subscription endpoint. They see images/screenshots directly (no external vision API).
-> Requires `opencode auth login` (Z.AI) or `ZAI_API_KEY` (auto-injected in Docker via
-> `docker-entrypoint.sh`). See `AGENTS.md` § Subagent Model Tiering.
+> `zai-coding-plan/glm-5.3-flash` (native multimodal — image/video/pdf input, 1M ctx), natively
+> mapped by models.dev under the `zai-coding-plan` subscription. They see images/screenshots
+> directly (no external vision API). When native perception is unavailable, the
+> `zai-vision-analysis-skill` fallback calls `glm-5v-turbo` (pay-as-you-go `zai` provider — a
+> different model) via direct API. Requires `opencode auth login` (Z.AI) or `ZAI_API_KEY`
+> (auto-injected in Docker via `docker-entrypoint.sh`). See `AGENTS.md` § Subagent Model Tiering.
 
 ### Windows (PowerShell)
 
@@ -238,7 +240,7 @@ Run `opencode-init --list agents` or `--list skills` to browse in JSON, or visit
 
 ## Project-Scoped Install (`opencode-init`)
 
-Not every project needs all 36 agents + 130 skills. <!-- count: hand-maintained — sync on skill/agent add (BT-157) --> `opencode-init` installs a **curated subset** into a target project's `.opencode/` and writes a project `opencode.json` configuring just that subset — chosen interactively (TUI) or via flags (LLM/CI). It is the project-scoped companion to the global `setup.sh` deploy, and is symlinked onto PATH as `opencode-init` by `setup.sh`.
+Not every project needs all 32 agents + 142 skills. <!-- count: hand-maintained — sync on skill/agent add (BT-157) --> `opencode-init` installs a **curated subset** into a target project's `.opencode/` and writes a project `opencode.json` configuring just that subset — chosen interactively (TUI) or via flags (LLM/CI). It is the project-scoped companion to the global `setup.sh` deploy, and is symlinked onto PATH as `opencode-init` by `setup.sh`.
 
 > **Mutually exclusive with global deploy for isolation.** OpenCode **merges** config and **unions** agents/skills across `~/.config/opencode` and `<project>/.opencode`. A project subset only yields an *isolated* curated experience on a **clean slate** (no global deploy). If `~/.config/opencode/agents/` is non-empty, the project install is **additive** — `opencode-init` detects this and warns. `permission.task` (scoped subagent-spawn allowlist) still restricts auto-spawning even with a global deploy; `@`-mention still bypasses it. See [issue #286](https://github.com/darellchua2/opencode-config-template/issues/286) and `PLANS/PLAN-GIT-286.md`.
 
@@ -247,13 +249,13 @@ Not every project needs all 36 agents + 130 skills. <!-- count: hand-maintained 
 | Preset | Agents | Skills | MCPs | Use for |
 |--------|--------|--------|------|---------|
 | `core` | explorer | git-semantic-commits, continuous-learning | codegraph | Minimal baseline |
-| `review` | code-review + architecture + 5 language reviewers | 25 (Code Quality + auth/perf/logging/eval) | codegraph | Code quality gates |
+| `review` | code-review + architecture + language-reviewer | 28 (Code Quality + auth/perf/logging/eval) | codegraph | Code quality gates |
 | `frontend` | nextjs-specialist + uiux-reviewer + responsive-audit | 19 (Next.js/React/Three.js/a11y) | next-devtools, chrome-devtools, codegraph | Web frontend |
-| `backend` | python-reviewer | 17 (Python/DB/API/security/docker) | codegraph | Server / devops-lite |
-| `docs` | documentation + coverage + docx/pptx/xlsx + office-doc | 21 (document ladder) | — (inline mermaid blocks need no MCP) | Document generation |
-| `devops` | repo-ops + opentofu-explorer | 31 (release/IaC/JIRA) | codegraph | Git / infra / release |
-| `business` | startup-founder + ceo + discovery + requirements + technical-design | 32 (BD/pitch/planning) | — | BD / founder workflows |
-| `research` | autoresearch-{ml,code,research} + loop-operator | 11 (autoresearch + papers) | codegraph | Autonomous loops (ml needs GPU) |
+| `backend` | language-reviewer | 23 (Python/DB/API/security/docker) | codegraph | Server / devops-lite |
+| `docs` | documentation + coverage + docx/pptx/xlsx + office-doc | 23 (document ladder) | — (inline mermaid blocks need no MCP) | Document generation |
+| `devops` | repo-ops + opentofu-explorer | 32 (release/IaC/JIRA) | codegraph | Git / infra / release |
+| `business` | startup-founder + ceo + discovery + requirements + technical-design | 36 (BD/pitch/planning) | — | BD / founder workflows |
+| `research` | autoresearch-{ml,code,research} + loop-operator | 12 (autoresearch + papers) | codegraph | Autonomous loops (ml needs GPU) |
 | `cad` | cad-specialist | 14 (CAD & Hardware Design) | — | CAD / robotics / hardware |
 
 Member counts include transitive deps auto-pulled by the resolver (a preset's agent `permission.task` delegates + `permission.skill` requirements). Run `opencode-init --expand <preset>` to see the exact resolved set.
@@ -287,7 +289,6 @@ What lands in the target project: `<project>/.opencode/opencode.json` (scoped `p
 - **Node.js v20+** and **npm** (required for MCP servers)
   - Setup scripts can install Node.js for you on all platforms
   - On macOS/Linux, nvm is recommended for version management
-- **LM Studio** running locally on port 1234 (for local LLM)
 - **Z.AI API Key** (required for Z.AI MCP services)
 - **GitHub CLI** (recommended for GitHub MCP authentication)
 - **ripgrep (`rg`)** (recommended for faster content search; falls back to `grep` if absent)
@@ -332,7 +333,7 @@ The configuration ships 9 MCP server entries. **3 are enabled by default:**
 |--------|------|---------|
 | `codegraph` | local (npx) | Pre-indexed code knowledge graph |
 | `zai-web-reader` | remote | Web page content extraction |
-| `zai-web-search-prime` | remote | Web search (GLM Coding Plan exclusive) |
+| `zai-web-search` | remote | Web search with cited results (GIT-336) |
 
 The remaining 6 are `enabled: false` and opt-in:
 
@@ -385,11 +386,11 @@ Default state of every pack is **OFF** — existing deployments are unaffected u
 
 #### Skill Profiles — deploy-time primary visibility (#333)
 
-Every allowed skill's `description` is injected into the primary session's context at startup (~90 tokens each). The shipped `opencode_app/opencode.json` allowlist (88 allows) is the **full** profile. For a context-lean primary, deploy with a **lean** profile: only 30 primary-visible skills + `"*": "deny"` (~3.9k tokens saved per session, measured).
+Every allowed skill's `description` is injected into the primary session's context at startup (~90 tokens each). The shipped `opencode_app/opencode.json` allowlist (104 allows) is the **full** profile. For a context-lean primary, deploy with a **lean** profile: only 45 primary-visible skills + `"*": "deny"` (~3.9k tokens saved per session, measured).
 
 ```bash
-./deploy/setup.sh                                # default: lean (30 primary-visible skills)
-./deploy/setup.sh --skill-profile full           # opt back in: shipped 88-allow allowlist verbatim
+./deploy/setup.sh                                # default: lean (37 primary-visible skills)
+./deploy/setup.sh --skill-profile full           # opt back in: shipped allowlist verbatim
 ./deploy/setup.sh --skill-profile lean --dry-run # preview the deployed permission.skill block
 ./deploy/setup.ps1 -SkillProfile full            # Windows parity
 ```
@@ -397,7 +398,7 @@ Every allowed skill's `description` is injected into the primary session's conte
 Key properties:
 
 - Only the **deployed** copy's `permission.skill` block is rewritten (`deploy/apply-skill-profile.mjs`); the shipped `opencode.json` is never modified — `full` is a verified no-op.
-- **Subagents are profile-immune.** All 133 skills stay on disk and every skill has either a frontmatter `permission.skill: allow` consumer agent or a lean slot — nothing is orphaned under lean.
+- **Subagents are profile-immune.** All 145 skills stay on disk and every skill has either a frontmatter `permission.skill: allow` consumer agent or a lean slot — nothing is orphaned under lean.
 - Lean-hidden skills cannot be `@`-loaded by the primary until re-exposed; re-exposing any skill is a one-line edit to `deploy/skill-profiles.json`.
 - Typo-guarded: a lean key that doesn't match a real skill directory or the shipped allowlist fails the deploy closed.
 
@@ -457,7 +458,7 @@ Set `OPENCODE_DISABLE_LSP_DOWNLOAD=true` to prevent auto-downloads. See the [ful
 
 ### When to prefer a CLI check instead
 
-For one-off validation the docs recommend running the compiler/linter directly (e.g. `tsc --noEmit`, `pyright`, `ruff`) — no persistent server, lower overhead. This repo's existing `*-linter-skill` skills already take that approach. Use LSP when you want **continuous** feedback during agent editing sessions.
+For one-off validation the docs recommend running the compiler/linter directly (e.g. `tsc --noEmit`, `pyright`, `ruff`) — no persistent server, lower overhead. This repo's `language-linting-skill` already takes that approach. Use LSP when you want **continuous** feedback during agent editing sessions.
 
 ## Knowledge Persistence
 
@@ -548,11 +549,11 @@ TypeScript, JavaScript, Python, Go, Rust, Java, C#, PHP, Ruby, C, C++, Swift, Ko
 
 ## Skill Modularization
 
-This repository implements **skill modularization** with 130 skills organized across 22 categories. <!-- count: hand-maintained — sync on skill add (BT-157) --> Skills are designed with clear separation of concerns and explicit dependencies.
+This repository implements **skill modularization** with 137 skills organized across 23 categories. <!-- count: hand-maintained — sync on skill add (BT-157) --> Skills are designed with clear separation of concerns and explicit dependencies.
 
 > **Registry-derived (PLAN-GIT-286):** every skill + agent now carries a `category:` frontmatter field, which `deploy/build-registry.mjs` reads to emit `deploy/registry.json` — the single source of truth consumed by the `opencode-init` project-scoped installer and (regenerable into) this category table. To refresh after editing frontmatter: `node deploy/build-registry.mjs` (CI fails on drift via `--check`).
 
-> **Migration Complete (BT-142):** The `pptx-specialist-*` stack has been migrated to chenyu's JSON-in-PPTX architecture. Final skill count is **123** (−1 `pptx-specialist-skill` decomposed, +3 chenyu skills, +2 new decomposition skills, +2 Academic & Research Writing skills added post-migration). See `PLANS/PLAN-BT-142.md` for the full plan. The legacy `pptx-specialist-skill` has been removed; all PPTX operations now route through `pptx-specialist-subagent` → `pptx-generate-slide-skill` / `pptx-generate-template-skill` / `pptx-template-modifier-skill`. Post-#283: +1 `zai-vision-analysis-skill` (Z.AI direct-API vision, free `glm-4.6v-flash`) → **125**; later **126** after `plan-automation-loop-skill` was added (Git/Workflow — `/run-plan` full-automation loop). Subsequent additions brought the total to **130**, including `zai-image-generation-skill` (Media Generation — Z.AI GLM-Image text-to-image, saves a PNG file). Post-#333: +1 `opencode-repo-setup-skill` (OpenCode Meta — per-repo MCP/project-config setup frontend) → **131**. Post-GIT-333: −1 `codegraph-setup-skill` (merged into `opencode-repo-setup-skill` §Step 4) → **130**. Post-GIT-357: +3 media skills (`zai-video-skill`, `zai-asr-skill`, `zai-ocr-skill` — Media Generation, consumer-scoped to `zai-media-subagent`) → **133**.
+> **Migration Complete (BT-142):** The `pptx-specialist-*` stack has been migrated to chenyu's JSON-in-PPTX architecture. Final skill count is **123** (−1 `pptx-specialist-skill` decomposed, +3 chenyu skills, +2 new decomposition skills, +2 Academic & Research Writing skills added post-migration). See `PLANS/PLAN-BT-142.md` for the full plan. The legacy `pptx-specialist-skill` has been removed; all PPTX operations now route through `pptx-specialist-subagent` → `pptx-generate-slide-skill` / `pptx-generate-template-skill` / `pptx-template-modifier-skill`. Post-#283: +1 `zai-vision-analysis-skill` (Z.AI direct-API vision, free `glm-4.6v-flash`) → **125**; later **126** after `plan-automation-loop-skill` was added (Git/Workflow — `/run-plan` full-automation loop). Subsequent additions brought the total to **130**, including `zai-image-generation-skill` (Media Generation — Z.AI GLM-Image text-to-image, saves a PNG file). Post-#333: +1 `opencode-repo-setup-skill` (OpenCode Meta — per-repo MCP/project-config setup frontend) → **131**. Post-GIT-333: −1 `codegraph-setup-skill` (merged into `opencode-repo-setup-skill` §Step 4) → **130**. Post-GIT-338: −4 per-language linter skills (`python-ruff-linter`, `javascript-eslint-linter`, `java-linter`, `csharp-linter` merged into `language-linting-skill`) → **127**. Post-GIT-341: +6 vendored verbatim (pstack `unslop`/`technical-writing`/`blast-radius` @60c641e; ponytail `audit`/`review`/`debt` satellites v4.8.4) → **133**. Post-GIT-351: +1 `worktree-pipeline-skill` (Git/Workflow — `/run-worktree-pipeline` tracker-to-merged-PR pipeline via git worktrees) → **134**. Post-GIT-357: +3 media skills (`zai-video-skill`, `zai-asr-skill`, `zai-ocr-skill` — Media Generation, consumer-scoped to `zai-media-subagent`) → **137**.
 
 ### Skill Categories
 
@@ -561,15 +562,16 @@ This repository implements **skill modularization** with 130 skills organized ac
 | **Framework** (19) | test-generator-framework, linting-workflow, pr-creation-workflow, pr-merge-workflow, error-resolver-workflow, tdd-workflow, docx-creation, xlsx-specialist, pdf-specialist, frontend-design, uiux-review-skill, api-design-skill, openapi-contract-adherence-skill, performance-optimization-skill, srs-creation-skill, brd-creation-skill, technical-design-creation-skill, vision-creation-skill, interactive-document-rendering-skill | Generic workflows, testing patterns, document creation, UI design + review, API design, contract adherence, performance, and the document ladder (BRD/SRS/vision + technical design documents) |
 | **Presentation** (3) | pptx-generate-slide-skill, pptx-generate-template-skill, pptx-template-modifier-skill | Template-driven PowerPoint generation — extract, fill, extend |
 | **Office Utilities** (2) | ooxml-editing-skill, office-thumbnail-skill | Generic Office OOXML surgical edits and visual thumbnail/conversion |
-| **Language-Specific** (9) | python-pytest-creator, python-ruff-linter, javascript-eslint-linter, changelog-python-cliff, python-backend-skill, python-packaging-skill, csharp-linter-skill, java-linter-skill, fastapi-pydantic-orm-patterns-skill | Language-specific test, linting, project scaffolding, packaging, and backend patterns |
+| **Language-Specific** (6) | python-pytest-creator, language-linting, changelog-python-cliff, python-backend-skill, python-packaging-skill, fastapi-pydantic-orm-patterns-skill | Language-specific test, linting (Ruff/ESLint/Checkstyle/dotnet format), project scaffolding, packaging, and backend patterns |
 | **Framework-Specific** (11) | nextjs-pr-workflow, nextjs-unit-test-creator, nextjs-standard-setup, nextjs-image-usage, nextjs-devtools-mcp, amplify-nextjs-deployment, typescript-dry-principle, accessibility-a11y-skill, react-hooks-antipatterns-skill, react-render-antipatterns-skill, threejs-nextjs-skill | Next.js 16, React 19, TypeScript, accessibility, Three.js integration, and AWS Amplify deployment |
+| **Frontend Animation** (8) | gsap-core, gsap-timeline, gsap-scrolltrigger, gsap-plugins, gsap-utils, gsap-react, gsap-frameworks, gsap-performance | GSAP web-animation guidance — tweens/easing/stagger, timeline sequencing, ScrollTrigger scroll-linked animation + pinning, plugins (Flip, Draggable, SplitText…), utils helpers, React (`useGSAP`) and Vue/Svelte integration, performance optimization. Vendored from official greensock/gsap-skills (MIT — see THIRD_PARTY_LICENSES.md §5) |
 | **OpenCode Meta** (5) | opencode-agent-creation, opencode-skill-creation, opencode-skills-maintainer, opencode-repo-setup, documentation-consistency-skill | Agent and skill creation/maintenance, documentation consistency auditing, per-repo MCP/project-config setup |
 | **OpenTofu** (7) | opentofu-aws-explorer, opentofu-keycloak-explorer, opentofu-kubernetes-explorer, opentofu-neon-explorer, opentofu-provider-setup, opentofu-provisioning-workflow, opentofu-ecr-provision | Infrastructure as Code |
-| **Git/Workflow** (13) | ascii-diagram-creator, mermaid-diagram-creator, ticket-plan-workflow-skill, plan-execution-skill, plan-automation-loop-skill, git-issue-labeler, git-issue-updater, git-semantic-commits, semantic-release-convention, git-compact-commits, plan-updater, version-bump-standard, git-branch-workflow-setup-skill | Diagrams, git operations, release conventions, version bumping, compact commits, branch workflow orchestration, and fully-automated per-phase plan execution (lint+build+test+e2e gate → per-step traceability → commit → push) via `/run-plan` |
-| **Documentation** (3) | coverage-readme-workflow, docstring-generator, documentation-sync-workflow | Documentation generation |
+| **Git/Workflow** (14) | ascii-diagram-creator, mermaid-diagram-creator, ticket-plan-workflow-skill, plan-execution-skill, plan-automation-loop-skill, worktree-pipeline-skill, git-issue-labeler, git-issue-updater, git-semantic-commits, semantic-release-convention, git-compact-commits, plan-updater, version-bump-standard, git-branch-workflow-setup-skill | Diagrams, git operations, release conventions, version bumping, compact commits, branch workflow orchestration, fully-automated per-phase plan execution (lint+build+test+e2e gate → per-step traceability → commit → push) via `/run-plan`, and the tracker-ticket-to-merged-PR worktree pipeline via `/run-worktree-pipeline` |
+| **Documentation** (5) | coverage-readme-workflow, docstring-generator, documentation-sync-workflow, unslop-skill, technical-writing-skill | Documentation generation |
 | **Academic & Research Writing** (2) | horseshoe-paper-writing-skill, research-paper-generation-skill | Academic & research paper writing (Horseshoe Diagram Method, journal-submission formats; codebase→paper generation) |
 | **JIRA** (3) | jira-status-updater, jira-git-integration, jira-ticket-labeler | JIRA integration via MCP server |
-| **Code Quality** (8) | solid-principles, clean-code, clean-architecture, design-patterns, object-design, code-smells, complexity-management, deprecated-code-cleanup-skill | Code quality analysis, patterns, and @deprecated code cleanup |
+| **Code Quality** (12) | solid-principles, clean-code, clean-architecture, design-patterns, object-design, code-smells, complexity-management, deprecated-code-cleanup-skill, blast-radius-skill, ponytail-audit-skill, ponytail-review-skill, ponytail-debt-skill | Code quality analysis, patterns, and @deprecated code cleanup |
 | **Agent Optimization** (7) | continuous-learning, eval-harness, strategic-compact, verification-loop, search-first, context-budget, agent-introspection-debugging | AI agent session optimization, research-first workflow, context auditing, and agent debugging |
 | **Autoresearch** (4) | autoresearch-core-skill, autoresearch-ml-skill, autoresearch-code-skill, autoresearch-research-skill | Autonomous research loops: 5-stage Understand→Hypothesize→Experiment→Evaluate→Log methodology. ML training (GPU), code optimization, literature review. Evaluated by mechanical `{"pass":bool,"score":N}` — no LLM self-judgment. Ported from uditgoenka/autoresearch + karpathy/autoresearch (MIT). |
 | **Startup/Business** (3) | startup-pitch-deck-skill, startup-business-docs-skill, construction-bd-skill | Startup pitch decks, business documentation, construction proposals |
@@ -585,7 +587,7 @@ This repository implements **skill modularization** with 130 skills organized ac
 
 ### Agents
 
-36 agent `.md` files (plus 4 config-builtin agents defined directly in `config.json`: `build`, `plan`, `explore`, `general`) provide specialized task handling. Note: the 2 `*-primary-agent` files (`startup-founder`, `office-document`) are routing hubs but are declared with `mode: subagent`.
+32 agent `.md` files (plus 4 config-builtin agents defined directly in `config.json`: `build`, `plan`, `explore`, `general`) provide specialized task handling. Note: the 2 `*-primary-agent` files (`startup-founder`, `office-document`) are routing hubs but are declared with `mode: subagent`.
 
 #### Primary Agents
 
@@ -600,10 +602,10 @@ This repository implements **skill modularization** with 130 skills organized ac
 
 | Subagent | Purpose | Skills | Built-in Delegation |
 |----------|---------|--------|---------------------|
-| **linting-subagent** | Code quality and style (Python, JS/TS, Java Spring Boot, C# .NET) | linting-workflow, python-ruff-linter, javascript-eslint-linter | `explore` |
+| **linting-subagent** | Code quality and style (Python, JS/TS, Java Spring Boot, C# .NET) | linting-workflow, language-linting | `explore` |
 | **testing-subagent** | Test generation and execution | test-generator-framework, python-pytest-creator, nextjs-unit-test-creator | `explore` |
 | **tdd-subagent** | Test-driven development workflow | tdd-workflow, test-generator-framework | — |
-| **pr-workflow-subagent** | Pull request creation | pr-creation-workflow, nextjs-pr-workflow | `explore`, `general` |
+| **pr-workflow-subagent** | Pull request creation | pr-creation-workflow, nextjs-pr-workflow | `documentation-subagent`, `explore`, `general`, `image-analyzer-subagent` |
 | **discovery-specialist-subagent** | Customer-facing discovery: Vision docs + wireframes | vision-creation-skill | `explore`, `image-analyzer-subagent`, `xlsx-specialist-subagent` |
 | **requirements-specialist-subagent** | BRD + SRS drafting (BABOK/IIBA + IEEE 830) | brd-creation-skill, srs-creation-skill | `explore`, `image-analyzer-subagent`, `xlsx-specialist-subagent` |
 | **technical-design-specialist-subagent** | Technical design + ADRs (engineering 'how' stage) | technical-design-creation-skill | `explore`, `image-analyzer-subagent`, `architecture-review-subagent` |
@@ -611,13 +613,13 @@ This repository implements **skill modularization** with 130 skills organized ac
 | **coverage-subagent** | Coverage reporting | coverage-readme-workflow | — |
 | **opentofu-explorer-subagent** | Infrastructure as code | 7 OpenTofu skills (AWS, K8s, Keycloak, Neon, ECR) | — |
 | **architecture-review-subagent** | Architecture and design patterns | clean-architecture, design-patterns, complexity-management, continuous-learning, verification-loop | `explore` |
-| **code-review-subagent** | Comprehensive code review | All 7 Code Quality skills + continuous-learning, complexity-management | `explore`, `general` |
+| **code-review-subagent** | Comprehensive code review | 9 Code Quality skills (incl. blast-radius evidence grading, ponytail lean lens) + continuous-learning, complexity-management | `explore`, `general` |
 | **repo-ops-specialist-subagent** | Git repository operations | version-bump-standard, semantic-release-convention, pr-creation-workflow, pr-merge-workflow, git-issue-labeler | `explore`, `general` |
 | **error-resolver-subagent** | Error diagnosis and resolution | error-resolver-workflow | — |
 | **nextjs-specialist-subagent** | Next.js scaffolding + runtime MCP diagnosis + project audit | nextjs-standard-setup, nextjs-devtools-mcp, docstring-generator, nextjs-image-usage, react-hooks-antipatterns, react-render-antipatterns, amplify-nextjs-deployment | — |
 | **opencode-tooling-subagent** | Skills, agents, and rules creation + doc sync | opencode-skill-creation, opencode-agent-creation, opencode-skills-maintainer, documentation-sync-workflow | — |
-| **docx-creation-subagent** | Word document creation | docx-creation | — |
-| **image-analyzer-subagent** | Image analysis (native multimodal `zai-custom-plan/glm-5.3-flash`) | (built-in vision) | — |
+| **docx-creation-subagent** | Word document creation | docx-creation, unslop-skill, horseshoe-paper-writing-skill | — |
+| **image-analyzer-subagent** | Image analysis (native multimodal `zai-coding-plan/glm-5.3-flash`) | (built-in vision) | — |
 | **zai-media-subagent** | Media production: image/video generation, audio transcription, OCR via Z.AI PAYG skills; artifacts saved to disk, file paths returned | zai-image-generation, zai-video, zai-asr, zai-ocr | — |
 | **responsive-audit-subagent** | Responsive UI audit and fix | playwright-responsive-audit-skill | `explore`, `general`, `image-analyzer-subagent` |
 | **cad-specialist-subagent** | CAD, robotics, hardware design — orchestrates 14 CAD/engineering skills | cad-generation, cad-viewer, cad-step-parts, cad-dxf, cad-urdf, cad-srdf, cad-sdf, cad-sendcutsend, cad-gcode, cad-bambu-labs, cad-implicit, autodesk-aps-skill, civil-3d-skill, open3d-skill | — |
@@ -629,11 +631,7 @@ This repository implements **skill modularization** with 130 skills organized ac
 | **autoresearch-ml-subagent** | Autonomous ML training loop (Karpathy-style). Requires NVIDIA GPU. | autoresearch-core, autoresearch-ml, strategic-compact | `explore`, `general` |
 | **autoresearch-code-subagent** | Autonomous code optimization (test coverage, bundle size, runtime) | autoresearch-core, autoresearch-code, continuous-learning, strategic-compact | `explore`, `general` |
 | **autoresearch-research-subagent** | Literature review / paper synthesis (Tier 2 web-only, no Bash) | autoresearch-core, autoresearch-research, search-first, strategic-compact | `explore`, `general` |
-| **python-reviewer-subagent** | Python-specific code review (PEP 8, type hints, async) | solid-principles, clean-code, code-smells, continuous-learning | `explore`, `general` |
-| **typescript-reviewer-subagent** | TypeScript/JS code review (type safety, React, Next.js) | solid-principles, clean-code, code-smells, continuous-learning | `explore`, `general` |
-| **go-reviewer-subagent** | Go code review (idioms, concurrency, error handling) | solid-principles, clean-code, code-smells, continuous-learning | `explore`, `general` |
-| **rust-reviewer-subagent** | Rust code review (ownership, unsafe safety, Result/Option) | solid-principles, clean-code, code-smells, continuous-learning | `explore`, `general` |
-| **java-reviewer-subagent** | Java code review (Effective Java, concurrency, Spring) | solid-principles, clean-code, code-smells, continuous-learning | `explore`, `general` |
+| **language-reviewer-subagent** | Multi-language code review — Python, TypeScript/JS, Go, Rust, Java (idioms, type safety, concurrency, framework checks) | solid-principles, clean-code, code-smells, design-patterns, python-backend, fastapi-pydantic-orm-patterns, database-migration, python-packaging, react-hooks/render-antipatterns, typescript-dry-principle, language-linting, deprecated-code-cleanup, continuous-learning, search-first | `explore`, `general` |
 | **uiux-reviewer-subagent** | UI/UX design review (13-axis rubric: 6 AslanMazhidov + 5 RNT56 + Nielsen's 10 + anti-default AI cluster detection) | uiux-review-skill, frontend-design-skill, accessibility-a11y-skill, wireframer-skill | `explore`, `general`, `image-analyzer-subagent` |
 
 > **Built-in Delegation**: Subagents with `explore` can delegate codebase scanning to the built-in `explore` subagent. Subagents with `general` can delegate parallelizable multi-step work to the built-in `general` subagent. Access is controlled via `task` permissions in each agent's frontmatter (`"*": deny` by default, explicit allowlist).
@@ -725,7 +723,7 @@ Skills follow a modular architecture:
                         ↓
 ┌─────────────────────────────────────────────────────┐
 │          Specialized Skills (Extension)            │
-│  python-pytest-creator, python-ruff-linter, etc. │
+│  python-pytest-creator, language-linting, etc. │
 └─────────────────────────────────────────────────────┘
                         ↓
 ┌─────────────────────────────────────────────────────┐

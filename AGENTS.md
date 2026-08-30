@@ -38,13 +38,13 @@ Tiers live in `deploy/agent-tiers.json`; models are resolved at deploy time from
 |------|----------------|---------|
 | `primary` | `glm-5.3` (1M ctx) | Primary session only — never for subagents. |
 | `reasoning` | `glm-5.3` (200k) | Correctness-critical: reviewers (code/architecture/language incl. java/uiux), repo-ops-specialist, tdd, opentofu-explorer, loop-operator, opencode-tooling, technical-design-specialist, discovery-specialist, requirements-specialist, autoresearch-ml, autoresearch-code |
-| `fast` | `glm-5-turbo` (200k) | Exploratory/low-impact: explorer, testing, nextjs/cad/office-docs specialists, document creators, pr-workflow, autoresearch-research |
-| `docs` | `glm-4.7` (204k) | documentation, linting, coverage |
-| `vision` | `zai/glm-5v-turbo` (128k) | Native multimodal: `image-analyzer-subagent` + `error-resolver-subagent` (see fallback below) |
+| `fast` | `glm-5.3-flash` (1M) | Exploratory/low-impact: explorer, testing, nextjs/cad/office-docs specialists, document creators, pr-workflow, autoresearch-research |
+| `docs` | `glm-5.3-flash` (1M) | documentation, linting, coverage |
+| `vision` | `glm-5.3-flash` (1M) | Native multimodal (image/video/pdf): `image-analyzer-subagent` + `error-resolver-subagent` (see fallback below) |
 
 Pick by purpose: correctness-critical → `reasoning`; exploratory → `fast`; docs/lint → `docs`; image perception → `vision`.
 
-**Vision fallback:** when native perception is unavailable (vision server not connected, "model does not support image input", text-only session), image-analyzer and error-resolver fall back to a direct Z.AI vision API call to the same `glm-5v-turbo` via `zai-vision-analysis-skill` (coding-plan endpoint preferred, PAAS fallback; requires `ZAI_API_KEY`). Free `glm-4.6v-flash` is a cost-constrained option, not the default.
+**Vision fallback:** when native perception is unavailable (vision server not connected, "model does not support image input", text-only session), image-analyzer and error-resolver fall back to a direct Z.AI vision API call to `glm-5v-turbo` — a different model from the native `glm-5.3-flash` — via `zai-vision-analysis-skill` (coding-plan endpoint preferred, PAAS fallback; requires `ZAI_API_KEY`). Free `glm-4.6v-flash` is a cost-constrained option, not the default.
 
 **Resolution precedence (highest wins):** project `.opencode/agent-overrides.json` > global `~/.config/opencode/agent-overrides.json` > project `.opencode/models.json` > global `~/.config/opencode/models.json` > `deploy/models.default.json`. Swap provider: `setup.sh --provider <p>`; mix per tier: `setup.sh --mix` (stored in `models.json`, re-resolve with `--models-only`); per-agent pin: global `agent-overrides.json`. Built-ins `explore`→`fast` and `general`→`reasoning` are patched in `opencode.json`, not the tier registry.
 

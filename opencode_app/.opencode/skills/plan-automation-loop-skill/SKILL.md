@@ -1,9 +1,8 @@
 ---
 name: plan-automation-loop-skill
 description: >-
-  Fully-automated PLAN execution via /run-plan PLAN-*.md — implement phase,
-  verification gate (tests, lint, build, e2e), commit, push, advance until
-  complete. Triggers: run-plan, implement the plan with full automation,
+  Fully-automated PLAN execution via /run-plan — implement, verify
+  (lint+build+test+e2e gate), commit, push per phase. Triggers: run-plan,
   automation loop, implement PLAN-*.md.
 license: Apache-2.0
 compatibility: opencode
@@ -226,6 +225,14 @@ output so failures can be diagnosed.
 - **Build/typecheck:** succeeds with no type errors.
 - **Unit tests:** all pass. If coverage tooling exists, no coverage regression on changed lines.
 - **E2e:** all relevant specs pass.
+
+**Falsifiable done-predicate (verdict per phase):** after running the gate, record exactly one verdict:
+
+- `VERIFIED` — every applicable gate ran (exit 0 / no new errors) and output was captured as evidence.
+- `NOT VERIFIED` — a gate ran and failed.
+- `INCONCLUSIVE` — a gate could not run (missing tooling, environment, skip applied).
+
+`INCONCLUSIVE` is NOT a pass. The loop may only advance on `VERIFIED`. On `NOT VERIFIED`, enter the fix-on-fail loop (Step 7). On `INCONCLUSIVE`, either install/repair the missing gate, replace it with the closest executable check, or stop and report — never tick the phase as done on an unrun gate.
 
 #### Step 6a: Frontend / E2E detection (when to run Playwright)
 

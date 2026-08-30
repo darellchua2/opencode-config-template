@@ -5,6 +5,7 @@ description: >-
   repo setup, branch protection, release workflow, version bump, repo audit, gh
   labels.
 mode: subagent
+steps: 30
 permission:
   read:
     "*": allow
@@ -37,6 +38,7 @@ permission:
     plan-execution-skill: allow
     search-first-skill: allow
     continuous-learning-skill: allow
+    ponytail-debt-skill: allow
 category: devops
 ---
 

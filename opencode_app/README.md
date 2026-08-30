@@ -22,8 +22,8 @@ opencode_app/
 ├── AGENTS.md              # Agent instructions for container mode
 ├── .dockerignore          # Excludes _archived, .env, node_modules
 └── .opencode/
-    ├── agents/            # 37 agent .md files (single source of truth)
-    └── skills/            # 133 skill directories + _common/ shared + _archived/ legacy
+    ├── agents/            # 33 agent .md files (single source of truth)
+    └── skills/            # 145 skill directories + _common/ shared + _archived/ legacy
 ```
 
 ## How It Works
@@ -38,7 +38,7 @@ Set these in the root `.env` file (copied from `.env.example`):
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `ZAI_API_KEY` | Yes | — | Z.AI API key (primary LLM provider) |
+| `ZAI_API_KEY` | Yes | — | Z.AI API key (primary LLM provider; also auths web-reader + web-search MCP) |
 | `GEMINI_API_KEY` | No | — | Gemini API key (secondary provider) |
 | `OPENCODE_PORT` | No | `4097` | External host port |
 
@@ -182,7 +182,7 @@ OpenCode supports subagent-to-subagent delegation via the Task tool, controlled 
 - Agent name = filename minus `.md` (e.g., `code-review-subagent.md` -> `code-review-subagent`)
 - Each spawned subagent gets its own session, context window, and step budget
 - Hub-and-spoke (primary agent -> subagent) remains the recommended pattern
-- 24 of 36 agents have explicit `task` permissions; the remaining 12 default to full access
+- 22 of 32 agents have explicit `task` permissions; the remaining 10 default to full access
 
 ## Ponytail Plugin (scoped wrapper)
 
@@ -254,3 +254,9 @@ The vendored ruleset + adapted instruction builder live in `opencode_app/.openco
 3. `command.execute.before` hook persists `/learnings-on|off|refresh` per session.
 
 No `opencode.json` change required — local plugins are glob-discovered. No conflict with `opencode-superlocalmemory` (different store: markdown vs vectors; different hook: `experimental.chat.system.transform` vs `tui.prompt.append`). Reference: `opencode_app/.opencode/plugins/learnings-autoinject.README.md`.
+
+## Scheduler Plugin (cron jobs)
+
+[`opencode-scheduler@1.3.0`](https://github.com/different-ai/opencode-scheduler) (in `opencode.json` `plugin[]`) runs recurring agent jobs via the **OS-native scheduler** — launchd (macOS), systemd (Linux), Task Scheduler (Windows), with cron fallback. Jobs are workdir-scoped, supervised (no overlap, optional `timeoutSeconds` SIGTERM→SIGKILL), and forced non-interactive (`OPENCODE_PERMISSION` denies question prompts so headless runs never hang). Manage in natural language: *"Schedule a daily job at 9am to…"*, list/update/run-now/logs/delete.
+
+**Docker caveat:** the standalone container has no systemd/launchd (and usually no cron), so scheduled jobs do not fire in-container. For the Docker deployment, schedule on the host instead (host cron/systemd timer calling `docker compose exec` / `opencode run`). User-space deploys via `setup.sh` work natively.

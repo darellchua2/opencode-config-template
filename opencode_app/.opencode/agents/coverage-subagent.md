@@ -3,6 +3,7 @@ description: >-
   Test coverage reporting — badge generation, README updates, threshold
   enforcement for Next.js and Python.
 mode: subagent
+steps: 15
 permission:
   read:
     "*": allow
@@ -10,7 +11,7 @@ permission:
   edit: allow
   glob: allow
   grep: allow
-  bash: deny
+  bash: allow
   webfetch: allow
   websearch: allow
   skill:
@@ -50,15 +51,15 @@ Workflow:
 6. Update README.md with badge and coverage details
 7. Handle edge cases (missing config, zero coverage)
 
-Badge Color Standards:
-- brightgreen (>=80%): Excellent
-- yellow (60-79%): Good
-- orange (40-59%): Needs attention
-- red (<40%): Requires action
+Badge Color Standards: defined in `coverage-readme-workflow-skill` (brightgreen ≥80%,
+yellow 60-79%, orange 40-59%, red <40%) — the skill is the source of truth.
 
 Delegation:
-- Test execution: Request from parent agent
 - Git commits: Request from parent agent
+
+Bash policy: running the test suite with coverage collection is your job
+(`npm run test -- --coverage`, `pytest --cov`). Do not modify source or test
+files; README/badge/doc updates are the only writes you make.
 
 Always follow industry best practices for coverage documentation.
 

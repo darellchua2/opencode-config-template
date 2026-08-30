@@ -22,6 +22,7 @@ permission:
     verification-loop-skill: allow
     continuous-learning-skill: allow
     strategic-compact-skill: allow
+    blast-radius-skill: allow
 category: research
 ---
 

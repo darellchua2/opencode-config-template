@@ -4,6 +4,7 @@ description: >-
   React Compiler), runtime diagnosis via next-devtools-mcp, proactive audit.
   Routes to skills by task type.
 mode: subagent
+steps: 30
 permission:
   read:
     "*": allow
@@ -101,7 +102,7 @@ You are a Next.js specialist. You handle **project scaffolding**, **runtime diag
 ## Delegation
 
 - **System commands (npm, npx, dev server, git):** Request from parent agent (`bash: deny` in this subagent).
-- **Deep code review:** Delegate to `typescript-reviewer-subagent` or `code-review-subagent` via the parent agent.
+- **Deep code review:** Delegate to `language-reviewer-subagent` or `code-review-subagent` via the parent agent.
 - **Branch workflow setup:** Signal via Return Contract; primary agent handles via `repo-ops-specialist-subagent`.
 
 ## Always Follow Next.js Best Practices

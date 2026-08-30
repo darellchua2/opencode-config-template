@@ -2,7 +2,7 @@
 
 v2.0 is a **major breaking change**. Agent models are no longer hardcoded per
 agent file — they are resolved at deploy time from a tier registry, so you can
-switch providers (Z.AI / Anthropic / OpenAI / OpenRouter / local LM Studio)
+switch providers (Z.AI / Anthropic / OpenAI / OpenRouter / local llama.cpp / vLLM)
 without editing every agent file. This guide covers what changed, the automatic
 migration, and how to revert.
 
@@ -114,7 +114,6 @@ Preview without changing anything:
 ./deploy/setup.sh --provider anthropic
 ./deploy/setup.sh --provider openai
 ./deploy/setup.sh --provider openrouter
-./deploy/setup.sh --provider lmstudio
 ./deploy/setup.sh --provider zai          # default
 ```
 
@@ -158,7 +157,7 @@ hand:
   "primary": "zai-coding-plan/glm-5.3",
   "tiers": {
     "reasoning": "zai-coding-plan/glm-5.3",
-    "fast": "zai-coding-plan/glm-5-turbo",
+    "fast": "zai-coding-plan/glm-5.3-flash",
     "docs": "zai-coding-plan/glm-4.7",
     "vision": "openai/gpt-5"
   }
@@ -187,14 +186,14 @@ top-level model keys so you pick the primary at runtime). For cheap title/utilit
 generation on the GLM Coding Plan:
 
 ```json
-{ "small_model": "zai-custom-plan/glm-5.3-flash" }
+{ "small_model": "zai-coding-plan/glm-5.3-flash" }
 ```
 
 **2. Vision fallback** — the shipped vision tier is
-`zai-custom-plan/glm-5.3-flash` on the coding-plan endpoint (docs-verified
-multimodal). If the plan endpoint ever rejects image parts, repoint the vision
-tier at the **pay-as-you-go** model via `~/.config/opencode/models.json` instead
-of editing provider config:
+`zai-coding-plan/glm-5.3-flash` (native models.dev catalog entry with
+`attachment: true`; docs-verified multimodal). If the plan endpoint ever rejects
+image parts, repoint the vision tier at the **pay-as-you-go** model via
+`~/.config/opencode/models.json` instead of editing provider config:
 
 ```json
 { "tiers": { "vision": "zai/glm-5.3-flash" } }

@@ -3,6 +3,7 @@ description: >-
   Word document creation — create, read, edit, convert .docx with professional
   formatting, tracked changes, comments, images.
 mode: subagent
+steps: 20
 permission:
   read:
     "*": allow
@@ -10,12 +11,14 @@ permission:
   edit: allow
   glob: allow
   grep: allow
-  bash: deny
+  bash: allow
   webfetch: allow
   websearch: allow
   skill:
     docx-creation-skill: allow
     markitdown-mcp-skill: allow
+    unslop-skill: allow
+    horseshoe-paper-writing-skill: allow
 category: docs
 ---
 
@@ -66,16 +69,14 @@ Workflow for Editing:
 4. Pack: python scripts/pack.py unpacked/ output.docx
 5. Validate
 
-Critical Rules:
-- verify docx-js default page size for the installed version (historically A4) — always set page size explicitly
-- Tables: use WidthType.DXA, never PERCENTAGE
-- PageBreak must be inside Paragraph
-- Tracked changes: use proper author and timestamps
-- Comments: markers are siblings of <w:r>, never inside
+Critical Rules: `docx-creation-skill` is the source of truth for docx-js specifics
+(page size, WidthType.DXA tables, PageBreak placement, tracked changes, comment markers) —
+consult it before writing document-generation code.
 
 Delegation:
-- Bash commands (pandoc, python scripts): Request from parent agent
-- File operations: Request from parent agent
+- File operations outside the delegated output path: Request from parent agent
+
+Bash runs document tooling only (`python scripts/unpack.py` / `pack.py`, pandoc, docx-js build scripts); keep all writes inside the delegated output path, never touch `.env`.
 
 Provide complete, professional documents. Follow docx-creation skill guidelines.
 

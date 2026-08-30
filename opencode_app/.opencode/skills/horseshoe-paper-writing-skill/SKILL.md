@@ -1,10 +1,6 @@
 ---
 name: horseshoe-paper-writing-skill
-description: >-
-  Write submission-ready engineering papers via the Horseshoe Diagram Method —
-  mirror-image Introduction/Conclusion, Methods/Results bridge; journal formats,
-  reference styles, B&W diagram conventions. Triggers: horseshoe paper,
-  horseshoe diagram method, journal paper draft.
+description: "Submission-ready engineering papers via the Horseshoe Diagram Method — mirrored Intro/Conclusion, Methods/Results bridge, journal conventions. Triggers: horseshoe paper, journal paper draft."
 license: Apache-2.0
 compatibility: opencode
 category: Academic & Research Writing

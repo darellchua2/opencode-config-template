@@ -3,6 +3,7 @@ description: >-
   Test Driven Development guidance — red-green-refactor cycle across languages
   and frameworks.
 mode: subagent
+steps: 25
 permission:
   read:
     "*": allow
@@ -10,7 +11,7 @@ permission:
   edit: deny
   glob: allow
   grep: allow
-  bash: deny
+  bash: allow
   webfetch: allow
   websearch: allow
   skill:
@@ -124,8 +125,9 @@ Key differences from standard TDD:
 
 ## Delegation
 
-- Test execution: Request from parent agent
 - Code writing: Request from parent agent (read-only guidance)
+
+Bash runs the project's test suite only (`npm test`, `pytest`, `go test`, etc.) so every red/green phase of the cycle is verified with real output instead of eyeballed. Never modify source or tests — that stays with the implementing agent; never touch `.env`.
 
 Provide clear, actionable guidance. Focus on teaching TDD methodology.
 

@@ -1,10 +1,6 @@
 ---
 name: git-semantic-commits-skill
-description: >-
-  Conventional Commits format — type, scope, breaking changes, semver guidance,
-  atomic-commit granularity by layer. Triggers: commit and push, make a commit,
-  write a commit message, commit message format, semantic commit. Not for
-  brevity (git-compact-commits-skill).
+description: "Conventional Commits — type, scope, breaking changes, semver guidance, atomic-commit granularity by layer. Triggers: commit and push, make a commit, write a commit message, commit message format, semantic commit. Not for brevity (git-compact-commits-skill)."
 license: Apache-2.0
 compatibility: opencode
 category: Git/Workflow

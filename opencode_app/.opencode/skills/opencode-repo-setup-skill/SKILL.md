@@ -132,7 +132,7 @@ Per-tool routing rules live at PROJECT level, not user level — this skill appe
 State exactly:
 
 - **Enabled here**: list (e.g. `atlassian`) — takes effect on NEXT session start (opencode reads config at startup; no lazy-start mid-session)
-- **Estimated per-session cost**: atlassian ~5–6.5k tok; codegraph ~1.2k (already default-on)
+- **Estimated per-session cost**: atlassian ~5–6.5k tok; codegraph ~1.2k + zai-web-search ~0.35k (both already default-on, GIT-336)
 - **Rule blocks appended**: CodeGraph / LSP / none
 - **Revert**: delete the added `mcp.<server>` keys (or the whole file if we created it); remove appended AGENTS.md blocks
 - **Global untouched**: `~/.config/opencode/config.json` unchanged; other repos unaffected

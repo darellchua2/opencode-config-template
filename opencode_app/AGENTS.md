@@ -7,7 +7,7 @@ This file contains instructions for OpenCode running in Docker standalone mode.
 This is a **containerized OpenCode instance** running as a web endpoint. Key differences from user-space mode:
 
 - No local filesystem access beyond `/app` and mounted volumes
-- MCP servers that require local GUI apps (LM Studio, etc.) are disabled
+- MCP servers that require local GUI apps are disabled
 - API keys are injected at runtime via `docker-entrypoint.sh`
 - All agents and skills are loaded from `.opencode/` within the container
 
@@ -77,7 +77,7 @@ The following subagents have CodeGraph instructions in their `.md` files and wil
 | Subagent | Key CodeGraph Tools |
 |---|---|
 | `explorer-subagent` | `codegraph_explore`, `codegraph_context`, `codegraph_search`, `codegraph_files` |
-| `code-review-subagent` | `codegraph_impact`, `codegraph_callers`/`callees`, `codegraph_search` |
+| `code-review-subagent` | `codegraph_callers`/`callees` (diff-scope direct callers), `codegraph_search` |
 | `architecture-review-subagent` | `codegraph_callers`/`callees`, `codegraph_explore`, `codegraph_impact` |
 | `technical-design-specialist-subagent` | `codegraph_explore` (architecture exploration), `codegraph_impact` (design blast-radius validation) |
 | `testing-subagent` | `codegraph_files`, `codegraph_search` |

@@ -3,6 +3,15 @@
 **Issue:** https://github.com/darellchua2/opencode-config-template/issues/357
 **Branch:** GIT-357 (PR base: `dev` — release.yml gates main+dev)
 
+> **Post-merge note (2026-08-30):** main @ 5.9.0 superseded steps 1.1 + 1.3
+> independently: released provider `zai-custom` (same endpoint, glm-5.3 +
+> glm-5.3-flash with `attachment:true`, commit `59177de`) and native
+> `zai-coding-plan/glm-5.3-flash` vision/docs tiers (commit `b07bba8`, #352).
+> The merge adopts main's provider/tier and keeps `zai-web-search` (main's
+> name) — genuinely-new GIT-357 work retained: attachment.image overrides,
+> zai-vision-mcp (opt-in), 3 media skills, zai-media-subagent. Plan kept
+> verbatim below as execution history.
+
 **Decisions (refining issue #357's approved design to house mechanisms):**
 1. **New provider key `zai-custom-plan`** in `opencode_app/opencode.json` (openai-compatible → coding-plan endpoint, `{env:ZAI_API_KEY}`) — honors the issue's "custom, deliberately NOT models.dev defaults" declaration. Key keeps the `zai` substring so opencode's GLM `thinking:{type:"enabled"}` injection applies.
 2. **Vision tier repoints to `zai-custom-plan/glm-5.3-flash`** (replacing `zai-coding-plan/glm-5v-turbo`, an unverified model ID whose shipped entry lacks `attachment: true` — the original vision failure). Affects `image-analyzer-subagent` + `error-resolver-subagent`; flash is Z.AI's verified multimodal plan model. Other tiers (primary/reasoning/fast/docs/long-context) stay on `zai-coding-plan` — out of scope, working today.
