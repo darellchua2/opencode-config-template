@@ -67,7 +67,7 @@ param(
     [string]$EnablePack = "",
     # Skill profile (GIT-333): deploy-time primary visibility. lean (default)
     # rewrites the DEPLOYED config's permission.skill to 30 visible skills;
-    # full deploys the shipped 87-allow allowlist verbatim.
+    # full deploys the shipped 90-allow allowlist verbatim.
     [ValidateSet("lean", "full")]
     [string]$SkillProfile = "lean"
 )
@@ -929,7 +929,7 @@ USAGE:
                           config's permission.skill to 30 primary-visible skills
                           + "*": "deny" (subagents unaffected — they self-scope
                           via frontmatter allows); full deploys the shipped
-                          87-allow allowlist verbatim.
+                          90-allow allowlist verbatim.
 
  ======================================================================
                      COMMON COMBINATION EXAMPLES
@@ -1763,9 +1763,9 @@ function Set-Configuration {
             Write-Host "    - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
             Write-Host ""
             Write-Host "Configured MCP servers:" -ForegroundColor Green
-            Write-Host "    - Auto-start: codegraph, web-reader"
+            Write-Host "    - Auto-start: codegraph, web-reader, web-search-prime"
             Write-Host "    - Opt-in per-project (.opencode/opencode.json): atlassian"
-            Write-Host "    - Available but disabled (opt-in): next-devtools, markitdown, docling, chrome-devtools"
+            Write-Host "    - Available but disabled (opt-in): zai-vision-mcp, next-devtools, markitdown, docling, chrome-devtools"
             if ($script:vgDeployed) {
                 Write-Host "Secret masking: active (vibeguard)" -ForegroundColor Green
             }
@@ -2707,13 +2707,14 @@ function Show-NextSteps {
     Write-Host "  2. Start LM Studio: http://127.0.0.1:1234/v1"
     Write-Host "  3. Verify installation: opencode --version"
     Write-Host ""
-    Write-Host "Agents (36):"
+    Write-Host "Agents ($(Get-AgentCount (Join-Path $RepoDir 'opencode_app\.opencode\agents'))):"
     Write-Host "  - build (default) - Full-featured coding agent"
     Write-Host "  - plan - Planning agent (read-only)"
     Write-Host "  - explore - Codebase exploration and analysis"
     Write-Host "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
+    Write-Host "  - zai-media-subagent - Media production: image/video gen, ASR, OCR (delegated)"
     Write-Host "  - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
-    Write-Host "  - ... and $((Get-AgentCount (Join-Path $RepoDir 'opencode_app\.opencode\agents')) - 5) more agents"
+    Write-Host "  - ... and $((Get-AgentCount (Join-Path $RepoDir 'opencode_app\.opencode\agents')) - 6) more agents"
     Write-Host ""
     Write-Host "  Usage: opencode --agent <name> `"prompt`""
     Write-Host "         opencode `"prompt`" (uses build)"
@@ -2728,9 +2729,9 @@ function Show-NextSteps {
     Write-Host "  Run 'opencode --skill <name> `"prompt`"' to invoke a skill"
     Write-Host ""
      Write-Host "MCP Servers:"
-     Write-Host "  Auto-start: codegraph, web-reader"
+     Write-Host "  Auto-start: codegraph, web-reader, web-search-prime"
      Write-Host "  Opt-in per-project: atlassian"
-     Write-Host "  Opt-in global packs: next-devtools, markitdown, docling, chrome-devtools (+ autodesk pack adds 4)"
+     Write-Host "  Opt-in global packs: zai-vision-mcp, next-devtools, markitdown, docling, chrome-devtools (+ autodesk pack adds 4)"
     Write-Host ""
     Write-Host "  Auth: opencode mcp auth atlassian / opencode mcp auth github"
     Write-Host ""

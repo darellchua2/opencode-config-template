@@ -99,9 +99,9 @@ Override files (precedence highest-first; see `MIGRATION.md`):
 | `~/.config/opencode/models.json` | tier map, global (written by `--provider`) |
 | `deploy/models.default.json` | Z.AI defaults |
 
-> **Vision tier (Z.AI):** `image-analyzer-subagent` + `error-resolver-subagent` run on
-> `zai/glm-5v-turbo` (native multimodal), served by the `zai` API provider — separate from the
-> `zai-coding-plan` subscription. They see images/screenshots directly (no external vision API).
+> **Vision tier (Z.AI):** `image-analyzer-subagent` + `error-resolver-subagent` + `zai-media-subagent` run on
+> `zai-custom-plan/glm-5.3-flash` (native multimodal), served by the custom `zai-custom-plan` provider on the
+> `zai-coding-plan` subscription endpoint. They see images/screenshots directly (no external vision API).
 > Requires `opencode auth login` (Z.AI) or `ZAI_API_KEY` (auto-injected in Docker via
 > `docker-entrypoint.sh`). See `AGENTS.md` § Subagent Model Tiering.
 
@@ -326,14 +326,15 @@ nvm install 24
 
 ## MCP Servers
 
-The configuration ships 7 MCP server entries. **2 are enabled by default:**
+The configuration ships 9 MCP server entries. **3 are enabled by default:**
 
 | Server | Type | Purpose |
 |--------|------|---------|
 | `codegraph` | local (npx) | Pre-indexed code knowledge graph |
 | `zai-web-reader` | remote | Web page content extraction |
+| `zai-web-search-prime` | remote | Web search (GLM Coding Plan exclusive) |
 
-The remaining 5 are `enabled: false` and opt-in:
+The remaining 6 are `enabled: false` and opt-in:
 
 | Server | Type | Purpose |
 |--------|------|---------|
@@ -342,6 +343,7 @@ The remaining 5 are `enabled: false` and opt-in:
 | `markitdown` | local | Document-to-Markdown (local-only) |
 | `docling` | local | Layout-aware document extraction (~3-4 GB) |
 | `chrome-devtools` | local | Live Chrome automation |
+| `zai-vision-mcp` | local (npx) | Z.AI vision tools (native multimodal subagents are the default) |
 
 The 4 Autodesk servers are **not shipped in the base config** — the `autodesk` provider pack below adds their full definitions at deploy time (needs `AUTODESK_API_KEY`).
 
@@ -395,7 +397,7 @@ Every allowed skill's `description` is injected into the primary session's conte
 Key properties:
 
 - Only the **deployed** copy's `permission.skill` block is rewritten (`deploy/apply-skill-profile.mjs`); the shipped `opencode.json` is never modified — `full` is a verified no-op.
-- **Subagents are profile-immune.** All 130 skills stay on disk and every skill has either a frontmatter `permission.skill: allow` consumer agent or a lean slot — nothing is orphaned under lean.
+- **Subagents are profile-immune.** All 133 skills stay on disk and every skill has either a frontmatter `permission.skill: allow` consumer agent or a lean slot — nothing is orphaned under lean.
 - Lean-hidden skills cannot be `@`-loaded by the primary until re-exposed; re-exposing any skill is a one-line edit to `deploy/skill-profiles.json`.
 - Typo-guarded: a lean key that doesn't match a real skill directory or the shipped allowlist fails the deploy closed.
 
@@ -550,7 +552,7 @@ This repository implements **skill modularization** with 130 skills organized ac
 
 > **Registry-derived (PLAN-GIT-286):** every skill + agent now carries a `category:` frontmatter field, which `deploy/build-registry.mjs` reads to emit `deploy/registry.json` — the single source of truth consumed by the `opencode-init` project-scoped installer and (regenerable into) this category table. To refresh after editing frontmatter: `node deploy/build-registry.mjs` (CI fails on drift via `--check`).
 
-> **Migration Complete (BT-142):** The `pptx-specialist-*` stack has been migrated to chenyu's JSON-in-PPTX architecture. Final skill count is **123** (−1 `pptx-specialist-skill` decomposed, +3 chenyu skills, +2 new decomposition skills, +2 Academic & Research Writing skills added post-migration). See `PLANS/PLAN-BT-142.md` for the full plan. The legacy `pptx-specialist-skill` has been removed; all PPTX operations now route through `pptx-specialist-subagent` → `pptx-generate-slide-skill` / `pptx-generate-template-skill` / `pptx-template-modifier-skill`. Post-#283: +1 `zai-vision-analysis-skill` (Z.AI direct-API vision, free `glm-4.6v-flash`) → **125**; later **126** after `plan-automation-loop-skill` was added (Git/Workflow — `/run-plan` full-automation loop). Subsequent additions brought the total to **130**, including `zai-image-generation-skill` (Media Generation — Z.AI GLM-Image text-to-image, saves a PNG file). Post-#333: +1 `opencode-repo-setup-skill` (OpenCode Meta — per-repo MCP/project-config setup frontend) → **131**. Post-GIT-333: −1 `codegraph-setup-skill` (merged into `opencode-repo-setup-skill` §Step 4) → **130**.
+> **Migration Complete (BT-142):** The `pptx-specialist-*` stack has been migrated to chenyu's JSON-in-PPTX architecture. Final skill count is **123** (−1 `pptx-specialist-skill` decomposed, +3 chenyu skills, +2 new decomposition skills, +2 Academic & Research Writing skills added post-migration). See `PLANS/PLAN-BT-142.md` for the full plan. The legacy `pptx-specialist-skill` has been removed; all PPTX operations now route through `pptx-specialist-subagent` → `pptx-generate-slide-skill` / `pptx-generate-template-skill` / `pptx-template-modifier-skill`. Post-#283: +1 `zai-vision-analysis-skill` (Z.AI direct-API vision, free `glm-4.6v-flash`) → **125**; later **126** after `plan-automation-loop-skill` was added (Git/Workflow — `/run-plan` full-automation loop). Subsequent additions brought the total to **130**, including `zai-image-generation-skill` (Media Generation — Z.AI GLM-Image text-to-image, saves a PNG file). Post-#333: +1 `opencode-repo-setup-skill` (OpenCode Meta — per-repo MCP/project-config setup frontend) → **131**. Post-GIT-333: −1 `codegraph-setup-skill` (merged into `opencode-repo-setup-skill` §Step 4) → **130**. Post-GIT-357: +3 media skills (`zai-video-skill`, `zai-asr-skill`, `zai-ocr-skill` — Media Generation, consumer-scoped to `zai-media-subagent`) → **133**.
 
 ### Skill Categories
 
@@ -575,9 +577,9 @@ This repository implements **skill modularization** with 130 skills organized ac
 | **Security** (2) | security-audit-skill, authentication-authorization-skill | Security auditing, vulnerability scanning, and auth implementation |
 | **DevOps** (5) | docker-containerization-skill, monorepo-management-skill, database-migration-skill, logging-observability-skill, aws-iac-safety-skill | Containerization, monorepos, database migrations, observability, and IaC safety |
 | **Planning & Alignment** (4) | grilling-skill, domain-modeling-skill, grill-with-docs-skill, grill-me-skill | Relentless interview/grilling sessions and domain model (CONTEXT.md glossary + ADR) capture |
-| **Responsive & Visual Testing** (3) | wireframer-skill, playwright-responsive-audit-skill, zai-vision-analysis-skill | Low-fidelity wireframe/prototype generation, Playwright-driven responsive UI audit + fix (persistent PTY watch loop), and Z.AI direct-API image/screenshot analysis (`glm-5v-turbo` default — API fallback for `image-analyzer-subagent` when native multimodal is unavailable) |
+| **Responsive & Visual Testing** (3) | wireframer-skill, playwright-responsive-audit-skill, zai-vision-analysis-skill | Low-fidelity wireframe/prototype generation, Playwright-driven responsive UI audit + fix (persistent PTY watch loop), and Z.AI direct-API image/screenshot analysis (orphaned under the native vision tier — retained as a text-only-session fallback) |
 | **CAD & Hardware Design** (14) | cad-generation-skill, cad-viewer-skill, cad-step-parts-skill, cad-dxf-skill, cad-urdf-skill, cad-srdf-skill, cad-sdf-skill, cad-sendcutsend-skill, cad-gcode-skill, cad-bambu-labs-skill, cad-implicit-skill, autodesk-aps-skill, civil-3d-skill, open3d-skill | Parametric CAD generation (STEP/STL/3MF/GLB), CAD Viewer previews, off-the-shelf parts, DXF drawings, robot descriptions (URDF/SRDF/SDF), G-code slicing, 3D printing (Bambu Labs), SendCutSend validation, implicit CAD, Autodesk APS API integration, Civil 3D workflows, Open3D 3D data processing |
-| **Media Generation** (1) | zai-image-generation-skill | Text-to-image generation via the Z.AI GLM-Image API (`glm-image`/`cogview-4`); saves the generated PNG to a local file (OpenCode's chat-only providers cannot reach the `/images/generations` endpoint) |
+| **Media Generation** (4) | zai-image-generation-skill, zai-video-skill, zai-asr-skill, zai-ocr-skill | Z.AI PAYG media endpoints: text-to-image (GLM-Image, saves PNG), text/image-to-video (CogVideoX-3, async submit + PTY poll, saves MP4), audio transcription (GLM-ASR, wav/mp3 ≤25 MB ≤30 s), and layout-aware OCR (GLM-OCR, image/PDF) — all save artifacts to local files (OpenCode's chat-only providers cannot reach these endpoints) |
 
 > **Note**: 6 redundant skills archived to `skills/_archived/`: `nextjs-complete-setup`, `python-docstring-generator`, `nextjs-tsdoc-documentor`, `git-pr-creator`, `git-issue-plan-workflow`, `jira-ticket-plan-workflow`. Use `docstring-generator` for all language docstrings (Python PEP 257, TypeScript TSDoc, Java Javadoc, C# XML docs). Use `ticket-plan-workflow-skill` for unified GitHub/JIRA ticket planning. 
 
@@ -615,7 +617,8 @@ This repository implements **skill modularization** with 130 skills organized ac
 | **nextjs-specialist-subagent** | Next.js scaffolding + runtime MCP diagnosis + project audit | nextjs-standard-setup, nextjs-devtools-mcp, docstring-generator, nextjs-image-usage, react-hooks-antipatterns, react-render-antipatterns, amplify-nextjs-deployment | — |
 | **opencode-tooling-subagent** | Skills, agents, and rules creation + doc sync | opencode-skill-creation, opencode-agent-creation, opencode-skills-maintainer, documentation-sync-workflow | — |
 | **docx-creation-subagent** | Word document creation | docx-creation | — |
-| **image-analyzer-subagent** | Image analysis (native multimodal `zai/glm-5v-turbo`) | (built-in vision) | — |
+| **image-analyzer-subagent** | Image analysis (native multimodal `zai-custom-plan/glm-5.3-flash`) | (built-in vision) | — |
+| **zai-media-subagent** | Media production: image/video generation, audio transcription, OCR via Z.AI PAYG skills; artifacts saved to disk, file paths returned | zai-image-generation, zai-video, zai-asr, zai-ocr | — |
 | **responsive-audit-subagent** | Responsive UI audit and fix | playwright-responsive-audit-skill | `explore`, `general`, `image-analyzer-subagent` |
 | **cad-specialist-subagent** | CAD, robotics, hardware design — orchestrates 14 CAD/engineering skills | cad-generation, cad-viewer, cad-step-parts, cad-dxf, cad-urdf, cad-srdf, cad-sdf, cad-sendcutsend, cad-gcode, cad-bambu-labs, cad-implicit, autodesk-aps-skill, civil-3d-skill, open3d-skill | — |
 | **explorer-subagent** | Fast codebase exploration and analysis | (built-in search capabilities) | — |
