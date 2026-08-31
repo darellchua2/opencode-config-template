@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.11.0](https://github.com/darellchua2/opencode-config-template/compare/v5.10.0...v5.11.0) (2026-08-31)
+
+### Features
+
+* **deploy:** add voice plugin pack with whisper.cpp build prereqs ([#360](https://github.com/darellchua2/opencode-config-template/issues/360)) ([96eedf4](https://github.com/darellchua2/opencode-config-template/commit/96eedf48b0c7bdb846813dc609e95d61098bd631))
+
 ## [5.10.0](https://github.com/darellchua2/opencode-config-template/compare/v5.9.0...v5.10.0) (2026-08-30)
 
 ### Features
