@@ -62,6 +62,24 @@
 - **Summary**: tsoa response-body examples require the `@Example()`/`@Response()` TypeScript decorators; `@example` JSDoc only covers params/model props
 - **Date**: 2026-08-05
 
+### Tier→model swap blast radius (7 surfaces, plus deploy-script echoes)
+
+- **Category**: pattern
+- **File**: `patterns/tier-model-swap-blast-radius.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: Model tier swaps touch 7 surfaces — tier JSON, presets, guard arrays, agent .md (desc+body→registry regen), SKILL prose, doc tables, and hardcoded model echoes in setup scripts (setup.sh --status)
+- **Date**: 2026-08-27
+
+### permission.task delegate changes — 4 sync surfaces + delegate ceiling check
+
+- **Category**: convention
+- **File**: `conventions/task-delegate-permission-sync.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: Task-delegate allow-list changes sync 4 surfaces (frontmatter, registry regen, README row, agent-body note); delegation step wording must respect the delegate's own permission ceiling (bash:deny → parent owns diff/lint/commit)
+- **Date**: 2026-08-27
+
 ---
 
 **Storage paths:**

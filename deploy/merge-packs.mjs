@@ -13,8 +13,14 @@
 //
 // Semantics (per PLAN.md Phase 3, as revised by the opencode-tooling review):
 //   - Deep-merge: last-wins on scalars; objects merged recursively; arrays
-//     left untouched (documented limitation — no current pack needs array
-//     mutation; the `plugin` array is never touched).
+//     left untouched. Sole exception: a pack's optional `tui` key (plugin
+//     packs, e.g. pack-voice.json) is stripped from the opencode.json merge
+//     and merged into a SEPARATE tui config via --tui-config, where the
+//     `plugin` array is merged BY PLUGIN NAME (entry[0]) — idempotent re-runs
+//     replace in place, other plugins are preserved.
+//   - --tui-config missing while a pack carries a `tui` key => warning +
+//     skip (Docker build path: containers have no microphone, tui.json is
+//     host-side). Never fatal.
 //   - Empty/whitespace --packs => true no-op (exit 0, no read, no write).
 //     This is the Docker `ARG OPENCODE_PACKS=""` default path. Implemented
 //     via split(",").map(trim).filter(Boolean) so "" never becomes [""].
@@ -30,6 +36,7 @@
 //     --config <opencode.json> \
 //     --packs-dir <deploy/packs> \
 //     --packs autodesk \
+//     [--tui-config <tui.json>] \
 //     [--dry-run] [--verbose]
 //
 // Exit codes: 0 success/no-op, 1 bad args / unknown pack / parse error / IO.
@@ -44,6 +51,7 @@ const camel = (s) => s.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
 function parseArgsCamel(argv) {
   const out = {
     config: null,
+    tuiConfig: null,
     packsDir: null,
     packs: "",
     dryRun: false,
@@ -100,6 +108,21 @@ function deepMerge(dst, src) {
     }
   }
   return dst;
+}
+
+// Merge plugin arrays BY PLUGIN NAME (entry[0]). Existing same-name entry is
+// replaced in place; new entries are appended. Idempotent.
+function mergePluginArray(dstArr, srcArr) {
+  for (const entry of srcArr) {
+    const name = Array.isArray(entry) ? entry[0] : null;
+    const idx =
+      typeof name === "string"
+        ? dstArr.findIndex((e) => Array.isArray(e) && e[0] === name)
+        : -1;
+    if (idx >= 0) dstArr[idx] = entry;
+    else dstArr.push(entry);
+  }
+  return dstArr;
 }
 
 function log(...a)   { console.log(...a); }
@@ -161,8 +184,10 @@ async function main() {
     tools: config.tools || {},
   });
 
-  // load + deep-merge each requested pack in order
+  // load + deep-merge each requested pack in order. `tui` keys are plugin-pack
+  // partials — strip them so they never leak into opencode.json (handled below).
   verbose(`Merging ${requested.length} pack(s) into ${O.config}:`);
+  const merged = [];
   for (const name of requested) {
     const file = join(O.packsDir, `pack-${name}.json`);
     verbose(`  - ${name} (${file})`);
@@ -170,7 +195,47 @@ async function main() {
     if (!pack || typeof pack !== "object") {
       die(`Pack ${name} is not a JSON object: ${file}`);
     }
-    deepMerge(config, pack);
+    const { tui, ...mcpPack } = pack;
+    deepMerge(config, mcpPack);
+    merged.push({ name, tui });
+  }
+
+  // Plugin packs: merge `tui` partials into the separate tui config. The
+  // plugin array merges by name (idempotent, preserves the user's plugins).
+  // Missing --tui-config is a warning, not an error: the Docker build path
+  // has no tui.json (host-side file, no microphone in containers).
+  let tuiChanged = false;
+  const tuiPacks = merged.filter(({ tui }) => tui && typeof tui === "object");
+  if (tuiPacks.length > 0) {
+    if (!O.tuiConfig) {
+      log(
+        "warning: pack(s) carry a 'tui' key but --tui-config was not set — " +
+          "skipping plugin merge (tui.json is host-side config; not applicable in Docker)."
+      );
+    } else {
+      const tuiConfig =
+        (await readJsonMaybe(O.tuiConfig)) || {
+          $schema: "https://opencode.ai/tui.json",
+        };
+      const tuiBefore = JSON.stringify(tuiConfig);
+      for (const { name, tui } of tuiPacks) {
+        verbose(`  - ${name} tui -> ${O.tuiConfig}`);
+        const { plugin, ...tuiRest } = tui;
+        deepMerge(tuiConfig, tuiRest);
+        if (Array.isArray(plugin)) {
+          if (!Array.isArray(tuiConfig.plugin)) tuiConfig.plugin = [];
+          mergePluginArray(tuiConfig.plugin, plugin);
+        }
+      }
+      tuiChanged = JSON.stringify(tuiConfig) !== tuiBefore;
+      if (!O.dryRun) {
+        await writeFile(
+          O.tuiConfig,
+          JSON.stringify(tuiConfig, null, 2) + "\n",
+          "utf8"
+        );
+      }
+    }
   }
 
   const after = JSON.stringify({
@@ -189,6 +254,14 @@ async function main() {
       enabling.push(...Object.keys(p.mcp || {}));
     }
     log(`  servers that would be enabled: ${enabling.join(", ")}`);
+    if (tuiPacks.length > 0) {
+      const plugins = tuiPacks.flatMap(({ tui }) =>
+        (tui.plugin || []).map((p) => (Array.isArray(p) ? p[0] : p))
+      );
+      log(
+        `  plugins that would be ${O.tuiConfig ? "merged into " + O.tuiConfig : "SKIPPED (no --tui-config)"}: ${plugins.join(", ")}`
+      );
+    }
     return;
   }
 
@@ -197,6 +270,15 @@ async function main() {
   log(`Merged ${requested.length} pack(s) into ${O.config}:`);
   log(`  packs: ${requested.join(", ")}`);
   log(`  changed: ${before === after ? "nothing (already merged)" : "yes"}`);
+  if (tuiPacks.length > 0) {
+    const plugins = tuiPacks.flatMap(({ tui }) =>
+      (tui.plugin || []).map((p) => (Array.isArray(p) ? p[0] : p))
+    );
+    if (O.tuiConfig) {
+      log(`  tui plugins merged into ${O.tuiConfig}: ${plugins.join(", ")}`);
+      log(`  tui changed: ${tuiChanged ? "yes" : "no (already merged)"}`);
+    }
+  }
 }
 
 main().catch((e) => die(e.message || String(e)));

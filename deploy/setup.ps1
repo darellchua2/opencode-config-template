@@ -923,6 +923,9 @@ USAGE:
                          autodesk, markitdown, nextjs, docling, chrome-devtools
                          (comma-separated). No-op if omitted; default OFF.
                          Example: -EnablePack autodesk,markitdown
+                         Plugin pack: voice — tui.json plugin for local
+                         speech-to-text (whisper.cpp; prereq install is
+                         macOS/Linux only, skipped with a warning on Windows)
 
    SKILL PROFILE (deploy-time primary visibility):
      -SkillProfile <p>    lean (default) | full. lean rewrites the DEPLOYED
@@ -1884,8 +1887,10 @@ function Invoke-PackMerger {
     }
 
     $targetConfig = $ConfigFile
+    $targetTui = Join-Path $ConfigDir "tui.json"
     if ($DryRun) {
         $targetConfig = Join-Path $DryRunPreviewDir "opencode.json"
+        $targetTui = Join-Path $DryRunPreviewDir "tui.json"
         if (-not (Test-Path $targetConfig)) {
             Write-LogError "Dry-run preview config not found: $targetConfig"
             Write-LogError "The resolver must run first to stage the preview. Aborting pack merge."
@@ -1893,8 +1898,15 @@ function Invoke-PackMerger {
         }
     }
 
+    # Voice pack (issue #356) prereqs (whisper.cpp, sox) are macOS/Linux only —
+    # the plugin documents no Windows build. The tui.json plugin entry still
+    # merges (harmless); warn that STT prereqs need manual setup on Windows.
+    if ($EnablePack -match '(^|,)voice(,|$)') {
+        Write-LogWarn "Voice pack: whisper.cpp/sox prereq install is macOS/Linux only — set them up manually on Windows (see README, Voice plugin pack)."
+    }
+
     Write-LogInfo "Applying provider packs: $EnablePack"
-    & node $MergePacksScript --config $targetConfig --packs-dir $PacksDir --packs $EnablePack
+    & node $MergePacksScript --config $targetConfig --tui-config $targetTui --packs-dir $PacksDir --packs $EnablePack
 }
 
 # Apply the skill profile (GIT-333): rewrites ONLY the permission.skill block
