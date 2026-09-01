@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.12.0](https://github.com/darellchua2/opencode-config-template/compare/v5.11.0...v5.12.0) (2026-09-01)
+
+### Features
+
+* **deploy:** add ollama as standardized local provider ([eea2689](https://github.com/darellchua2/opencode-config-template/commit/eea26897cdf90b9327bcd070191d840ccd4a7ee6))
+
 ## [5.11.0](https://github.com/darellchua2/opencode-config-template/compare/v5.10.0...v5.11.0) (2026-08-31)
 
 ### Features
