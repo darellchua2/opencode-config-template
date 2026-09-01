@@ -910,7 +910,7 @@ USAGE:
 
   MODEL RESOLUTION (v2.0):
     -Provider <name>     Non-interactive provider preset: zai|anthropic|openai|
-                         openrouter (writes ~/.config/opencode/models.json)
+                         openrouter|local-llm|vllm|ollama (writes ~/.config/opencode/models.json)
     -ModelsOnly          Provider selection + model resolution only (no other setup)
     -Migrate             Run v1.x -> v2.0 migration + model resolution only
     -Force               Re-resolve all agents (ignore preserved hand-edits)

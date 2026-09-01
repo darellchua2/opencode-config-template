@@ -207,6 +207,22 @@
                 }
             }
         },
+        "ollama": {
+            "npm": "@ai-sdk/openai-compatible",
+            "name": "Ollama (local)",
+            "options": {
+                "baseURL": "http://localhost:11434/v1"
+            },
+            "models": {
+                "qwen3-coder:a3b": {
+                    "name": "Qwen3-Coder a3b (Ollama)",
+                    "limit": {
+                        "context": 128000,
+                        "output": 65536
+                    }
+                }
+            }
+        },
         "zai-custom": {
             "npm": "@ai-sdk/openai-compatible",
             "name": "Z.AI Coding Plan (Custom)",

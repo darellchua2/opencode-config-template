@@ -71,5 +71,16 @@
       "docs": "vllm/local/nemotron-3-nano",
       "vision": "vllm/local/nemotron-3-nano"
     }
+  },
+  "ollama": {
+    "$comment": "Same standardized @ai-sdk/openai-compatible entry as local-llm/vllm - any OpenAI-compatible server (LM Studio, llama.cpp box, etc.) can reuse this pattern by changing baseURL. Model IDs must match the serving host (ollama list).",
+    "label": "Local LLM (Ollama, qwen3-coder a3b)",
+    "primary": "ollama/qwen3-coder:a3b",
+    "tiers": {
+      "reasoning": "ollama/qwen3-coder:a3b",
+      "fast": "ollama/qwen3-coder:a3b",
+      "docs": "ollama/qwen3-coder:a3b",
+      "vision": "ollama/qwen3-coder:a3b"
+    }
   }
 }
