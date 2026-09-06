@@ -34,6 +34,7 @@
         },
         "skill": {
             "*": "deny",
+            "github-runners-setup-skill": "allow",
             "zai-vision-analysis-skill": "allow",
             "zai-image-generation-skill": "allow",
             "zai-video-skill": "allow",
