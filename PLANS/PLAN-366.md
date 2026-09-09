@@ -80,7 +80,7 @@ Phase ordering follows the map: pipeline-skill edits first (phases 1-3), then th
 
 ### Phase 4: Cross-reference (plan-automation-loop-skill)
 
-- [ ] **4.1** Amend the integration-table row for worktree-pipeline-skill (line ~509) to note: pipeline passes the explicit PLAN path (`PLANS/PLAN-${KEY}.md`) and plan review happens upstream — /run-plan never re-reviews
+- [x] **4.1** Amend the integration-table row for worktree-pipeline-skill (line ~509) to note: pipeline passes the explicit PLAN path (`PLANS/PLAN-${KEY}.md`) and plan review happens upstream — /run-plan never re-reviews
     — **Why:** keeps the bidirectional contract explicit on both sides of the boundary
     — **Done when:** the row mentions explicit path + upstream review
     — **Consumers affected:** /run-plan users reading the integration table
