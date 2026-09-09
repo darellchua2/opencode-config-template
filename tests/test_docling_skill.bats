@@ -72,16 +72,16 @@ MERGE_SCRIPT="deploy/merge-packs.mjs"
 }
 
 @test "pack_docling_grants_tool_permission" {
-  # Uses permission.tool (correct nested structure), not top-level tools
-  python3 -c "import json; p=json.load(open('$PACKS_DIR/pack-docling.json')); assert p['permission']['tool']['docling*'] is True"
+  # Uses root-level permission pattern (string enum), not nested permission.tool
+  python3 -c "import json; p=json.load(open('$PACKS_DIR/pack-docling.json')); assert p['permission']['docling*'] == 'allow'; assert 'tool' not in p.get('permission', {}); assert 'tools' not in p"
 }
 
 @test "pack_docling_deep_merge_flips_config" {
   # Verify merge-packs.mjs deep-merges pack-docling.json into a temp copy
-  # and flips both mcp.docling.enabled and permission.tool.docling*
+  # and flips both mcp.docling.enabled and the root permission docling* allow
   cp "$CONFIG" /tmp/test_docling_merge.json
   node "$MERGE_SCRIPT" --config /tmp/test_docling_merge.json --packs-dir "$PACKS_DIR" --packs docling >/dev/null 2>&1
-  python3 -c "import json; d=json.load(open('/tmp/test_docling_merge.json')); assert d['mcp']['docling']['enabled'] is True; assert d['permission']['tool']['docling*'] is True"
+  python3 -c "import json; d=json.load(open('/tmp/test_docling_merge.json')); assert d['mcp']['docling']['enabled'] is True; assert d['permission']['docling*'] == 'allow'"
   rm -f /tmp/test_docling_merge.json
 }
 

@@ -29,26 +29,31 @@
 ## Implementation Phases
 
 ### Phase 1: Fix the five pack files
-- [ ] **1.1** Rewrite `deploy/packs/pack-markitdown.json` to `{"mcp":{"markitdown":{"enabled":true}},"permission":{"markitdown*":"allow"}}`; update `$comment` to state the root-permission key (string enum, deprecated `tools` removed) and that `--enable-pack markitdown` now installs the launcher
+- [x] **1.1** Rewrite `deploy/packs/pack-markitdown.json` to `{"mcp":{"markitdown":{"enabled":true}},"permission":{"markitdown*":"allow"}}`; update `$comment` to state the root-permission key (string enum, deprecated `tools` removed) and that `--enable-pack markitdown` now installs the launcher
     — **Why:** top-level `tools` is deprecated since v1.1.1 and loses conflicts to explicit `permission`; the string value is what the schema enum (`ask|allow|deny`) requires
     — **Done when:** `node -e` asserts `p.permission["markitdown*"]==="allow"`, `p.tools===undefined`, `p.permission.tool===undefined`, `$comment` is the first key
     — **Consumers affected:** merge-packs.mjs merge output, deployed config after `--enable-pack markitdown`
-- [ ] **1.2** Same rewrite for `deploy/packs/pack-docling.json` (`permission:{"docling*":"allow"}`), replacing the inert `permission.tool: true` and its stale `$comment`; in the same commit update the pack-shape and merged-output assertions in `tests/test_docling_skill.bats` (L76 pack boolean → root string enum; L84 merged assertion → root allow)
+    — **Done:** pack rewritten with root allow + updated $comment; files: deploy/packs/pack-markitdown.json; fixes: none
+- [x] **1.2** Same rewrite for `deploy/packs/pack-docling.json` (`permission:{"docling*":"allow"}`), replacing the inert `permission.tool: true` and its stale `$comment`; in the same commit update the pack-shape and merged-output assertions in `tests/test_docling_skill.bats` (L76 pack boolean → root string enum; L84 merged assertion → root allow)
     — **Why:** #310's fix targets a key opencode never reads; boolean `true` is schema-invalid; the test certifying the bug must change in the same commit to keep CI green
     — **Done when:** node assertions pass for the pack; `tests/test_docling_skill.bats` L76/L84 pass against the new pack while L55 (source assertion) still passes untouched
     — **Consumers affected:** `--enable-pack docling` merges; CI
-- [ ] **1.3** Same rewrite for `deploy/packs/pack-chrome-devtools.json` and `deploy/packs/pack-nextjs.json` (`chrome-devtools*` / `next-devtools*` → `"allow"`), updating `$comment`s
+    — **Done:** pack rewritten; test assertions updated to root string enum; files: deploy/packs/pack-docling.json, tests/test_docling_skill.bats; fixes: fix-on-fail a1 — dropped `'tool' not in d['permission']` from the merged-output assertion (source config keeps permission.tool until Phase 2; asserting its absence mid-pipeline was wrong)
+- [x] **1.3** Same rewrite for `deploy/packs/pack-chrome-devtools.json` and `deploy/packs/pack-nextjs.json` (`chrome-devtools*` / `next-devtools*` → `"allow"`), updating `$comment`s
     — **Why:** same deprecated-key bug; prevents identical reports for those packs
     — **Done when:** node assertions pass for both packs
     — **Consumers affected:** `--enable-pack chrome-devtools|nextjs` merges
-- [ ] **1.4** Same rewrite for `deploy/packs/pack-autodesk.json` (`"autodesk-*"` entries → `"allow"` at root permission, `$comment` first)
+    — **Done:** both packs rewritten with root allows + updated $comments; files: deploy/packs/pack-chrome-devtools.json, deploy/packs/pack-nextjs.json; fixes: none
+- [x] **1.4** Same rewrite for `deploy/packs/pack-autodesk.json` (`"autodesk-*"` entries → `"allow"` at root permission, `$comment` first)
     — **Why:** review found the same `tools` block (pack-autodesk.json:36-41); without it no "no tools in any pack" gate can ever pass; additive-only — autodesk servers are pack-only (not in base config, per test_mcp_count_consistency.bats:71-79) so there is no deny to flip
     — **Done when:** node asserts all `autodesk-*` entries are root-level `"allow"`; `! grep -rq '"tools"' deploy/packs/` exits 0 across all packs
     — **Consumers affected:** `--enable-pack autodesk` merges
-- [ ] **1.5** Constraint check across all rewrites: `$comment` stays the FIRST key in every pack
+    — **Done:** tools block → root permission allows; files: deploy/packs/pack-autodesk.json; fixes: fix-on-fail a1 — escaped quotes inside $comment string (unescaped quotes broke JSON.parse)
+- [x] **1.5** Constraint check across all rewrites: `$comment` stays the FIRST key in every pack
     — **Why:** merge-packs.mjs `stripJsonComments` (L77-80) removes whole-line `$comment` entries only; `$comment` placed last leaves a trailing comma and the merge dies on parse error
     — **Done when:** node parse of every pack succeeds AND first key of each pack JSON is `$comment`
     — **Consumers affected:** merge-packs.mjs parse path
+    — **Done:** node loop over 5 packs asserts $comment-first + parse + shapes; grep -rq '"tools"' deploy/packs/ empty; files: (verification only); fixes: none
 
 ### Phase 2: Migrate the source config deny block
 - [ ] **2.1** In `opencode_app/opencode.json`, move the 7 pattern entries out of `permission.tool` (L142-150) to the `permission` root (siblings of `read`/`skill`), preserving values (`codegraph*`/`atlassian*`/`zai-web-reader*`/`zai-web-search*` allow; `markitdown*`/`docling*`/`next-devtools*` deny), delete the `tool` sub-object, and update `tests/test_docling_skill.bats` L55 (source assertion) to the root-level key in the same commit
