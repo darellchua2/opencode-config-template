@@ -38,22 +38,26 @@
 ## Implementation Phases
 
 ### Phase 1: Source config + skill removal
-- [ ] **1.1** Delete `opencode_app/.opencode/skills/zai-vision-analysis-skill/` directory
+- [x] **1.1** Delete `opencode_app/.opencode/skills/zai-vision-analysis-skill/` directory
     — **Why:** The skill is the primary removal target; every later edit removes references to it, so it must go first so stale-reference greps are meaningful.
     — **Done when:** `ls opencode_app/.opencode/skills/zai-vision-analysis-skill` fails; `git status` shows the deletion.
     — **Consumers affected:** registry.json, skill-profiles.json, README category table, agents citing it (all handled in later steps).
-- [ ] **1.2** Remove `zai-vision-mcp` MCP entry (~line 323) and the `"zai-vision-analysis-skill": "allow"` + `"zai-vision-mcp*": "allow"` permission entries from `opencode_app/opencode.json`
+    — **Done:** `git rm -r` of SKILL.md (dir now absent); files: opencode_app/.opencode/skills/zai-vision-analysis-skill/; fixes: none
+- [x] **1.2** Remove `zai-vision-mcp` MCP entry (~line 323) and the `"zai-vision-analysis-skill": "allow"` + `"zai-vision-mcp*": "allow"` permission entries from `opencode_app/opencode.json`
     — **Why:** Opt-in server with zero enabled-by-default consumers; permission entries for a removed skill/server are dead config.
     — **Done when:** `python3 -c "import json; d=json.load(open('opencode_app/opencode.json')); assert 'zai-vision-mcp' not in d['mcp']"` passes and no `zai-vision` string remains in the file.
     — **Consumers affected:** tests/test_mcp_count_consistency.bats (updated in Phase 4), README MCP count (Phase 4).
-- [ ] **1.3** Remove `"zai-vision-analysis-skill"` from `deploy/skill-profiles.json` (fix trailing comma) and regenerate `deploy/registry.json` via `node deploy/build-registry.mjs`
+    — **Done:** dropped mcp entry (now 8 servers) + 2 permission lines; files: opencode_app/opencode.json; fixes: none
+- [x] **1.3** Remove `"zai-vision-analysis-skill"` from `deploy/skill-profiles.json` (fix trailing comma) and regenerate `deploy/registry.json` via `node deploy/build-registry.mjs`
     — **Why:** Lean profile lists a now-deleted skill; registry must match disk or CI `--check` drift gate fails (AGENTS.md frontmatter contract).
     — **Done when:** `node deploy/build-registry.mjs --check` exits 0; `grep zai-vision deploy/skill-profiles.json deploy/registry.json` is empty.
     — **Consumers affected:** `npx add` installer registry, `tests/init.bats` count assertions, `tests/skill_profiles.bats` (updated in 1.4).
-- [ ] **1.4** Update `tests/skill_profiles.bats`: lean-count assertions 45→44 (assertion sites ~lines 25-28 and ~46-61) and header comments ~lines 5-7
+    — **Done:** lean tail entry removed; registry regen (agents=33, skills=144, no drift); files: deploy/skill-profiles.json, deploy/registry.json; fixes: none
+- [x] **1.4** Update `tests/skill_profiles.bats`: lean-count assertions 45→44 (assertion sites ~lines 25-28 and ~46-61) and header comments ~lines 5-7
     — **Why:** The suite hardcodes lean == 45; step 1.3 shrinks the lean array to 44, so gate 4.4 can never pass without this edit (review BLOCK finding, all three reviewers).
     — **Done when:** `grep -n "45" tests/skill_profiles.bats` returns no lean-count assertion literals; `bats tests/skill_profiles.bats` passes.
     — **Consumers affected:** CI gate only.
+    — **Done:** 4 literals → 44 (header ×2, test name, assertion, expected string); suite 6/6 green; files: tests/skill_profiles.bats; fixes: none
 
 ### Phase 2: Agent + skill prose (fallback path stays, skill citation goes)
 - [ ] **2.1** Rewrite `image-analyzer-subagent.md` §Fallback (~lines 47-55): drop "the vision MCP server isn't connected" clause and the "Run the recipe from `zai-vision-analysis-skill` (canonical, with full error handling)" sentence — present the inline bash recipe as the fallback itself

@@ -44,7 +44,6 @@
     "unslop-skill",
     "wireframer-skill",
     "worktree-pipeline-skill",
-    "zai-image-generation-skill",
-    "zai-vision-analysis-skill"
+    "zai-image-generation-skill"
   ]
 }
