@@ -20,8 +20,8 @@
 ## Acceptance Criteria
 
 - [x] `wayfinder-skill` exists, frontmatter-conformant (name=dir, description ≤50 words w/ triggers, license MIT, compatibility opencode, category Git/Workflow), adapted to opencode (no Claude-only keys, deps mapped to existing skills, house tracker guard)
-- [ ] `language-reviewer-subagent.md` ≤ ~120 lines, checklists live in `language-review-checklists-skill`
-- [ ] All 4 reviewer agents reference `reviewer-baseline-skill` instead of inline Prompt Defense/Epistemic blocks; zero duplicated baseline blocks remain in reviewer agents
+- [x] `language-reviewer-subagent.md` ≤ ~120 lines, checklists live in `language-review-checklists-skill`
+- [x] All 4 reviewer agents reference `reviewer-baseline-skill` instead of inline Prompt Defense/Epistemic blocks; zero duplicated baseline blocks remain in reviewer agents
 - [ ] `ticket-creation-skill` exists (dir+name match), contains ticket creation only (no branch/PLAN/commit/execute steps), ≤ ~320 lines
 - [ ] `worktree-pipeline-skill` self-contained PLAN authoring (adopt 5.5, BRD/SRS 5.6, template 6, atomicity 6.5, commit/push), no reference to ticket-plan-workflow-skill internals
 - [ ] `opencode.json` has `create-ticket` command; permission keys updated; valid JSON, no `//` comments
@@ -44,27 +44,32 @@
     — **Consumers affected:** all sessions
     — **Done:** added allow key; also pre-swapped ticket-plan-workflow-skill→ticket-creation-skill permission key (file: opencode_app/opencode.json); fixes: none
 
-### Phase 2: Reviewer simplification
-- [ ] **2.1** Extract language checklists → `opencode_app/.opencode/skills/language-review-checklists-skill/SKILL.md`
+### Phase 2: Reviewer simplification — DONE (verdict: VERIFIED)
+- [x] **2.1** Extract language checklists → `opencode_app/.opencode/skills/language-review-checklists-skill/SKILL.md`
     — **Why:** 430 lines of knowledge in an agent file; house pattern = knowledge in skills, agents orchestrate
     — **Done when:** skill exists with Python/TS/Go/Rust/Java checklists + grep patterns; frontmatter conformant
     — **Consumers affected:** language-reviewer-subagent, code-review-subagent
-- [ ] **2.2** Create `reviewer-baseline-skill` (Prompt Defense + Epistemic Honesty + learning-gate boilerplate)
+    — **Done:** 5 checklists + 5 framework tables + per-language consumer-coverage grep patterns moved verbatim; files: skills/language-review-checklists-skill/SKILL.md; fixes: none
+- [x] **2.2** Create `reviewer-baseline-skill` (Prompt Defense + Epistemic Honesty + learning-gate boilerplate)
     — **Why:** ~40-line identical blocks duplicated across 4 reviewers; single source removes drift
     — **Done when:** skill exists, frontmatter conformant
     — **Consumers affected:** all 4 reviewer agents
-- [ ] **2.3** Rewrite `language-reviewer-subagent.md` as thin orchestrator (~≤120 lines)
+    — **Done:** canonical 3-section baseline (defense, epistemic, 5-step learning gate) + web-lookups policy; files: skills/reviewer-baseline-skill/SKILL.md; fixes: none
+- [x] **2.3** Rewrite `language-reviewer-subagent.md` as thin orchestrator (~≤120 lines)
     — **Why:** 509-line agent overflows context and duplicates skill knowledge
     — **Done when:** detection table + severity rubric + consumer gate + delegation to the two new skills; no inline checklists
     — **Consumers affected:** code-review-subagent, worktree-pipeline Step 9
-- [ ] **2.4** Slim code-review/architecture-review/uiux-reviewer agents: replace inline baselines with one-line load of `reviewer-baseline-skill`, allow it in frontmatter permission.skill
+    — **Done:** 509→119 lines; orchestrator = detection table, severity rubric, caller gate (points at skill grep patterns), output format; fixes: removed accidentally-added `name:` frontmatter key (not in agent contract)
+- [x] **2.4** Slim code-review/architecture-review/uiux-reviewer agents: replace inline baselines with one-line load of `reviewer-baseline-skill`, allow it in frontmatter permission.skill
     — **Why:** dedupe shared boilerplate
     — **Done when:** zero duplicated Prompt Defense/Epistemic blocks in reviewer agents; permission.skill updated
     — **Consumers affected:** worktree-pipeline Steps 7/9, primary review flows
-- [ ] **2.5** Delete stale deployed per-language reviewers from `~/.config/opencode/agents/` (python/typescript/go/rust/java — machine-local, not committable)
+    — **Done:** code-review 321→256, architecture 241→212, uiux 274→210 (total 1345→797); baseline-load sections added; permission.skill allows added (code-review also gets checklists skill); fixes: two uiux edits failed on truncated oldString — redone via python line-range replacement
+- [x] **2.5** Delete stale deployed per-language reviewers from `~/.config/opencode/agents/` (python/typescript/go/rust/java — machine-local, not committable)
     — **Why:** deployed drift; consolidation shipped long ago, stale copies still spawn
     — **Done when:** 5 files gone from deployed dir; repo untouched
     — **Consumers affected:** local sessions (agent list)
+    — **Done:** rm'd all 5 deployed files; fixes: none
 
 ### Phase 3: Split ticket-creation from plan/execute
 - [ ] **3.1** `git mv skills/ticket-plan-workflow-skill skills/ticket-creation-skill` + rewrite SKILL.md (Steps 1–4 + guard + prerequisites + common issues; delete 5–9/5.5/5.6/6/6.5/7.5 + PLAN template)
