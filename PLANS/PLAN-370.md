@@ -63,10 +63,11 @@
     — **Done:** 7 entries flattened to permission root at the former tool-block position, `tool` sub-object deleted; test_docling_skill.bats L55 assertion now reads `d['permission']['docling*'] == 'deny'`; files: opencode_app/opencode.json, tests/test_docling_skill.bats; fixes: none (first try — read/skill verified byte-identical to origin/main via JSON.stringify compare rather than guessed key counts; full suite 318/318 green)
 
 ### Phase 3: merge-packs.mjs snapshot + header
-- [ ] **3.1** Add `permission: config.permission || {}` to the before/after dry-run diff snapshots (L181-185, L241-244); update header comment (L6) to describe `mcp.<server>.enabled` + root `permission` allows
+- [x] **3.1** Add `permission: config.permission || {}` to the before/after dry-run diff snapshots (L181-185, L241-244); update header comment (L6) to describe `mcp.<server>.enabled` + root `permission` allows
     — **Why:** snapshot only tracks `mcp`+`tools`; with packs now writing `permission`, the `changed:` report would falsely say "nothing (already merged)"
     — **Done when:** `node --check deploy/merge-packs.mjs` passes; dry-run merge simulation reports `changed: yes` against a config with root denies
     — **Consumers affected:** setup.sh/ps1 dry-run output, standalone CLI users, Docker build path
+    — **Done:** snapshots track `mcp`+`permission`; header comment updated to "root `permission` pattern key"; files: deploy/merge-packs.mjs; fixes: fix-on-fail a1 — used `--packs` (not `--pack`) flag and `--packs-dir` in the sim; dry-run reported changed:yes vs root-deny config, real merge flipped deny→allow
 
 ### Phase 4: Install-on-enable hook (setup.sh + setup.ps1)
 - [ ] **4.1** In `install_local_mcp_launchers` (deploy/setup.sh:2570): early-exit `python3 -m pip show markitdown-local-mcp >/dev/null 2>&1 && return 0` after the prereq checks; then in `run_pack_merger` (L3312) after the merge rc check: `if [ "$DRY_RUN" != true ] && echo "$ENABLE_PACK" | grep -qw "markitdown"; then install_local_mcp_launchers; fi`

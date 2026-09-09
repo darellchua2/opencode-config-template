@@ -3,7 +3,8 @@
 //
 // Provider-pack merger. Deep-merges one or more pack partials
 // (deploy/packs/pack-<name>.json) into a target opencode.json, flipping
-// `mcp.<server>.enabled` and `tools.<ns>*` flags ON for the requested packs.
+// `mcp.<server>.enabled` and the root `permission` pattern key
+// (`"<ns>*": "allow"`) for the requested packs.
 //
 // Companion to deploy/resolve-models.mjs. Zero external dependencies — Node
 // built-ins only (fs, path). Mirrors resolve-models.mjs conventions:
@@ -178,10 +179,10 @@ async function main() {
     die(`Could not parse config as JSON object: ${O.config}`);
   }
 
-  // snapshot for dry-run diff (only the keys packs may touch: mcp, tools)
+  // snapshot for dry-run diff (only the keys packs may touch: mcp, permission)
   const before = JSON.stringify({
     mcp: config.mcp || {},
-    tools: config.tools || {},
+    permission: config.permission || {},
   });
 
   // load + deep-merge each requested pack in order. `tui` keys are plugin-pack
@@ -240,7 +241,7 @@ async function main() {
 
   const after = JSON.stringify({
     mcp: config.mcp || {},
-    tools: config.tools || {},
+    permission: config.permission || {},
   });
 
   if (O.dryRun) {
