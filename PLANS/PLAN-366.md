@@ -87,11 +87,11 @@ Phase ordering follows the map: pipeline-skill edits first (phases 1-3), then th
 
 ### Phase 5: Registry + deploy verification
 
-- [ ] **5.1** Run `node deploy/build-registry.mjs`; confirm `registry.json` diff is limited to the description-wording change from 2.1 (no count/name changes)
+- [x] **5.1** Run `node deploy/build-registry.mjs`; confirm `registry.json` diff is limited to the description-wording change from 2.1 (no count/name changes)
     — **Why:** repo contract requires registry rebuild + commit after any frontmatter change; a description-only diff closes that obligation
     — **Done when:** command exits 0 and `git diff registry.json` shows description wording only
     — **Consumers affected:** installer registry consumers
-- [ ] **5.2** Redeploy via `./deploy/setup.sh` and diff `opencode_app/.opencode/skills/` against `~/.config/opencode/skills/` — must be clean
+- [x] **5.2** Redeploy via `./deploy/setup.sh` and diff `opencode_app/.opencode/skills/` against `~/.config/opencode/skills/` — must be clean
     — **Why:** deployed copies must track source of truth; hand-edits are forbidden
     — **Done when:** setup.sh exits 0 and diff is empty for the two touched skills
     — **Consumers affected:** all sessions using the deployed skills
