@@ -104,14 +104,16 @@
     — **Done:** merger description now `mcp` + `permission` keys with root-pattern allow flips; files: opencode_app/README.md; fixes: none
 
 ### Phase 6: Regression test, gates, E2E smoke
-- [ ] **6.1** Add `tests/test_pack_permissions.bats` (modeled on test_voice_pack.bats): explicitly enumerate the 5 MCP packs (no dir glob — voice is tui-only and legitimately has no permission key); assert pack shapes (root string-enum permission, no `tools`/`permission.tool`, `$comment` first), merge-packs simulation flipping a root deny to allow, installed-check + install-gate presence in setup.sh + rc-gated hook in setup.ps1
+- [x] **6.1** Add `tests/test_pack_permissions.bats` (modeled on test_voice_pack.bats): explicitly enumerate the 5 MCP packs (no dir glob — voice is tui-only and legitimately has no permission key); assert pack shapes (root string-enum permission, no `tools`/`permission.tool`, `$comment` first), merge-packs simulation flipping a root deny to allow, installed-check + install-gate presence in setup.sh + rc-gated hook in setup.ps1
     — **Why:** the packs had zero key-structure coverage; this class of bug shipped twice (#269, #310)
     — **Done when:** `bats tests/test_pack_permissions.bats` all green
     — **Consumers affected:** CI suite
-- [ ] **6.2** Run full gates: `bash -n deploy/setup.sh`, `node --check deploy/merge-packs.mjs`, `bats tests/`
+    — **Done:** 8 tests: pack shapes (all 5 packs: $comment-first, root permission, string "allow", wildcard patterns, no tools/permission.tool), server enable flags, merge flips root deny→allow + enabled, unrelated patterns preserved, setup.sh installed-check + dry-run-gated hook, setup.ps1 rc-gate + EnablePack regex + installer probe; files: tests/test_pack_permissions.bats; fixes: replaced fragile ps1 regex grep with fixed-string `,)markitdown(,` match
+- [x] **6.2** Run full gates: `bash -n deploy/setup.sh`, `node --check deploy/merge-packs.mjs`, `bats tests/`
     — **Why:** repo verification gates; `test_mcp_count_consistency.bats` guards against count drift (no MCP added/removed, so counts stay)
     — **Done when:** all three commands exit 0
     — **Consumers affected:** CI
+    — **Done:** bash -n OK, node --check OK, full bats 326/326 green (318 prior + 8 new); files: none; fixes: none
 - [ ] **6.3** E2E smoke: in a throwaway env (`HOME=$(mktemp -d)`) run `./deploy/setup.sh -y --enable-pack markitdown`, then assert: `markitdown-local-mcp` resolvable via the temp PATH, deployed config has `mcp.markitdown.enabled: true` + root `permission["markitdown*"]: "allow"` + no `permission.tool`, and `HOME=<temp> opencode mcp list` lists markitdown as connected/disabled per config (spawn path proven). Record output; live `convert_to_markdown` on a sample docx/pdf is verified manually in-session post-merge (requires a full opencode agent session — out of CI scope, stated in ticket AC)
     — **Why:** ticket AC #6 is the only user-visible proof the documented enable path now works end-to-end
     — **Done when:** all smoke assertions pass in the throwaway env; main checkout untouched (fetch-only policy preserved)
