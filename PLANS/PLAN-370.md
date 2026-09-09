@@ -70,18 +70,21 @@
     — **Done:** snapshots track `mcp`+`permission`; header comment updated to "root `permission` pattern key"; files: deploy/merge-packs.mjs; fixes: fix-on-fail a1 — used `--packs` (not `--pack`) flag and `--packs-dir` in the sim; dry-run reported changed:yes vs root-deny config, real merge flipped deny→allow
 
 ### Phase 4: Install-on-enable hook (setup.sh + setup.ps1)
-- [ ] **4.1** In `install_local_mcp_launchers` (deploy/setup.sh:2570): early-exit `python3 -m pip show markitdown-local-mcp >/dev/null 2>&1 && return 0` after the prereq checks; then in `run_pack_merger` (L3312) after the merge rc check: `if [ "$DRY_RUN" != true ] && echo "$ENABLE_PACK" | grep -qw "markitdown"; then install_local_mcp_launchers; fi`
+- [x] **4.1** In `install_local_mcp_launchers` (deploy/setup.sh:2570): early-exit `python3 -m pip show markitdown-local-mcp >/dev/null 2>&1 && return 0` after the prereq checks; then in `run_pack_merger` (L3312) after the merge rc check: `if [ "$DRY_RUN" != true ] && echo "$ENABLE_PACK" | grep -qw "markitdown"; then install_local_mcp_launchers; fi`
     — **Why:** the installer only ran during full-setup config copy (L2468), so `--enable-pack markitdown` never installed the binary — the reproduced root cause; docling/voice set the gating precedent (L2618/2688); the installed-check prevents a double network `--force-reinstall` when full setup already ran it at L2468 while preserving refresh-on-upgrade semantics for stale installs
     — **Done when:** `bash -n` passes; grep shows the installed-check and the gate inside `run_pack_merger`; dry-run path leaves the `$DRY_RUN` guard intact
     — **Consumers affected:** `--enable-pack markitdown` users (real deploys); Docker path (bakes its own launcher, never reaches this hook; idempotent if it did, non-fatal offline)
-- [ ] **4.2** Mirror in `deploy/setup.ps1` `Invoke-PackMerger` (after the node merge call): capture `$LASTEXITCODE` from the merge and only when it is 0, `-not $DryRun`, and `$EnablePack -match '(^|,)markitdown(,|$)'` → `Install-LocalMcpLaunchers`; add the same installed-check inside `Install-LocalMcpLaunchers` (ps1:2083)
+    — **Done:** installed-check inserted before the source-dir check (early-exit on `pip show` success); rc-gated hook added in `run_pack_merger` gated on `$DRY_RUN != true` + `grep -qw markitdown`; files: deploy/setup.sh; fixes: none (first try; hook asserts pass)
+- [x] **4.2** Mirror in `deploy/setup.ps1` `Invoke-PackMerger` (after the node merge call): capture `$LASTEXITCODE` from the merge and only when it is 0, `-not $DryRun`, and `$EnablePack -match '(^|,)markitdown(,|$)'` → `Install-LocalMcpLaunchers`; add the same installed-check inside `Install-LocalMcpLaunchers` (ps1:2083)
     — **Why:** repo sync rules require the Windows mirror; ps1's merge call has no rc check (unlike sh) so the hook must gate on `$LASTEXITCODE` for symmetry with the sh shell
     — **Done when:** grep shows the rc-gated hook in setup.ps1 following the merge call and the installed-check in `Install-LocalMcpLaunchers`
     — **Consumers affected:** Windows `-EnablePack markitdown` users
-- [ ] **4.3** Update help text in both scripts (setup.sh ~L577-578, setup.ps1 ~L921-922): replace "and tools.<ns>* flags ON" with "and sets permission `\"<ns>*\": \"allow\"`"
+    — **Done:** `$mergeRc = $LASTEXITCODE` + rc gate + `(-not $DryRun) -and ($EnablePack -match '(^|,)markitdown(,|$)')` hook calling `Install-LocalMcpLaunchers`; installed-check added via python/python3 probe; files: deploy/setup.ps1; fixes: none (first try)
+- [x] **4.3** Update help text in both scripts (setup.sh ~L577-578, setup.ps1 ~L921-922): replace "and tools.<ns>* flags ON" with "and sets permission `\"<ns>*\": \"allow\"`"
     — **Why:** help text would otherwise teach the removed key
     — **Done when:** `grep -c "tools.<ns>" deploy/setup.sh deploy/setup.ps1` returns 0 for both
     — **Consumers affected:** `--help` readers
+    — **Done:** help text + run_pack_merger function comment updated in setup.sh (L577, L3312) and setup.ps1 (L921); no stale `tools.<ns>* flags ON` remains; files: deploy/setup.sh, deploy/setup.ps1; fixes: fix-on-fail a1 — missed the run_pack_merger header comment (setup.sh L3312) carrying the same stale phrase; caught by the assert script
 
 ### Phase 5: Docs
 - [ ] **5.1** Rewrite `markitdown-mcp-skill/SKILL.md`: L14 (both-blocks phrasing), L29 (state table row), config block ~L35-64 (root `permission` example), L60 (two-flip step 2), L64 (`--help` → `opencode mcp list`), L183-190 troubleshooting (root-permission flip + behavior-change note: opt-in denies now enforce; use the pack to allow)

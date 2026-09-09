@@ -576,7 +576,8 @@ USAGE:
 
   PROVIDER PACKS (deploy-time MCP toggle):
     --enable-pack <csv>   Enable provider pack(s) — flips mcp.<server>.enabled
-                          and tools.<ns>* flags ON for the named packs. Available
+                          and sets permission "<ns>*": "allow" for the named
+                          packs. Available
                           packs: autodesk, markitdown, nextjs, docling, chrome-devtools
                           (comma-separated, e.g. --enable-pack autodesk,markitdown).
                           No-op if omitted; default state of every pack is OFF.
@@ -2571,6 +2572,13 @@ install_local_mcp_launchers() {
     echo ""
     log_info "Installing local MCP launchers..."
 
+    # Idempotency: skip the network round-trip when already installed
+    # (mirrors install_docling/install_voice best-effort style).
+    if python3 -m pip show markitdown-local-mcp >/dev/null 2>&1; then
+        log_success "markitdown-local-mcp already installed — skipping pip install"
+        return 0
+    fi
+
     # Source-of-truth launcher directory (relative to repo root = parent of deploy/)
     local launcher_dir="${SCRIPT_DIR}/../opencode_app/mcp-servers/markitdown-local-mcp"
 
@@ -3301,7 +3309,7 @@ run_resolver() {
 
 # Run the provider-pack merger (PLAN #268): deep-merges selected pack partials
 # (deploy/packs/pack-<name>.json) into the resolved config, flipping
-# mcp.<server>.enabled + tools.<ns>* flags ON for the requested packs.
+# mcp.<server>.enabled + the root permission "<ns>*": "allow" for the packs.
 #
 # B1 (critical): the target config path MUST match where run_resolver wrote its
 # output. In normal mode the resolver writes $CONFIG_FILE; in dry-run it stages
@@ -3351,6 +3359,14 @@ run_pack_merger() {
     if [ "$rc" -ne 0 ]; then
         log_error "Provider-pack merge failed (exit ${rc})"
         return 1
+    fi
+
+    # Install-on-enable: markitdown's Python launcher is pip-installed, not
+    # baked into the target config — without this the enabled server fails to
+    # spawn. Mirrors install_docling/install_voice gating. Skipped in dry-run
+    # (nothing real is deployed) and when the pack wasn't requested.
+    if [ "$DRY_RUN" != true ] && echo "$ENABLE_PACK" | grep -qw "markitdown"; then
+        install_local_mcp_launchers
     fi
     return 0
 }

@@ -919,7 +919,7 @@ USAGE:
 
   PROVIDER PACKS (deploy-time MCP toggle):
     -EnablePack <csv>    Enable provider pack(s) — flips mcp.<server>.enabled
-                         and tools.<ns>* flags ON. Available packs:
+                         and sets permission "<ns>*": "allow". Available packs:
                          autodesk, markitdown, nextjs, docling, chrome-devtools
                          (comma-separated). No-op if omitted; default OFF.
                          Example: -EnablePack autodesk,markitdown
@@ -1907,6 +1907,19 @@ function Invoke-PackMerger {
 
     Write-LogInfo "Applying provider packs: $EnablePack"
     & node $MergePacksScript --config $targetConfig --tui-config $targetTui --packs-dir $PacksDir --packs $EnablePack
+    $mergeRc = $LASTEXITCODE
+    if ($mergeRc -ne 0) {
+        Write-LogError "Provider-pack merge failed (exit $mergeRc)"
+        return
+    }
+
+    # Install-on-enable: markitdown's Python launcher is pip-installed, not
+    # baked into the target config — without this the enabled server fails to
+    # spawn. Mirrors the sh hook in Invoke-PackMerger (setup.sh). Skipped in
+    # dry-run (nothing real is deployed) and when the pack wasn't requested.
+    if ((-not $DryRun) -and ($EnablePack -match '(^|,)markitdown(,|$)')) {
+        Install-LocalMcpLaunchers
+    }
 }
 
 # Apply the skill profile (GIT-333): rewrites ONLY the permission.skill block
@@ -2082,6 +2095,18 @@ function Invoke-Migration {
 # in setup.sh.
 function Install-LocalMcpLaunchers {
     $launcherDir = Join-Path $AppDir "mcp-servers\markitdown-local-mcp"
+
+    # Idempotency: skip the network round-trip when already installed
+    # (mirrors setup.sh install_local_mcp_launchers).
+    $pythonProbe = Get-Command python -ErrorAction SilentlyContinue
+    if (-not $pythonProbe) { $pythonProbe = Get-Command python3 -ErrorAction SilentlyContinue }
+    if ($pythonProbe) {
+        & $pythonProbe.Name -m pip show markitdown-local-mcp *> $null
+        if ($LASTEXITCODE -eq 0) {
+            Write-LogSuccess "markitdown-local-mcp already installed - skipping pip install"
+            return
+        }
+    }
 
     if (-not (Test-Path $launcherDir)) {
         Write-LogWarn "markitdown-local-mcp launcher source not found at $launcherDir - skipping"
