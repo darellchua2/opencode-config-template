@@ -64,8 +64,9 @@ identify→parse→analyze→solve→verify workflow, the structured solution fo
 Screenshot analysis (native multimodal):
 - You run on `zai-coding-plan/glm-5.3-flash` and **see error screenshots directly** — no skill, no curl, no
   external vision API. Do NOT invoke `glm-4.6v-flash` (that free
-  endpoint was retired due to rate-limiting); `zai-vision-analysis-skill` (`glm-5v-turbo`,
-  different model) remains the fallback for text-only sessions.
+  endpoint was retired due to rate-limiting); for text-only sessions, the inline direct-API
+  fallback recipe in `image-analyzer-subagent` (`glm-5v-turbo`, a different model) is the
+  fallback path.
 - For an error screenshot, read the error message + stack trace verbatim and the UI/failure state
   directly, then reason over it as you would for a text-sourced error.
 
