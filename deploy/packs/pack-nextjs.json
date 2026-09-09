@@ -1,9 +1,9 @@
 {
-  "$comment": "Provider pack: Next.js devtools MCP server (runtime diagnosis for Next.js 16+ projects). Deep-merged by deploy/merge-packs.mjs when the user passes --enable-pack nextjs.",
+  "$comment": "Provider pack: Next.js devtools MCP server (runtime diagnosis for Next.js 16+ projects). Deep-merged by deploy/merge-packs.mjs when the user passes --enable-pack nextjs. Sets root-level permission {\"next-devtools*\": \"allow\"} so the deep-merge flips the source-config deny.",
   "mcp": {
     "next-devtools": { "enabled": true }
   },
-  "tools": {
-    "next-devtools*": true
+  "permission": {
+    "next-devtools*": "allow"
   }
 }

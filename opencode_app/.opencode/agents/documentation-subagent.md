@@ -59,7 +59,7 @@ Coverage Documentation:
 
 Reading Source Documents:
 - For binary document extraction (PDF/DOCX/PPTX), follow the AGENTS.md → Office Document Extraction Routing rule (markitdown → docling → image-analyzer → pdf-specialist).
-- Note: `bash: deny` in this agent's permissions does NOT block MCP tool calls — MCP tool access is session-inherited from `opencode.json` `permission.tool`, separate from bash permission.
+- Note: `bash: deny` in this agent's permissions does NOT block MCP tool calls — MCP tool access is session-inherited from `opencode.json` root-level `permission` patterns (e.g. `"markitdown*": "allow"`), separate from bash permission.
 
 Workflow:
 1. Identify the code elements needing documentation

@@ -66,8 +66,9 @@ RUN node /app/deploy/resolve-models.mjs \
         --state /tmp/.resolved-models.json \
     && rm -f /tmp/.resolved-models.json
 
-# Provider packs (#268): flip mcp.<server>.enabled + tools.<ns>* ON for the
-# named packs (comma-separated, e.g. --build-arg OPENCODE_PACKS=autodesk).
+# Provider packs (#268): flip mcp.<server>.enabled + set root permission
+# named packs (comma-separated, e.g. --build-arg OPENCODE_PACKS=autodesk);
+# the permission allow pattern is "<ns>*": "allow" at the config root.
 # Runs AFTER resolve-models so it merges into the resolved /app/opencode.json.
 # Empty OPENCODE_PACKS is a true no-op (merge-packs.mjs exits 0, writes nothing).
 RUN if [ -n "$OPENCODE_PACKS" ]; then \

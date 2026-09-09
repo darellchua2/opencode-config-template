@@ -102,7 +102,7 @@ Playwright stays the capture/screenshot engine per `uiux-review-skill` §2. When
 
 Use these to **strengthen** a finding with verified runtime scores, not to replace the Playwright capture protocol or the `image-analyzer-subagent` delegation rule.
 
-**MCP dependency:** these tools require `chrome-devtools*` set to `true` in the `tools` block of `opencode.json` (flipped on by `--enable-pack chrome-devtools`). No frontmatter `permission` change is required for this agent — its `read."mcp:*": deny` blocks only MCP *resource* reads, and `chrome-devtools-mcp` is tools-only (no resources), so access is gated solely by the global `tools` map, mirroring the `nextjs-specialist-subagent` pattern.
+**MCP dependency:** these tools require the root `permission` pattern `"chrome-devtools*": "allow"` in `opencode.json` (flipped on by `--enable-pack chrome-devtools`). No frontmatter `permission` change is required for this agent — its `read."mcp:*": deny` blocks only MCP *resource* reads, and `chrome-devtools-mcp` is tools-only (no resources), so access is gated solely by the root `permission` patterns, mirroring the `nextjs-specialist-subagent` pattern.
 
 ## Screenshot Delegation Rule (Hard Constraint)
 

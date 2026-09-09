@@ -76,7 +76,7 @@ You are a Next.js specialist. You handle **project scaffolding**, **runtime diag
 
 **Skill:** Load `nextjs-devtools-mcp-skill`.
 
-**MCP dependency:** Mode 2 requires the `next-devtools-mcp` server configured in `opencode.json` under the `mcp` key AND `next-devtools*` set to `true` in the `tools` block. A running Next.js dev server (`npm run dev`) is also required for live features.
+**MCP dependency:** Mode 2 requires the `next-devtools-mcp` server configured in `opencode.json` under the `mcp` key AND the root-level `permission` pattern `"next-devtools*": "allow"`. A running Next.js dev server (`npm run dev`) is also required for live features.
 
 **If MCP unavailable:** Fall back to file-based inspection via `glob`/`grep`/`read` and `webfetch` the Next.js docs. Note this limitation in the Return Contract.
 
