@@ -36,7 +36,7 @@
     "pr-merge-workflow-skill",
     "search-first-skill",
     "semantic-release-convention-skill",
-    "ticket-plan-workflow-skill",
+    "ticket-creation-skill",
     "version-bump-standard-skill"
   ],
   "mcps": [

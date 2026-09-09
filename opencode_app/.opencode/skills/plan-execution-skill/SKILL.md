@@ -308,7 +308,7 @@ Auto-update flow:
 ```bash
 if [ ! -f "$PLAN_FILE" ]; then
   echo "No PLAN file found for current branch: $BRANCH_NAME"
-  echo "Have you run ticket-plan-workflow-skill to create a PLAN?"
+  echo "No PLAN file? Author one via `worktree-pipeline-skill` §PLAN Authoring (or /run-worktree-pipeline)."
   exit 1
 fi
 ```
@@ -442,13 +442,13 @@ This skill integrates with:
 
 | Workflow | Integration Point |
 |-----------|------------------|
-| ticket-plan-workflow-skill | Executes plans created by ticket workflow |
+| worktree-pipeline-skill | Authors the PLANs this skill executes (§PLAN Authoring) |
 | pr-workflow-subagent | Provides final status before PR creation |
 | plan-updater | Auto-invoked for progress tracking |
 
 ## References
 
-- `ticket-plan-workflow-skill` - Creates GitHub issue and JIRA ticket PLAN files
+- `worktree-pipeline-skill` - PLAN authoring (adopt/generate/atomicity-gate) inside the ticket-to-PR pipeline; `- `ticket-creation-skill` - Creates the GitHub/JIRA tickets
 - `plan-updater` - Updates PLAN.md files with progress
 - `git-semantic-commits` - Commit message formatting
 - `testing-subagent` - Test generation and execution

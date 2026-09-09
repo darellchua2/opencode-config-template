@@ -17,9 +17,9 @@ category: Git/Workflow
 I run the **full ticket-to-merged-PR pipeline**, one ticket at a time, each in
 its own **git worktree** so the main working tree stays free. I am the
 orchestrator: heavy knowledge lives in the skills/subagents I drive
-(`ticket-plan-workflow-skill`, `plan-automation-loop-skill`,
-`pr-workflow-subagent`) — I own sequencing, worktree lifecycle, and
-re-validation.
+(`ticket-creation-skill` for new tickets, `plan-automation-loop-skill` for
+execution, `pr-workflow-subagent` for the PR) — I own sequencing, PLAN
+authoring, worktree lifecycle, and re-validation.
 
 Usage: `/run-worktree-pipeline [base-branch] <ticket-refs...>`
 
@@ -49,8 +49,9 @@ Usage: `/run-worktree-pipeline [base-branch] <ticket-refs...>`
    (`gh issue view` / JIRA). JIRA access follows the **MCP Availability
    Guard**: `atlassian_*` tools present → use them; absent → REST fallback
    via API token; headless → degrade with a clear report (same policy as
-   `ticket-plan-workflow-skill`). New work → create the ticket first (same
-   guard; GitHub issue or JIRA per ref format — tracker-agnostic).
+   `ticket-creation-skill` §MCP Availability Guard). New work → create the
+   ticket first via `ticket-creation-skill` (`/create-ticket`), then
+   continue.
 4. **Worktree**: locate the **main** checkout via
    `git worktree list --porcelain | sed -n 's/^worktree //p' | head -1`
    (NOT `$(git rev-parse --show-toplevel)` — that nests when invoked from a
@@ -60,23 +61,9 @@ Usage: `/run-worktree-pipeline [base-branch] <ticket-refs...>`
 5. **Re-validate**: cross-check the ticket description once more against the
    latest `origin/<base>` content **in the worktree**; if stale, update the
    ticket and note deltas before proceeding.
-6. **PLAN** — drive `ticket-plan-workflow-skill` with this entry contract:
-   - That skill has **no branch-creation step and never sets
-     `$BRANCH_NAME`** — it only *uses* it (its Step 7 pushes
-     `git push -u origin "$BRANCH_NAME"`). We cut `feat/<KEY>` in Step 2
-     above and export `BRANCH_NAME=feat/<KEY>` before entering.
-   - Enter at **Step 5.5** (adopt/rename existing PLAN).
-   - Run 5.5 → 5.6 (BRD/SRS draft linking) → 6 (generate) → 6.5 (atomicity
-     gate). Note: 5.5 searches `PLANS/` relative to the worktree cwd — drafts
-     must be **committed to `<base>`** to be adoptable here; uncommitted
-     main-worktree drafts are invisible by design.
-   - Then run its **Step 7 yourself**: commit + push the PLAN on
-     `feat/<KEY>`. /run-plan commits implementation phases, not the PLAN —
-     an untracked PLAN file would be lost on worktree removal.
-   - Skip its Step 8 (initial ticket progress comment — execution follows
-     immediately here; ticket updates flow through Step 5 re-validation and
-     pr-workflow), its Step 7.5 branch-workflow setup signal, and its Step 9
-     interactive prompt.
+6. **PLAN authoring** (self-contained — this skill owns it; see §PLAN
+   Authoring): adopt/generate the ticket-scoped PLAN in the worktree, run the
+   atomicity self-check, commit and push it on `feat/<KEY>`.
 7. **Plan review**: Task-delegate the PLAN file to
    `requirements-specialist-subagent` + `coverage-subagent` +
    `architecture-review-subagent`; apply findings to the PLAN; re-review only
@@ -94,11 +81,138 @@ Usage: `/run-worktree-pipeline [base-branch] <ticket-refs...>`
     (**fetch-only** — never `pull` in the user's main worktree; uncommitted
     state may conflict). Advance to the next ticket.
 
+## PLAN Authoring (Step 6 detail)
+
+All commands run **in the worktree** (`worktrees/<KEY>`), on `feat/<KEY>`.
+`$TICKET_ID` is the normalized ref (`#123` or `PROJ-123`); `$KEY` is its
+alphanumeric form (`123` or `PROJ-123`).
+
+### 6a. Adopt or rename an existing PLAN draft
+
+Before generating from scratch, check whether an existing draft should be
+adopted (avoids duplicate plans, preserves git history). Canonical filename:
+`PLANS/PLAN-GIT-<issue-number>.md` (GitHub) or `PLANS/PLAN-<TICKET_KEY>.md`
+(JIRA).
+
+1. **Search candidates in `PLANS/` only** (never repo root — a root
+   `PLAN.md` may belong to unrelated active work):
+   `ls PLANS/PLAN.md PLANS/PLAN-DRAFT-*.md PLANS/TODO-*.md 2>/dev/null`
+   Also prior-iteration canonical names (`PLANS/PLAN-GIT-*.md` etc.).
+2. **Already adopted?** Canonical name exists → skip to 6d.
+3. **Single candidate → auto-adopt** via `git mv` (preserves history):
+   `git mv "PLANS/PLAN-DRAFT-<slug>.md" "PLANS/PLAN-${KEY}.md"`.
+   Before auto-adopting a generic `PLANS/PLAN.md`, verify its `**Issue:**`
+   header matches this ticket; mismatch → non-candidate + warn.
+4. **Multiple candidates → prompt the user** which to adopt.
+5. **Non-adopted candidates → left in place with a warning** (user cleans up).
+6. **No candidate / no `PLANS/` dir** → `mkdir -p PLANS`, continue to 6b.
+
+> Note: 6a searches relative to the worktree cwd — drafts must be
+> **committed to `<base>`** to be adoptable here; uncommitted main-worktree
+> drafts are invisible by design.
+
+### 6b. BRD/SRS draft linking
+
+Document-ladder order: **BRD first, then SRS**. For each:
+
+```bash
+ls docs/brd/BRD-draft-*.md 2>/dev/null   # then docs/srs/SRS-draft-*.md
+```
+
+If drafts found, ask the user (via `question`) whether to link one:
+- Rename: `git mv docs/brd/BRD-draft-{slug}.md docs/brd/BRD-{key}.md`
+  (plain `mv` + `git add` if untracked); same for SRS.
+- Update the doc header `**PLAN**:` placeholder to `PLANS/PLAN-{key}.md`.
+- Record `BRD_PATH` / `SRS_PATH` for header injection in 6c.
+- Declined/absent → empty path (skip — backward-compatible).
+
+### 6c. Generate the PLAN
+
+Write `PLANS/PLAN-${KEY}.md` using this template:
+
+```markdown
+# PLAN: <title>
+
+**Branch**: feat/<KEY>
+**Issue**: <ticket URL>          ← + `**BRD**: <path>` / `**SRS**: <path>` lines when linked
+**Base**: <base>
+
+## Acceptance Criteria
+- [ ] <checkable criteria from the ticket>
+
+## Dependency & Consumer Map
+
+_Before writing steps, list each touched file/module and who consumes it. Use `codegraph_callers` (code) or `tofu graph` + grep (IaC)._
+
+| Node (file/module) | Depends on (must precede) | Consumers (who depends on this) | Change risk |
+|---------------------|---------------------------|---------------------------------|-------------|
+| `path/to/file`      | —                         | caller-A, module-B              | low/med/high |
+
+## Implementation Phases
+
+_Every step MUST be atomic and carry rationale. Reject any step missing a "Why"._
+
+### Canonical step format
+- [ ] **N.M** <single atomic action — verb + target + outcome>
+    — **Why:** <what this unblocks / why it must precede others>
+    — **Done when:** <objective, checkable completion signal>
+    — **Consumers affected:** <who depends on this; none if N/A>
+
+### Phase 1: <name>
+- [ ] **1.1** <atomic action> (per canonical format)
+…
+
+## Technical Notes
+<from ticket>
+
+## Dependencies
+<external dependencies / blocked-by tickets>
+
+## Risks & Mitigation
+<risks + mitigations>
+```
+
+**Step authoring rules** (enforced by 6d):
+- **Atomic**: one reversible concern per step; two concerns → split.
+- **Rationale mandatory**: every step has **Why**; a step without it is malformed.
+- **Completion signal**: objective **Done when**, never subjective "done".
+- **Consumers explicit**: blast radius visible to reviewers; "none" if isolated.
+
+### 6d. Atomicity self-check (commit gate)
+
+1. Read the PLAN back from disk.
+2. For every `- [ ] **N.M**` / `- [x] **N.M**` step, confirm the three
+   rationale lines follow it: `— **Why:**`, `— **Done when:**`,
+   `— **Consumers affected:**`.
+3. **Any step missing any field → do NOT commit.** Surface malformed steps
+   (line number + text), fix, re-check. Gate must pass with zero malformed
+   steps.
+4. Also verify: Dependency & Consumer Map section exists; phase ordering
+   matches the map's constraints.
+
+### 6e. Commit and push the PLAN
+
+```bash
+git add "PLANS/PLAN-${KEY}.md" docs/brd/ docs/srs/ 2>/dev/null
+git commit -m "docs(plan): add PLAN-${KEY}.md for ${TICKET_ID}"
+git push -u origin "feat/${KEY}"
+```
+
+`/run-plan` commits implementation phases, not the PLAN — an untracked PLAN
+file would be lost on worktree removal, which is why this step pushes it.
+
+> Skipped by design in pipeline context: initial ticket progress comment
+> (execution follows immediately; ticket updates flow through Step 5
+> re-validation and pr-workflow) and the branch-workflow setup signal
+> (pipeline runs assume an established repo; run `/create-ticket` standalone
+> if you want that signal).
+
 ## Guarantees
 
 - Sequential execution across tickets; one worktree live per ticket.
 - Every ticket re-validated against latest `origin/<base>` before execution.
 - The main working tree is never checked out on a feat branch.
+- Every PLAN passes the atomicity self-check before commit.
 - Delegation is hub-and-spoke from the primary session (build agent allows
   `task: {"*": allow}`); bash-denied delegates receive precomputed diffs.
 

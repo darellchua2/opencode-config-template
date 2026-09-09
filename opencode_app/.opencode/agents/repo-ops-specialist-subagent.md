@@ -29,7 +29,7 @@ permission:
     jira-git-integration-skill: allow
     jira-status-updater-skill: allow
     git-issue-updater-skill: allow
-    ticket-plan-workflow-skill: allow
+    ticket-creation-skill: allow
     jira-ticket-labeler-skill: allow
     changelog-python-cliff-skill: allow
     documentation-sync-workflow-skill: allow
@@ -101,14 +101,14 @@ Load these skills to apply the correct standards and conventions:
 - **jira-git-integration**: JIRA + Git workflow utilities (ticket management, branch creation)
 - **jira-status-updater**: Automate JIRA ticket status transitions after PR merge
 - **git-issue-updater**: Update issues/tickets with commit progress (user, date, file stats)
-- **ticket-plan-workflow**: Unified ticket/issue planning workflow (GitHub Issues + JIRA)
+- **ticket-creation**: Structured GitHub/JIRA ticket creation (labels, sub-issues)
 - **jira-ticket-labeler**: Classify JIRA tickets with issue types, priorities, labels
 - **changelog-python-cliff**: Generate changelogs via git-cliff with PEP 440 versioning
 - **documentation-sync-workflow**: Keep docs synchronized when adding skills/subagents
 - **documentation-consistency**: Audit documentation consistency across files
 - **plan-updater / plan-execution**: Track and execute PLAN.md phases
 
-> **JIRA skills MCP dependency:** `jira-git-integration`, `jira-status-updater`, `jira-ticket-labeler`, and the JIRA branch of `ticket-plan-workflow`/`git-issue-updater` require the `atlassian` MCP server, which is **disabled by default** (opt-in). If `atlassian_*` tools are absent from your tool list, do NOT attempt them — each of those skills carries its own MCP Availability Guard (enable via `opencode-repo-setup-skill` next session, REST fallback, or skip + report). GitHub-side operations are unaffected.
+> **JIRA skills MCP dependency:** `jira-git-integration`, `jira-status-updater`, `jira-ticket-labeler`, and the JIRA branch of `ticket-creation`/`git-issue-updater` require the `atlassian` MCP server, which is **disabled by default** (opt-in). If `atlassian_*` tools are absent from your tool list, do NOT attempt them — each of those skills carries its own MCP Availability Guard (enable via `opencode-repo-setup-skill` next session, REST fallback, or skip + report). GitHub-side operations are unaffected.
 
 ## Repository Setup Workflow
 

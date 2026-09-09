@@ -83,7 +83,7 @@ Keep walking the tree until either:
 | `grill-with-docs-skill` | Orchestrates me AND `domain-modeling-skill` to capture docs during the interview |
 | `grill-me-skill` | Orchestrates me alone (no docs capture) |
 | `domain-modeling-skill` | Paired with me by `grill-with-docs-skill` to write CONTEXT.md + ADRs inline |
-| `ticket-plan-workflow-skill` | Feeds a grilled, resolved plan into ticket/branch creation |
+| `ticket-creation-skill` / `worktree-pipeline-skill` | A grilled, resolved outcome feeds into ticket creation, then the branch+PLAN+execute pipeline |
 
 ## Example Usage
 
