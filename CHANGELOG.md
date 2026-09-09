@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.14.0](https://github.com/darellchua2/opencode-config-template/compare/v5.13.0...v5.14.0) (2026-09-09)
+
+### Features
+
+* **vision:** remove zai-vision skill, MCP entry, profile + registry references (Phase 1) ([faf878b](https://github.com/darellchua2/opencode-config-template/commit/faf878b02a99388ef4abe491ea05841defdaf078))
+
+### Bug Fixes
+
+* **vision:** correct fallback-embed claims to point at image-analyzer only ([6f01649](https://github.com/darellchua2/opencode-config-template/commit/6f01649e27431112253ac43eea4a9d86ff5b4e8c))
+
+### Documentation
+
+* **plan:** add PLAN-GIT-364.md for [#364](https://github.com/darellchua2/opencode-config-template/issues/364) ([4e74723](https://github.com/darellchua2/opencode-config-template/commit/4e74723e383ad72d990d407a8500d44630093bd3))
+* **plan:** apply GIT-364 review findings (lean-count, MCP banner, README totals, glm-4.6v-flash wording, bats bootstrap) ([18f37d1](https://github.com/darellchua2/opencode-config-template/commit/18f37d1b9d814b99bbda2c29ff68ab1cb445b2b0))
+* purge stale plans/audits/research + refresh allowlist LEARNINGS counts ([#368](https://github.com/darellchua2/opencode-config-template/issues/368)) ([b1ab520](https://github.com/darellchua2/opencode-config-template/commit/b1ab5202506b8e6b92ca70bdf1872aba90b95fc4)), closes [#365](https://github.com/darellchua2/opencode-config-template/issues/365)
+* **vision:** rewrite agent/skill prose to inline fallback, drop skill citations (Phase 2) ([c285f0a](https://github.com/darellchua2/opencode-config-template/commit/c285f0a3b896fd882f868876c1454f2133e06fd0))
+* **vision:** sync counts across docs, invert MCP test, full gate green (Phase 4) ([4444efa](https://github.com/darellchua2/opencode-config-template/commit/4444efa3a1f4ea6e39712510ada4555d9bb27783))
+
 ## [5.13.0](https://github.com/darellchua2/opencode-config-template/compare/v5.12.0...v5.13.0) (2026-09-09)
 
 ### Features

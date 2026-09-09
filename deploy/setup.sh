@@ -342,7 +342,7 @@ FORCE_RESOLVE=false      # --force (ignore preserve-edits)
 MIGRATE_ONLY=false       # --migrate (migration + resolve only)
 MIX_MODE=false           # --mix (per-category provider/model editor)
 ENABLE_PACK=""           # --enable-pack <csv> (provider packs: autodesk,markitdown,nextjs,docling,chrome-devtools)
-SKILL_PROFILE="lean"     # --skill-profile lean|full (default lean: primary sees 45 skills; full = shipped 105 verbatim)
+SKILL_PROFILE="lean"     # --skill-profile lean|full (default lean: primary sees 45 skills; full = shipped 104 verbatim)
 ENABLE_LOCAL_LLM=false   # --enable-local-llm (gemma-4-E4B via llama.cpp, requires NVIDIA GPU)
 ENABLE_VLLM=false        # --enable-vllm (vLLM Docker server, requires >12GB VRAM)
 
@@ -589,7 +589,7 @@ USAGE:
                            config's permission.skill to 45 primary-visible
                            skills + "*": "deny" (subagents unaffected — they
                            self-scope via frontmatter allows); full deploys the
-                           shipped 105-allow allowlist verbatim.
+                           shipped 104-allow allowlist verbatim.
 
   LOCAL LLM (gemma-4-E4B via llama.cpp in Docker):
     --enable-local-llm   Install local LLM inference server. Requires NVIDIA GPU,
@@ -701,7 +701,7 @@ USAGE:
     Usage: opencode --agent build "implement auth feature"
            opencode --agent explore "find all API routes"
 
-  MCP SERVERS (9):
+  MCP SERVERS (8):
     Auto-start (enabled by default):
       codegraph           Pre-indexed code knowledge graph (100% local)
       zai-web-reader      Web page content extraction (remote, needs ZAI_API_KEY)
@@ -715,7 +715,6 @@ USAGE:
       docling            Layout-aware document extraction (heavy ~3-4 GB)
       chrome-devtools    Live Chrome automation: perf traces, network/console, Lighthouse, heap snapshots
                           (privacy-hardened: telemetry + CrUX OFF; throwaway profile; enable via --enable-pack chrome-devtools)
-      zai-vision-mcp     Z.AI vision tools (native multimodal subagents are the default)
 
     Autodesk (4 servers, requires AUTODESK_API_KEY):
       not shipped in the base config — added wholesale via
@@ -2498,7 +2497,7 @@ setup_config() {
              echo "✓ Configured MCP servers:"
              echo "    Auto-start: codegraph, web-reader, web-search"
               echo "    Opt-in per-project (.opencode/opencode.json): atlassian"
-              echo "    Available but disabled (opt-in): zai-vision-mcp, next-devtools, markitdown, docling, chrome-devtools"
+              echo "    Available but disabled (opt-in): next-devtools, markitdown, docling, chrome-devtools"
               echo "    Enable a group with: ./setup.sh --enable-pack <autodesk|markitdown|nextjs|docling|chrome-devtools|voice>"
             echo ""
         else
@@ -3526,7 +3525,7 @@ deploy_plugins() {
 # Apply the skill profile (GIT-333): rewrites ONLY the permission.skill block
 # of the DEPLOYED config (never the source opencode_app/opencode.json).
 #   lean (default) -> 45 primary-visible skills + "*": "deny"
-#   full           -> verified no-op (shipped 105-allow allowlist stays verbatim)
+#   full           -> verified no-op (shipped 104-allow allowlist stays verbatim)
 # Mirrors run_pack_merger's dry-run contract (B1): in dry-run the resolver
 # stages the preview config at $DRY_RUN_PREVIEW_DIR/opencode.json — patch that.
 run_skill_profile() {
@@ -4231,7 +4230,7 @@ print_next_steps() {
      echo ""
      echo "  Auto-start: codegraph, web-reader, web-search"
       echo "  Opt-in per-project: atlassian"
-     echo "  Opt-in global packs: zai-vision-mcp, next-devtools, markitdown, docling, chrome-devtools"
+     echo "  Opt-in global packs: next-devtools, markitdown, docling, chrome-devtools"
     echo ""
     echo "  Auth: opencode mcp auth atlassian / opencode mcp auth github"
     echo ""
