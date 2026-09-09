@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.15.0](https://github.com/darellchua2/opencode-config-template/compare/v5.14.0...v5.15.0) (2026-09-09)
+
+### Features
+
+* **skills:** worktree-pipeline adaptive review, failure policy, CI gate ([#366](https://github.com/darellchua2/opencode-config-template/issues/366)) ([#369](https://github.com/darellchua2/opencode-config-template/issues/369)) ([47fcafc](https://github.com/darellchua2/opencode-config-template/commit/47fcafc473a41036fc9d23733244f843394989b6))
+
 ## [5.14.0](https://github.com/darellchua2/opencode-config-template/compare/v5.13.0...v5.14.0) (2026-09-09)
 
 ### Features
