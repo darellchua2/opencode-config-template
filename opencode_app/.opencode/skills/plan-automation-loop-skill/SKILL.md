@@ -506,7 +506,7 @@ This skill orchestrates existing capabilities — it does not reimplement them:
 | `plan-updater-skill` | Checkbox + commit mechanics (this skill inlines them per-phase + adds traceability) |
 | `verification-loop-skill` | Gate philosophy; this skill makes gates mandatory per phase |
 | `git-semantic-commits-skill` | Per-phase commit formatting |
-| `worktree-pipeline-skill` | Authors the PLAN files this skill consumes (§PLAN Authoring) |
+| `worktree-pipeline-skill` | Authors the PLAN files this skill consumes (§PLAN Authoring); pipeline passes the explicit PLAN path (`PLANS/PLAN-${KEY}.md`) and plan review happens upstream — /run-plan never re-reviews |
 
 ## Best Practices
 
