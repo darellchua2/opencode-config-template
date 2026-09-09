@@ -58,15 +58,15 @@
     — **Consumers affected:** none at runtime — comment-only edits, no assertion touched
 
 ### Phase 3: Refresh stale LEARNINGS
-- [ ] **3.1** Update `LEARNINGS/decisions/skill-permission-allowlist.md`: volatile counts 88 shipped / 30 lean → 148 skills / 46 lean (deploy/registry.json + deploy/skill-profiles.json, verified 2026-09-09); recompute/verify derived figures ("hides 44 subagent-only skills" line 5-adjacent, "43 subagent-only" line 5) against current registry; drop `PLANS/PLAN-GIT-270.md` / `PLANS/PLAN-GIT-333.md` path references
+- [x] **3.1** Update `LEARNINGS/decisions/skill-permission-allowlist.md`: volatile counts 88 shipped / 30 lean → 148 skills / 46 lean (deploy/registry.json + deploy/skill-profiles.json, verified 2026-09-09); recompute/verify derived figures ("hides 44 subagent-only skills" line 5-adjacent, "43 subagent-only" line 5) against current registry; drop `PLANS/PLAN-GIT-270.md` / `PLANS/PLAN-GIT-333.md` path references
     — **Why:** the stored numbers are factually wrong for the current repo (148/46) and internally inconsistent (44 vs 43); the mechanism decision itself still governs
     — **Done when:** file states 148/46 as current counts, derived figures are consistent with the registry, and no path refs to the two purged plans remain
     — **Consumers affected:** `_index.md` summary (3.2)
-- [ ] **3.2** Mirror the count refresh in the auto-generated `LEARNINGS/_index.md` entry title + summary for the allowlist decision (including the "hides 44" derived figure at line 35)
+- [x] **3.2** Mirror the count refresh in the auto-generated `LEARNINGS/_index.md` entry title + summary for the allowlist decision (including the "hides 44" derived figure at line 35)
     — **Why:** `_index` is the per-session autoinjected manifest; stale numbers propagate to every session until next learning write
-    — **Done when:** `rg 'shipped 88|lean profile 30|88 allows|30 allows|hides 44|43 subagent-only' LEARNINGS/decisions/ LEARNINGS/_index.md` returns zero matches
+    — **Done when:** `rg 'shipped 88|lean profile 30|88 allows|30 allows|hides 44|hides 58|PLAN-GIT-350|PLAN-GIT-270|PLAN-GIT-333' LEARNINGS/` returns zero matches — the *current* derived figure "43 subagent-only" (148−105, verified 2026-09-09) is legitimate and must remain
     — **Consumers affected:** session autoinject (read-only consumer of `_index`); durability of the manual edit across regenerations depends on the external learnings-autoinject plugin (see Risks)
-- [ ] **3.3** Reword the provenance citation in `LEARNINGS/conventions/task-delegate-permission-sync.md:43` ("PLAN-GIT-350 §1.3") to reference the deferral without the purged plan slug
+- [x] **3.3** Reword the provenance citation in `LEARNINGS/conventions/task-delegate-permission-sync.md:43` ("PLAN-GIT-350 §1.3") to reference the deferral without the purged plan slug
     — **Why:** sweep gate 4.1 requires zero purged-slug matches outside CHANGELOG; the provenance fact (deliberate deferral) is preserved
     — **Done when:** `rg 'PLAN-GIT-350' LEARNINGS/` returns zero matches
     — **Consumers affected:** none — prose-only edit inside a convention note
@@ -105,3 +105,6 @@ None — standalone docs purge.
     — **Done:** git rm four research docs; research/ = ponytail-load-fix.md only; files: the four research/*.md; fixes: none
     — **Done:** reworded line 126 to keep the conclusion, drop the deleted doc pointer; files: research/ponytail-load-fix.md; fixes: none (rg ponytail-agent-integration-audit = only PLAN self-enumeration)
     — **Done:** reworded 4 comment lines to issue-ref form (GIT-357 / #356), matching in-file precedent; files: tests/test_mcp_count_consistency.bats, tests/test_voice_pack.bats; fixes: none (rg slugs in tests/ = zero; bats 318/318 unchanged)
+    — **Done:** refreshed title/context/pattern/rationale to 148 shipped / 105 full allows / 46 lean; recomputed derived figures (43 hidden under full, 59 more under lean, 102 total); dropped both purged-plan path refs; added re-derive note; files: LEARNINGS/decisions/skill-permission-allowlist.md; fixes: none (counts computed live from registry + opencode.json before edit)
+    — **Done:** mirrored entry title + summary (hides 102, 148-46); files: LEARNINGS/_index.md; fixes: tightened the gate regex in this PLAN — original pattern flagged the legitimate current figure "43 subagent-only" (gate-spec bug, not staleness); re-run clean
+    — **Done:** reworded provenance citation to issue form (GIT-350 §1.3), matching line-42 precedent; files: LEARNINGS/conventions/task-delegate-permission-sync.md; fixes: none
