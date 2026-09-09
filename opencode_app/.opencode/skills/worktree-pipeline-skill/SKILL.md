@@ -25,6 +25,8 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
 
 ## Step 1 — Parse arguments
 
+- Leading `--`-flags are stripped before the first-token test (`--dry-run`
+  is the only flag).
 - First token is a **base-branch** iff it fails the ticket regex
   `^(#\d+|[\w.-]+/[\w.-]+#\d+|[A-Z][A-Z0-9]+-\d+)$` **and is not purely
   numeric**.
@@ -107,12 +109,16 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
 10. **PR + cleanup**: `pr-workflow-subagent` creates the PR **target
     `<base>`** (its step 2.5 docstring sweep and PLAN.md sync run as part of
     it). The Task prompt MUST instruct it to include `Closes <TICKET_ID>`
-    in the PR body (GitHub closing keyword — must predate the merge).
-    **CI gate**: `timeout 1800 gh pr checks <num> --watch` (30-minute
-    timeout); merge when green. Zero configured checks → merge directly
-    with a "no CI configured" note. JIRA tickets: pr-workflow-subagent
-    already owns the `jira-status-updater` transition — verify it happened;
-    do not perform a second one. Then `git worktree remove <root>/<KEY>`,
+    in the PR body (keep the `#` — `Closes #366`, not `Closes 366`; must
+    predate the merge).
+    **CI gate**: `timeout 1800 gh pr checks <num> --watch` (GNU coreutils;
+    macOS: `gtimeout`) — 30-minute timeout; merge when green. Zero
+    configured checks (exits non-zero with "no checks reported") → merge
+    directly with a "no CI configured" note. JIRA tickets: after merge,
+    ensure exactly one `jira-status-updater` transition to Done —
+    pr-workflow-subagent's Task ends at PR creation, so this is yours:
+    check the ticket status first, transition only if still open. Then
+    `git worktree remove <root>/<KEY>`,
     delete the remote branch, and `git fetch` in the main checkout
     (**fetch-only** — never `pull` in the user's main worktree; uncommitted
     state may conflict). Advance to the next ticket.
@@ -247,12 +253,13 @@ file would be lost on worktree removal, which is why this step pushes it.
 ## Failure Policy
 
 - **Halt triggers**: the executor's `[goal:blocked]` terminal marker
-  (Step 8), review-fix exhaustion after 2 iterations (Step 9), CI red past
-  the 30-minute timeout (Step 10), or PR creation failure.
+  (Step 8), review-fix exhaustion after 2 iterations (Step 9), CI red —
+  any concluded failing check, or still pending at the 30-minute timeout
+  (Step 10), or PR creation failure.
 - **Keep the scene**: the failed ticket's worktree + `feat/<KEY>` branch
   stay in place for inspection (Step 2's prune/resume/refuse ask handles
   clean reruns).
-- **Default = abort remaining tickets**, with a per-ticket status report.
+- **Abort remaining tickets** — no override; per-ticket status report.
 - **Return Contract semantics**: `partial` for any halt after a ticket has
   started; `failed` is reserved for pre-execution failures (invalid base
   branch, zero tickets resolved).
