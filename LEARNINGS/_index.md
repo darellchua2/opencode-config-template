@@ -26,13 +26,13 @@
 - **Summary**: Never add // comments to opencode_app/opencode.json — CI bats tests use Python json.load() which can't parse JSONC
 - **Date**: 2026-07-26
 
-### Skill permission allowlist — shipped 88, lean profile 30, deploy default lean
+### Skill permission allowlist — shipped 148, lean profile 46, deploy default lean
 
 - **Category**: decision
 - **File**: `decisions/skill-permission-allowlist.md`
 - **Confidence**: 0.9
 - **Scope**: project
-- **Summary**: Allowlist strategy hides 44 subagent-only skills from primary's available_skills, cutting ~44 descriptions per session
+- **Summary**: Allowlist strategy hides 102 skills from primary's available_skills (148 shipped − 46 lean), cutting per-session description tokens
 - **Date**: 2026-07-26
 
 ### Plugins need both plugin array + command block
