@@ -1761,7 +1761,7 @@ function Set-Configuration {
             Write-Host "Configured MCP servers:" -ForegroundColor Green
             Write-Host "    - Auto-start: codegraph, web-reader, web-search"
             Write-Host "    - Opt-in per-project (.opencode/opencode.json): atlassian"
-            Write-Host "    - Available but disabled (opt-in): zai-vision-mcp, next-devtools, markitdown, docling, chrome-devtools"
+            Write-Host "    - Available but disabled (opt-in): next-devtools, markitdown, docling, chrome-devtools"
             if ($script:vgDeployed) {
                 Write-Host "Secret masking: active (vibeguard)" -ForegroundColor Green
             }
@@ -2735,7 +2735,7 @@ function Show-NextSteps {
      Write-Host "MCP Servers:"
      Write-Host "  Auto-start: codegraph, web-reader, web-search"
      Write-Host "  Opt-in per-project: atlassian"
-     Write-Host "  Opt-in global packs: zai-vision-mcp, next-devtools, markitdown, docling, chrome-devtools (+ autodesk pack adds 4)"
+     Write-Host "  Opt-in global packs: next-devtools, markitdown, docling, chrome-devtools (+ autodesk pack adds 4)"
     Write-Host ""
     Write-Host "  Auth: opencode mcp auth atlassian / opencode mcp auth github"
     Write-Host ""

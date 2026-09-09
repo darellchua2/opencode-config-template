@@ -701,7 +701,7 @@ USAGE:
     Usage: opencode --agent build "implement auth feature"
            opencode --agent explore "find all API routes"
 
-  MCP SERVERS (9):
+  MCP SERVERS (8):
     Auto-start (enabled by default):
       codegraph           Pre-indexed code knowledge graph (100% local)
       zai-web-reader      Web page content extraction (remote, needs ZAI_API_KEY)
@@ -715,7 +715,6 @@ USAGE:
       docling            Layout-aware document extraction (heavy ~3-4 GB)
       chrome-devtools    Live Chrome automation: perf traces, network/console, Lighthouse, heap snapshots
                           (privacy-hardened: telemetry + CrUX OFF; throwaway profile; enable via --enable-pack chrome-devtools)
-      zai-vision-mcp     Z.AI vision tools (native multimodal subagents are the default)
 
     Autodesk (4 servers, requires AUTODESK_API_KEY):
       not shipped in the base config — added wholesale via
@@ -2498,7 +2497,7 @@ setup_config() {
              echo "✓ Configured MCP servers:"
              echo "    Auto-start: codegraph, web-reader, web-search"
               echo "    Opt-in per-project (.opencode/opencode.json): atlassian"
-              echo "    Available but disabled (opt-in): zai-vision-mcp, next-devtools, markitdown, docling, chrome-devtools"
+              echo "    Available but disabled (opt-in): next-devtools, markitdown, docling, chrome-devtools"
               echo "    Enable a group with: ./setup.sh --enable-pack <autodesk|markitdown|nextjs|docling|chrome-devtools|voice>"
             echo ""
         else
@@ -4231,7 +4230,7 @@ print_next_steps() {
      echo ""
      echo "  Auto-start: codegraph, web-reader, web-search"
       echo "  Opt-in per-project: atlassian"
-     echo "  Opt-in global packs: zai-vision-mcp, next-devtools, markitdown, docling, chrome-devtools"
+     echo "  Opt-in global packs: next-devtools, markitdown, docling, chrome-devtools"
     echo ""
     echo "  Auth: opencode mcp auth atlassian / opencode mcp auth github"
     echo ""

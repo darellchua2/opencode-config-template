@@ -82,18 +82,21 @@
     — **Done:** clause replaced with inline-recipe phrasing; files: opencode_app/.opencode/skills/opencode-agent-creation-skill/SKILL.md; fixes: none
 
 ### Phase 3: Deploy-script + tier-registry prose
-- [ ] **3.1** Remove `zai-vision-mcp` from the three `deploy/setup.sh` listings (help text ~718, opt-in list ~2501, opt-in global packs ~4234) and decrement the `MCP SERVERS (9):` banner at ~line 704 to `(8)`
+- [x] **3.1** Remove `zai-vision-mcp` from the three `deploy/setup.sh` listings (help text ~718, opt-in list ~2501, opt-in global packs ~4234) and decrement the `MCP SERVERS (9):` banner at ~line 704 to `(8)`
     — **Why:** Help/status text advertising a removed server misleads users; the banner literal is asserted by `mcp_count_opencode_json_is_consistent_across_docs` against the opencode.json mcp length (review BLOCK finding).
     — **Done when:** `grep -n "zai-vision" deploy/setup.sh` is empty (line ~575/3390/3713 "vision tier" hits are unrelated tier prose — retain); `grep -oE 'MCP SERVERS \([0-9]+\)' deploy/setup.sh` shows 8.
     — **Consumers affected:** `tests/test_mcp_count_consistency.bats`; users reading `--help`/`--status`.
-- [ ] **3.2** Remove `zai-vision-mcp` from the two `deploy/setup.ps1` listings (~lines 1764, 2738)
+    — **Done:** 4 sites edited (banner 9→8, help line deleted, 2 list strings trimmed); `MCP SERVERS (8)` verified, `bash -n` OK, live `--help` output clean; files: deploy/setup.sh; fixes: none
+- [x] **3.2** Remove `zai-vision-mcp` from the two `deploy/setup.ps1` listings (~lines 1764, 2738)
     — **Why:** Windows mirror of 3.1 — the two scripts must not drift.
     — **Done when:** `grep -n "zai-vision" deploy/setup.ps1` is empty.
     — **Consumers affected:** Windows users only.
-- [ ] **3.3** Update `$comment` prose in `deploy/agent-tiers.json` (#294 note: "zai-vision-analysis-skill remains the direct-API fallback" → "agents embed an inline direct-API fallback recipe (glm-5v-turbo via the pay-as-you-go `zai` path)") and `deploy/provider-models.json` (glm-4.6v-flash NOTE: after GIT-364 no shipped path consumes it — the legacy `zai-vision-analysis-skill` consumer is removed and the agents' inline fallback uses `glm-5v-turbo`, so glm-4.6v-flash is unreachable from shipped config; keep it listed as intentionally absent from `zai`)
+    — **Done:** both list strings trimmed; files: deploy/setup.ps1; fixes: none
+- [x] **3.3** Update `$comment` prose in `deploy/agent-tiers.json` (#294 note: "zai-vision-analysis-skill remains the direct-API fallback" → "agents embed an inline direct-API fallback recipe (glm-5v-turbo via the pay-as-you-go `zai` path)") and `deploy/provider-models.json` (glm-4.6v-flash NOTE: after GIT-364 no shipped path consumes it — the legacy `zai-vision-analysis-skill` consumer is removed and the agents' inline fallback uses `glm-5v-turbo`, so glm-4.6v-flash is unreachable from shipped config; keep it listed as intentionally absent from `zai`)
     — **Why:** `$comment` fields document guard behavior; stale prose claims a deleted skill is the fallback path, and the naive replacement would falsely claim the inline recipe reaches glm-4.6v-flash (review finding — the recipe calls glm-5v-turbo).
     — **Done when:** `grep -n "zai-vision-analysis" deploy/agent-tiers.json deploy/provider-models.json` is empty; both files still `python3 -m json.tool` cleanly.
     — **Consumers affected:** resolve-models.mjs (JSON-only consumer — unaffected); documentation readers.
+    — **Done:** both $comments rewritten per plan wording; JSON valid; fixes: 1 (self-caught: first provider-models draft re-cited the skill name, violating own done-when — rephrased to "legacy direct-API consumer skill")
 
 ### Phase 4: Docs + tests + verification gate
 - [ ] **4.1** Update `README.md`: MCP count line ~330 "ships 9 MCP server entries" → 8; delete MCP table row ~347 (`zai-vision-mcp`); rewrite glm-5v-turbo note ~106 to describe the agents' inline fallback (no skill name); category table ~590 "Responsive & Visual Testing (3)" → (2), drop the skill column entry and its description clause. Then sweep hand-maintained numeric count claims (BT-157 marker class) touched by the removal: "145 skills"-class totals in README.md (~lines 27, 243, 397, 400, 409, 560 — verify live), `opencode_app/README.md` ~line 26, and numeric count echoes in `deploy/setup.sh` (~345 lean-45/full-105 comment, ~589, ~592, ~3528, ~3529) + `deploy/setup.ps1` (~70, ~932) — decrement by one where the count includes the deleted skill (verify live totals before editing; 105 is already off-by-one pre-existing per review)
