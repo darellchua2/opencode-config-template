@@ -168,7 +168,7 @@
             "agent": "build"
         },
         "run-worktree-pipeline": {
-            "description": "Tracker-ticket-to-merged-PR pipeline via git worktrees \u2014 sync, plan, 3-subagent review, /run-plan, code review, PR merge. Usage: /run-worktree-pipeline [base-branch] <ticket-refs...>",
+            "description": "Tracker-ticket-to-merged-PR pipeline via git worktrees \u2014 sync, plan, adaptive review, /run-plan, code review, PR merge. Usage: /run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>",
             "template": "Load the skill `worktree-pipeline-skill` and run it with the arguments: $ARGUMENTS",
             "agent": "build"
         }
