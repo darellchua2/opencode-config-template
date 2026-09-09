@@ -40,19 +40,19 @@
     — **Done:** removed the six plan files via git rm; `git ls-files PLANS/` = `.gitignore .gitkeep PLAN-GIT-365.md` exactly; files: the six PLANS/*.md; fixes: none (gate first-try: registry OK 33/148 no-drift, bats 318/318 — after initializing the bats-core submodule in this worktree)
 
 ### Phase 2: Purge point-in-time audits + superseded research
-- [ ] **2.1** `git rm docs/audits/skill-yaml-compliance-audit.md`
+- [x] **2.1** `git rm docs/audits/skill-yaml-compliance-audit.md`
     — **Why:** point-in-time compliance audit against long-purged PLAN-GIT-254; referenced by zero tracked files
     — **Done when:** file gone; the dir held exactly this one file so `docs/audits/` disappears; `docs/prd/` persists
     — **Consumers affected:** none (grep-verified: `skill-yaml-compliance` and `docs/audits` appear in no other tracked file)
-- [ ] **2.2** `git rm` four research files: `research/mcp-11811-implementation-audit.md`, `research/research-opencode-11811-stateless-mcp.md`, `research/ponytail-agent-integration-audit.md`, `research/research-zai-glm-5v-turbo-opencode-access.md`
+- [x] **2.2** `git rm` four research files: `research/mcp-11811-implementation-audit.md`, `research/research-opencode-11811-stateless-mcp.md`, `research/ponytail-agent-integration-audit.md`, `research/research-zai-glm-5v-turbo-opencode-access.md`
     — **Why:** upstream-opencode investigation notes and a superseded prior audit, referenced by name nowhere; the glm-5v-turbo vision rationale is already shipped in `zai-vision-analysis-skill` + root `AGENTS.md` (user-approved deletion)
     — **Done when:** `research/` contains exactly `ponytail-load-fix.md`
     — **Consumers affected:** `research/ponytail-load-fix.md:126` cites one of them (fixed in 2.3); `LEARNINGS/patterns/tier-model-swap-blast-radius.md` exemption note says "research/" directory-level — dir persists, note stays valid
-- [ ] **2.3** Edit `research/ponytail-load-fix.md` (~line 126) to drop the dangling pointer to `research/ponytail-agent-integration-audit.md`
+- [x] **2.3** Edit `research/ponytail-load-fix.md` (~line 126) to drop the dangling pointer to `research/ponytail-agent-integration-audit.md`
     — **Why:** the cited file is deleted in 2.2; the one live research doc must stay self-consistent (3 shipped plugin files cite it)
     — **Done when:** `rg ponytail-agent-integration-audit` over tracked files returns zero matches
     — **Consumers affected:** `ponytail-scoped.ts`, `learnings-autoinject.ts/.README.md` cite `ponytail-load-fix.md` itself — prose-only edit, citation intact
-- [ ] **2.4** Reword purged-plan citations in bats comments: `tests/test_mcp_count_consistency.bats` lines 21, 59, 83 (PLAN-GIT-357) and `tests/test_voice_pack.bats` line 3 (PLAN-356)
+- [x] **2.4** Reword purged-plan citations in bats comments: `tests/test_mcp_count_consistency.bats` lines 21, 59, 83 (PLAN-GIT-357) and `tests/test_voice_pack.bats` line 3 (PLAN-356)
     — **Why:** sweep gate 4.1 and the ticket AC require zero slug matches outside CHANGELOG; these are comment-only lines whose informational content (opt-in shipping, test subject) is preserved without the stale plan ids
     — **Done when:** `rg 'PLAN-GIT-357|PLAN-356' tests/` returns zero matches; `bats tests/` still green (behavior unchanged)
     — **Consumers affected:** none at runtime — comment-only edits, no assertion touched
@@ -101,3 +101,7 @@ None — standalone docs purge.
 - **A live namesake survives a filename-level check** → mitigated by identifier-level sweep (4.1), per repo learning.
 - **Stale-count edit introduces new wrong numbers** → counts verified against `deploy/registry.json` + `deploy/skill-profiles.json` immediately before the edit; derived figures recomputed in 3.1.
 - **`_index.md` manual edit may be overwritten by a future auto-regeneration** → `deploy/setup.sh` only templates the file when missing; whether regeneration derives summaries from the refreshed 3.1 content is decided by the external learnings-autoinject plugin — accepted residual risk, flagged on the PR.
+    — **Done:** git rm audit doc; docs/ now holds only prd/; files: docs/audits/skill-yaml-compliance-audit.md; fixes: none (zero tracked refs verified)
+    — **Done:** git rm four research docs; research/ = ponytail-load-fix.md only; files: the four research/*.md; fixes: none
+    — **Done:** reworded line 126 to keep the conclusion, drop the deleted doc pointer; files: research/ponytail-load-fix.md; fixes: none (rg ponytail-agent-integration-audit = only PLAN self-enumeration)
+    — **Done:** reworded 4 comment lines to issue-ref form (GIT-357 / #356), matching in-file precedent; files: tests/test_mcp_count_consistency.bats, tests/test_voice_pack.bats; fixes: none (rg slugs in tests/ = zero; bats 318/318 unchanged)
