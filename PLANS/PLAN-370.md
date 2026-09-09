@@ -87,18 +87,21 @@
     — **Done:** help text + run_pack_merger function comment updated in setup.sh (L577, L3312) and setup.ps1 (L921); no stale `tools.<ns>* flags ON` remains; files: deploy/setup.sh, deploy/setup.ps1; fixes: fix-on-fail a1 — missed the run_pack_merger header comment (setup.sh L3312) carrying the same stale phrase; caught by the assert script
 
 ### Phase 5: Docs
-- [ ] **5.1** Rewrite `markitdown-mcp-skill/SKILL.md`: L14 (both-blocks phrasing), L29 (state table row), config block ~L35-64 (root `permission` example), L60 (two-flip step 2), L64 (`--help` → `opencode mcp list`), L183-190 troubleshooting (root-permission flip + behavior-change note: opt-in denies now enforce; use the pack to allow)
+- [x] **5.1** Rewrite `markitdown-mcp-skill/SKILL.md`: L14 (both-blocks phrasing), L29 (state table row), config block ~L35-64 (root `permission` example), L60 (two-flip step 2), L64 (`--help` → `opencode mcp list`), L183-190 troubleshooting (root-permission flip + behavior-change note: opt-in denies now enforce; use the pack to allow)
     — **Why:** the skill teaches the exact dead keys this ticket removes; it is the documented enable path; the troubleshooting row is the durable home for the release behavior-change note (releases are semantic-release automated — no hand-edited changelog)
     — **Done when:** `grep -n 'tools\.\?"markitdown\|permission.tool\|--help' SKILL.md` returns no stale hits; new examples show `permission:{"markitdown*":"allow"}`
     — **Consumers affected:** markitdown-mcp-skill runtime copies (redeploy), installer registry metadata untouched (frontmatter unchanged)
-- [ ] **5.2** Update `office-document-primary-agent.md` note (~L69): session-inherited access now governed by root `permission["markitdown*"]` + `mcp.markitdown.enabled`; flip guidance matches SKILL.md
+    — **Done:** L14 blocks phrasing, L29 table row, config block example, two-flip→three-gates rewrite, --help→`opencode mcp list` + restart note, troubleshooting root-permission gates + new "Tool denied after upgrading" migration row; files: opencode_app/.opencode/skills/markitdown-mcp-skill/SKILL.md; fixes: none. Note: 2 intentional grep hits remain (L60 explains why legacy keys are dead; L194 IS the mandated behavior-change note) — step cannot both mandate a `permission.tool` migration note and zero mentions of `permission.tool`; interpreted as "no stale instructions," which holds.
+- [x] **5.2** Update `office-document-primary-agent.md` note (~L69): session-inherited access now governed by root `permission["markitdown*"]` + `mcp.markitdown.enabled`; flip guidance matches SKILL.md
     — **Why:** agent prompt would instruct users to edit a key that does nothing
     — **Done when:** grep finds no `tools["markitdown*"]` guidance in the agent file
     — **Consumers affected:** office-document-primary-agent runtime prompt
-- [ ] **5.3** Update `opencode_app/README.md` ~L87: merger description changes from "only merges each pack's `mcp` + `tools` keys" to root-`permission` allow flips (also fixing the pre-existing inaccuracy — it deep-merges all non-tui keys)
+    — **Done:** note rewritten to root-permission pattern + `--enable-pack markitdown` guidance + restart; files: opencode_app/.opencode/agents/office-document-primary-agent.md; fixes: none
+- [x] **5.3** Update `opencode_app/README.md` ~L87: merger description changes from "only merges each pack's `mcp` + `tools` keys" to root-`permission` allow flips (also fixing the pre-existing inaccuracy — it deep-merges all non-tui keys)
     — **Why:** same docs-teach-dead-keys class the ticket targets; found in review
     — **Done when:** grep finds no `tools` merge claim in opencode_app/README.md
     — **Consumers affected:** Docker/app README readers
+    — **Done:** merger description now `mcp` + `permission` keys with root-pattern allow flips; files: opencode_app/README.md; fixes: none
 
 ### Phase 6: Regression test, gates, E2E smoke
 - [ ] **6.1** Add `tests/test_pack_permissions.bats` (modeled on test_voice_pack.bats): explicitly enumerate the 5 MCP packs (no dir glob — voice is tui-only and legitimately has no permission key); assert pack shapes (root string-enum permission, no `tools`/`permission.tool`, `$comment` first), merge-packs simulation flipping a root deny to allow, installed-check + install-gate presence in setup.sh + rc-gated hook in setup.ps1

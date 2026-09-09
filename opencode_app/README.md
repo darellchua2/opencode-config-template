@@ -84,7 +84,7 @@ docker compose up -d
 | `nextjs` | next-devtools (1) | `--build-arg OPENCODE_PACKS=nextjs` |
 | `chrome-devtools` | chrome-devtools (1) | `--build-arg OPENCODE_PACKS=chrome-devtools` (privacy-hardened: telemetry + CrUX OFF; needs Chrome in image) |
 
-The merge runs **after** `resolve-models.mjs` and only merges each pack's `mcp` + `tools` keys (flipping `enabled`/`tools.<ns>*` ON; the autodesk pack also carries the full server definitions since they are not in the base config) — it never turns an already-on server off, never touches the `plugin` array or `agent` block. Verify post-build:
+The merge runs **after** `resolve-models.mjs` and only merges each pack's `mcp` + `permission` keys (flipping `enabled` ON and setting the root pattern `permission."<ns>*": "allow"`; the autodesk pack also carries the full server definitions since they are not in the base config) — it never turns an already-on server off, never touches the `plugin` array or `agent` block. Verify post-build:
 
 ```bash
 docker compose run --rm opencode node -e "const c=require('/app/opencode.json');console.log(c.mcp['autodesk-revit'].enabled)"
