@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.16.0](https://github.com/darellchua2/opencode-config-template/compare/v5.15.0...v5.16.0) (2026-09-09)
+
+### Features
+
+* **deploy:** install markitdown launcher on --enable-pack (Phase 4) ([2825546](https://github.com/darellchua2/opencode-config-template/commit/28255468aa28a67cb1920a09e135467a81a847f7))
+
+### Bug Fixes
+
+* **config:** migrate source permission.tool denies to permission root (Phase 2) ([c8b8e44](https://github.com/darellchua2/opencode-config-template/commit/c8b8e44f9c672e7589eb07a410bda3682faa56c3))
+* **deploy:** add pep668 fallback for launcher install (Phase 6.3) ([f7b2bad](https://github.com/darellchua2/opencode-config-template/commit/f7b2bada86741bbbed6867c7df2371c0b218ad13))
+* **deploy:** address code-review findings — ps1 rc clobber, doc residue (Step 9) ([6c9c3fb](https://github.com/darellchua2/opencode-config-template/commit/6c9c3fb1fe61ca1977a419c392b40902aa38aefe))
+* **deploy:** migrate all MCP packs to root permission allow keys (Phase 1) ([1d1106a](https://github.com/darellchua2/opencode-config-template/commit/1d1106a2f11b578168b9603837bb6d5f720e7e04))
+* **deploy:** review iteration 2 — tail-after-rm, MIGRATION residue, guard scope ([134d9a0](https://github.com/darellchua2/opencode-config-template/commit/134d9a0c9cbcb53897957256233ba4244fda386f))
+* **deploy:** track permission key in merge-packs dry-run snapshot (Phase 3) ([f8432cf](https://github.com/darellchua2/opencode-config-template/commit/f8432cf03c7b74c4f3be867a13a9a0176689bdc2))
+
+### Documentation
+
+* **plan:** add PLAN-370.md for [#370](https://github.com/darellchua2/opencode-config-template/issues/370) ([e410185](https://github.com/darellchua2/opencode-config-template/commit/e410185a779f7ad57c521bfceae656616b52aefa))
+* **plan:** address review findings in PLAN-370 ([ab66c04](https://github.com/darellchua2/opencode-config-template/commit/ab66c0447ee588f91b70e6394a391469e5b7800f))
+* **skills:** correct enable-path docs to root permission patterns (Phase 5) ([d1821ce](https://github.com/darellchua2/opencode-config-template/commit/d1821ce78b07f2488fc85afa9fbf5af196995b1a))
+
 ## [5.15.0](https://github.com/darellchua2/opencode-config-template/compare/v5.14.0...v5.15.0) (2026-09-09)
 
 ### Features
