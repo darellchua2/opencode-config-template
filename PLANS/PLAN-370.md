@@ -103,6 +103,18 @@
     — **Consumers affected:** Docker/app README readers
     — **Done:** merger description now `mcp` + `permission` keys with root-pattern allow flips; files: opencode_app/README.md; fixes: none
 
+### Iteration 2 (re-review findings, commit pending)
+- [x] **9.4** setup.sh: drop duplicate `rm -f "$pip_err"` that ran before `tail -n 3` (tail read an unlinked file → bogus offline error)
+    — **Why:** iteration-1 diagnostics fix was self-defeating on setup.sh; the warn never carried pip stderr
+    — **Done when:** else-branch order is warn → tail → rm; tail prints real pip output when file exists
+    — **Consumers affected:** offline-deploy diagnostics (setup.sh only; ps1 was already correct)
+    — **Done:** duplicate rm removed; files: deploy/setup.sh; fixes: n/a (this is the fix)
+- [x] **9.5** MIGRATION.md:218 dead-key residue + guard scope: rewrite `tools.*` phrasing to root-permission allow; widen `no_doc_teaches_dead_permission_keys` to repo-root docs + Dockerfile (two explicit greps), add backtick-`tools.*` variant, fix assertion to stripped-hits check (append newline made `$hits` never empty)
+    — **Why:** live dead-key instruction survived outside the guard's sweep; guard could never catch its own class
+    — **Done when:** MIGRATION.md teaches root permission; guard green at 329/329 with widened scope
+    — **Consumers affected:** migration-doc readers; CI suite
+    — **Done:** MIGRATION.md rewritten; guard paths/pattern/pattern-assertion fixed (incl. `\`tools\.\*\`` backtick form — bare `tools\.\*` false-positived on CAD prose `tools.**`); files: MIGRATION.md, tests/test_pack_permissions.bats; fixes: 2 (newline-never-empty assertion; backtick constrain)
+
 ### Phase 6: Regression test, gates, E2E smoke
 - [x] **6.1** Add `tests/test_pack_permissions.bats` (modeled on test_voice_pack.bats): explicitly enumerate the 5 MCP packs (no dir glob — voice is tui-only and legitimately has no permission key); assert pack shapes (root string-enum permission, no `tools`/`permission.tool`, `$comment` first), merge-packs simulation flipping a root deny to allow, installed-check + install-gate presence in setup.sh + rc-gated hook in setup.ps1
     — **Why:** the packs had zero key-structure coverage; this class of bug shipped twice (#269, #310)

@@ -215,7 +215,7 @@ docker compose build --build-arg OPENCODE_PROVIDER=anthropic
 
 ### Provider Packs (build-time MCP toggle, #268)
 
-v2.0 also adds **provider packs** — build-time toggles that enable groups of opt-in MCP servers (Autodesk, `markitdown`, `next-devtools`) in one shot. The merge runs after model resolution and only flips `mcp.*.enabled` + `tools.*` ON; it never affects an already-enabled server.
+v2.0 also adds **provider packs** — build-time toggles that enable groups of opt-in MCP servers (Autodesk, `markitdown`, `next-devtools`) in one shot. The merge runs after model resolution and only flips `mcp.*.enabled` ON and sets root `permission` allow patterns (`"<ns>*": "allow"`); it never affects an already-enabled server.
 
 ```bash
 # Enable one or more packs at build time

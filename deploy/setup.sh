@@ -2623,7 +2623,6 @@ install_local_mcp_launchers() {
                 ;;
         esac
     else
-        rm -f "$pip_err"
         log_warn "pip install failed for markitdown-local-mcp (offline?). The launcher is opt-in (enabled: false) — OpenCode will work without it. Re-run setup when online to enable."
         log_warn "pip stderr (last 3 lines):"
         tail -n 3 "$pip_err" >&2
