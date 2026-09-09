@@ -52,7 +52,7 @@ MERGE_SCRIPT="deploy/merge-packs.mjs"
 }
 
 @test "docling_tool_denied_by_default" {
-  python3 -c "import json; d=json.load(open('${CONFIG}')); assert d['permission']['tool']['docling*'] == 'deny'"
+  python3 -c "import json; d=json.load(open('${CONFIG}')); assert d['permission']['docling*'] == 'deny'"
 }
 
 @test "docling_mcp_has_local_conversion_mode" {

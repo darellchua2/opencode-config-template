@@ -6,7 +6,7 @@
 
 ## Acceptance Criteria
 - [ ] All 5 MCP packs (markitdown, docling, chrome-devtools, nextjs, autodesk) write `permission: {"<server>*": "allow"}` at the permission root with string enum values; no nested `permission.tool`, no top-level `tools` in any pack (voice pack is tui-only — no permission key — excluded by design)
-- [ ] Source `opencode_app/opencode.json` opt-in denies migrated from `permission.tool` to root-level `permission` patterns
+- [x] Source `opencode_app/opencode.json` opt-in denies migrated from `permission.tool` to root-level `permission` patterns
 - [ ] `--enable-pack markitdown` installs the launcher (gated on `ENABLE_PACK`, dry-run skips, installed-check avoids double pip; mirrored in `setup.ps1` with rc symmetry)
 - [ ] SKILL.md + office-document-primary-agent.md + opencode_app/README.md corrected; `--help` verify suggestion replaced with `opencode mcp list`
 - [ ] Bats regression test: pack permission patterns are root-level string enums; install hook present
@@ -56,10 +56,11 @@
     — **Done:** node loop over 5 packs asserts $comment-first + parse + shapes; grep -rq '"tools"' deploy/packs/ empty; files: (verification only); fixes: none
 
 ### Phase 2: Migrate the source config deny block
-- [ ] **2.1** In `opencode_app/opencode.json`, move the 7 pattern entries out of `permission.tool` (L142-150) to the `permission` root (siblings of `read`/`skill`), preserving values (`codegraph*`/`atlassian*`/`zai-web-reader*`/`zai-web-search*` allow; `markitdown*`/`docling*`/`next-devtools*` deny), delete the `tool` sub-object, and update `tests/test_docling_skill.bats` L55 (source assertion) to the root-level key in the same commit
+- [x] **2.1** In `opencode_app/opencode.json`, move the 7 pattern entries out of `permission.tool` (L142-150) to the `permission` root (siblings of `read`/`skill`), preserving values (`codegraph*`/`atlassian*`/`zai-web-reader*`/`zai-web-search*` allow; `markitdown*`/`docling*`/`next-devtools*` deny), delete the `tool` sub-object, and update `tests/test_docling_skill.bats` L55 (source assertion) to the root-level key in the same commit
     — **Why:** `permission.tool` matches nothing in opencode's permission engine; root-level patterns are the documented mechanism, making the intended opt-in denies actually enforce; no comments may be added (JSONC-in-opencode.json anti-pattern breaks CI)
     — **Done when:** node asserts `permission["markitdown*"]==="deny"` and `permission.tool===undefined`; `read`/`skill` blocks byte-identical; JSON parses; `bats tests/test_docling_skill.bats tests/test_mcp_count_consistency.bats` green
     — **Consumers affected:** fresh deploys (real denies), pack merges (allow wins, Phase 1), apply-skill-profile (untouched — writes only permission.skill)
+    — **Done:** 7 entries flattened to permission root at the former tool-block position, `tool` sub-object deleted; test_docling_skill.bats L55 assertion now reads `d['permission']['docling*'] == 'deny'`; files: opencode_app/opencode.json, tests/test_docling_skill.bats; fixes: none (first try — read/skill verified byte-identical to origin/main via JSON.stringify compare rather than guessed key counts; full suite 318/318 green)
 
 ### Phase 3: merge-packs.mjs snapshot + header
 - [ ] **3.1** Add `permission: config.permission || {}` to the before/after dry-run diff snapshots (L181-185, L241-244); update header comment (L6) to describe `mcp.<server>.enabled` + root `permission` allows
