@@ -2598,9 +2598,17 @@ install_local_mcp_launchers() {
         return 0
     fi
 
-    # Install (network required; non-fatal if offline)
+    # Install (network required; non-fatal if offline). PEP 668
+    # (externally-managed-environment, Debian 12+/Ubuntu 23.04+) blocks plain
+    # `pip install --user` — retry once with --break-system-packages; --user
+    # keeps the install isolated to ~/.local, which is the risk PEP 668 guards.
     log_info "pip install --user --force-reinstall ${launcher_dir}"
-    if python3 -m pip install --user --force-reinstall --no-warn-script-location "$launcher_dir" >/dev/null 2>&1; then
+    local pip_err
+    pip_err="$(mktemp)"
+    if python3 -m pip install --user --force-reinstall --no-warn-script-location "$launcher_dir" >/dev/null 2>"$pip_err" \
+        || { grep -q "externally-managed-environment" "$pip_err" \
+            && python3 -m pip install --user --break-system-packages --force-reinstall --no-warn-script-location "$launcher_dir" >/dev/null 2>&1; }; then
+        rm -f "$pip_err"
         log_success "markitdown-local-mcp installed"
 
         # PATH check — warn (don't fail) if ~/.local/bin not on PATH
@@ -2615,6 +2623,7 @@ install_local_mcp_launchers() {
                 ;;
         esac
     else
+        rm -f "$pip_err"
         log_warn "pip install failed for markitdown-local-mcp (offline?). The launcher is opt-in (enabled: false) — OpenCode will work without it. Re-run setup when online to enable."
     fi
 }

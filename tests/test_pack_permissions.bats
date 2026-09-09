@@ -128,3 +128,12 @@ EOF
   grep -q 'Install-LocalMcpLaunchers' "$SETUP_PS1"
   grep -q 'pip show markitdown-local-mcp' "$SETUP_PS1"
 }
+
+@test "installer_has_pep668_break_system_packages_fallback" {
+  # Debian 12+/Ubuntu 23.04+ block plain `pip install --user` (PEP 668);
+  # the installer must detect and retry with --break-system-packages.
+  grep -q 'externally-managed-environment' "$SETUP"
+  grep -q -- '--break-system-packages' "$SETUP"
+  grep -q 'externally-managed-environment' "$SETUP_PS1"
+  grep -q -- '--break-system-packages' "$SETUP_PS1"
+}

@@ -2122,9 +2122,16 @@ function Install-LocalMcpLaunchers {
     }
     $python = if ($pythonCmd.Name -eq 'python') { 'python' } else { 'python3' }
 
-    # Install (network required; non-fatal if offline)
+    # Install (network required; non-fatal if offline). PEP 668
+    # (externally-managed-environment, Debian 12+/Ubuntu 23.04+) blocks plain
+    # `pip install --user` - retry once with --break-system-packages (--user
+    # keeps the install isolated to ~/.local, which is the risk PEP 668 guards).
     Write-LogInfo "$python -m pip install --user --force-reinstall $launcherDir"
-    & $python -m pip install --user --force-reinstall --no-warn-script-location $launcherDir 2>&1 | Out-Null
+    $pipOut = & $python -m pip install --user --force-reinstall --no-warn-script-location $launcherDir 2>&1
+    if ($LASTEXITCODE -ne 0 -and (($pipOut | Out-String) -match 'externally-managed-environment')) {
+        Write-LogInfo "PEP 668 externally-managed environment detected - retrying with --break-system-packages"
+        & $python -m pip install --user --break-system-packages --force-reinstall --no-warn-script-location $launcherDir *> $null
+    }
     if ($LASTEXITCODE -eq 0) {
         Write-LogSuccess "markitdown-local-mcp installed"
         # Windows console-script lands in %APPDATA%\Python\Scripts - warn if not on PATH

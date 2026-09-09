@@ -5,12 +5,12 @@
 **Base**: main
 
 ## Acceptance Criteria
-- [ ] All 5 MCP packs (markitdown, docling, chrome-devtools, nextjs, autodesk) write `permission: {"<server>*": "allow"}` at the permission root with string enum values; no nested `permission.tool`, no top-level `tools` in any pack (voice pack is tui-only — no permission key — excluded by design)
+- [x] All 5 MCP packs (markitdown, docling, chrome-devtools, nextjs, autodesk) write `permission: {"<server>*": "allow"}` at the permission root with string enum values; no nested `permission.tool`, no top-level `tools` in any pack (voice pack is tui-only — no permission key — excluded by design)
 - [x] Source `opencode_app/opencode.json` opt-in denies migrated from `permission.tool` to root-level `permission` patterns
-- [ ] `--enable-pack markitdown` installs the launcher (gated on `ENABLE_PACK`, dry-run skips, installed-check avoids double pip; mirrored in `setup.ps1` with rc symmetry)
-- [ ] SKILL.md + office-document-primary-agent.md + opencode_app/README.md corrected; `--help` verify suggestion replaced with `opencode mcp list`
-- [ ] Bats regression test: pack permission patterns are root-level string enums; install hook present
-- [ ] E2E smoke (automated): temp-HOME fresh deploy + `--enable-pack markitdown` → binary installed, deployed config has `mcp.markitdown.enabled: true` + root `permission["markitdown*"]: "allow"`, `opencode mcp list` lists the server. Live `convert_to_markdown` on a sample docx/pdf verified manually in-session after merge (needs a full agent session — not automatable in CI)
+- [x] `--enable-pack markitdown` installs the launcher (gated on `ENABLE_PACK`, dry-run skips, installed-check avoids double pip; mirrored in `setup.ps1` with rc symmetry)
+- [x] SKILL.md + office-document-primary-agent.md + opencode_app/README.md corrected; `--help` verify suggestion replaced with `opencode mcp list`
+- [x] Bats regression test: pack permission patterns are root-level string enums; install hook present
+- [x] E2E smoke (automated): temp-HOME fresh deploy + `--enable-pack markitdown` → binary installed, deployed config has `mcp.markitdown.enabled: true` + root `permission["markitdown*"]: "allow"`, `opencode mcp list` lists the server. Live `convert_to_markdown` on a sample docx/pdf verified manually in-session after merge (needs a full agent session — not automatable in CI)
 
 ## Dependency & Consumer Map
 
@@ -114,10 +114,11 @@
     — **Done when:** all three commands exit 0
     — **Consumers affected:** CI
     — **Done:** bash -n OK, node --check OK, full bats 326/326 green (318 prior + 8 new); files: none; fixes: none
-- [ ] **6.3** E2E smoke: in a throwaway env (`HOME=$(mktemp -d)`) run `./deploy/setup.sh -y --enable-pack markitdown`, then assert: `markitdown-local-mcp` resolvable via the temp PATH, deployed config has `mcp.markitdown.enabled: true` + root `permission["markitdown*"]: "allow"` + no `permission.tool`, and `HOME=<temp> opencode mcp list` lists markitdown as connected/disabled per config (spawn path proven). Record output; live `convert_to_markdown` on a sample docx/pdf is verified manually in-session post-merge (requires a full opencode agent session — out of CI scope, stated in ticket AC)
+- [x] **6.3** E2E smoke: in a throwaway env (`HOME=$(mktemp -d)`) run `./deploy/setup.sh -y --enable-pack markitdown`, then assert: `markitdown-local-mcp` resolvable via the temp PATH, deployed config has `mcp.markitdown.enabled: true` + root `permission["markitdown*"]: "allow"` + no `permission.tool`, and `HOME=<temp> opencode mcp list` lists markitdown as connected/disabled per config (spawn path proven). Record output; live `convert_to_markdown` on a sample docx/pdf is verified manually in-session post-merge (requires a full opencode agent session — out of CI scope, stated in ticket AC)
     — **Why:** ticket AC #6 is the only user-visible proof the documented enable path now works end-to-end
     — **Done when:** all smoke assertions pass in the throwaway env; main checkout untouched (fetch-only policy preserved)
     — **Consumers affected:** release confidence; no persistent files
+    — **Done:** smoke green in throwaway HOME: setup -y --enable-pack markitdown exit 0; binary in <temp>/.local/bin; config enabled:true + root allow + no permission.tool + no legacy tools key; `opencode mcp list` → "✓ markitdown connected"; files: deploy/setup.sh, deploy/setup.ps1, tests/test_pack_permissions.bats; fixes: (a1) PEP 668 externally-managed-environment blocks pip --user on Debian 12+/Ubuntu 23.04+ — the true root cause of the original "never installed" symptom; installers now detect it in pip stderr and retry with --break-system-packages (--user keeps ~/.local isolation); (a2) JSON-RPC spawn probe inconclusive (empty stdout on stdin EOF) — canonical `opencode mcp list < /dev/null` used as spawn proof instead; live convert_to_markdown = manual post-merge per AC
 
 ## Technical Notes
 - Permission semantics (docs + source, 2026-09-09): patterns at the `permission` root; last matching rule wins; default allow-all; string enum only (`ask|allow|deny`); explicit `permission` overlays legacy `tools`-derived entries.
