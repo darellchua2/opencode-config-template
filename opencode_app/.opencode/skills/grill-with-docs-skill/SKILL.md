@@ -89,7 +89,7 @@ This concision pays off session after session: variables/functions/files are nam
 |-------|-------------|
 | `grilling-skill` | The interview engine I orchestrate |
 | `domain-modeling-skill` | The doc-capture engine I orchestrate |
-| `ticket-plan-workflow-skill` | A grilled, documented plan feeds cleanly into ticket/branch/PLAN creation |
+| `ticket-creation-skill` / `worktree-pipeline-skill` | A grilled, documented outcome feeds cleanly into ticket creation, then the branch+PLAN pipeline |
 | `plan-execution-skill` | The resolved plan + glossary give execution a precise vocabulary |
 | `continuous-learning-skill` | ADRs and glossary entries become durable learnings |
 

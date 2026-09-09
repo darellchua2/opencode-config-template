@@ -50,7 +50,7 @@
             "git-branch-workflow-setup-skill": "allow",
             "git-semantic-commits-skill": "allow",
             "documentation-sync-workflow-skill": "allow",
-            "ticket-plan-workflow-skill": "allow",
+            "ticket-creation-skill": "allow",
             "grilling-skill": "allow",
             "linting-workflow-skill": "allow",
             "grill-me-skill": "allow",
@@ -78,6 +78,7 @@
             "semantic-release-convention-skill": "allow",
             "version-bump-standard-skill": "allow",
             "worktree-pipeline-skill": "allow",
+            "wayfinder-skill": "allow",
             "opencode-agent-creation-skill": "allow",
             "opencode-repo-setup-skill": "allow",
             "opencode-skill-creation-skill": "allow",
@@ -157,6 +158,11 @@
         "run-plan": {
             "description": "Fully-automated plan execution loop \u2014 implement PLAN*.md phase-by-phase (lint+build+test+e2e gate, then commit + push per phase). Deliberate trigger; /goal stays generic.",
             "template": "Load the skill `plan-automation-loop-skill` and run it to fully implement the plan file given as the argument: $ARGUMENTS",
+            "agent": "build"
+        },
+        "create-ticket": {
+            "description": "Create a structured GitHub issue or JIRA ticket \u2014 platform detection, structured description, labels, sub-issues. Ticket only: no branch/PLAN/execution (use /run-worktree-pipeline for that).",
+            "template": "Load the skill `ticket-creation-skill` and run it with the arguments: $ARGUMENTS",
             "agent": "build"
         },
         "run-worktree-pipeline": {

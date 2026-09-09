@@ -55,7 +55,7 @@ Use this skill when:
 
 - The user wants a single step or read-only analysis → use `plan-execution-skill` or just do it.
 - The user wants to plan/preview without committing → use `plan-execution-skill` (no push).
-- No PLAN file exists → create one first via `ticket-plan-workflow-skill`.
+- No PLAN file exists → author one first via `worktree-pipeline-skill` §PLAN Authoring (or run `/run-worktree-pipeline` end-to-end).
 
 > **`/goal` + skill (primary) vs `/run-plan` (fallback).** `/goal` is plugin-owned: it stores the
 > objective, auto-continues on idle, and only stops on an evidence-gated `[goal:complete]`/
@@ -506,7 +506,7 @@ This skill orchestrates existing capabilities — it does not reimplement them:
 | `plan-updater-skill` | Checkbox + commit mechanics (this skill inlines them per-phase + adds traceability) |
 | `verification-loop-skill` | Gate philosophy; this skill makes gates mandatory per phase |
 | `git-semantic-commits-skill` | Per-phase commit formatting |
-| `ticket-plan-workflow-skill` | Creates the PLAN files this skill consumes |
+| `worktree-pipeline-skill` | Authors the PLAN files this skill consumes (§PLAN Authoring) |
 
 ## Best Practices
 

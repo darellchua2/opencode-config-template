@@ -333,7 +333,7 @@ Note: inline ` ```mermaid ` blocks are unaffected — they render client-side (G
 
 ## Integration with Planning Workflows
 
-### ticket-plan-workflow-skill
+### ticket-creation-skill
 
 When creating plans for GitHub issues or JIRA tickets, embed the diagram inline in the PLAN.md:
 

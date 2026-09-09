@@ -42,8 +42,8 @@ The BRD is **sponsor/stakeholder-facing**. It encodes business objectives, succe
 - **`srs-creation-skill`** — the downstream document; the BRD's Solution Requirements Summary feeds INTO the SRS's detailed functional requirements
 - **`vision-creation-skill`** — the upstream customer-facing doc; the signed Vision feeds INTO the BRD's Business Requirements
 - **`interactive-document-rendering-skill`** — shared HTML + DOCX rendering standard (snapshot HTML for BRD)
-- **`ticket-plan-workflow-skill`** — auto-detects draft BRD in `docs/brd/` during Full workflow, renames to ticket key, links in PLAN header
-- **`ticket-plan-workflow-skill`** — downstream consumer; BRD feeds into the PLAN file
+- **`worktree-pipeline-skill`** — auto-detects draft BRD in `docs/brd/` during PLAN authoring (§6b), renames to ticket key, links in PLAN header
+- **`worktree-pipeline-skill`** — downstream consumer; BRD feeds into the PLAN file
 
 ---
 
@@ -281,7 +281,7 @@ docs/brd/BRD-draft-{kebab-slug}.md
 docs/brd/BRD-{ticket-key}.md
 ```
 
-- Renamed via `git mv` by `ticket-plan-workflow-skill` during Full workflow (preserves git history)
+- Renamed via `git mv` by `worktree-pipeline-skill` §6b during PLAN authoring (preserves git history)
 - If the draft was never committed (untracked on the new branch), a plain `mv` + `git add` is used instead
 
 ### Bidirectional Linkage
@@ -289,7 +289,7 @@ docs/brd/BRD-{ticket-key}.md
 | Direction | Field | Location |
 |-----------|-------|----------|
 | BRD → PLAN | `**PLAN**: PLANS/PLAN-{key}.md` | BRD header (filled at rename time) |
-| PLAN → BRD | `**BRD**: docs/brd/BRD-{key}.md` | PLAN header (injected by ticket-plan-workflow-skill) |
+| PLAN → BRD | `**BRD**: docs/brd/BRD-{key}.md` | PLAN header (injected by worktree-pipeline-skill) |
 
 ---
 

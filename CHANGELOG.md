@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.13.0](https://github.com/darellchua2/opencode-config-template/compare/v5.12.0...v5.13.0) (2026-09-09)
+
+### Features
+
+* **skills:** vendor wayfinder-skill adapted for opencode ([cabee96](https://github.com/darellchua2/opencode-config-template/commit/cabee96f6a2e73d853cd9089e24941de3ff404f1))
+
+### Code Refactoring
+
+* **reviewers:** extract checklists + shared baseline, slim 4 agents ([18e376a](https://github.com/darellchua2/opencode-config-template/commit/18e376af5a8bd1c19b566e66ddf122e8f22630ce))
+* **workflow:** split ticket-creation from plan authoring ([47f280b](https://github.com/darellchua2/opencode-config-template/commit/47f280bdeb94f58dc0251a759fab9bc40ca80d3e))
+
+### Documentation
+
+* **docker:** sync opencode_app/README skill count to 148 ([04e433e](https://github.com/darellchua2/opencode-config-template/commit/04e433e8427e53d5aded2197fb5f3df99142b9e7))
+* **sync:** refresh README/AGENTS counts + add /create-ticket docs ([10905a0](https://github.com/darellchua2/opencode-config-template/commit/10905a0c0f6f3b91640c0535fdf334002bdd787b))
+
 ## [5.12.0](https://github.com/darellchua2/opencode-config-template/compare/v5.11.0...v5.12.0) (2026-09-01)
 
 ### Features
