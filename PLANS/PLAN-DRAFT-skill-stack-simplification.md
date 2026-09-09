@@ -26,9 +26,9 @@
 - [x] `worktree-pipeline-skill` self-contained PLAN authoring (adopt 5.5, BRD/SRS 5.6, template 6, atomicity 6.5, commit/push), no reference to ticket-plan-workflow-skill internals
 - [x] `opencode.json` has `create-ticket` command; permission keys updated; valid JSON, no `//` comments
 - [x] `grep -r "ticket-plan-workflow" opencode_app/ deploy/ README.md` returns 0 hits (exempt: `_archived/`, the intentional "Renamed from" note, README pending Phase 4)
-- [ ] `node deploy/build-registry.mjs` exits 0; registry diff shows +3 skills, rename reflected
-- [ ] Count parity: skills on disk == count_skills() == README count; agents == count_agents()
-- [ ] Per-phase commits pushed, PLAN ticked with Done lines
+- [x] `node deploy/build-registry.mjs` exits 0; registry diff shows +3 skills, rename reflected
+- [x] Count parity: skills on disk == count_skills() == README count; agents == count_agents()
+- [x] Per-phase commits pushed, PLAN ticked with Done lines
 
 ## Implementation Phases
 
@@ -93,22 +93,32 @@
     — **Consumers affected:** all sessions
     — **Done:** create-ticket command added (template loads ticket-creation-skill, agent build); permission key swapped in Phase 1 commit; run-worktree-pipeline description still accurate (no old-skill name); fixes: none
 
-### Phase 4: Config + deploy sync
-- [ ] **4.1** Update `deploy/skill-profiles.json` (rename entry, add 3 new skills where lean-appropriate) + `deploy/presets/pack-devops.json` rename
+### Phase 4: Config + deploy sync — DONE (verdict: VERIFIED)
+- [x] **4.1** Update `deploy/skill-profiles.json` (rename entry, add 3 new skills where lean-appropriate) + `deploy/presets/pack-devops.json` rename
     — **Why:** profiles/presets reference skills by name; rename breaks them otherwise
     — **Done when:** JSON parses, no ticket-plan-workflow references
     — **Consumers affected:** setup.sh --skill-profile, opencode-init
-- [ ] **4.2** Run `node deploy/build-registry.mjs`; commit registry.json
+    — **Done:** renames landed in Phase 3 sweep; wayfinder-skill added to lean (primary-visible); checklists+baseline deliberately NOT in lean (subagent-loaded knowledge, house rule); files: deploy/skill-profiles.json, deploy/presets/pack-devops.json; fixes: none
+- [x] **4.2** Run `node deploy/build-registry.mjs`; commit registry.json
     — **Why:** house rule — registry rebuild after ANY frontmatter change
     — **Done when:** exit 0; diff shows rename +3 skills
-    — **Consumers affected:** npx installer
-- [ ] **4.3** README.md: skill count 137→140, Git/Workflow + Code Quality rows (+wayfinder-skill, +language-review-checklists-skill, +reviewer-baseline-skill, rename ticket-plan-workflow→ticket-creation), commands section +/create-ticket, subagents table language-reviewer row, migration note; `opencode_app/README.md` if it carries counts
+    — **Done:** rebuilt at every phase gate; registry has ticket-creation-skill, no old name; committed progressively; fixes: none
+- [x] **4.3** README.md: skill count 137→140, Git/Workflow + Code Quality rows (+wayfinder-skill, +language-review-checklists-skill, +reviewer-baseline-skill, rename ticket-plan-workflow→ticket-creation), commands section +/create-ticket, subagents table language-reviewer row, migration note; `opencode_app/README.md` if it carries counts
     — **Why:** AGENTS.md sync rules; count-drift guards
     — **Done when:** counts match disk; tables list new skills
     — **Consumers affected:** docs readers, drift tests
+    — **Done:** live counts 145→148 (lines 243/409 — plan's "137→140" was based on stale ledger; actual pre-existing live claim was 145, disk truth now 148); Git/Workflow 14→15 w/ wayfinder + rename + /create-ticket; Code Quality 12→14; ledger entry appended; archived-note + diagram + subagent-row updated; opencode_app/README.md has no global counts (pptx-only, skipped); fixes: none
 
-### Phase 5: Verification gates
-- [ ] **5.1** Final gate sweep: registry build, JSON validation (opencode.json, skill-profiles.json, pack-devops.json), count parity (disk vs count_skills/count_agents vs README), grep sweeps (ticket-plan-workflow=0, frontmatter spot-checks: name=dir, no permission.skill in SKILL.md)
+### Phase 5: Verification gates — DONE (verdict: VERIFIED)
+- [x] **5.1** Final gate sweep: registry build, JSON validation (opencode.json, skill-profiles.json, pack-devops.json), count parity (disk vs count_skills/count_agents vs README), grep sweeps (ticket-plan-workflow=0, frontmatter spot-checks: name=dir, no permission.skill in SKILL.md)
     — **Why:** never push red; falsifiable verdict per skill contract
     — **Done when:** all checks exit clean, verdict VERIFIED recorded
     — **Consumers affected:** release integrity
+    — **Done:** `build-registry.mjs --check` OK (no drift); 4 JSON files parse; 148/148 skills pass frontmatter contract (name=dir, description, no permission key); counts: disk=registry=README (148 skills / 33 agents / 23 categories / 106 allows / 46 lean / review preset 31 / backend preset 25); residual greps clean; fixes: none
+
+### Phase 6 (user mid-run addition): README.md + AGENTS.md staleness review
+- [x] **6.1** Audit + fix stale numbers/rosters in README.md and AGENTS.md
+    — **Why:** user request mid-run ("please also review if README.md and AGENTS.md are stale")
+    — **Done when:** every count/roster claim matches disk/registry truth
+    — **Consumers affected:** docs readers, drift tests
+    — **Done:** README: repo-tree counts 32→33 agents / 145→148 skills; allowlist 105→106; lean 45→46; review preset 28→31; backend preset 23→25; modularization 145→148; agents section 32→33; iteration-protocol "30 existing"→29 (7+7+15). AGENTS.md: tier table dropped stale "incl. java" per-language reviewer; Return Contract reviewer list (architecture, code, python, typescript, java, go, rust, uiux)→(architecture, code, language, uiux); files: README.md, AGENTS.md; fixes: none
