@@ -33,10 +33,11 @@
 ## Implementation Phases
 
 ### Phase 1: Purge consumed plans
-- [ ] **1.1** `git rm` the six executed plans: `PLANS/PLAN-356.md`, `PLANS/PLAN-DRAFT-skill-stack-simplification.md`, `PLANS/PLAN-GIT-349.md`, `PLANS/PLAN-GIT-350.md`, `PLANS/PLAN-GIT-351.md`, `PLANS/PLAN-GIT-357.md`
+- [x] **1.1** `git rm` the six executed plans: `PLANS/PLAN-356.md`, `PLANS/PLAN-DRAFT-skill-stack-simplification.md`, `PLANS/PLAN-GIT-349.md`, `PLANS/PLAN-GIT-350.md`, `PLANS/PLAN-GIT-351.md`, `PLANS/PLAN-GIT-357.md`
     — **Why:** all executed (zero unchecked boxes) and 1–2+ weeks old; repo lifecycle purges consumed plans in batches (31 already deleted, last purge 2026-08-27)
     — **Done when:** `git ls-files PLANS/` lists only `.gitkeep`, `.gitignore`, `PLAN-GIT-365.md` — the six purged slugs are absent (dir persists via tracked `.gitkeep`, by design since 414dcaa)
     — **Consumers affected:** three comment-level citations and one LEARNINGS provenance line are repaired in 2.4 / 3.3; CHANGELOG plan-id citations are historical text, unaffected (accepted precedent); `PLANS/` dir persists so `plan-updater-skill` (`find PLANS`) and `worktree-pipeline-skill` (`mkdir -p`) keep working unchanged
+    — **Done:** removed the six plan files via git rm; `git ls-files PLANS/` = `.gitignore .gitkeep PLAN-GIT-365.md` exactly; files: the six PLANS/*.md; fixes: none (gate first-try: registry OK 33/148 no-drift, bats 318/318 — after initializing the bats-core submodule in this worktree)
 
 ### Phase 2: Purge point-in-time audits + superseded research
 - [ ] **2.1** `git rm docs/audits/skill-yaml-compliance-audit.md`
