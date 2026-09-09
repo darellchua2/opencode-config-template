@@ -2607,7 +2607,7 @@ install_local_mcp_launchers() {
     pip_err="$(mktemp)"
     if python3 -m pip install --user --force-reinstall --no-warn-script-location "$launcher_dir" >/dev/null 2>"$pip_err" \
         || { grep -q "externally-managed-environment" "$pip_err" \
-            && python3 -m pip install --user --break-system-packages --force-reinstall --no-warn-script-location "$launcher_dir" >/dev/null 2>&1; }; then
+            && python3 -m pip install --user --break-system-packages --force-reinstall --no-warn-script-location "$launcher_dir" >/dev/null 2>>"$pip_err"; }; then
         rm -f "$pip_err"
         log_success "markitdown-local-mcp installed"
 
@@ -2625,6 +2625,9 @@ install_local_mcp_launchers() {
     else
         rm -f "$pip_err"
         log_warn "pip install failed for markitdown-local-mcp (offline?). The launcher is opt-in (enabled: false) — OpenCode will work without it. Re-run setup when online to enable."
+        log_warn "pip stderr (last 3 lines):"
+        tail -n 3 "$pip_err" >&2
+        rm -f "$pip_err"
     fi
 }
 
@@ -3374,6 +3377,8 @@ run_pack_merger() {
     # baked into the target config — without this the enabled server fails to
     # spawn. Mirrors install_docling/install_voice gating. Skipped in dry-run
     # (nothing real is deployed) and when the pack wasn't requested.
+    # grep -qw (not anchored) is safe: validate_enable_pack fail-fast restricts
+    # --enable-pack to real pack names, so no 'markitdown2' false positives.
     if [ "$DRY_RUN" != true ] && echo "$ENABLE_PACK" | grep -qw "markitdown"; then
         install_local_mcp_launchers
     fi

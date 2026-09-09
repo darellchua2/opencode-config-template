@@ -123,7 +123,7 @@ Playwright remains the engine for the 6 detection assertions. When the `chrome-d
 
 Use them to **cross-corroborate** a Playwright finding, not to replace it — e.g. "element clipped at 375px AND 2 console errors + a 404 on the breakpoint stylesheet." Do NOT duplicate screenshot capture in chrome-devtools MCP: Playwright is the capture engine, and screenshot interpretation stays delegated to `image-analyzer-subagent`.
 
-**MCP dependency:** these tools require `chrome-devtools*` set to `true` in the `tools` block of `opencode.json` (flipped on by `--enable-pack chrome-devtools`). No frontmatter `permission` change is required for this agent — its `read."mcp:*": deny` blocks only MCP *resource* reads, and `chrome-devtools-mcp` is tools-only (no resources), so access is gated solely by the global `tools` map, mirroring the `nextjs-specialist-subagent` pattern.
+**MCP dependency:** these tools require the root `permission` pattern `"chrome-devtools*": "allow"` in `opencode.json` (flipped on by `--enable-pack chrome-devtools`). No frontmatter `permission` change is required for this agent — its `read."mcp:*": deny` blocks only MCP *resource* reads, and `chrome-devtools-mcp` is tools-only (no resources), so access is gated solely by the root `permission` patterns, mirroring the `nextjs-specialist-subagent` pattern.
 
 ## CodeGraph Integration
 

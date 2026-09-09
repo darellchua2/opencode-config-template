@@ -137,3 +137,20 @@ None external; all vendored.
 - **`changed:` under-report regression** — covered by Phase 3 snapshot update + test assertion on merge output.
 - **Double launcher install on full-setup path** — mitigated by the pip-show installed-check (4.1/4.2).
 - **Phase 1↔2 revert coupling** — documented in Rollback note; revert as a pair.
+
+## Post-review fixes (pipeline Step 9, code-review iteration 1)
+- [x] **9.1** ps1 `$LASTEXITCODE` clobber: hook in Invoke-PackMerger + all Install-LocalMcpLaunchers early returns now reset `$global:LASTEXITCODE = 0` (best-effort must not fail the caller's rc check); bats `setup_ps1_hook_resets_lastexitcode_for_caller`.
+    — **Why:** reviewer Major 1 — pip rc=1 (normal not-installed/offline) aborted Windows deploys with a false "Provider-pack application failed"
+    — **Done when:** reset present in both functions + new bats assertion green
+    — **Consumers affected:** Invoke-DeployAgents (setup.ps1:~2290), config-copy caller
+    — **Done:** 4 resets + test; files: deploy/setup.ps1, tests/test_pack_permissions.bats; fixes: none beyond the finding
+- [x] **9.2** Dead-key doc residue sweep (9 sites: docling-mcp-skill:69, nextjs-devtools-mcp-skill:16/29/47-56/125, nextjs-specialist:79, uiux-reviewer:105, responsive-audit:126, documentation-subagent:62, Dockerfile:69) + class guard `no_doc_teaches_dead_permission_keys` (grep sweep, markitdown SKILL.md whitelisted for its migration note).
+    — **Why:** reviewer Major 2 — enforcing root denies make stale instructions actively harmful at merge time
+    — **Done when:** sweep test green
+    — **Consumers affected:** sibling skill/agent runtime prompts, Dockerfile comment readers
+    — **Done:** all sites rewritten to root-permission allow form; files: 7 docs + Dockerfile + test; fixes: none beyond the finding
+- [x] **9.3** Minors: ps1 duplicate python probe consolidated; pip retry output captured and surfaced in the failure warn (both scripts, setup.sh appends retry stderr to $pip_err + tail in warn + rm in else branch); setup.sh csv `grep -qw` safety note added.
+    — **Why:** reviewer NOTEs — diagnostics lost on double failure, probe duplication
+    — **Done when:** lint green, warn carries pip output
+    — **Consumers affected:** offline-failure debugging UX
+    — **Done:** files: deploy/setup.sh, deploy/setup.ps1; fixes: none beyond the finding

@@ -1920,6 +1920,10 @@ function Invoke-PackMerger {
     if ((-not $DryRun) -and ($EnablePack -match '(^|,)markitdown(,|$)')) {
         Install-LocalMcpLaunchers
     }
+
+    # Best-effort hook: must not leak pip's exit code into the caller's
+    # $LASTEXITCODE -ne 0 check (mirrors setup.sh's explicit 'return 0').
+    $global:LASTEXITCODE = 0
 }
 
 # Apply the skill profile (GIT-333): rewrites ONLY the permission.skill block
@@ -2097,27 +2101,29 @@ function Install-LocalMcpLaunchers {
     $launcherDir = Join-Path $AppDir "mcp-servers\markitdown-local-mcp"
 
     # Idempotency: skip the network round-trip when already installed
-    # (mirrors setup.sh install_local_mcp_launchers).
-    $pythonProbe = Get-Command python -ErrorAction SilentlyContinue
-    if (-not $pythonProbe) { $pythonProbe = Get-Command python3 -ErrorAction SilentlyContinue }
-    if ($pythonProbe) {
-        & $pythonProbe.Name -m pip show markitdown-local-mcp *> $null
+    # (mirrors setup.sh install_local_mcp_launchers). Single python probe —
+    # reused for the install below.
+    $pythonCmd = Get-Command python -ErrorAction SilentlyContinue
+    if (-not $pythonCmd) { $pythonCmd = Get-Command python3 -ErrorAction SilentlyContinue }
+    if ($pythonCmd) {
+        & $pythonCmd.Name -m pip show markitdown-local-mcp *> $null
         if ($LASTEXITCODE -eq 0) {
             Write-LogSuccess "markitdown-local-mcp already installed - skipping pip install"
+            $global:LASTEXITCODE = 0
             return
         }
     }
 
     if (-not (Test-Path $launcherDir)) {
         Write-LogWarn "markitdown-local-mcp launcher source not found at $launcherDir - skipping"
+        $global:LASTEXITCODE = 0
         return
     }
 
-    # Prerequisite: python + pip
-    $pythonCmd = Get-Command python -ErrorAction SilentlyContinue
-    if (-not $pythonCmd) { $pythonCmd = Get-Command python3 -ErrorAction SilentlyContinue }
+    # Prerequisite: python + pip (probed above)
     if (-not $pythonCmd) {
         Write-LogWarn "python not found - cannot install markitdown-local-mcp. Install Python 3.10+ and re-run."
+        $global:LASTEXITCODE = 0
         return
     }
     $python = if ($pythonCmd.Name -eq 'python') { 'python' } else { 'python3' }
@@ -2128,9 +2134,10 @@ function Install-LocalMcpLaunchers {
     # keeps the install isolated to ~/.local, which is the risk PEP 668 guards).
     Write-LogInfo "$python -m pip install --user --force-reinstall $launcherDir"
     $pipOut = & $python -m pip install --user --force-reinstall --no-warn-script-location $launcherDir 2>&1
+    $pipRetry = $null
     if ($LASTEXITCODE -ne 0 -and (($pipOut | Out-String) -match 'externally-managed-environment')) {
         Write-LogInfo "PEP 668 externally-managed environment detected - retrying with --break-system-packages"
-        & $python -m pip install --user --break-system-packages --force-reinstall --no-warn-script-location $launcherDir *> $null
+        $pipRetry = & $python -m pip install --user --break-system-packages --force-reinstall --no-warn-script-location $launcherDir 2>&1
     }
     if ($LASTEXITCODE -eq 0) {
         Write-LogSuccess "markitdown-local-mcp installed"
@@ -2142,7 +2149,13 @@ function Install-LocalMcpLaunchers {
         }
     } else {
         Write-LogWarn "pip install failed for markitdown-local-mcp (offline?). The launcher is opt-in (enabled: false) - OpenCode will work without it. Re-run setup when online to enable."
+        if ($null -eq $pipRetry) { $pipRetry = $pipOut }
+        Write-LogWarn "pip output (last 3 lines):"
+        ($pipRetry | Out-String).Trim() -split "`r?`n" | Select-Object -Last 3 | ForEach-Object { Write-LogWarn "  pip: $_" }
     }
+
+    # Best-effort installer: never leak a pip exit code to callers.
+    $global:LASTEXITCODE = 0
 }
 
 # Install docling-mcp (heavy ~3-4 GB) — only when --enable-pack docling is

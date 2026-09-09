@@ -137,3 +137,29 @@ EOF
   grep -q 'externally-managed-environment' "$SETUP_PS1"
   grep -q -- '--break-system-packages' "$SETUP_PS1"
 }
+
+@test "setup_ps1_hook_resets_lastexitcode_for_caller" {
+  # Invoke-PackMerger's install hook + Install-LocalMcpLaunchers early returns
+  # must reset $global:LASTEXITCODE = 0 (best-effort) — the caller checks it
+  # right after (Invoke-DeployAgents 'Provider-pack application failed').
+  local fn
+  fn="$(sed -n '/function Invoke-PackMerger/,/^}/p' "$SETUP_PS1")"
+  [[ "$fn" == *'Install-LocalMcpLaunchers'* ]]
+  [[ "$fn" == *'$global:LASTEXITCODE = 0'* ]]
+  local inst
+  inst="$(sed -n '/function Install-LocalMcpLaunchers/,/^}/p' "$SETUP_PS1")"
+  [ "$(grep -c 'global:LASTEXITCODE = 0' <<<"$inst")" -ge 3 ]
+}
+
+@test "no_doc_teaches_dead_permission_keys" {
+  # Class regression guard (#269, #310, #370): no skill/agent doc or Dockerfile
+  # may instruct users to write the dead keys (nested permission.tool, legacy
+  # top-level tools). markitdown-mcp-skill/SKILL.md is whitelisted — it carries
+  # the explanatory migration note.
+  local hits
+  hits="$(grep -rnE 'permission\.tool|tools\."|tools\["|"tools"[[:space:]]*:|`tools` block|`tools` map|tools\.<ns>' \
+    --include='*.md' opencode_app/.opencode opencode_app/Dockerfile 2>/dev/null \
+    | grep -v 'skills/markitdown-mcp-skill/SKILL.md' || true)"
+  if [ -n "$hits" ]; then echo "$hits" >&2; fi
+  [ -z "$hits" ]
+}
