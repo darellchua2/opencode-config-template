@@ -634,7 +634,7 @@ gh pr create --title "feat: add user auth" --add-label "minor"
 - `jira-status-updater` - JIRA status transitions
 - `jira-git-integration` - JIRA operations (image handling, API utilities)
 - `linting-workflow` - Quality checks
-- `ticket-plan-workflow-skill` - Initial setup (branch, PLAN.md)
+- `worktree-pipeline-skill` - Branch cut + PLAN authoring (§PLAN Authoring) upstream of the PR
 
 ## Iteration Protocol (opt-in)
 

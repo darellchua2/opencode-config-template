@@ -601,7 +601,7 @@ atlassian_getAccessibleAtlassianResources
 
 Skills that use this JIRA integration framework:
 - `pr-creation-workflow`: PR creation with JIRA comments and image uploads
-- `ticket-plan-workflow-skill`: GitHub/JIRA ticket creation and branch management
+- `ticket-creation-skill`: GitHub/JIRA ticket creation; `worktree-pipeline-skill`: branch cut + PLAN authoring in the pipeline
 - `nextjs-pr-workflow`: Next.js PR workflow with JIRA integration
 - `jira-status-updater`: Automated JIRA ticket status transitions after PR merge
 

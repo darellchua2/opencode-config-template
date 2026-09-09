@@ -22,10 +22,10 @@
 - [x] `wayfinder-skill` exists, frontmatter-conformant (name=dir, description ≤50 words w/ triggers, license MIT, compatibility opencode, category Git/Workflow), adapted to opencode (no Claude-only keys, deps mapped to existing skills, house tracker guard)
 - [x] `language-reviewer-subagent.md` ≤ ~120 lines, checklists live in `language-review-checklists-skill`
 - [x] All 4 reviewer agents reference `reviewer-baseline-skill` instead of inline Prompt Defense/Epistemic blocks; zero duplicated baseline blocks remain in reviewer agents
-- [ ] `ticket-creation-skill` exists (dir+name match), contains ticket creation only (no branch/PLAN/commit/execute steps), ≤ ~320 lines
-- [ ] `worktree-pipeline-skill` self-contained PLAN authoring (adopt 5.5, BRD/SRS 5.6, template 6, atomicity 6.5, commit/push), no reference to ticket-plan-workflow-skill internals
-- [ ] `opencode.json` has `create-ticket` command; permission keys updated; valid JSON, no `//` comments
-- [ ] `grep -r "ticket-plan-workflow" opencode_app/ deploy/ README.md` returns 0 hits
+- [x] `ticket-creation-skill` exists (dir+name match), contains ticket creation only (no branch/PLAN/commit/execute steps), ≤ ~320 lines
+- [x] `worktree-pipeline-skill` self-contained PLAN authoring (adopt 5.5, BRD/SRS 5.6, template 6, atomicity 6.5, commit/push), no reference to ticket-plan-workflow-skill internals
+- [x] `opencode.json` has `create-ticket` command; permission keys updated; valid JSON, no `//` comments
+- [x] `grep -r "ticket-plan-workflow" opencode_app/ deploy/ README.md` returns 0 hits (exempt: `_archived/`, the intentional "Renamed from" note, README pending Phase 4)
 - [ ] `node deploy/build-registry.mjs` exits 0; registry diff shows +3 skills, rename reflected
 - [ ] Count parity: skills on disk == count_skills() == README count; agents == count_agents()
 - [ ] Per-phase commits pushed, PLAN ticked with Done lines
@@ -71,23 +71,27 @@
     — **Consumers affected:** local sessions (agent list)
     — **Done:** rm'd all 5 deployed files; fixes: none
 
-### Phase 3: Split ticket-creation from plan/execute
-- [ ] **3.1** `git mv skills/ticket-plan-workflow-skill skills/ticket-creation-skill` + rewrite SKILL.md (Steps 1–4 + guard + prerequisites + common issues; delete 5–9/5.5/5.6/6/6.5/7.5 + PLAN template)
+### Phase 3: Split ticket-creation from plan/execute — DONE (verdict: VERIFIED)
+- [x] **3.1** `git mv skills/ticket-plan-workflow-skill skills/ticket-creation-skill` + rewrite SKILL.md (Steps 1–4 + guard + prerequisites + common issues; delete 5–9/5.5/5.6/6/6.5/7.5 + PLAN template)
     — **Why:** user decision — ticket creation only; single responsibility
     — **Done when:** name=dir=ticket-creation-skill, ≤~320 lines, no branch/PLAN/commit/execute content
     — **Consumers affected:** 18 referencing files, opencode.json, worktree-pipeline
-- [ ] **3.2** Absorb PLAN authoring into `worktree-pipeline-skill/SKILL.md` (adopt/rename, BRD/SRS linking, PLAN template + step-authoring rules, atomicity self-check, PLAN commit/push); Step 3 ticket-create points at ticket-creation-skill
+    — **Done:** git mv + rewrite 758→261 lines; creation-only steps retained; "Renamed from" note points movers to worktree-pipeline; fixes: none
+- [x] **3.2** Absorb PLAN authoring into `worktree-pipeline-skill/SKILL.md` (adopt/rename, BRD/SRS linking, PLAN template + step-authoring rules, atomicity self-check, PLAN commit/push); Step 3 ticket-create points at ticket-creation-skill
     — **Why:** pipeline already owns branch+execute; owning plan-authoring removes two-way entry-contract coupling
     — **Done when:** self-contained Step 6; zero references to ticket-creation-skill steps 5.5–7
     — **Consumers affected:** /run-worktree-pipeline
-- [ ] **3.3** Semantic rename sweep: for each of the 18 referencing files, rename where it means "create ticket", rewrite where it describes moved planning behavior
+    — **Done:** new §PLAN Authoring (6a adopt, 6b BRD/SRS, 6c template, 6d atomicity gate, 6e commit/push) — self-contained; Step 3 references ticket-creation-skill; 110→224 lines; fixes: none
+- [x] **3.3** Semantic rename sweep: for each of the 18 referencing files, rename where it means "create ticket", rewrite where it describes moved planning behavior
     — **Why:** blind sed would leave false claims (e.g. "ticket-plan-workflow creates PLANs")
     — **Done when:** grep clean, no stale semantics
     — **Consumers affected:** all referencing skills/agents
-- [ ] **3.4** Add `create-ticket` command to `opencode.json`; update `run-worktree-pipeline` description if it names old skill; swap permission key
+    — **Done:** 16 files patched via scripted pass with per-line assertions: creation refs→ticket-creation-skill (semantic-release, maintainer, mermaid, repo-ops), PLAN/branch refs→worktree-pipeline §PLAN Authoring/§6b/§6d (plan-execution, plan-automation-loop, pr-creation, plan-updater, brd/srs-creation, requirements/discovery/technical-design agents), dual mentions where both apply (grilling, grill-with-docs, jira-git-integration); _archived exempt; fixes: none
+- [x] **3.4** Add `create-ticket` command to `opencode.json`; update `run-worktree-pipeline` description if it names old skill; swap permission key
     — **Why:** user wants /create-ticket as a command for granularity
     — **Done when:** command present with description+template+agent; JSON parses; no `//` comments
     — **Consumers affected:** all sessions
+    — **Done:** create-ticket command added (template loads ticket-creation-skill, agent build); permission key swapped in Phase 1 commit; run-worktree-pipeline description still accurate (no old-skill name); fixes: none
 
 ### Phase 4: Config + deploy sync
 - [ ] **4.1** Update `deploy/skill-profiles.json` (rename entry, add 3 new skills where lean-appropriate) + `deploy/presets/pack-devops.json` rename
