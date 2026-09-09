@@ -6,15 +6,15 @@
 
 ## Acceptance Criteria
 
-- [ ] All 6 fully-executed plans deleted from `PLANS/` (zero unchecked boxes verified at 3fb5a29); `git ls-files PLANS/` afterward retains only `.gitkeep`, `.gitignore`, `PLAN-GIT-365.md`
-- [ ] `docs/audits/skill-yaml-compliance-audit.md` deleted (dir holds exactly this file); `docs/prd/` untouched
-- [ ] 4 superseded/unreferenced research files deleted; `research/ponytail-load-fix.md` kept
-- [ ] `research/ponytail-load-fix.md` dangling pointer to `ponytail-agent-integration-audit.md` removed
-- [ ] `LEARNINGS/decisions/skill-permission-allowlist.md` refreshed to registry truth (148 skills / 46 lean, verified 2026-09-09) including derived figures ("hides 44 subagent-only", "43 subagent-only"); dangling `PLANS/PLAN-GIT-270.md` / `PLAN-GIT-333.md` path refs dropped
-- [ ] `LEARNINGS/_index.md` summary lines mirror the refresh; provenance citation in `LEARNINGS/conventions/task-delegate-permission-sync.md` no longer names a purged plan slug
-- [ ] Bats comment citations to purged plans (`test_mcp_count_consistency.bats`, `test_voice_pack.bats`) reworded — comment-only, test behavior unchanged
-- [ ] Identifier sweep (basename slugs, not paths) across tracked files: zero dangling refs outside `CHANGELOG.md` historical citations (accepted repo precedent)
-- [ ] `node deploy/build-registry.mjs --check` passes; full `bats tests/` green
+- [x] All 6 fully-executed plans deleted from `PLANS/` (zero unchecked boxes verified at 3fb5a29); `git ls-files PLANS/` afterward retains only `.gitkeep`, `.gitignore`, `PLAN-GIT-365.md`
+- [x] `docs/audits/skill-yaml-compliance-audit.md` deleted (dir holds exactly this file); `docs/prd/` untouched
+- [x] 4 superseded/unreferenced research files deleted; `research/ponytail-load-fix.md` kept
+- [x] `research/ponytail-load-fix.md` dangling pointer to `ponytail-agent-integration-audit.md` removed
+- [x] `LEARNINGS/decisions/skill-permission-allowlist.md` refreshed to registry truth (148 skills / 46 lean, verified 2026-09-09) including derived figures ("hides 44 subagent-only", "43 subagent-only"); dangling `PLANS/PLAN-GIT-270.md` / `PLAN-GIT-333.md` path refs dropped
+- [x] `LEARNINGS/_index.md` summary lines mirror the refresh; provenance citation in `LEARNINGS/conventions/task-delegate-permission-sync.md` no longer names a purged plan slug
+- [x] Bats comment citations to purged plans (`test_mcp_count_consistency.bats`, `test_voice_pack.bats`) reworded — comment-only, test behavior unchanged
+- [x] Identifier sweep (basename slugs, not paths) across tracked files: zero dangling refs outside `CHANGELOG.md` historical citations (accepted repo precedent)
+- [x] `node deploy/build-registry.mjs --check` passes; full `bats tests/` green
 
 ## Dependency & Consumer Map
 
@@ -72,15 +72,15 @@
     — **Consumers affected:** none — prose-only edit inside a convention note
 
 ### Phase 4: Verification gate
-- [ ] **4.1** Identifier sweep: `rg` each deleted file's basename slug (e.g. `skill-yaml-compliance-audit`, `mcp-11811-implementation-audit`, `research-opencode-11811-stateless-mcp`, `ponytail-agent-integration-audit`, `research-zai-glm-5v-turbo-opencode-access`, `PLAN-GIT-349`, `PLAN-GIT-350`, `PLAN-GIT-351`, `PLAN-GIT-357`, `PLAN-356`, `PLAN-DRAFT-skill-stack-simplification`) across tracked files
+- [x] **4.1** Identifier sweep: `rg` each deleted file's basename slug (e.g. `skill-yaml-compliance-audit`, `mcp-11811-implementation-audit`, `research-opencode-11811-stateless-mcp`, `ponytail-agent-integration-audit`, `research-zai-glm-5v-turbo-opencode-access`, `PLAN-GIT-349`, `PLAN-GIT-350`, `PLAN-GIT-351`, `PLAN-GIT-357`, `PLAN-356`, `PLAN-DRAFT-skill-stack-simplification`) across tracked files
     — **Why:** repo learning: sweep by identifier, not filename/path — path greps miss namesakes and identifier greps catch prose citations
     — **Done when:** zero matches outside `CHANGELOG.md` (historical citations, accepted precedent) — enabled by repair steps 2.3, 2.4, 3.3
     — **Consumers affected:** all future doc readers
-- [ ] **4.2** Run `node deploy/build-registry.mjs --check`
+- [x] **4.2** Run `node deploy/build-registry.mjs --check`
     — **Why:** frontmatter untouched, so the committed registry must show zero drift
     — **Done when:** exit 0
     — **Consumers affected:** CI (fails on drift)
-- [ ] **4.3** Run full `bats tests/`
+- [x] **4.3** Run full `bats tests/`
     — **Why:** count-drift and MCP-consistency suites guard the surfaces this purge could indirectly touch; also proves 2.4's comment-only claim
     — **Done when:** all suites green
     — **Consumers affected:** CI, release-please
@@ -108,3 +108,6 @@ None — standalone docs purge.
     — **Done:** refreshed title/context/pattern/rationale to 148 shipped / 105 full allows / 46 lean; recomputed derived figures (43 hidden under full, 59 more under lean, 102 total); dropped both purged-plan path refs; added re-derive note; files: LEARNINGS/decisions/skill-permission-allowlist.md; fixes: none (counts computed live from registry + opencode.json before edit)
     — **Done:** mirrored entry title + summary (hides 102, 148-46); files: LEARNINGS/_index.md; fixes: tightened the gate regex in this PLAN — original pattern flagged the legitimate current figure "43 subagent-only" (gate-spec bug, not staleness); re-run clean
     — **Done:** reworded provenance citation to issue form (GIT-350 §1.3), matching line-42 precedent; files: LEARNINGS/conventions/task-delegate-permission-sync.md; fixes: none
+    — **Done:** swept 11 slugs over git-tracked files excluding CHANGELOG.md + PLAN self-enumeration: zero matches; files: none (read-only gate); fixes: none
+    — **Done:** registry OK (agents=33, skills=148, no drift); fixes: none
+    — **Done:** bats 318/318 green, exit 0; fixes: none (bats-core submodule initialized in this worktree before first run)
