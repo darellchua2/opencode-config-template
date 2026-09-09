@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-# Tests for the voice plugin pack (issue #356, PLAN-356).
+# Tests for the voice plugin pack (issue #356).
 # Verifies pack existence + shape, tui merge correctness (plugin array merged
 # by name, other plugins preserved, opencode.json untouched by tui keys),
 # idempotent re-runs, Docker no---tui-config degrade path, and validate_enable_pack
