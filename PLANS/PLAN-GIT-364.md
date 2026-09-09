@@ -6,17 +6,17 @@
 
 ## Acceptance Criteria
 
-- [ ] `opencode_app/.opencode/skills/zai-vision-analysis-skill/` deleted
-- [ ] `zai-vision-mcp` MCP entry + permission allowlist entries removed from `opencode_app/opencode.json`
-- [ ] Agent files keep their inline API fallback but no longer cite the removed skill as "canonical"
-- [ ] `error-resolver-workflow-skill` and `opencode-agent-creation-skill` references updated
-- [ ] `deploy/skill-profiles.json` entry removed (lean 45→44); `deploy/registry.json` regenerated via `node deploy/build-registry.mjs`
-- [ ] `tests/skill_profiles.bats` lean-count assertions 45→44 updated
-- [ ] `deploy/setup.sh` + `setup.ps1`: opt-in pack listings/help text updated (zai-vision-mcp dropped); `MCP SERVERS (9)` banner → 8
-- [ ] `README.md`: skill counts decremented (145→144 etc.), MCP count 9→8, MCP table row, glm-5v-turbo note, Responsive & Visual Testing category updated; same numeric sync for `opencode_app/README.md` + deploy-script count echoes
-- [ ] Root `AGENTS.md` Vision-fallback paragraph rewritten (no skill reference)
-- [ ] `tests/test_mcp_count_consistency.bats` assertions updated; `bats tests/` green (bats-core submodule bootstrapped)
-- [ ] Historical docs (CHANGELOG.md, MIGRATION.md, PLANS/, research/, LEARNINGS/) left untouched
+- [x] `opencode_app/.opencode/skills/zai-vision-analysis-skill/` deleted
+- [x] `zai-vision-mcp` MCP entry + permission allowlist entries removed from `opencode_app/opencode.json`
+- [x] Agent files keep their inline API fallback but no longer cite the removed skill as "canonical"
+- [x] `error-resolver-workflow-skill` and `opencode-agent-creation-skill` references updated
+- [x] `deploy/skill-profiles.json` entry removed (lean 45→44); `deploy/registry.json` regenerated via `node deploy/build-registry.mjs`
+- [x] `tests/skill_profiles.bats` lean-count assertions 45→44 updated
+- [x] `deploy/setup.sh` + `setup.ps1`: opt-in pack listings/help text updated (zai-vision-mcp dropped); `MCP SERVERS (9)` banner → 8
+- [x] `README.md`: skill counts decremented (145→144 etc.), MCP count 9→8, MCP table row, glm-5v-turbo note, Responsive & Visual Testing category updated; same numeric sync for `opencode_app/README.md` + deploy-script count echoes
+- [x] Root `AGENTS.md` Vision-fallback paragraph rewritten (no skill reference)
+- [x] `tests/test_mcp_count_consistency.bats` assertions updated; `bats tests/` green (bats-core submodule bootstrapped)
+- [x] Historical docs (CHANGELOG.md, MIGRATION.md, PLANS/, research/, LEARNINGS/) left untouched
 
 ## Dependency & Consumer Map
 
@@ -99,22 +99,26 @@
     — **Done:** both $comments rewritten per plan wording; JSON valid; fixes: 1 (self-caught: first provider-models draft re-cited the skill name, violating own done-when — rephrased to "legacy direct-API consumer skill")
 
 ### Phase 4: Docs + tests + verification gate
-- [ ] **4.1** Update `README.md`: MCP count line ~330 "ships 9 MCP server entries" → 8; delete MCP table row ~347 (`zai-vision-mcp`); rewrite glm-5v-turbo note ~106 to describe the agents' inline fallback (no skill name); category table ~590 "Responsive & Visual Testing (3)" → (2), drop the skill column entry and its description clause. Then sweep hand-maintained numeric count claims (BT-157 marker class) touched by the removal: "145 skills"-class totals in README.md (~lines 27, 243, 397, 400, 409, 560 — verify live), `opencode_app/README.md` ~line 26, and numeric count echoes in `deploy/setup.sh` (~345 lean-45/full-105 comment, ~589, ~592, ~3528, ~3529) + `deploy/setup.ps1` (~70, ~932) — decrement by one where the count includes the deleted skill (verify live totals before editing; 105 is already off-by-one pre-existing per review)
+- [x] **4.1** Update `README.md`: MCP count line ~330 "ships 9 MCP server entries" → 8; delete MCP table row ~347 (`zai-vision-mcp`); rewrite glm-5v-turbo note ~106 to describe the agents' inline fallback (no skill name); category table ~590 "Responsive & Visual Testing (3)" → (2), drop the skill column entry and its description clause. Then sweep hand-maintained numeric count claims (BT-157 marker class) touched by the removal: "145 skills"-class totals in README.md (~lines 27, 243, 397, 400, 409, 560 — verify live), `opencode_app/README.md` ~line 26, and numeric count echoes in `deploy/setup.sh` (~345 lean-45/full-105 comment, ~589, ~592, ~3528, ~3529) + `deploy/setup.ps1` (~70, ~932) — decrement by one where the count includes the deleted skill (verify live totals before editing; 105 is already off-by-one pre-existing per review)
     — **Why:** README is the asserted doc surface for the MCP count gate and the human-facing catalog; hand-maintained totals drift silently because the 4.4 stale grep is string-based (review WARN findings — ticket AC requires skill-count sync per AGENTS.md §Sync Rules).
     — **Done when:** `grep -n "ships 8 MCP server entries" README.md` matches; `grep -nE "145|ships 9 MCP" README.md opencode_app/README.md` returns no live skill-total claims (historical blockquotes exempt); numeric echoes in deploy scripts match the post-removal totals recorded during execution.
     — **Consumers affected:** `tests/test_mcp_count_consistency.bats` (asserts README count = opencode.json mcp length); humans reading install docs.
-- [ ] **4.2** Rewrite root `AGENTS.md` Vision-fallback paragraph (~line 47): fallback is the inline direct Z.AI vision API call to `glm-5v-turbo` (a different model from the native `glm-5.3-flash`) embedded in the agent files (coding-plan endpoint preferred, PAAS fallback; requires `ZAI_API_KEY`)
+    — **Done:** README ×7 edits (ships-8 line, remaining-6→5, table row deleted, glm-5v-turbo note → inline recipe, category (3)→(2), 145→144 ×3, 105→103 + 45→44); opencode_app/README.md 145→144; setup.sh echoes 45→44/105→103 ×3 blocks; setup.ps1 echoes 45→44/105→103 + pre-existing "30 visible" drift corrected to 44. Live totals verified: 144 skills, 103 allows, 44 lean; files: README.md, opencode_app/README.md, deploy/setup.sh, deploy/setup.ps1; fixes: none
+- [x] **4.2** Rewrite root `AGENTS.md` Vision-fallback paragraph (~line 47): fallback is the inline direct Z.AI vision API call to `glm-5v-turbo` (a different model from the native `glm-5.3-flash`) embedded in the agent files (coding-plan endpoint preferred, PAAS fallback; requires `ZAI_API_KEY`)
     — **Why:** Root AGENTS.md is injected into every session; it must not route to the deleted skill.
     — **Done when:** `grep -n "zai-vision-analysis" AGENTS.md` is empty; "different model" phrase retained.
     — **Consumers affected:** all future sessions reading the vision-fallback rule.
-- [ ] **4.3** Update `tests/test_mcp_count_consistency.bats`: rewrite `mcp_count_zai_zread_removed_vision_opt_in` to assert `zai-vision-mcp` NOT in `d['mcp']` (rename test accordingly); update header comments (drop GIT-357 re-add note, note GIT-364 removal; auto-start stays 3)
+    — **Done:** paragraph rewritten to inline-recipe phrasing ("different model" retained); files: AGENTS.md; fixes: none
+- [x] **4.3** Update `tests/test_mcp_count_consistency.bats`: rewrite `mcp_count_zai_zread_removed_vision_opt_in` to assert `zai-vision-mcp` NOT in `d['mcp']` (rename test accordingly); update header comments (drop GIT-357 re-add note, note GIT-364 removal; auto-start stays 3)
     — **Why:** The test currently asserts the removed server MUST exist opt-in — CI fails until the assertion inverts.
     — **Done when:** `bats tests/test_mcp_count_consistency.bats` passes.
     — **Consumers affected:** CI gate only.
-- [ ] **4.4** Full verification gate: bootstrap bats (`git submodule update --init tests/lib/bats-core` then `PATH="<repo>/tests/lib/bats-core/bin:$PATH"`; apt/vendored fallback if submodule unavailable); `bats tests/`; `node deploy/build-registry.mjs --check`; JSON parse guards for `opencode_app/opencode.json`, `deploy/agent-tiers.json`, `deploy/provider-models.json`, `deploy/skill-profiles.json`; fallback-preservation greps — `grep -c "glm-5v-turbo" opencode_app/.opencode/agents/image-analyzer-subagent.md opencode_app/.opencode/agents/error-resolver-subagent.md` must be ≥1 each (recipe survives); stale-reference grep — `grep -rn "zai-vision-analysis\|zai-vision-mcp" . --exclude-dir=node_modules --exclude-dir=.git` (grep -rn includes hidden dirs — do NOT substitute bare rg) with every hit classified as historical-exempt (CHANGELOG.md, MIGRATION.md, PLANS/, research/, LEARNINGS/, README:564 blockquote) or stale (must be zero)
+    — **Done:** test renamed `mcp_count_zai_zread_and_vision_removed` (asserts both absent), GIT-357 note replaced with GIT-364 note, line-83 comment updated; suite 7/7 green; files: tests/test_mcp_count_consistency.bats; fixes: none
+- [x] **4.4** Full verification gate: bootstrap bats (`git submodule update --init tests/lib/bats-core` then `PATH="<repo>/tests/lib/bats-core/bin:$PATH"`; apt/vendored fallback if submodule unavailable); `bats tests/`; `node deploy/build-registry.mjs --check`; JSON parse guards for `opencode_app/opencode.json`, `deploy/agent-tiers.json`, `deploy/provider-models.json`, `deploy/skill-profiles.json`; fallback-preservation greps — `grep -c "glm-5v-turbo" opencode_app/.opencode/agents/image-analyzer-subagent.md opencode_app/.opencode/agents/error-resolver-subagent.md` must be ≥1 each (recipe survives); stale-reference grep — `grep -rn "zai-vision-analysis\|zai-vision-mcp" . --exclude-dir=node_modules --exclude-dir=.git` (grep -rn includes hidden dirs — do NOT substitute bare rg) with every hit classified as historical-exempt (CHANGELOG.md, MIGRATION.md, PLANS/, research/, LEARNINGS/, README:564 blockquote) or stale (must be zero)
     — **Why:** Blast-radius pattern (LEARNINGS tier-model-swap-blast-radius) requires proving no live surface still routes to the removed artifacts AND that the inline fallback mechanism survived the prose rewrites; the bat suites prove counts did not drift elsewhere.
     — **Done when:** all commands exit 0, both fallback-preservation greps ≥1, and the stale grep shows only exempt files.
     — **Consumers affected:** release confidence for #364.
+    — **Done:** bats bootstrapped (submodule init, v1.13.0); `bats tests/` 318/318 exit 0; registry --check OK (agents=33, skills=144, no drift); 4 JSON guards OK; glm-5v-turbo greps 2+1; stale grep hits all classified: exempt files (research/, MIGRATION.md, LEARNINGS/, PLANS/, CHANGELOG.md, README:563 blockquote) + self-referential absence-assertions in tests/test_mcp_count_consistency.bats (test asserting the server is removed is not a live citation) — zero live citations; fixes: none
 
 ## Technical Notes
 

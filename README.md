@@ -24,7 +24,7 @@ opencode-config-template/
 │   ├── .dockerignore
 │   ├── .opencode/
 │   │       ├── agents/              # 32 subagent .md files
-│   │       └── skills/              # 145 skill directories
+│   │       └── skills/              # 144 skill directories
 │   └── README.md                # Docker usage guide
 ├── docker-compose.yml           # Docker Compose service definition
 ├── .env.example                 # Environment variable template
@@ -102,8 +102,8 @@ Override files (precedence highest-first; see `MIGRATION.md`):
 > **Vision tier (Z.AI):** `image-analyzer-subagent` + `error-resolver-subagent` + `zai-media-subagent` run on
 > `zai-coding-plan/glm-5.3-flash` (native multimodal — image/video/pdf input, 1M ctx), natively
 > mapped by models.dev under the `zai-coding-plan` subscription. They see images/screenshots
-> directly (no external vision API). When native perception is unavailable, the
-> `zai-vision-analysis-skill` fallback calls `glm-5v-turbo` (pay-as-you-go `zai` provider — a
+> directly (no external vision API). When native perception is unavailable, the agents'
+> embedded inline fallback recipe calls `glm-5v-turbo` (pay-as-you-go `zai` provider — a
 > different model) via direct API. Requires `opencode auth login` (Z.AI) or `ZAI_API_KEY`
 > (auto-injected in Docker via `docker-entrypoint.sh`). See `AGENTS.md` § Subagent Model Tiering.
 
@@ -240,7 +240,7 @@ Run `opencode-init --list agents` or `--list skills` to browse in JSON, or visit
 
 ## Project-Scoped Install (`opencode-init`)
 
-Not every project needs all 33 agents + 145 skills. <!-- count: hand-maintained — sync on skill/agent add (BT-157) --> `opencode-init` installs a **curated subset** into a target project's `.opencode/` and writes a project `opencode.json` configuring just that subset — chosen interactively (TUI) or via flags (LLM/CI). It is the project-scoped companion to the global `setup.sh` deploy, and is symlinked onto PATH as `opencode-init` by `setup.sh`.
+Not every project needs all 33 agents + 144 skills. <!-- count: hand-maintained — sync on skill/agent add (BT-157) --> `opencode-init` installs a **curated subset** into a target project's `.opencode/` and writes a project `opencode.json` configuring just that subset — chosen interactively (TUI) or via flags (LLM/CI). It is the project-scoped companion to the global `setup.sh` deploy, and is symlinked onto PATH as `opencode-init` by `setup.sh`.
 
 > **Mutually exclusive with global deploy for isolation.** OpenCode **merges** config and **unions** agents/skills across `~/.config/opencode` and `<project>/.opencode`. A project subset only yields an *isolated* curated experience on a **clean slate** (no global deploy). If `~/.config/opencode/agents/` is non-empty, the project install is **additive** — `opencode-init` detects this and warns. `permission.task` (scoped subagent-spawn allowlist) still restricts auto-spawning even with a global deploy; `@`-mention still bypasses it. See [issue #286](https://github.com/darellchua2/opencode-config-template/issues/286) and `PLANS/PLAN-GIT-286.md`.
 
@@ -327,7 +327,7 @@ nvm install 24
 
 ## MCP Servers
 
-The configuration ships 9 MCP server entries. **3 are enabled by default:**
+The configuration ships 8 MCP server entries. **3 are enabled by default:**
 
 | Server | Type | Purpose |
 |--------|------|---------|
@@ -335,7 +335,7 @@ The configuration ships 9 MCP server entries. **3 are enabled by default:**
 | `zai-web-reader` | remote | Web page content extraction |
 | `zai-web-search` | remote | Web search with cited results (GIT-336) |
 
-The remaining 6 are `enabled: false` and opt-in:
+The remaining 5 are `enabled: false` and opt-in:
 
 | Server | Type | Purpose |
 |--------|------|---------|
@@ -344,7 +344,6 @@ The remaining 6 are `enabled: false` and opt-in:
 | `markitdown` | local | Document-to-Markdown (local-only) |
 | `docling` | local | Layout-aware document extraction (~3-4 GB) |
 | `chrome-devtools` | local | Live Chrome automation |
-| `zai-vision-mcp` | local (npx) | Z.AI vision tools (native multimodal subagents are the default) |
 
 The 4 Autodesk servers are **not shipped in the base config** — the `autodesk` provider pack below adds their full definitions at deploy time (needs `AUTODESK_API_KEY`).
 
@@ -394,10 +393,10 @@ Default state of every pack is **OFF** — existing deployments are unaffected u
 
 #### Skill Profiles — deploy-time primary visibility (#333)
 
-Every allowed skill's `description` is injected into the primary session's context at startup (~90 tokens each). The shipped `opencode_app/opencode.json` allowlist (105 allows) is the **full** profile. For a context-lean primary, deploy with a **lean** profile: only 45 primary-visible skills + `"*": "deny"` (~5.4k tokens saved per session at ~90 tokens/description).
+Every allowed skill's `description` is injected into the primary session's context at startup (~90 tokens each). The shipped `opencode_app/opencode.json` allowlist (103 allows) is the **full** profile. For a context-lean primary, deploy with a **lean** profile: only 44 primary-visible skills + `"*": "deny"` (~5.4k tokens saved per session at ~90 tokens/description).
 
 ```bash
-./deploy/setup.sh                                # default: lean (45 primary-visible skills)
+./deploy/setup.sh                                # default: lean (44 primary-visible skills)
 ./deploy/setup.sh --skill-profile full           # opt back in: shipped allowlist verbatim
 ./deploy/setup.sh --skill-profile lean --dry-run # preview the deployed permission.skill block
 ./deploy/setup.ps1 -SkillProfile full            # Windows parity
@@ -406,7 +405,7 @@ Every allowed skill's `description` is injected into the primary session's conte
 Key properties:
 
 - Only the **deployed** copy's `permission.skill` block is rewritten (`deploy/apply-skill-profile.mjs`); the shipped `opencode.json` is never modified — `full` is a verified no-op.
-- **Subagents are profile-immune.** All 145 skills stay on disk and every skill has either a frontmatter `permission.skill: allow` consumer agent or a lean slot — nothing is orphaned under lean.
+- **Subagents are profile-immune.** All 144 skills stay on disk and every skill has either a frontmatter `permission.skill: allow` consumer agent or a lean slot — nothing is orphaned under lean.
 - Lean-hidden skills cannot be `@`-loaded by the primary until re-exposed; re-exposing any skill is a one-line edit to `deploy/skill-profiles.json`.
 - Typo-guarded: a lean key that doesn't match a real skill directory or the shipped allowlist fails the deploy closed.
 
@@ -557,7 +556,7 @@ TypeScript, JavaScript, Python, Go, Rust, Java, C#, PHP, Ruby, C, C++, Swift, Ko
 
 ## Skill Modularization
 
-This repository implements **skill modularization** with 145 skills organized across 23 categories. <!-- count: hand-maintained — sync on skill add (BT-157) --> Skills are designed with clear separation of concerns and explicit dependencies.
+This repository implements **skill modularization** with 144 skills organized across 23 categories. <!-- count: hand-maintained — sync on skill add (BT-157) --> Skills are designed with clear separation of concerns and explicit dependencies.
 
 > **Registry-derived (PLAN-GIT-286):** every skill + agent now carries a `category:` frontmatter field, which `deploy/build-registry.mjs` reads to emit `deploy/registry.json` — the single source of truth consumed by the `opencode-init` project-scoped installer and (regenerable into) this category table. To refresh after editing frontmatter: `node deploy/build-registry.mjs` (CI fails on drift via `--check`).
 
@@ -587,7 +586,7 @@ This repository implements **skill modularization** with 145 skills organized ac
 | **Security** (2) | security-audit-skill, authentication-authorization-skill | Security auditing, vulnerability scanning, and auth implementation |
 | **DevOps** (5) | docker-containerization-skill, monorepo-management-skill, database-migration-skill, logging-observability-skill, aws-iac-safety-skill | Containerization, monorepos, database migrations, observability, and IaC safety |
 | **Planning & Alignment** (4) | grilling-skill, domain-modeling-skill, grill-with-docs-skill, grill-me-skill | Relentless interview/grilling sessions and domain model (CONTEXT.md glossary + ADR) capture |
-| **Responsive & Visual Testing** (3) | wireframer-skill, playwright-responsive-audit-skill, zai-vision-analysis-skill | Low-fidelity wireframe/prototype generation, Playwright-driven responsive UI audit + fix (persistent PTY watch loop), and Z.AI direct-API image/screenshot analysis (orphaned under the native vision tier — retained as a text-only-session fallback) |
+| **Responsive & Visual Testing** (2) | wireframer-skill, playwright-responsive-audit-skill | Low-fidelity wireframe/prototype generation and Playwright-driven responsive UI audit + fix (persistent PTY watch loop); screenshot analysis routes through `image-analyzer-subagent` (native vision tier) |
 | **CAD & Hardware Design** (14) | cad-generation-skill, cad-viewer-skill, cad-step-parts-skill, cad-dxf-skill, cad-urdf-skill, cad-srdf-skill, cad-sdf-skill, cad-sendcutsend-skill, cad-gcode-skill, cad-bambu-labs-skill, cad-implicit-skill, autodesk-aps-skill, civil-3d-skill, open3d-skill | Parametric CAD generation (STEP/STL/3MF/GLB), CAD Viewer previews, off-the-shelf parts, DXF drawings, robot descriptions (URDF/SRDF/SDF), G-code slicing, 3D printing (Bambu Labs), SendCutSend validation, implicit CAD, Autodesk APS API integration, Civil 3D workflows, Open3D 3D data processing |
 | **Media Generation** (4) | zai-image-generation-skill, zai-video-skill, zai-asr-skill, zai-ocr-skill | Z.AI PAYG media endpoints: text-to-image (GLM-Image, saves PNG), text/image-to-video (CogVideoX-3, async submit + PTY poll, saves MP4), audio transcription (GLM-ASR, wav/mp3 ≤25 MB ≤30 s), and layout-aware OCR (GLM-OCR, image/PDF) — all save artifacts to local files (OpenCode's chat-only providers cannot reach these endpoints) |
 
