@@ -95,8 +95,7 @@ Use when user explicitly requests:
 No vision MCP server is shipped — never assume vision MCP tools exist. Route screenshot input by availability, in order:
 
 1. **Primary — delegate to `error-resolver-subagent`** (Task tool): it runs on the `zai-coding-plan/glm-5.3-flash` vision tier (native multimodal) and sees screenshots directly. This covers both diagnosis and error-text/stack-trace extraction.
-2. **Fallback — `zai-vision-analysis-skill`**: direct Z.AI vision API call (`glm-5v-turbo` — a different model from the native one) via bash, for text-only sessions or when the vision provider is not connected.
-3. **Only if the project's own config adds a vision MCP server** (e.g. `zai-vision-mcp-server`): its `diagnose_error_screenshot` / `extract_text_from_screenshot` tools (pass `image_source` path/URL + `prompt`; optional `context` / `programming_language`). If absent from your tool list, do NOT attempt or hallucinate these calls — use path 1 or 2.
+2. **Fallback — direct Z.AI vision API call via bash**: use the inline recipe embedded in `image-analyzer-subagent` (and mirrored in `error-resolver-subagent`; `glm-5v-turbo` — a different model from the native one), for text-only sessions or when the vision provider is not connected.
 
 ## Error Categories
 

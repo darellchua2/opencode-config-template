@@ -60,22 +60,26 @@
     — **Done:** 4 literals → 44 (header ×2, test name, assertion, expected string); suite 6/6 green; files: tests/skill_profiles.bats; fixes: none
 
 ### Phase 2: Agent + skill prose (fallback path stays, skill citation goes)
-- [ ] **2.1** Rewrite `image-analyzer-subagent.md` §Fallback (~lines 47-55): drop "the vision MCP server isn't connected" clause and the "Run the recipe from `zai-vision-analysis-skill` (canonical, with full error handling)" sentence — present the inline bash recipe as the fallback itself
+- [x] **2.1** Rewrite `image-analyzer-subagent.md` §Fallback (~lines 47-55): drop "the vision MCP server isn't connected" clause and the "Run the recipe from `zai-vision-analysis-skill` (canonical, with full error handling)" sentence — present the inline bash recipe as the fallback itself
     — **Why:** The inline recipe is self-contained and is the actual mechanism; citing a deleted skill as "canonical" strands readers on a 404.
     — **Done when:** `grep -n "zai-vision-analysis-skill\|vision MCP" opencode_app/.opencode/agents/image-analyzer-subagent.md` is empty; inline recipe block untouched.
     — **Consumers affected:** `deploy/registry.json` description regen (rerun build-registry in 2.4 gate if description changes — it must not; only body prose changes).
-- [ ] **2.2** Rewrite `error-resolver-subagent.md` (~line 67): replace "`zai-vision-analysis-skill` (`glm-5v-turbo`, different model) remains the fallback for text-only sessions" with a reference to the inline direct-API fallback recipe (glm-5v-turbo, a different model) embedded in the agent files
+    — **Done:** fallback intro now presents the bash recipe directly; recipe block byte-identical (glm-5v-turbo ×2 preserved); files: opencode_app/.opencode/agents/image-analyzer-subagent.md; fixes: none
+- [x] **2.2** Rewrite `error-resolver-subagent.md` (~line 67): replace "`zai-vision-analysis-skill` (`glm-5v-turbo`, different model) remains the fallback for text-only sessions" with a reference to the inline direct-API fallback recipe (glm-5v-turbo, a different model) embedded in the agent files
     — **Why:** Same dangling-reference risk; the "different model" disambiguation is a documented pattern requirement (LEARNINGS tier-model-swap-blast-radius).
     — **Done when:** `grep -n "zai-vision-analysis-skill" opencode_app/.opencode/agents/error-resolver-subagent.md` is empty; "different model" phrase retained.
     — **Consumers affected:** none outside prose.
-- [ ] **2.3** Rewrite `error-resolver-workflow-skill/SKILL.md` §Image Input Routing (~lines 94-99): path 2 becomes "direct Z.AI vision API call via bash (inline recipe in `image-analyzer-subagent`; glm-5v-turbo — a different model)" and path 3 (project-added vision MCP) is deleted
+    — **Done:** now points at the recipe living in `image-analyzer-subagent` (error-resolver embeds no recipe block — "below" wording corrected during execution); "different model" retained; files: opencode_app/.opencode/agents/error-resolver-subagent.md; fixes: 1 (self-caught false "recipe below" claim — error-resolver-subagent.md:67-69)
+- [x] **2.3** Rewrite `error-resolver-workflow-skill/SKILL.md` §Image Input Routing (~lines 94-99): path 2 becomes "direct Z.AI vision API call via bash (inline recipe in `image-analyzer-subagent`; glm-5v-turbo — a different model)" and path 3 (project-added vision MCP) is deleted
     — **Why:** The routing table is the executable instruction for screenshot handling; it must not route to a deleted skill or presuppose an unshipped MCP server.
     — **Done when:** `grep -n "zai-vision-analysis-skill\|zai-vision-mcp" opencode_app/.opencode/skills/error-resolver-workflow-skill/SKILL.md` is empty; two-path routing remains coherent.
     — **Consumers affected:** error-resolver-subagent (references this skill as source of truth).
-- [ ] **2.4** Update `opencode-agent-creation-skill/SKILL.md` line ~52 model note: drop the "`zai-vision-analysis-skill` calling `glm-5v-turbo` … direct-API fallback" clause; state that vision agents embed an inline direct-API fallback recipe
+    — **Done:** path 2 rewritten to inline-recipe reference, path 3 deleted (two-path routing); files: opencode_app/.opencode/skills/error-resolver-workflow-skill/SKILL.md; fixes: none
+- [x] **2.4** Update `opencode-agent-creation-skill/SKILL.md` line ~52 model note: drop the "`zai-vision-analysis-skill` calling `glm-5v-turbo` … direct-API fallback" clause; state that vision agents embed an inline direct-API fallback recipe
     — **Why:** This skill templates new agents — a stale citation replicates into every future agent (documented pattern risk).
     — **Done when:** `grep -n "zai-vision-analysis" opencode_app/.opencode/skills/opencode-agent-creation-skill/SKILL.md` is empty.
     — **Consumers affected:** future agent authoring only.
+    — **Done:** clause replaced with inline-recipe phrasing; files: opencode_app/.opencode/skills/opencode-agent-creation-skill/SKILL.md; fixes: none
 
 ### Phase 3: Deploy-script + tier-registry prose
 - [ ] **3.1** Remove `zai-vision-mcp` from the three `deploy/setup.sh` listings (help text ~718, opt-in list ~2501, opt-in global packs ~4234) and decrement the `MCP SERVERS (9):` banner at ~line 704 to `(8)`
