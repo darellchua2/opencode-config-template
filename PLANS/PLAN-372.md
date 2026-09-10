@@ -11,13 +11,13 @@
 - [x] `uiux-reviewer-subagent.md` Step 3 (~line 74): mandatory-delegation rule → native-first, delegate on request/failure
 - [x] `uiux-reviewer-subagent.md` §Screenshot Delegation Rule (~lines 107-109): replace text-only claims with hybrid rule + `Status: partial` escape hatch
 - [x] `uiux-reviewer-subagent.md` echo sites (~lines 146, 158, 187-188, 198): no line mandates universal delegation; success/partial status definitions reflect the hybrid rule
-- [ ] `opencode-agent-creation-skill/SKILL.md:52`: vision-tier enumeration includes `uiux-reviewer-subagent`
+- [x] `opencode-agent-creation-skill/SKILL.md:52`: vision-tier enumeration includes `uiux-reviewer-subagent`
 - [x] `uiux-review-skill/SKILL.md:65`: evidence gate accepts native multimodal reading OR image-analyzer evidence; still rejects vision-unbacked claims
-- [ ] Root `AGENTS.md` tier table: uiux removed from reasoning row, added to vision row (+ fallback sentence)
-- [ ] `deploy/registry.json` regenerated (`node deploy/build-registry.mjs`)
+- [x] Root `AGENTS.md` tier table: uiux removed from reasoning row, added to vision row (+ fallback sentence)
+- [x] `deploy/registry.json` regenerated (`node deploy/build-registry.mjs`)
 - [x] `node deploy/resolve-models.mjs --dry-run` → uiux resolves to `zai-coding-plan/glm-5.3-flash`, guard exit 0
-- [ ] `node deploy/build-registry.mjs --check` → no drift
-- [ ] stale-claim sweep on the two edited uiux files → no stale text-only/delegation-mandate claims (fallback-condition mentions retained intentionally)
+- [x] `node deploy/build-registry.mjs --check` → no drift
+- [x] stale-claim sweep on the two edited uiux files → no stale text-only/delegation-mandate claims (fallback-condition mentions retained intentionally)
 
 ## Dependency & Consumer Map
 
@@ -84,14 +84,17 @@
     — **Why:** the tier table is the human-facing mirror of `agent-tiers.json`; drifting tables misroute future tier decisions
     — **Done when:** `rg -n "language/uiux" AGENTS.md` returns nothing and the vision row names `uiux-reviewer-subagent`
     — **Consumers affected:** human readers; none programmatic
-- [ ] **4.2** In `opencode_app/.opencode/skills/opencode-agent-creation-skill/SKILL.md` line 52, extend the vision-tier enumeration to include `uiux-reviewer-subagent` alongside `image-analyzer-subagent`/`error-resolver-subagent`
+    — **Done:** uiux removed from reasoning reviewers list, added to vision row, folded into vision-fallback sentence; sweep `language/uiux` → 0 hits; files: AGENTS.md; fixes: none
+- [x] **4.2** In `opencode_app/.opencode/skills/opencode-agent-creation-skill/SKILL.md` line 52, extend the vision-tier enumeration to include `uiux-reviewer-subagent` alongside `image-analyzer-subagent`/`error-resolver-subagent`
     — **Why:** this skill templates new agents; its resident list is the LEARNINGS blast-radius surface #5 ("stale pin replicates") and the only remaining doc that names vision-tier residents without uiux
     — **Done when:** the vision clause at that line names all three agents
     — **Consumers affected:** future agent authoring (templates)
-- [ ] **4.3** Regenerate `deploy/registry.json` via `node deploy/build-registry.mjs`, then run `node deploy/build-registry.mjs --check` (expect clean) and the stale-claim sweep `rg -n "runs in a text-only model context|primary session is text-only|never inline|always \`image-analyzer-subagent\`|always delegate|MUST NOT attempt to interpret" opencode_app/.opencode/agents/uiux-reviewer-subagent.md opencode_app/.opencode/skills/uiux-review-skill/SKILL.md` (expect no hits; fallback-conditional "text-only session" mentions describing the failure path are intentional)
+    — **Done:** vision clause now names all three agents; files: opencode_app/.opencode/skills/opencode-agent-creation-skill/SKILL.md; fixes: none (an over-edit removing "review" from the reasoning purpose list was reverted in-step — other reviewers remain reasoning-tier)
+- [x] **4.3** Regenerate `deploy/registry.json` via `node deploy/build-registry.mjs`, then run `node deploy/build-registry.mjs --check` (expect clean) and the stale-claim sweep `rg -n "runs in a text-only model context|primary session is text-only|never inline|always \`image-analyzer-subagent\`|always delegate|MUST NOT attempt to interpret" opencode_app/.opencode/agents/uiux-reviewer-subagent.md opencode_app/.opencode/skills/uiux-review-skill/SKILL.md` (expect no hits; fallback-conditional "text-only session" mentions describing the failure path are intentional)
     — **Why:** the registry embeds `tier` and `description` and CI runs a `--check` drift gate — this final idempotent regen captures any residual drift; the refined pattern targets stale CLAIMS (not the hybrid rule's own fallback-condition phrasing, which must remain)
     — **Done when:** `--check` exits 0 and the stale-claim sweep returns nothing
     — **Consumers affected:** installer registry consumers (`init.mjs`, `setup.sh` counts — counts unchanged)
+    — **Done:** regen + `--check` "no drift"; stale-claim sweep exit 1 (zero hits); files: deploy/registry.json (idempotent); fixes: none
 
 ## Technical Notes
 
