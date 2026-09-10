@@ -12,7 +12,7 @@
 - [x] `uiux-reviewer-subagent.md` §Screenshot Delegation Rule (~lines 107-109): replace text-only claims with hybrid rule + `Status: partial` escape hatch
 - [x] `uiux-reviewer-subagent.md` echo sites (~lines 146, 158, 187-188, 198): no line mandates universal delegation; success/partial status definitions reflect the hybrid rule
 - [ ] `opencode-agent-creation-skill/SKILL.md:52`: vision-tier enumeration includes `uiux-reviewer-subagent`
-- [ ] `uiux-review-skill/SKILL.md:65`: evidence gate accepts native multimodal reading OR image-analyzer evidence; still rejects vision-unbacked claims
+- [x] `uiux-review-skill/SKILL.md:65`: evidence gate accepts native multimodal reading OR image-analyzer evidence; still rejects vision-unbacked claims
 - [ ] Root `AGENTS.md` tier table: uiux removed from reasoning row, added to vision row (+ fallback sentence)
 - [ ] `deploy/registry.json` regenerated (`node deploy/build-registry.mjs`)
 - [x] `node deploy/resolve-models.mjs --dry-run` → uiux resolves to `zai-coding-plan/glm-5.3-flash`, guard exit 0
@@ -73,10 +73,11 @@
     — **Done:** all 4 echo sites rewritten (:146 delegation bullet, :158 output field "read natively: N (delegated: M, when used)", :187-188 status definitions, :198 do-not-return item); files: opencode_app/.opencode/agents/uiux-reviewer-subagent.md; fixes: none
 
 ### Phase 3: Skill evidence gate
-- [ ] **3.1** In `opencode_app/.opencode/skills/uiux-review-skill/SKILL.md` line 65, change the evidence check to accept screenshot evidence from native multimodal reviewer reading OR `image-analyzer-subagent`, rejecting only visual findings with no vision-derived backing (fabricated or code-inferred pixel claims)
+- [x] **3.1** In `opencode_app/.opencode/skills/uiux-review-skill/SKILL.md` line 65, change the evidence check to accept screenshot evidence from native multimodal reviewer reading OR `image-analyzer-subagent`, rejecting only visual findings with no vision-derived backing (fabricated or code-inferred pixel claims)
     — **Why:** the current gate ("If screenshot interpreted inline, **reject**") would invalidate the reviewer's own native vision evidence — the exact capability this change ships
     — **Done when:** the gate names both valid evidence sources and keeps an explicit reject condition for vision-unbacked claims
     — **Consumers affected:** `uiux-reviewer-subagent` (its rubric source of truth)
+    — **Done:** QA-gate check 2 rewritten to accept native multimodal reads OR image-analyzer output; reject condition scoped to vision-unbacked claims; files: opencode_app/.opencode/skills/uiux-review-skill/SKILL.md; fixes: none
 
 ### Phase 4: Docs, generated artifacts, verification gate
 - [ ] **4.1** In root `AGENTS.md`, remove `uiux` from the reasoning row's reviewer list, add `uiux-reviewer-subagent` to the vision row's agent list, and fold it into the vision-fallback sentence
