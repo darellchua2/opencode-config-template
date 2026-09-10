@@ -6,7 +6,7 @@
 
 ## Acceptance Criteria
 
-- [ ] `deploy/agent-tiers.json`: `uiux-reviewer-subagent` → `vision` (+ short `$comment` NOTE, house style)
+- [x] `deploy/agent-tiers.json`: `uiux-reviewer-subagent` → `vision` (+ short `$comment` NOTE, house style)
 - [ ] `uiux-reviewer-subagent.md` frontmatter `description`: native multimodal reading, image-analyzer delegation on failure/request
 - [ ] `uiux-reviewer-subagent.md` Step 3 (~line 74): mandatory-delegation rule → native-first, delegate on request/failure
 - [ ] `uiux-reviewer-subagent.md` §Screenshot Delegation Rule (~lines 107-109): replace text-only claims with hybrid rule + `Status: partial` escape hatch
@@ -34,18 +34,21 @@
 ## Implementation Phases
 
 ### Phase 1: Tier registry + resolution guard
-- [ ] **1.1** In `deploy/agent-tiers.json`, change line 16 to `"uiux-reviewer-subagent": "vision"` and append one `$comment` NOTE sentence documenting the move (house style of the #294/#357 NOTEs)
+- [x] **1.1** In `deploy/agent-tiers.json`, change line 16 to `"uiux-reviewer-subagent": "vision"` and append one `$comment` NOTE sentence documenting the move (house style of the #294/#357 NOTEs)
     — **Why:** tier registry is the source of truth; every other surface (model injection, registry, docs) derives from it, so it must flip first
     — **Done when:** file is valid JSON, the entry reads `"vision"`, and the `$comment` NOTE names the reviewer and the vision rationale
     — **Consumers affected:** `resolve-models.mjs`, `build-registry.mjs`, AGENTS.md tier table
-- [ ] **1.2** Run `node deploy/resolve-models.mjs --agents-src opencode_app/.opencode/agents --agents-dest /tmp/opencode/plan-372 --tiers deploy/agent-tiers.json --default-map deploy/models.default.json --provider-models deploy/provider-models.json --dry-run` and confirm the guard exits 0 with `uiux-reviewer-subagent` resolving to `zai-coding-plan/glm-5.3-flash`
+    — **Done:** tier flipped + entry moved into the vision block + NOTE (#372) appended; files: deploy/agent-tiers.json; fixes: none
+- [x] **1.2** Run `node deploy/resolve-models.mjs --agents-src opencode_app/.opencode/agents --agents-dest /tmp/opencode/plan-372 --tiers deploy/agent-tiers.json --default-map deploy/models.default.json --provider-models deploy/provider-models.json --dry-run` and confirm the guard exits 0 with `uiux-reviewer-subagent` resolving to `zai-coding-plan/glm-5.3-flash`
     — **Why:** fail-fast proof that the tier move resolves cleanly under the Z.AI default map and every provider guard, before any prose or generated files change
     — **Done when:** command exit 0 and its output line for `uiux-reviewer-subagent` shows `zai-coding-plan/glm-5.3-flash`
     — **Consumers affected:** none (verification only)
-- [ ] **1.3** Regenerate `deploy/registry.json` via `node deploy/build-registry.mjs` and commit it in the SAME commit as 1.1
+    — **Done:** exit 0, line `uiux-reviewer-subagent vision zai-coding-plan/glm-5.3-flash WRITE`; files: none; fixes: none
+- [x] **1.3** Regenerate `deploy/registry.json` via `node deploy/build-registry.mjs` and commit it in the SAME commit as 1.1
     — **Why:** the registry embeds each agent's `tier`; the `tier-model-swap-blast-radius` learning requires same-commit regen or intermediate per-phase CI runs hit the `--check` drift gate
     — **Done when:** the Phase 1 commit contains both the tier flip and a registry showing `"tier": "vision"` for `uiux-reviewer-subagent`
     — **Consumers affected:** installer registry consumers (`init.mjs`, `setup.sh` counts — counts unchanged)
+    — **Done:** `wrote registry.json (agents=33, skills=148)`, `registry OK … no drift`, uiux entry tier=vision at registry.json:644; files: deploy/registry.json; fixes: none
 
 ### Phase 2: Agent prose — hybrid vision policy
 - [ ] **2.1** In `opencode_app/.opencode/agents/uiux-reviewer-subagent.md`, rewrite the frontmatter `description` to: review-only UI/UX design review — 13-axis rubric over screenshots, source, live URLs; native multimodal screenshot reading with image-analyzer delegation on failure or request — then regenerate `deploy/registry.json` in the same commit
