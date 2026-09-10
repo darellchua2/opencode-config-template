@@ -7,17 +7,17 @@
 ## Acceptance Criteria
 
 - [x] `deploy/agent-tiers.json`: `uiux-reviewer-subagent` → `vision` (+ short `$comment` NOTE, house style)
-- [ ] `uiux-reviewer-subagent.md` frontmatter `description`: native multimodal reading, image-analyzer delegation on failure/request
-- [ ] `uiux-reviewer-subagent.md` Step 3 (~line 74): mandatory-delegation rule → native-first, delegate on request/failure
-- [ ] `uiux-reviewer-subagent.md` §Screenshot Delegation Rule (~lines 107-109): replace text-only claims with hybrid rule + `Status: partial` escape hatch
-- [ ] `uiux-reviewer-subagent.md` echo sites (~lines 146, 158, 187-188, 198): no line mandates universal delegation; success/partial status definitions reflect the hybrid rule
+- [x] `uiux-reviewer-subagent.md` frontmatter `description`: native multimodal reading, image-analyzer delegation on failure/request
+- [x] `uiux-reviewer-subagent.md` Step 3 (~line 74): mandatory-delegation rule → native-first, delegate on request/failure
+- [x] `uiux-reviewer-subagent.md` §Screenshot Delegation Rule (~lines 107-109): replace text-only claims with hybrid rule + `Status: partial` escape hatch
+- [x] `uiux-reviewer-subagent.md` echo sites (~lines 146, 158, 187-188, 198): no line mandates universal delegation; success/partial status definitions reflect the hybrid rule
 - [ ] `opencode-agent-creation-skill/SKILL.md:52`: vision-tier enumeration includes `uiux-reviewer-subagent`
 - [ ] `uiux-review-skill/SKILL.md:65`: evidence gate accepts native multimodal reading OR image-analyzer evidence; still rejects vision-unbacked claims
 - [ ] Root `AGENTS.md` tier table: uiux removed from reasoning row, added to vision row (+ fallback sentence)
 - [ ] `deploy/registry.json` regenerated (`node deploy/build-registry.mjs`)
-- [ ] `node deploy/resolve-models.mjs --dry-run` → uiux resolves to `zai-coding-plan/glm-5.3-flash`, guard exit 0
+- [x] `node deploy/resolve-models.mjs --dry-run` → uiux resolves to `zai-coding-plan/glm-5.3-flash`, guard exit 0
 - [ ] `node deploy/build-registry.mjs --check` → no drift
-- [ ] `rg "text-only"` on the two edited uiux files → no stale hits
+- [ ] stale-claim sweep on the two edited uiux files → no stale text-only/delegation-mandate claims (fallback-condition mentions retained intentionally)
 
 ## Dependency & Consumer Map
 
@@ -51,22 +51,26 @@
     — **Done:** `wrote registry.json (agents=33, skills=148)`, `registry OK … no drift`, uiux entry tier=vision at registry.json:644; files: deploy/registry.json; fixes: none
 
 ### Phase 2: Agent prose — hybrid vision policy
-- [ ] **2.1** In `opencode_app/.opencode/agents/uiux-reviewer-subagent.md`, rewrite the frontmatter `description` to: review-only UI/UX design review — 13-axis rubric over screenshots, source, live URLs; native multimodal screenshot reading with image-analyzer delegation on failure or request — then regenerate `deploy/registry.json` in the same commit
+- [x] **2.1** In `opencode_app/.opencode/agents/uiux-reviewer-subagent.md`, rewrite the frontmatter `description` to: review-only UI/UX design review — 13-axis rubric over screenshots, source, live URLs; native multimodal screenshot reading with image-analyzer delegation on failure or request — then regenerate `deploy/registry.json` in the same commit
     — **Why:** the description drives invocation routing AND flows into `deploy/registry.json`; leaving "delegates screenshots to image-analyzer" would understate the new native capability in both places, and same-commit regen keeps the CI `--check` gate green per phase
     — **Done when:** description reads ≤1024 chars, preserves the trigger phrases from `README.md:668` ("design review", "UI audit", "UX review", "visual review", "review UI design"), mentions native multimodal reading, and the registry diff shows the new description
     — **Consumers affected:** `deploy/registry.json`, primary-session routing
+    — **Done:** description rewritten (trigger phrase "design review" preserved); registry regenerated in-phase, `--check` clean ("no drift"); files: opencode_app/.opencode/agents/uiux-reviewer-subagent.md, deploy/registry.json; fixes: none
 - [ ] **2.2** Rewrite Step 3 (~line 74): replace the "Mandatory delegation rule: the primary session is text-only — you MUST NOT attempt to interpret screenshot pixels yourself" block with native-first interpretation of captured screenshots at each breakpoint, delegating to `image-analyzer-subagent` via the Task tool only when explicitly requested or when native perception fails, keeping the expected-output finding-schema contract
     — **Why:** the operative workflow step still mandates universal delegation, which would leave the vision-tier capability unused and contradict 2.1
     — **Done when:** Step 3 states native interpretation as primary, delegation as conditional, and retains the rubric-question + finding-schema handoff text for the delegated path
     — **Consumers affected:** `uiux-review-skill` §evidence gate (aligned in 3.1)
+    — **Done:** Step 3 retitled "Visual Analysis (native first, delegate on failure)"; delegation now conditional (explicit request OR perception failure); finding-schema handoff retained; files: opencode_app/.opencode/agents/uiux-reviewer-subagent.md; fixes: none
 - [ ] **2.3** Rewrite §Screenshot Delegation Rule (~lines 107-109) from the text-only hard constraint to the hybrid rule — mirror `error-resolver-subagent.md:64-71` phrasing: runs on `zai-coding-plan/glm-5.3-flash` and sees screenshots directly; delegate to `image-analyzer-subagent` on explicit request or native-perception failure; if both paths are unavailable report `Status: partial` with `Issues: visual findings unavailable` — never fabricate visual findings; also reword the line-103 reference to "the `image-analyzer-subagent` delegation rule" to match
     — **Why:** these are the hard-constraint statements that forbid what the new model can do; stale text-only claims would make the agent self-describe a false capability limit
-    — **Done when:** `rg -n "text-only" opencode_app/.opencode/agents/uiux-reviewer-subagent.md` returns no hits and the no-fabrication escape hatch survives
+    — **Done when:** stale-claim sweep clean — no line claims the agent is text-only or mandates universal delegation (fallback-conditional mentions of "text-only session" describing the FAILURE path are intentional, mirroring `error-resolver-subagent.md:67`); no-fabrication escape hatch survives
     — **Consumers affected:** `responsive-audit-subagent.md` + `worktree-pipeline-skill` delegation references (verified still-true: delegation path continues to exist)
+    — **Done:** §Screenshot Vision Rule rewritten (hybrid, escape hatch preserved, "BOTH paths" partial trigger); line-103 reference reworded; sweep `runs in a text-only model context|never inline|always delegate|MUST NOT attempt to interpret` → 0 hits; intentional deviation: 2 fallback-context "text-only session" mentions retained per the mirror-error-resolver instruction; files: opencode_app/.opencode/agents/uiux-reviewer-subagent.md; fixes: none
 - [ ] **2.4** Sweep the remaining mandatory-delegation restatements in `uiux-reviewer-subagent.md` to the hybrid rule: line ~146 Delegation bullet ("**Screenshots**: always `image-analyzer-subagent` (never inline)"), line ~158 output field ("Screenshots delegated to image-analyzer: N"), lines ~187-188 success/partial status definitions, line ~198 do-not-return item ("Inline screenshot interpretations (always delegate)")
     — **Why:** these echo sites re-state the old universal-delegation rule WITHOUT containing the string "text-only" (review finding), so the 4.3 grep gate cannot see them; left untouched, the agent contradicts its own native-first policy and a native-only review can never return `success`
     — **Done when:** no line in the file mandates universal delegation; `success` requires visual findings read natively or verified via `image-analyzer-subagent`; `partial` triggers only when BOTH paths are unavailable; the output field reports native reads with a delegated count when delegation was used; the do-not-return item becomes "visual findings without vision-derived backing"
     — **Consumers affected:** `responsive-audit-subagent.md` + `worktree-pipeline-skill` references (tier-agnostic, verified)
+    — **Done:** all 4 echo sites rewritten (:146 delegation bullet, :158 output field "read natively: N (delegated: M, when used)", :187-188 status definitions, :198 do-not-return item); files: opencode_app/.opencode/agents/uiux-reviewer-subagent.md; fixes: none
 
 ### Phase 3: Skill evidence gate
 - [ ] **3.1** In `opencode_app/.opencode/skills/uiux-review-skill/SKILL.md` line 65, change the evidence check to accept screenshot evidence from native multimodal reviewer reading OR `image-analyzer-subagent`, rejecting only visual findings with no vision-derived backing (fabricated or code-inferred pixel claims)
@@ -83,9 +87,9 @@
     — **Why:** this skill templates new agents; its resident list is the LEARNINGS blast-radius surface #5 ("stale pin replicates") and the only remaining doc that names vision-tier residents without uiux
     — **Done when:** the vision clause at that line names all three agents
     — **Consumers affected:** future agent authoring (templates)
-- [ ] **4.3** Regenerate `deploy/registry.json` via `node deploy/build-registry.mjs`, then run `node deploy/build-registry.mjs --check` (expect clean) and the widened stale-rule sweep `rg -n "text-only|never inline|always \`image-analyzer|verified via \`image-analyzer" opencode_app/.opencode/agents/uiux-reviewer-subagent.md opencode_app/.opencode/skills/uiux-review-skill/SKILL.md` (expect no hits)
-    — **Why:** the registry embeds `tier` and `description` and CI runs a `--check` drift gate — this final idempotent regen captures any residual drift; the widened pattern covers the echo sites that lack the literal "text-only" string
-    — **Done when:** `--check` exits 0 and the stale-rule grep returns nothing
+- [ ] **4.3** Regenerate `deploy/registry.json` via `node deploy/build-registry.mjs`, then run `node deploy/build-registry.mjs --check` (expect clean) and the stale-claim sweep `rg -n "runs in a text-only model context|primary session is text-only|never inline|always \`image-analyzer-subagent\`|always delegate|MUST NOT attempt to interpret" opencode_app/.opencode/agents/uiux-reviewer-subagent.md opencode_app/.opencode/skills/uiux-review-skill/SKILL.md` (expect no hits; fallback-conditional "text-only session" mentions describing the failure path are intentional)
+    — **Why:** the registry embeds `tier` and `description` and CI runs a `--check` drift gate — this final idempotent regen captures any residual drift; the refined pattern targets stale CLAIMS (not the hybrid rule's own fallback-condition phrasing, which must remain)
+    — **Done when:** `--check` exits 0 and the stale-claim sweep returns nothing
     — **Consumers affected:** installer registry consumers (`init.mjs`, `setup.sh` counts — counts unchanged)
 
 ## Technical Notes
