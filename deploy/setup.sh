@@ -114,6 +114,10 @@ RESOLVED_SIDECAR="${CONFIG_DIR}/.resolved-models.json"
 CONFIG_VERSION_FILE="${CONFIG_DIR}/.config-version"
 SCHEMA_VERSION="2.0"
 SOURCE_CONFIG="${REPO_DIR}/opencode_app/opencode.json"
+# Official OpenCode v2 installer (docs: https://opencode.ai/v2/docs). The npm
+# package `opencode-ai` still serves v1.x (1.18.x) — never use it to install
+# or update a v2 binary; it would silently downgrade.
+V2_INSTALL_SCRIPT="https://opencode.ai/v2/install"
 # Where dry-run stages complete resolved files (mirrors what would land in ~/.config)
 DRY_RUN_PREVIEW_DIR="${CONFIG_DIR}/.dry-run-preview"
 
@@ -555,6 +559,13 @@ USAGE:
                                       daily, weekly, monthly, manual (default)
     -C, --check-update    Check for updates without installing
 
+  V1 → V2 MIGRATION (automatic detection):
+    On startup, setup detects an OpenCode v1.x install and offers the
+    documented migration path: uninstall the npm v1 package (opencode-ai,
+    v1-only) and clean-install v2 via the official script. Docs:
+    https://opencode.ai/v2/docs — skipped silently when v2 is active.
+    Non-interactive (-y) runs print the commands instead of uninstalling.
+
   UTILITY OPTIONS:
     -h, --help            Show this detailed help message
     -d, --dry-run         Preview all actions without making changes
@@ -575,21 +586,21 @@ USAGE:
                           primary/reasoning/fast/docs/vision, e.g. vision on OpenAI)
 
   PROVIDER PACKS (deploy-time MCP toggle):
-    --enable-pack <csv>   Enable provider pack(s) — flips mcp.<server>.enabled
-                          and sets permission "<ns>*": "allow" for the named
-                          packs. Available
+    --enable-pack <csv>   Enable provider pack(s) — clears mcp.servers.<server>.disabled
+                          and merges a permissions allow rule (action "<ns>*") for the
+                          named packs. Available
                           packs: autodesk, markitdown, nextjs, docling, chrome-devtools
                           (comma-separated, e.g. --enable-pack autodesk,markitdown).
                           No-op if omitted; default state of every pack is OFF.
                           Plugin pack: voice — installs @renjfk/opencode-voice into
-                          tui.json (local speech-to-text via whisper.cpp + sox; also
+                          cli.json (local speech-to-text via whisper.cpp + sox; also
                           installs host prereqs; macOS/Linux only).
 
   SKILL PROFILE (deploy-time primary visibility):
     --skill-profile <p>   lean (default) | full. lean rewrites the DEPLOYED
-                           config's permission.skill to 45 primary-visible
-                           skills + "*": "deny" (subagents unaffected — they
-                           self-scope via frontmatter allows); full deploys the
+                           config's skill permission rules to 45 primary-visible
+                           allows + deny "*" (subagents unaffected — they
+                           self-scope via frontmatter rules); full deploys the
                            shipped 104-allow allowlist verbatim.
 
   LOCAL LLM (gemma-4-E4B via llama.cpp in Docker):
@@ -2223,71 +2234,125 @@ setup_nodejs() {
     return 0
 }
 
+# ─────────────────────────────────────────────────────────────────────────────
+# OPENCODE MAJOR-VERSION GUARD (v1 → v2 migration)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Echo the installed opencode MAJOR version (integer). Returns non-zero (and
+# prints nothing) when opencode is missing or the version string is unparseable.
+# Always guard call sites (`|| true` / `|| return 0`) — the ERR trap is active.
+get_opencode_major() {
+    command_exists opencode || return 1
+    opencode --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -n1 | cut -d. -f1
+}
+
+# Clean-install OpenCode v2 via the official installer, then verify the major
+# version flipped. Respects DRY_RUN.
+install_opencode_v2() {
+    log_info "Installing OpenCode v2 via the official installer (${V2_INSTALL_SCRIPT})..."
+    if [ "$DRY_RUN" = true ]; then
+        echo "[DRY-RUN] Would execute: curl -fsSL ${V2_INSTALL_SCRIPT} | bash"
+        return 0
+    fi
+    if ! curl -fsSL "$V2_INSTALL_SCRIPT" | bash; then
+        log_error "v2 installer failed — install manually, then re-run setup:"
+        log_info "  curl -fsSL ${V2_INSTALL_SCRIPT} | bash"
+        return 1
+    fi
+    local major
+    major=$(get_opencode_major || true)
+    if [ "$major" = "2" ]; then
+        log_success "OpenCode v2 installed (v$(opencode --version 2>/dev/null || echo '2.x'))"
+        return 0
+    fi
+    log_warn "Installer finished but 'opencode --version' does not report v2.x (got: ${major:-unknown})."
+    log_warn "A stale binary may shadow PATH ('which -a opencode'), or a new terminal is needed."
+    return 1
+}
+
+# Detect a v1.x install and offer the documented migration path
+# (https://opencode.ai/v2/docs): uninstall the npm v1 package, clean-install v2
+# via the official script. The deployed config from this template is v2-native
+# (plugins[], mcp.servers.*, permissions rule array, agents) — v1 silently
+# ignores those shapes, which surfaces as "missing" MCP servers, plugins, and
+# skill gating. Never fatal: declining only prints the manual steps. Under -y
+# the migration is never performed unattended; the commands are printed instead.
+check_opencode_v2_migration() {
+    local major
+    major=$(get_opencode_major) || return 0   # not installed → fresh-install path handles it
+    [ -z "$major" ] && return 0               # unparseable version → warn-only elsewhere
+    if [ "$major" -ge 2 ] 2>/dev/null; then
+        log_debug "OpenCode v${major}.x detected — no migration needed"
+        return 0
+    fi
+
+    echo ""
+    log_warn "OpenCode v1.x detected ($(opencode --version 2>/dev/null | sed 's/^opencode //' || echo 'v1.x'))."
+    echo "  This template ships v2-NATIVE configuration (plugins[], mcp.servers.*,"
+    echo "  permissions rule array, agents). v1 silently ignores those shapes — MCP"
+    echo "  servers, plugins, and skill gating will appear broken or missing."
+    echo ""
+    echo "  Migration path (https://opencode.ai/v2/docs):"
+    echo "    1. npm uninstall -g opencode-ai              # remove the v1 npm package"
+    echo "    2. curl -fsSL ${V2_INSTALL_SCRIPT} | bash    # clean-install v2"
+    echo "    3. Restart opencode, then re-run ./setup.sh"
+    echo ""
+
+    if [ "$AUTO_ACCEPT" = true ]; then
+        log_warn "Non-interactive mode: skipping auto-migration. Run the 3 commands above, then re-run setup."
+        return 0
+    fi
+
+    if ! prompt_yes_no "Uninstall v1 and clean-install v2 now?" "y"; then
+        log_info "Migration declined — continuing, but expect v1/v2 config mismatches."
+        return 0
+    fi
+
+    if command_exists npm && npm ls -g opencode-ai >/dev/null 2>&1; then
+        log_info "Removing the npm v1 package (opencode-ai)..."
+        run_cmd npm uninstall -g opencode-ai || log_warn "npm uninstall failed (non-fatal — the v2 installer overwrites the binary)"
+    fi
+    install_opencode_v2
+}
+
 # Setup OpenCode
 setup_opencode() {
     echo ""
     echo "=== Installing/Updating OpenCode ==="
 
-    # Ensure npm/node is available
-    if ! command_exists npm; then
-        log_error "npm is not available. Cannot install opencode-ai."
-        return 1
-    fi
-
-    # Check if already installed
     if command_exists opencode; then
         local current_version
-        current_version=$(opencode --version 2>/dev/null || echo "unknown")
-        local latest_version
-        latest_version=$(npm view opencode-ai version 2>/dev/null || echo "unknown")
+        current_version=$(opencode --version 2>/dev/null | sed 's/^opencode //' || echo "unknown")
+        local major
+        major=$(get_opencode_major || true)
+        log_info "opencode is already installed (${current_version})"
 
-        log_info "opencode-ai is already installed (v${current_version})"
-        log_info "Latest version: v${latest_version}"
-
-        if [ "$current_version" != "$latest_version" ]; then
-            echo ""
-            log_warn "An update is available for opencode-ai!"
-
-            if prompt_yes_no "Would you like to update to the latest version?" "y"; then
-                log_info "Updating opencode-ai..."
-                run_cmd "npm install -g opencode-ai@latest"
-
-                if command_exists opencode; then
-                    log_success "opencode-ai updated successfully to $(opencode --version)"
-                else
-                    log_error "opencode-ai update failed"
-                    return 1
-                fi
+        if [ "$major" = "2" ]; then
+            # npm's opencode-ai package is v1-only — v2 updates/reinstalls must
+            # go through the official installer or they'd downgrade to v1.
+            if prompt_yes_no "Update to the latest v2 via the official installer?" "n"; then
+                install_opencode_v2
             else
-                log_info "Skipping opencode-ai update"
+                log_success "OpenCode v2 left as-is"
             fi
+        elif [ "$major" = "1" ]; then
+            log_warn "OpenCode v1 detected — migration was offered at startup."
+            log_info "Skipping npm install (npm opencode-ai is v1-only and would keep you on v1)."
         else
-            log_success "opencode-ai is already up to date"
-
-            if prompt_yes_no "Reinstall opencode-ai anyway?" "n"; then
-                log_info "Reinstalling opencode-ai..."
-                run_cmd "npm install -g opencode-ai"
-                log_success "opencode-ai reinstalled successfully"
+            log_warn "Could not determine the opencode major version (${current_version})."
+            if prompt_yes_no "Run the official v2 installer anyway?" "n"; then
+                install_opencode_v2
             fi
         fi
-    else
-        log_info "opencode-ai is not installed"
-
-        if prompt_yes_no "Install opencode-ai now?" "y"; then
-            log_info "Installing opencode-ai..."
-            run_cmd "npm install -g opencode-ai"
-
-            if command_exists opencode; then
-                log_success "opencode-ai installed successfully"
-            else
-                log_error "opencode-ai installation failed"
-                return 1
-            fi
-        else
-            log_warn "Skipping opencode-ai installation"
-        fi
+        return 0
     fi
 
+    log_info "opencode is not installed"
+    if prompt_yes_no "Install OpenCode v2 via the official installer now?" "y"; then
+        install_opencode_v2
+    else
+        log_warn "Skipping opencode installation"
+    fi
     return 0
 }
 
@@ -2297,101 +2362,43 @@ update_opencode_cli() {
     echo "=== Updating OpenCode CLI ==="
     echo ""
 
-    # Ensure npm/node is available
-    if ! command_exists npm; then
-        log_error "npm is not available. Cannot update opencode-ai."
-        log_info "Please install Node.js first: https://nodejs.org/"
-        return 1
-    fi
+    local major
+    major=$(get_opencode_major || true)
 
-    # Check if opencode is installed
-    if ! command_exists opencode; then
-        log_warn "opencode-ai is not installed."
-        if prompt_yes_no "Would you like to install opencode-ai now?" "y"; then
-            log_info "Installing opencode-ai..."
-            run_cmd "npm install -g opencode-ai"
-            
-            if command_exists opencode; then
-                log_success "opencode-ai installed successfully (v$(opencode --version 2>/dev/null))"
-                return 0
-            else
-                log_error "opencode-ai installation failed"
-                return 1
-            fi
-        else
-            log_info "Skipping opencode-ai installation"
-            return 0
-        fi
-    fi
-
-    # Get current version
-    local current_version
-    current_version=$(opencode --version 2>/dev/null || echo "unknown")
-    log_info "Current version: v${current_version}"
-
-    # Get latest version
-    local latest_version
-    log_info "Checking for updates..."
-    latest_version=$(npm view opencode-ai version 2>/dev/null || echo "unknown")
-    
-    if [ "$latest_version" = "unknown" ]; then
-        log_error "Could not fetch latest version from npm registry"
-        log_info "Check your internet connection and try again"
-        return 1
-    fi
-
-    log_info "Latest version: v${latest_version}"
-
-    # Compare versions
-    if [ "$current_version" = "$latest_version" ]; then
-        log_success "opencode-ai is already up to date!"
-        echo ""
-        
-        if prompt_yes_no "Force reinstall anyway?" "n"; then
-            log_info "Reinstalling opencode-ai..."
-            run_cmd "npm install -g opencode-ai@${latest_version}"
-            log_success "opencode-ai reinstalled successfully"
-        fi
-        
+    # v1: npm's opencode-ai package is v1-only — updating via npm would keep
+    # (or put) the user on v1. Route through the migration flow instead.
+    if [ "$major" = "1" ]; then
+        log_warn "OpenCode v1.x detected — npm serves v1.x only, so npm cannot update it."
+        check_opencode_v2_migration
         return 0
     fi
 
-    echo ""
-    log_info "Update available: v${current_version} → v${latest_version}"
-    
-    # Check if auto-update is enabled
-    if [ "$AUTO_ACCEPT" = true ]; then
-        log_info "Auto-updating to latest version..."
-        run_cmd "npm install -g opencode-ai@latest"
-        
-        local new_version
-        new_version=$(opencode --version 2>/dev/null || echo "unknown")
-        
-        if [ "$new_version" = "$latest_version" ]; then
-            log_success "opencode-ai updated successfully to v${new_version}"
+    # Not installed / unparseable → offer a clean v2 install
+    if [ "$major" != "2" ]; then
+        if ! command_exists opencode; then
+            log_warn "opencode is not installed."
         else
-            log_error "Update failed. Current version: v${new_version}"
-            return 1
+            log_warn "Could not determine the opencode version ($(opencode --version 2>/dev/null || echo 'unknown'))."
         fi
-    else
-        if prompt_yes_no "Update opencode-ai to v${latest_version}?" "y"; then
-            log_info "Updating opencode-ai..."
-            run_cmd "npm install -g opencode-ai@latest"
-            
-            local new_version
-            new_version=$(opencode --version 2>/dev/null || echo "unknown")
-            
-            if [ "$new_version" = "$latest_version" ]; then
-                log_success "opencode-ai updated successfully to v${new_version}"
-            else
-                log_error "Update failed. Current version: v${new_version}"
-                return 1
-            fi
+        if prompt_yes_no "Install the latest OpenCode v2 via the official installer?" "y"; then
+            install_opencode_v2
         else
-            log_info "Update cancelled by user"
+            log_info "Skipping opencode installation"
         fi
+        return 0
     fi
 
+    # v2: update = re-run the official installer (installs the latest v2).
+    log_info "Current version: $(opencode --version 2>/dev/null | sed 's/^opencode //' || echo 'unknown')"
+    if [ "$AUTO_ACCEPT" = true ]; then
+        install_opencode_v2
+        return $?
+    fi
+    if prompt_yes_no "Update to the latest v2 via the official installer?" "y"; then
+        install_opencode_v2
+    else
+        log_info "Update cancelled by user"
+    fi
     return 0
 }
 
@@ -2473,7 +2480,7 @@ setup_config() {
             install_docling
 
             # Voice plugin pack (issue #356): interactive opt-in + host prereqs
-            # (sox, whisper-cli, whisper model). tui.json merge happens later
+            # (sox, whisper-cli, whisper model). cli.json merge happens later
             # in run_pack_merger. Best-effort — non-fatal.
             install_voice
 
@@ -2698,14 +2705,14 @@ install_rocm_linux() {
 
 # Voice plugin pack (--enable-pack voice, issue #356): host prereqs for
 # @renjfk/opencode-voice — local speech-to-text via whisper.cpp + sox.
-# The tui.json plugin entry itself is merged by run_pack_merger (pack-voice.json
-# "tui" key). Mirrors install_docling: opt-in, best-effort, never fatal.
+# The cli.json plugin entry itself is merged by run_pack_merger (pack-voice.json
+# "cli" key). Mirrors install_docling: opt-in, best-effort, never fatal.
 # Prereq install is macOS/Linux only (plugin documents no Windows build).
 # Interactive note: when the pack was NOT passed via --enable-pack, offer it
 # once here (prompt_yes_no auto-answers "n" under -y, printing the how-to).
 install_voice() {
     if ! echo "$ENABLE_PACK" | grep -qw "voice"; then
-        # Skills-only mode never reaches run_pack_merger (tui merge) — don't
+        # Skills-only mode never reaches run_pack_merger (cli merge) — don't
         # offer an enable that wouldn't take effect there.
         if [ "$SKILLS_ONLY" = true ]; then
             return 0
@@ -3320,7 +3327,8 @@ run_resolver() {
 
 # Run the provider-pack merger (PLAN #268): deep-merges selected pack partials
 # (deploy/packs/pack-<name>.json) into the resolved config, flipping
-# mcp.<server>.enabled + the root permission "<ns>*": "allow" for the packs.
+# mcp.servers.<server>.disabled (V2 shape) + merging root permissions allow rules
+# (action "<ns>*") for the packs.
 #
 # B1 (critical): the target config path MUST match where run_resolver wrote its
 # output. In normal mode the resolver writes $CONFIG_FILE; in dry-run it stages
@@ -3343,10 +3351,10 @@ run_pack_merger() {
     fi
 
     local target_config="$CONFIG_FILE"
-    local target_tui="${CONFIG_DIR}/tui.json"
+    local target_cli="${CONFIG_DIR}/cli.json"
     if [ "$DRY_RUN" = true ]; then
         target_config="${DRY_RUN_PREVIEW_DIR}/opencode.json"
-        target_tui="${DRY_RUN_PREVIEW_DIR}/tui.json"
+        target_cli="${DRY_RUN_PREVIEW_DIR}/cli.json"
         if [ ! -f "$target_config" ]; then
             log_error "Dry-run preview config not found: ${target_config}"
             log_error "The resolver must run first to stage the preview. Aborting pack merge."
@@ -3363,7 +3371,7 @@ run_pack_merger() {
     log_info "Applying provider packs: ${ENABLE_PACK}"
     node "$MERGE_PACKS_SCRIPT" \
         --config "$target_config" \
-        --tui-config "$target_tui" \
+        --cli-config "$target_cli" \
         --packs-dir "$PACKS_DIR" \
         --packs "$ENABLE_PACK"
     local rc=$?
@@ -3514,7 +3522,7 @@ run_migration() {
 
 # Copy repo-owned plugins (opencode_app/.opencode/plugins/*) into the global
 # plugins dir so opencode auto-loads them. Mirrors the skills deploy pattern.
-# These are NOT npm packages (those live in opencode.json `plugin[]`); they are
+# These are NOT npm packages (those live in opencode.json plugins[]); they are
 # local TS plugins auto-discovered from ~/.config/opencode/plugins/.
 deploy_plugins() {
     echo ""
@@ -3551,9 +3559,9 @@ deploy_plugins() {
 # ─────────────────────────────────────────────────────────────────────────────
 # AGENT DEPLOYMENT (v2.0 — resolver-driven)
 # ─────────────────────────────────────────────────────────────────────────────
-# Apply the skill profile (GIT-333): rewrites ONLY the permission.skill block
+# Apply the skill profile (GIT-333): rewrites ONLY the skill permission rules
 # of the DEPLOYED config (never the source opencode_app/opencode.json).
-#   lean (default) -> 45 primary-visible skills + "*": "deny"
+#   lean (default) -> 45 primary-visible allows + deny "*"
 #   full           -> verified no-op (shipped 104-allow allowlist stays verbatim)
 # Mirrors run_pack_merger's dry-run contract (B1): in dry-run the resolver
 # stages the preview config at $DRY_RUN_PREVIEW_DIR/opencode.json — patch that.
@@ -3964,6 +3972,16 @@ check_for_updates_only() {
     fi
     current_version=$(opencode --version 2>/dev/null || echo "unknown")
 
+    # npm serves v1.x only (1.18.x) — for a v2 install the npm comparison is
+    # meaningless (it would report a v1 "update"). v2 updates go through the
+    # official installer instead.
+    if [ "$(get_opencode_major || true)" = "2" ]; then
+        log_info "OpenCode v2 detected — updates go through the official installer:"
+        log_info "  curl -fsSL ${V2_INSTALL_SCRIPT} | bash"
+        update_last_check_time
+        return 0
+    fi
+
     # Get latest version
     local latest_version
     latest_version=$(npm view opencode-ai version 2>/dev/null || echo "unknown")
@@ -4012,6 +4030,16 @@ auto_update_opencode() {
         return 1
     fi
     current_version=$(opencode --version 2>/dev/null || echo "unknown")
+
+    # v2 installs must never be "updated" from npm (v1-only package — it would
+    # downgrade). Auto-update for v2 = re-running the official installer.
+    if [ "$(get_opencode_major || true)" = "2" ]; then
+        log_info "OpenCode v2 detected — auto-update runs the official installer (npm serves v1.x only)."
+        create_backup_before_update
+        install_opencode_v2
+        update_last_check_time
+        return $?
+    fi
 
     # Get latest version
     local latest_version
@@ -4178,7 +4206,7 @@ print_summary() {
     if [ -d "$SKILLS_DIR" ] && [ "$(ls -A "${SKILLS_DIR}" 2>/dev/null)" ]; then
         local skill_count=$(count_skills "${SKILLS_DIR}")
         echo "✓ skills: ${skill_count} skills deployed to ${SKILLS_DIR}/"
-        echo "✓ skill profile: ${SKILL_PROFILE} (primary-visible skills in permission.skill)"
+        echo "✓ skill profile: ${SKILL_PROFILE} (primary-visible skills in permissions skill rules)"
         print_skill_categories "${SKILLS_DIR}"
 
     else
@@ -4343,6 +4371,11 @@ main() {
         rollback
         exit $?
     fi
+
+    # v1 → v2 migration check (all other modes). The v2-native config shipped
+    # by this template is silently misread by v1 — MCP servers, plugins, and
+    # skill gating appear to vanish. Offers the documented clean-migration path.
+    check_opencode_v2_migration || true
 
     # Handle update-only mode
     if [ "$UPDATE_ONLY" = true ]; then
