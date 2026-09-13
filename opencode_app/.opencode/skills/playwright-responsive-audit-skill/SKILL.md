@@ -17,7 +17,7 @@ I define the methodology for auditing and fixing responsive UI defects in Next.j
 
 ## When to use me
 
-Loaded exclusively by `responsive-audit-subagent` via `permission.skill`. Not auto-triggered. The primary session spawns the subagent once; the subagent runs the closed loop internally over a persistent PTY session (detect→fix→re-verify), delegating only screenshot review to `image-analyzer-subagent`.
+Loaded exclusively by `responsive-audit-subagent` via its `permissions` skill rules. Not auto-triggered. The primary session spawns the subagent once; the subagent runs the closed loop internally over a persistent PTY session (detect→fix→re-verify), delegating only screenshot review to `image-analyzer-subagent`.
 
 ## Prerequisite: Playwright Setup
 

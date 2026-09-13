@@ -4,27 +4,24 @@ description: >-
   configurator repos; verifies compliance with opencode.ai docs.
 mode: subagent
 
-permission:
-  read:
-    "*": allow
-    "mcp:*": deny
-  edit: allow
-  glob: allow
-  grep: allow
-  bash: deny
-  question: deny
-  webfetch: allow
-  websearch: allow
-  task:
-    "*": deny
-    explore: allow
-    general: allow
-    image-analyzer-subagent: allow
-  skill:
-    opencode-agent-creation-skill: allow
-    opencode-skill-creation-skill: allow
-    opencode-skills-maintainer-skill: allow
-    documentation-sync-workflow-skill: allow
+permissions:
+  - { action: read, resource: "*", effect: allow }
+  - { action: read, resource: "mcp:*", effect: deny }
+  - { action: edit, resource: "*", effect: allow }
+  - { action: glob, resource: "*", effect: allow }
+  - { action: grep, resource: "*", effect: allow }
+  - { action: shell, resource: "*", effect: deny }
+  - { action: question, resource: "*", effect: deny }
+  - { action: webfetch, resource: "*", effect: allow }
+  - { action: websearch, resource: "*", effect: allow }
+  - { action: subagent, resource: "*", effect: deny }
+  - { action: subagent, resource: "explore", effect: allow }
+  - { action: subagent, resource: "general", effect: allow }
+  - { action: subagent, resource: "image-analyzer-subagent", effect: allow }
+  - { action: skill, resource: "opencode-agent-creation-skill", effect: allow }
+  - { action: skill, resource: "opencode-skill-creation-skill", effect: allow }
+  - { action: skill, resource: "opencode-skills-maintainer-skill", effect: allow }
+  - { action: skill, resource: "documentation-sync-workflow-skill", effect: allow }
 category: meta
 ---
 
@@ -132,25 +129,25 @@ If in a configurator repo and user says "user level", the artifact goes into `op
 description: Brief description (REQUIRED)
 mode: primary | subagent
 model: provider/model-id
-temperature: 0.0-1.0
+request:
+  body:
+    temperature: 0.0-1.0
+    top_p: 0.0-1.0
 steps: 5
-prompt: "{file:./prompts/custom.txt}"
-permission:
-  edit: allow | ask | deny
-  bash:
-    "*": ask
-    "git status*": allow
-  webfetch: deny
-  task:
-    "*": deny
-    "reviewer-*": allow
+system: "{file:./prompts/custom.txt}"
+permissions:
+  - { action: edit, resource: "*", effect: "allow | ask | deny" }
+  - { action: shell, resource: "*", effect: ask }
+  - { action: shell, resource: "git status *", effect: allow }
+  - { action: webfetch, resource: "*", effect: deny }
+  - { action: subagent, resource: "*", effect: deny }
+  - { action: subagent, resource: "reviewer-*", effect: allow }
 hidden: true
 color: "#FF5733" | primary | accent
-top_p: 0.0-1.0
 ---
 ```
 
-**DEPRECATED**: `tools` field (use `permission`), `maxSteps` (use `steps`)
+**DEPRECATED**: `tools` field (use `permissions`), `maxSteps` (use `steps`), `permission` map + `bash`/`task` action names (use `permissions` rule array with `shell`/`subagent`)
 
 ## Skill Frontmatter Standard
 
@@ -301,38 +298,38 @@ When a user wants to create their own OpenCode configurator repo (to manage and 
 1. Ask scope -> load `opencode-agent-creation` skill
 2. Gather: name, description, mode, permissions, purpose
 3. Fetch latest docs from opencode.ai/docs/agents/
-4. Create with `permission` (not `tools`), `steps` (not `maxSteps`)
-5. Configure task permissions for subagents
+4. Create with `permissions` rule array (not `tools`, not the legacy `permission` map), `steps` (not `maxSteps`)
+5. Configure `subagent` permission rules for agents that spawn other agents
 6. Place at correct location based on scope
 7. Validate frontmatter
 
 #### Task Permission Guidance
 
-When creating agents that need to spawn other agents, always configure `permission.task`:
+When creating agents that need to spawn other agents, always configure `subagent` rules in `permissions`:
 
 **Key rules:**
-- `task` gates the **Task tool** (subagent spawning); `skill` gates the **Skill tool** (skill loading) — completely separate systems
+- `subagent` rules gate the **Task tool** (subagent spawning); `skill` rules gate the **Skill tool** (skill loading) — completely separate systems
 - Agent name = filename minus `.md` (e.g., `code-review-subagent.md` -> `code-review-subagent`)
 - Denied agents are hidden from the Task tool description entirely (model cannot see them)
 - Wildcard `*` matches zero+ characters; last matching rule wins
 - Each spawned subagent gets its own session, context, and step budget
 
-**Common patterns:**
+**Common patterns (V2 `permissions` rule array; last matching rule wins — broad rules first, exceptions after):**
 ```yaml
-permission:
-  task: allow                                              # Full access to all subagents
-  task:                                                    # Selective access
-    "*": deny                                              # Deny all by default
-    explore: allow                                         # Built-in explore
-    general: allow                                         # Built-in general
-    "linting-subagent": allow                              # Specific custom subagent
-    "reviewer-*": allow                                    # Glob pattern matching
+permissions:
+  - { action: subagent, resource: "*", effect: allow }    # Full access to all subagents
+  # — or selective access —
+  - { action: subagent, resource: "*", effect: deny }     # Deny all by default
+  - { action: subagent, resource: "explore", effect: allow }        # Built-in explore
+  - { action: subagent, resource: "general", effect: allow }        # Built-in general
+  - { action: subagent, resource: "linting-subagent", effect: allow }  # Specific custom subagent
+  - { action: subagent, resource: "reviewer-*", effect: allow }    # Wildcard matching (action and resource both support it)
 ```
 
 **Common mistakes to avoid:**
-- Using a skill name in `task` permissions (e.g., `"pptx-specialist": allow`) — this does NOT enable skill loading; use `skill` permission instead
+- Using a skill name in `subagent` rules (e.g., resource `"pptx-specialist"`) — this does NOT enable skill loading; add `skill` action rules instead
 - Mismatching agent names (e.g., `"pptx-specialist"` when the agent is `pptx-specialist-subagent`)
-- Forgetting that agents without `task` permission default to full access
+- Forgetting that agents with no `subagent` rules default to the allow-all base policy
 - Using Task tool to invoke skills — skills must be loaded via the Skill tool
 
 ### Creating Skills
@@ -358,7 +355,7 @@ permission:
 ## Validation Checklist
 
 **Rules**: Markdown structure, clear headers, lazy loading for external refs
-**Agents**: `description` present, `mode` set, `permission` (not `tools`), `steps` (not `maxSteps`), `hidden` only on subagents
+**Agents**: `description` present, `mode` set, `permissions` rule array (not `tools`, not the legacy `permission` map), `steps` (not `maxSteps`), `hidden` only on subagents
 **Skills**: Directory name matches frontmatter `name`, naming rules followed, `description` 1-1024 chars, file is `SKILL.md`
 
 ## Documentation References

@@ -31,9 +31,10 @@ migration, and how to revert.
   the base config — the `autodesk` provider pack now carries their full
   definitions (`--enable-pack autodesk`, needs `AUTODESK_API_KEY`).
   Enable per-project by
-  adding `<repo>/opencode.json` with `{"mcp":{"atlassian":{"enabled":true}}}`
-  (project wins over global; `opencode-repo-setup-skill` automates this), or
-  flip `enabled: true` in your global config to restore the old behavior.
+  adding `<repo>/opencode.json` with a full `mcp.servers.atlassian` block (V2
+  replaces the whole server object; `opencode-repo-setup-skill` automates
+  this), or clear `disabled` on that server in your global config to restore
+  the old behavior.
 
 ---
 
@@ -215,7 +216,9 @@ docker compose build --build-arg OPENCODE_PROVIDER=anthropic
 
 ### Provider Packs (build-time MCP toggle, #268)
 
-v2.0 also adds **provider packs** — build-time toggles that enable groups of opt-in MCP servers (Autodesk, `markitdown`, `next-devtools`) in one shot. The merge runs after model resolution and only flips `mcp.*.enabled` ON and sets root `permission` allow patterns (`"<ns>*": "allow"`); it never affects an already-enabled server.
+v2.0 also adds **provider packs** — build-time toggles that enable groups of opt-in MCP servers (Autodesk, `markitdown`, `next-devtools`) in one shot. The merge runs after model resolution and only clears `mcp.servers.*.disabled` and flips the root `permissions` allow rule (`{ "action": "<ns>*", "effect": "allow" }`) in place; it never affects an already-enabled server.
+
+> **V2-native config (2026-09):** `opencode_app/opencode.json` now ships V2-native shapes: `plugins` (was `plugin`), `commands` (was `command`; `template`/`description`/`agent` field names unchanged), `permissions` as an ordered `{action, resource, effect}` rule array (was the `permission` per-tool map; actions renamed `bash`→`shell`, `task`→`subagent`; last matching rule wins — broad rules first, exceptions after), `media` (was `attachment`), and `agents` (was `agent`). Agent frontmatter uses `permissions` rule arrays with the same action renames. The voice pack merges into `~/.config/opencode/cli.json` (`{"plugins": [...]}`, schema `https://opencode.ai/v2/cli.json`) — V2's single global terminal-client config replacing V1's layered `tui.json` (keybind `session_rename` is `session.rename` in V2). `$schema` stays `https://opencode.ai/config.json`. V1 runtimes no longer read the converted file natively — see the V1-break notes in the repo docs.
 
 ```bash
 # Enable one or more packs at build time

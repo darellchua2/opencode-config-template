@@ -5,23 +5,20 @@ description: >-
   re-verification, screenshot review via image-analyzer.
 mode: subagent
 steps: 12
-permission:
-  read:
-    "*": allow
-    "mcp:*": deny
-  edit: allow
-  glob: allow
-  grep: allow
-  bash: allow
-  webfetch: allow
-  websearch: allow
-  task:
-    "*": deny
-    explore: allow
-    general: allow
-    image-analyzer-subagent: allow
-  skill:
-    playwright-responsive-audit-skill: allow
+permissions:
+  - { action: read, resource: "*", effect: allow }
+  - { action: read, resource: "mcp:*", effect: deny }
+  - { action: edit, resource: "*", effect: allow }
+  - { action: glob, resource: "*", effect: allow }
+  - { action: grep, resource: "*", effect: allow }
+  - { action: shell, resource: "*", effect: allow }
+  - { action: webfetch, resource: "*", effect: allow }
+  - { action: websearch, resource: "*", effect: allow }
+  - { action: subagent, resource: "*", effect: deny }
+  - { action: subagent, resource: "explore", effect: allow }
+  - { action: subagent, resource: "general", effect: allow }
+  - { action: subagent, resource: "image-analyzer-subagent", effect: allow }
+  - { action: skill, resource: "playwright-responsive-audit-skill", effect: allow }
 category: frontend
 ---
 
@@ -123,7 +120,7 @@ Playwright remains the engine for the 6 detection assertions. When the `chrome-d
 
 Use them to **cross-corroborate** a Playwright finding, not to replace it — e.g. "element clipped at 375px AND 2 console errors + a 404 on the breakpoint stylesheet." Do NOT duplicate screenshot capture in chrome-devtools MCP: Playwright is the capture engine, and screenshot interpretation stays delegated to `image-analyzer-subagent`.
 
-**MCP dependency:** these tools require the root `permission` pattern `"chrome-devtools*": "allow"` in `opencode.json` (flipped on by `--enable-pack chrome-devtools`). No frontmatter `permission` change is required for this agent — its `read."mcp:*": deny` blocks only MCP *resource* reads, and `chrome-devtools-mcp` is tools-only (no resources), so access is gated solely by the root `permission` patterns, mirroring the `nextjs-specialist-subagent` pattern.
+**MCP dependency:** these tools require the root `permissions` rule `{ "action": "chrome-devtools*", "effect": "allow" }` in `opencode.json` (flipped on by `--enable-pack chrome-devtools`). No frontmatter `permissions` change is required for this agent — its `read` `"mcp:*"` deny rule blocks only MCP *resource* reads, and `chrome-devtools-mcp` is tools-only (no resources), so access is gated solely by the root `permissions` rules, mirroring the `nextjs-specialist-subagent` pattern.
 
 ## CodeGraph Integration
 

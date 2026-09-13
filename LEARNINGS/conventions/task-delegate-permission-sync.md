@@ -45,3 +45,13 @@ leaving the README row (4 delegates) ahead of the note (3) — accepted partial 
 
 Related: `patterns/tier-model-swap-blast-radius.md` (same multi-surface discipline
 for tier→model swaps).
+
+## Addendum (2026-09-13, V2-native config)
+
+The V1 `permission.task` map no longer exists. Agent frontmatter now uses the V2
+`permissions` rule array: a delegate entry is
+`- { action: subagent, resource: "<agent>", effect: allow }`, and the ceiling
+check reads `shell` (was `bash`) deny rules the same way. Surface 2's extraction
+changed with it: `delegatesTo` is now derived from `subagent` allow rules with
+non-`*` resources (build-registry.mjs parses flow-map list items). All four
+surfaces and the reviewer checklist apply unchanged with the new shapes.

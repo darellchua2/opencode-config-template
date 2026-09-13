@@ -402,32 +402,43 @@ async function dirDiffers(src, dst) {
 // Phase 3.3: generate <project>/.opencode/opencode.json
 async function generateOpenencodeJson(sel, project) {
   const src = await readJsonMaybe(SOURCE_OC);
-  const taskAllow = { "*": "deny" }; // FIRST (last-match-wins requires * first)
-  for (const stem of sel.agents) taskAllow[stem] = "allow";
-  taskAllow["explore"] = "allow";
-  taskAllow["general"] = "allow";
-  const permissionSkill = { "*": "deny" };
-  for (const s of sel.skills) permissionSkill[s] = "allow";
-  const mcp = {};
-  const tools = {};
+  const subagentRules = [
+    { action: "subagent", resource: "*", effect: "deny" }, // FIRST (last-match-wins requires * first)
+  ];
+  for (const stem of sel.agents) subagentRules.push({ action: "subagent", resource: stem, effect: "allow" });
+  subagentRules.push({ action: "subagent", resource: "explore", effect: "allow" });
+  subagentRules.push({ action: "subagent", resource: "general", effect: "allow" });
+  const skillRules = [{ action: "skill", resource: "*", effect: "deny" }];
+  for (const s of sel.skills) skillRules.push({ action: "skill", resource: s, effect: "allow" });
+  const mcpServers = {};
+  const toolAllowRules = [];
   for (const m of sel.mcps) {
-    const def = (src && src.mcp && src.mcp[m]) || { enabled: true };
-    mcp[m] = { ...def, enabled: true };
-    tools[`${m}*`] = true;
+    const def = (src && src.mcp && src.mcp.servers && src.mcp.servers[m]) || {};
+    mcpServers[m] = { ...def, disabled: false };
+    toolAllowRules.push({ action: `${m}*`, resource: "*", effect: "allow" });
   }
   const oc = {
     "$schema": "https://opencode.ai/config.json",
-    subagent_depth: 3,
+    experimental: { subagent_depth: 3 },
     instructions: ["AGENTS.md"],
-    permission: { skill: permissionSkill },
-    agent: {
-      build: { permission: { task: taskAllow } },
-      plan: src?.agent?.plan || { permission: { edit: "ask", bash: "ask", task: { "*": "allow" } } },
-      explore: src?.agent?.explore || { permission: { read: { "*": "allow", "mcp:*": "deny" } } },
-      general: src?.agent?.general || { permission: { read: { "*": "allow", "mcp:*": "deny" } } },
+    permissions: [...skillRules, ...toolAllowRules],
+    agents: {
+      build: { permissions: subagentRules },
+      plan: src?.agents?.plan || { permissions: [
+        { action: "edit", resource: "*", effect: "ask" },
+        { action: "shell", resource: "*", effect: "ask" },
+        { action: "subagent", resource: "*", effect: "allow" },
+      ] },
+      explore: src?.agents?.explore || { permissions: [
+        { action: "read", resource: "*", effect: "allow" },
+        { action: "read", resource: "mcp:*", effect: "deny" },
+      ] },
+      general: src?.agents?.general || { permissions: [
+        { action: "read", resource: "*", effect: "allow" },
+        { action: "read", resource: "mcp:*", effect: "deny" },
+      ] },
     },
-    mcp,
-    tools,
+    mcp: { servers: mcpServers },
   };
   return oc;
 }
@@ -471,7 +482,7 @@ function generateAgentsMd(sel, reg) {
   lines.push("");
   lines.push("## Notes");
   lines.push("- Config merge: opencode MERGES config + UNIONS agents/skills across locations. Isolation holds only on a clean slate (no global deploy).");
-  lines.push("- `permission.task` scoped allowlist prevents auto-spawning unselected subagents; `@`-mention still bypasses it.");
+  lines.push("- `permissions` `subagent` scoped allowlist prevents auto-spawning unselected subagents; `@`-mention still bypasses it.");
   lines.push("");
   return lines.join("\n");
 }
@@ -621,24 +632,31 @@ async function checkStrictAllowlist(sel, opts) {
   if (opts.permit) return; // --permit handles it — skip the warning
   const config = await readJsonMaybe(USER_CONFIG);
   if (!config) return;
-  // skills live in permission.skill
-  const ps = config.permission?.skill;
-  if (ps && ps["*"] === "deny") {
-    const hidden = sel.skills.filter((name) => ps[name] !== "allow");
+  // skills live in `permissions` skill rules
+  const perms = Array.isArray(config.permissions) ? config.permissions : [];
+  const psDeny = perms.some((r) => r && r.action === "skill" && r.resource === "*" && r.effect === "deny");
+  if (psDeny) {
+    const allowed = new Set(
+      perms.filter((r) => r && r.action === "skill" && r.effect === "allow" && r.resource !== "*").map((r) => r.resource)
+    );
+    const hidden = sel.skills.filter((name) => !allowed.has(name));
     if (hidden.length) {
       console.error(`\n⚠  STRICT ALLOWLIST DETECTED — ${hidden.length} skill(s) installed but HIDDEN.`);
-      console.error(`   Add to config.json permission.skill, or re-run with --permit:`);
-      for (const name of hidden) console.error(`     "${name}": "allow"`);
+      console.error(`   Add skill allow rules to config.json permissions, or re-run with --permit:`);
+      for (const name of hidden) console.error(`     { "action": "skill", "resource": "${name}", "effect": "allow" }`);
     }
   }
-  // agents live in agent.build.permission.task
-  const task = config.agent?.build?.permission?.task;
-  if (task && task["*"] === "deny") {
-    const hiddenAgents = sel.agents.filter((stem) => task[stem] !== "allow");
+  // agents live in agents.build.permissions subagent rules
+  const subRules = config.agents?.build?.permissions;
+  if (Array.isArray(subRules) && subRules.some((r) => r && r.action === "subagent" && r.resource === "*" && r.effect === "deny")) {
+    const allowedAgents = new Set(
+      subRules.filter((r) => r && r.action === "subagent" && r.effect === "allow").map((r) => r.resource)
+    );
+    const hiddenAgents = sel.agents.filter((stem) => !allowedAgents.has(stem));
     if (hiddenAgents.length) {
-      console.error(`\n⚠  STRICT TASK ALLOWLIST — ${hiddenAgents.length} agent(s) installed but HIDDEN.`);
-      console.error(`   Add to agent.build.permission.task, or re-run with --permit:`);
-      for (const stem of hiddenAgents) console.error(`     "${stem}": "allow"`);
+      console.error(`\n⚠  STRICT SUBAGENT ALLOWLIST — ${hiddenAgents.length} agent(s) installed but HIDDEN.`);
+      console.error(`   Add subagent allow rules to agents.build.permissions, or re-run with --permit:`);
+      for (const stem of hiddenAgents) console.error(`     { "action": "subagent", "resource": "${stem}", "effect": "allow" }`);
     }
   }
 }
@@ -653,8 +671,8 @@ async function warnMCPs(sel, depMap) {
   const oc = await readJsonMaybe(SOURCE_OC);
   console.error(`\n⚠  MCP REQUIREMENT — ${needed.size} MCP server(s) needed. Paste into config.json, or re-run with --project:`);
   for (const m of needed) {
-    const def = oc?.mcp?.[m];
-    const snippet = def ? { ...def, enabled: true } : { enabled: true };
+    const def = oc?.mcp?.servers?.[m];
+    const snippet = def ? { ...def, disabled: false } : { disabled: false };
     console.error(`     "${m}": ${JSON.stringify(snippet)}`);
   }
 }
@@ -666,26 +684,41 @@ async function permitMerge(sel) {
     await copyFile(USER_CONFIG, `${USER_CONFIG}.bak-${ts}`);
     console.log(`  backup: config.json.bak-${ts}`);
   }
-  // skills → permission.skill
-  if (!config.permission) config.permission = {};
-  if (!config.permission.skill) config.permission.skill = {};
-  for (const sname of sel.skills) config.permission.skill[sname] = "allow";
-  // agents → agent.build.permission.task (if strict allowlist exists)
+  // skills → permissions skill allow rules (appended last = they win over an
+  // earlier deny "*")
+  if (!Array.isArray(config.permissions)) config.permissions = [];
+  const haveSkills = new Set(
+    config.permissions.filter((r) => r && r.action === "skill").map((r) => r.resource)
+  );
+  for (const sname of sel.skills) {
+    if (!haveSkills.has(sname)) {
+      config.permissions.push({ action: "skill", resource: sname, effect: "allow" });
+    }
+  }
+  // agents → agents.build.permissions subagent allows (if strict allowlist exists)
   let agentCount = 0;
-  const task = config.agent?.build?.permission?.task;
-  if (task && task["*"] === "deny") {
-    for (const stem of sel.agents) { task[stem] = "allow"; agentCount++; }
+  const subRules = config.agents?.build?.permissions;
+  if (Array.isArray(subRules) && subRules.some((r) => r && r.action === "subagent" && r.resource === "*" && r.effect === "deny")) {
+    const haveAgents = new Set(
+      subRules.filter((r) => r && r.action === "subagent").map((r) => r.resource)
+    );
+    for (const stem of sel.agents) {
+      if (!haveAgents.has(stem)) {
+        subRules.push({ action: "subagent", resource: stem, effect: "allow" });
+        agentCount++;
+      }
+    }
   }
   await mkdir(USER_OC, { recursive: true });
   await writeFile(USER_CONFIG, JSON.stringify(config, null, 2) + "\n", "utf8");
-  console.log(`  merged permission.skill (${sel.skills.length} skill entries${agentCount ? `, permission.task (${agentCount} agent entries)` : ""})`);
+  console.log(`  merged permissions skill rules (${sel.skills.length} skill entries${agentCount ? `, subagent rules (${agentCount} agent entries)` : ""})`);
 }
 
 // Claude Code uses the SAME SKILL.md format (Agent Skills open standard).
 // Skills are directories under ~/.claude/skills/<name>/ — straight copy, no
 // frontmatter manipulation needed EXCEPT stripping `model:` (Claude Code
 // recognizes it and would try to use non-Claude model IDs like glm-5.3).
-// Other unknown frontmatter fields (tier, permission, category) are safely ignored.
+// Other unknown frontmatter fields (tier, category) are safely ignored.
 function stripModelLine(content) {
   const lines = content.split(/\r?\n/);
   if (lines.length === 0 || lines[0].trim() !== "---") return content;
@@ -929,7 +962,7 @@ FLAGS
 CONFIG MERGE SEMANTICS
   opencode MERGES config and UNIONS agents/skills across ~/.config/opencode and
   <project>/.opencode. User-scope 'add' is a pure file-drop (auto-discovered);
-  --permit backs up config.json then merges only permission.skill entries.
+  --permit backs up config.json then merges only skill permission rules.
 `);
 }
 

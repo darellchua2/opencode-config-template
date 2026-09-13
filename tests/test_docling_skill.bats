@@ -48,15 +48,15 @@ MERGE_SCRIPT="deploy/merge-packs.mjs"
 # =============================================================================
 
 @test "docling_mcp_disabled_by_default" {
-  python3 -c "import json; d=json.load(open('${CONFIG}')); assert 'docling' in d['mcp']; assert d['mcp']['docling']['enabled'] is False, 'docling must be opt-in'"
+  python3 -c "import json; d=json.load(open('${CONFIG}')); assert 'docling' in d['mcp']['servers']; assert d['mcp']['servers']['docling']['disabled'] is True, 'docling must be opt-in'"
 }
 
 @test "docling_tool_denied_by_default" {
-  python3 -c "import json; d=json.load(open('${CONFIG}')); assert d['permission']['docling*'] == 'deny'"
+  python3 -c "import json; d=json.load(open('${CONFIG}')); rules=[r for r in d['permissions'] if r['action']=='docling*']; assert rules and rules[0]['effect']=='deny', 'docling* rule must deny'"
 }
 
 @test "docling_mcp_has_local_conversion_mode" {
-  python3 -c "import json; d=json.load(open('${CONFIG}')); assert d['mcp']['docling']['environment']['DOCLING_CONVERSION_MODE'] == 'local'"
+  python3 -c "import json; d=json.load(open('${CONFIG}')); assert d['mcp']['servers']['docling']['environment']['DOCLING_CONVERSION_MODE'] == 'local'"
 }
 
 # =============================================================================
@@ -68,20 +68,20 @@ MERGE_SCRIPT="deploy/merge-packs.mjs"
 }
 
 @test "pack_docling_enables_mcp" {
-  python3 -c "import json; p=json.load(open('$PACKS_DIR/pack-docling.json')); assert p['mcp']['docling']['enabled'] is True"
+  python3 -c "import json; p=json.load(open('$PACKS_DIR/pack-docling.json')); assert p['mcp']['servers']['docling']['disabled'] is False"
 }
 
 @test "pack_docling_grants_tool_permission" {
-  # Uses root-level permission pattern (string enum), not nested permission.tool
-  python3 -c "import json; p=json.load(open('$PACKS_DIR/pack-docling.json')); assert p['permission']['docling*'] == 'allow'; assert 'tool' not in p.get('permission', {}); assert 'tools' not in p"
+  # Uses root permissions rule array entries, not the legacy permission map or tools key
+  python3 -c "import json; p=json.load(open('$PACKS_DIR/pack-docling.json')); rules=[r for r in p['permissions'] if r['action']=='docling*']; assert rules and rules[0]['effect']=='allow'; assert 'permission' not in p; assert 'tools' not in p"
 }
 
 @test "pack_docling_deep_merge_flips_config" {
   # Verify merge-packs.mjs deep-merges pack-docling.json into a temp copy
-  # and flips both mcp.docling.enabled and the root permission docling* allow
+  # and clears mcp.servers.docling.disabled and flips the docling* rule to allow
   cp "$CONFIG" /tmp/test_docling_merge.json
   node "$MERGE_SCRIPT" --config /tmp/test_docling_merge.json --packs-dir "$PACKS_DIR" --packs docling >/dev/null 2>&1
-  python3 -c "import json; d=json.load(open('/tmp/test_docling_merge.json')); assert d['mcp']['docling']['enabled'] is True; assert d['permission']['docling*'] == 'allow'"
+  python3 -c "import json; d=json.load(open('/tmp/test_docling_merge.json')); assert d['mcp']['servers']['docling']['disabled'] is False; rules=[r for r in d['permissions'] if r['action']=='docling*']; assert rules and rules[0]['effect']=='allow', 'docling* rule must flip to allow'"
   rm -f /tmp/test_docling_merge.json
 }
 
@@ -109,11 +109,11 @@ MERGE_SCRIPT="deploy/merge-packs.mjs"
 # =============================================================================
 
 @test "primary_has_docling_skill_allow" {
-  python3 -c "import json; d=json.load(open('${CONFIG}')); assert d['permission']['skill']['docling-mcp-skill'] == 'allow'"
+  python3 -c "import json; d=json.load(open('${CONFIG}')); rules=[r for r in d['permissions'] if r['action']=='skill' and r['resource']=='docling-mcp-skill']; assert rules and rules[0]['effect']=='allow'"
 }
 
 @test "office_document_primary_agent_has_docling_skill" {
-  grep -q "docling-mcp-skill: allow" "$AGENTS_DIR/office-document-primary-agent.md"
+  grep -q 'resource: "docling-mcp-skill", effect: allow' "$AGENTS_DIR/office-document-primary-agent.md"
 }
 
 # =============================================================================

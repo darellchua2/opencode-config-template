@@ -185,7 +185,7 @@ npx github:darellchua2/opencode-config-template add solid-principles-skill
 
 | Scope | Flag | Destination | Config touch |
 |-------|------|-------------|--------------|
-| **User** (default) | *(none)* | `~/.config/opencode/{skills,agents}/` | None — opencode auto-discovers. `--permit` opts into backup+merge of `permission.skill` entries only. |
+| **User** (default) | *(none)* | `~/.config/opencode/{skills,agents}/` | None — opencode auto-discovers. `--permit` opts into backup+merge of skill permission rules only. |
 | **Project** | `--project [dir]` | `./.opencode/{skills,agents}/` | Full generation: `opencode.json` + `models.json` + `AGENTS.md` (existing `opencode-init` behavior). |
 
 MCPs are **never auto-merged** at user scope — the installer prints the snippet for manual paste (or use `--project` for full-service generation).
@@ -242,7 +242,7 @@ Run `opencode-init --list agents` or `--list skills` to browse in JSON, or visit
 
 Not every project needs all 33 agents + 148 skills. <!-- count: hand-maintained — sync on skill/agent add (BT-157) --> `opencode-init` installs a **curated subset** into a target project's `.opencode/` and writes a project `opencode.json` configuring just that subset — chosen interactively (TUI) or via flags (LLM/CI). It is the project-scoped companion to the global `setup.sh` deploy, and is symlinked onto PATH as `opencode-init` by `setup.sh`.
 
-> **Mutually exclusive with global deploy for isolation.** OpenCode **merges** config and **unions** agents/skills across `~/.config/opencode` and `<project>/.opencode`. A project subset only yields an *isolated* curated experience on a **clean slate** (no global deploy). If `~/.config/opencode/agents/` is non-empty, the project install is **additive** — `opencode-init` detects this and warns. `permission.task` (scoped subagent-spawn allowlist) still restricts auto-spawning even with a global deploy; `@`-mention still bypasses it. See [issue #286](https://github.com/darellchua2/opencode-config-template/issues/286) and `PLANS/PLAN-GIT-286.md`.
+> **Mutually exclusive with global deploy for isolation.** OpenCode **merges** config and **unions** agents/skills across `~/.config/opencode` and `<project>/.opencode`. A project subset only yields an *isolated* curated experience on a **clean slate** (no global deploy). If `~/.config/opencode/agents/` is non-empty, the project install is **additive** — `opencode-init` detects this and warns. `permissions` subagent rules (scoped subagent-spawn allowlist) still restrict auto-spawning even with a global deploy; `@`-mention still bypasses it. See [issue #286](https://github.com/darellchua2/opencode-config-template/issues/286) and `PLANS/PLAN-GIT-286.md`.
 
 ### Presets
 
@@ -258,7 +258,7 @@ Not every project needs all 33 agents + 148 skills. <!-- count: hand-maintained 
 | `research` | autoresearch-{ml,code,research} + loop-operator | 12 (autoresearch + papers) | codegraph | Autonomous loops (ml needs GPU) |
 | `cad` | cad-specialist | 14 (CAD & Hardware Design) | — | CAD / robotics / hardware |
 
-Member counts include transitive deps auto-pulled by the resolver (a preset's agent `permission.task` delegates + `permission.skill` requirements). Run `opencode-init --expand <preset>` to see the exact resolved set.
+Member counts include transitive deps auto-pulled by the resolver (a preset's agent `subagent`-rule delegates + skill-rule requirements). Run `opencode-init --expand <preset>` to see the exact resolved set.
 
 ### Usage
 
@@ -282,7 +282,7 @@ opencode-init                                        # walks a menu (arrow keys)
 opencode-init --help
 ```
 
-What lands in the target project: `<project>/.opencode/opencode.json` (scoped `permission.skill` + `permission.task` allowlists, `agent.build/plan/explore/general`, selected MCPs), `<project>/.opencode/agents/*.md` (model injected per tier), `<project>/.opencode/skills/<name>/`, `<project>/.opencode/models.json`, a slim `<project>/AGENTS.md`, and a `.opencode-init.manifest.json` (enables safe `--prune`).
+What lands in the target project: `<project>/.opencode/opencode.json` (scoped skill + subagent permission rules, `agents.build/plan/explore/general`, selected MCPs), `<project>/.opencode/agents/*.md` (model injected per tier), `<project>/.opencode/skills/<name>/`, `<project>/.opencode/models.json`, a slim `<project>/AGENTS.md`, and a `.opencode-init.manifest.json` (enables safe `--prune`).
 
 ## Prerequisites
 
@@ -347,13 +347,13 @@ The remaining 5 are `enabled: false` and opt-in:
 
 The 4 Autodesk servers are **not shipped in the base config** — the `autodesk` provider pack below adds their full definitions at deploy time (needs `AUTODESK_API_KEY`).
 
-To enable one **for a single project**, add a `.opencode/opencode.json` in the repo (project config merges over the global one — project wins):
+To enable one **for a single project**, add a `.opencode/opencode.json` in the repo (in V2 a project config replaces the whole server object, so repeat the full definition):
 
 ```json
-{ "mcp": { "atlassian": { "enabled": true } } }
+{ "mcp": { "servers": { "atlassian": { "type": "local", "command": ["npx", "-y", "mcp-remote", "https://mcp.atlassian.com/v1/mcp"] } } } }
 ```
 
-To enable one **globally**, set `"enabled": true` in `config.json`, or use a provider pack below. The `opencode-repo-setup-skill` automates per-project enablement interactively.
+To enable one **globally**, set `"disabled": false` on that server in `config.json`, or use a provider pack below. The `opencode-repo-setup-skill` automates per-project enablement interactively.
 
 #### Provider Packs — deploy-time MCP toggle (#268)
 
@@ -367,11 +367,11 @@ Instead of editing 4–9 JSON entries to enable a logical group of MCP servers, 
 | `nextjs` | next-devtools | A running Next.js dev server |
 | `chrome-devtools` | chrome-devtools | Chrome stable installed locally (privacy-hardened: telemetry + CrUX OFF by default) |
 
-**Plugin packs** merge a `tui` key into `~/.config/opencode/tui.json` instead of flipping MCP servers. Currently one:
+**Plugin packs** merge a `cli` key into `~/.config/opencode/cli.json` (V2's single global terminal-client config, which replaces V1's layered `tui.json`) instead of flipping MCP servers. Currently one:
 
 | Pack | Plugin installed | Requires |
 |------|------------------|----------|
-| `voice` | [@renjfk/opencode-voice](https://github.com/renjfk/opencode-voice) — local speech-to-text (`ctrl+r` to record, `leader+r` to submit; `/stt-mic` picks the mic) into tui.json; also clobbers `session_rename` so `ctrl+r` works | sox + whisper.cpp (`setup.sh` auto-detects GPU vs CPU: brew+Metal on macOS; on Linux — CUDA build when `nvidia-smi` + `nvcc` are present, ROCm/HIP build when `rocminfo` is present, Vulkan build when `vulkaninfo` + `glslc` are present, CPU otherwise, with an optional ROCm install assist for AMD GPUs; NPU/iGPU paths — AMD Ryzen AI 300/400 auto-builds whisper.cpp with VitisAI NPU offload when `xrt-smi` sees the NPU (needs XRT + FlexML runtimes; `.rai` encoder cache fetched alongside the model), Intel GPU/NPU builds with OpenVINO when `/opt/intel/openvino*` + the NPU/iGPU are present (encoder runs on the Arc iGPU — NPU device is broken on Linux, whisper.cpp#2929; Vulkan remains the light cross-vendor fallback); server alternatives wired via the plugin's `sttEndpoint`: [Lemonade Server](https://lemonade-server.ai) (AMD NPU) or [OpenVINO Model Server](https://docs.openvino.ai/2025/model-server/ovms_demos_audio.html)) and suggests a matching model (large-v3-turbo on modern GPUs/Metal/AMD ROCm/Vulkan, medium on older GPUs, small on CPU-only); normalization LLM defaults to local Ollama — edit `endpoint`/`model` in the deployed tui.json for any OpenAI-compatible API; optional Piper TTS for spoken responses. macOS/Linux only |
+| `voice` | [@renjfk/opencode-voice](https://github.com/renjfk/opencode-voice) — local speech-to-text (`ctrl+r` to record, `leader+r` to submit; `/stt-mic` picks the mic) into cli.json; also clobbers `session.rename` so `ctrl+r` works | sox + whisper.cpp (`setup.sh` auto-detects GPU vs CPU: brew+Metal on macOS; on Linux — CUDA build when `nvidia-smi` + `nvcc` are present, ROCm/HIP build when `rocminfo` is present, Vulkan build when `vulkaninfo` + `glslc` are present, CPU otherwise, with an optional ROCm install assist for AMD GPUs; NPU/iGPU paths — AMD Ryzen AI 300/400 auto-builds whisper.cpp with VitisAI NPU offload when `xrt-smi` sees the NPU (needs XRT + FlexML runtimes; `.rai` encoder cache fetched alongside the model), Intel GPU/NPU builds with OpenVINO when `/opt/intel/openvino*` + the NPU/iGPU are present (encoder runs on the Arc iGPU — NPU device is broken on Linux, whisper.cpp#2929; Vulkan remains the light cross-vendor fallback); server alternatives wired via the plugin's `sttEndpoint`: [Lemonade Server](https://lemonade-server.ai) (AMD NPU) or [OpenVINO Model Server](https://docs.openvino.ai/2025/model-server/ovms_demos_audio.html)) and suggests a matching model (large-v3-turbo on modern GPUs/Metal/AMD ROCm/Vulkan, medium on older GPUs, small on CPU-only); normalization LLM defaults to local Ollama — edit `endpoint`/`model` in the deployed cli.json for any OpenAI-compatible API; optional Piper TTS for spoken responses. macOS/Linux only |
 
 The plugin array merges **by plugin name** — re-runs replace in place and never touch your other plugins. On Docker, the `tui` merge is skipped with a warning (containers have no microphone).
 
@@ -398,14 +398,14 @@ Every allowed skill's `description` is injected into the primary session's conte
 ```bash
 ./deploy/setup.sh                                # default: lean (45 primary-visible skills)
 ./deploy/setup.sh --skill-profile full           # opt back in: shipped allowlist verbatim
-./deploy/setup.sh --skill-profile lean --dry-run # preview the deployed permission.skill block
+./deploy/setup.sh --skill-profile lean --dry-run # preview the deployed skill permission rules
 ./deploy/setup.ps1 -SkillProfile full            # Windows parity
 ```
 
 Key properties:
 
-- Only the **deployed** copy's `permission.skill` block is rewritten (`deploy/apply-skill-profile.mjs`); the shipped `opencode.json` is never modified — `full` is a verified no-op.
-- **Subagents are profile-immune.** All 148 skills stay on disk and every skill has either a frontmatter `permission.skill: allow` consumer agent or a lean slot — nothing is orphaned under lean.
+- Only the **deployed** copy's skill permission rules are rewritten (`deploy/apply-skill-profile.mjs`); the shipped `opencode.json` is never modified — `full` is a verified no-op.
+- **Subagents are profile-immune.** All 148 skills stay on disk and every skill has either a frontmatter skill allow rule consumer agent or a lean slot — nothing is orphaned under lean.
 - Lean-hidden skills cannot be `@`-loaded by the primary until re-exposed; re-exposing any skill is a one-line edit to `deploy/skill-profiles.json`.
 - Typo-guarded: a lean key that doesn't match a real skill directory or the shipped allowlist fails the deploy closed.
 
@@ -692,7 +692,7 @@ When enabled, retrofitted skills emit mechanical evaluator output `{"pass":bool,
 
 - **Read-only/research agents skip injection** (`explore`, `general`, `autoresearch-research-subagent`, `explorer-subagent`, `requirements-specialist-subagent`, `discovery-specialist-subagent`, `technical-design-specialist-subagent`) — they aren't pushed toward minimal code.
 - **Per-agent mode overrides** via `PONYTAIL_AGENT_MODE_MAP` (JSON).
-- **Zero runtime npm dependency** — vendored, works air-gapped. The stock `@dietrichgebert/ponytail` is deliberately NOT in the `plugin` array (double-injection guard).
+- **Zero runtime npm dependency** — vendored, works air-gapped. The stock `@dietrichgebert/ponytail` is deliberately NOT in the `plugins` array (double-injection guard).
 
 | Env var | Default | Purpose |
 |---------|---------|---------|
@@ -706,9 +706,9 @@ Switch mode per session: `/ponytail lite|full|ultra|off`, `/ponytail-help`. See 
 
 `opencode_app/.opencode/plugins/learnings-autoinject.ts` closes the gap documented in `continuous-learning-skill`: *"OpenCode does NOT auto-scan LEARNINGS/ directories."* The `opencode-superlocalmemory` plugin auto-injects its **vector store**, but the git-committed `LEARNINGS/*.md` markdown files were never surfaced automatically — agents had to manually `glob`+`read`. This plugin injects a **compact manifest** (titles + paths + one-line summaries, ~200-400 tokens) into the system prompt at session start; the model `read()`s full bodies on demand.
 
-- **Same architecture as ponytail-scoped** — 4 hooks (`config`, `chat.message`, `experimental.chat.system.transform`, `command.execute.before`), same toggle pattern.
+- **Same architecture as ponytail-scoped** — V2 dual entrypoint (`setup()` + V1 `server()`): `ctx.command.transform` registers the commands and folds the toggle side effects into `execute()`; `ctx.session.hook("context")` injects the manifest. Same toggle pattern.
 - **Same off-set** — read-only/research agents skip injection (reuses ponytail's regex).
-- **No `opencode.json` change** — local plugins are glob-discovered. No conflict with `opencode-superlocalmemory` (different store: markdown vs vectors; different hook: `system.transform` vs `tui.prompt.append`).
+- **No `opencode.json` change** — local plugins are glob-discovered. No conflict with `opencode-superlocalmemory` (different store: markdown vs vectors; different hook: `session.hook("context")` here vs `tui.prompt.append` in that V1-era npm plugin).
 
 | Env var | Default | Purpose |
 |---------|---------|---------|

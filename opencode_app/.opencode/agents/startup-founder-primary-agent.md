@@ -3,21 +3,21 @@ description: >-
   Startup founder operations — reports, quotations, spreadsheets, presentations,
   day-to-day business.
 mode: subagent
-temperature: 0.7
+request:
+  body:
+    temperature: 0.7
 steps: 30
-permission:
-  read:
-    "*": allow
-    "mcp:*": deny
-  edit: allow
-  bash: allow
-  webfetch: allow
-  websearch: allow
-  task: allow
-  skill:
-    docx-creation-skill: allow
-    startup-business-docs-skill: allow
-    construction-bd-skill: allow
+permissions:
+  - { action: read, resource: "*", effect: allow }
+  - { action: read, resource: "mcp:*", effect: deny }
+  - { action: edit, resource: "*", effect: allow }
+  - { action: shell, resource: "*", effect: allow }
+  - { action: webfetch, resource: "*", effect: allow }
+  - { action: websearch, resource: "*", effect: allow }
+  - { action: subagent, resource: "*", effect: allow }
+  - { action: skill, resource: "docx-creation-skill", effect: allow }
+  - { action: skill, resource: "startup-business-docs-skill", effect: allow }
+  - { action: skill, resource: "construction-bd-skill", effect: allow }
 category: business
 ---
 

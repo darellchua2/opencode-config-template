@@ -131,14 +131,15 @@ Create the frontmatter section based on agent type:
 description: Main coding assistant for Python development
 mode: primary
 model: zai-coding-plan/glm-5.3
-temperature: 0.7
+request:
+  body:
+    temperature: 0.7
 steps: 10
-permission:
-  read: allow
-  write: allow
-  edit: allow
-  bash: ask
-  webfetch: allow
+permissions:
+  - { action: read, resource: "*", effect: allow }
+  - { action: edit, resource: "*", effect: allow }
+  - { action: shell, resource: "*", effect: ask }
+  - { action: webfetch, resource: "*", effect: allow }
 color: primary
 ---
 ```
@@ -149,18 +150,18 @@ color: primary
 description: Review code for quality and security issues
 mode: subagent
 model: zai-coding-plan/glm-5.3
-temperature: 0.3
+request:
+  body:
+    temperature: 0.3
 steps: 3
 hidden: true
-permission:
-  read: allow
-  write: deny
-  edit: deny
-  bash: deny
-  webfetch: allow
-  task:
-    "*": deny
-    "testing-*": allow
+permissions:
+  - { action: read, resource: "*", effect: allow }
+  - { action: edit, resource: "*", effect: deny }
+  - { action: shell, resource: "*", effect: deny }
+  - { action: webfetch, resource: "*", effect: allow }
+  - { action: subagent, resource: "*", effect: deny }
+  - { action: subagent, resource: "testing-*", effect: allow }
 color: "#FF5733"
 ---
 ```
@@ -169,36 +170,34 @@ color: "#FF5733"
 
 Set up tool permissions based on agent purpose:
 
-**Permission Values**:
+**Permission Effects**:
 - `allow`: Operation permitted without approval
 - `ask`: Prompt for approval before operation
 - `deny`: Operation disabled
 
 **Common Permission Patterns**:
 
-| Agent Type | read | write | edit | bash | webfetch |
-|------------|------|-------|------|------|----------|
-| Code reviewer | allow | deny | deny | deny | allow |
-| Code generator | allow | allow | allow | ask | allow |
-| Read-only explorer | allow | deny | deny | deny | deny |
-| DevOps agent | allow | allow | allow | allow | allow |
+| Agent Type | read | edit | shell | webfetch |
+|------------|------|------|-------|----------|
+| Code reviewer | allow | deny | deny | allow |
+| Code generator | allow | allow | ask | allow |
+| Read-only explorer | allow | deny | deny | deny |
+| DevOps agent | allow | allow | allow | allow |
 
-**Task Permissions** (for subagents that spawn other subagents):
+**Subagent Permissions** (for subagents that spawn other subagents):
 ```yaml
-permission:
-  task:
-    "*": deny
-    "reviewer-*": allow
-    "testing-*": allow
+permissions:
+  - { action: subagent, resource: "*", effect: deny }
+  - { action: subagent, resource: "reviewer-*", effect: allow }
+  - { action: subagent, resource: "testing-*", effect: allow }
 ```
 
 **Skill Permissions**:
 ```yaml
-permission:
-  skill:
-    "*": deny
-    "python-*": allow
-    "testing-*": allow
+permissions:
+  - { action: skill, resource: "*", effect: deny }
+  - { action: skill, resource: "python-*", effect: allow }
+  - { action: skill, resource: "testing-*", effect: allow }
 ```
 
 ### Step 6: Build Agent Content
@@ -329,7 +328,7 @@ python3 -c "import yaml; yaml.safe_load(open('.opencode/agents/<name>.md'))"
 **Issue**: Using deprecated field names
 
 **Solution**:
-- Replace `tools` with `permission`
+- Replace `tools` with `permissions` rule array
 - Replace `maxSteps` with `steps`
 - Remove any `api_key` fields (use environment variables)
 
@@ -338,7 +337,7 @@ python3 -c "import yaml; yaml.safe_load(open('.opencode/agents/<name>.md'))"
 **Issue**: Agent cannot access required tools
 
 **Solution**:
-- Review `permission` section in frontmatter
+- Review `permissions` section in frontmatter
 - Ensure needed tools are set to `allow` or `ask`
 - Check for pattern-based permissions (e.g., `task: "reviewer-*": allow`)
 
@@ -366,7 +365,7 @@ grep -E "^(description|mode):" .opencode/agents/<name>.md
 - [ ] YAML frontmatter is valid
 - [ ] `description` field present and descriptive
 - [ ] `mode` specified (`primary` or `subagent`)
-- [ ] Using `permission` not `tools`
+- [ ] Using `permissions` not `tools`
 - [ ] Using `steps` not `maxSteps`
 - [ ] Task/skill permissions configured if needed
 - [ ] `hidden` only set for subagents
@@ -383,15 +382,16 @@ grep -E "^(description|mode):" .opencode/agents/<name>.md
 description: Review code for quality, security, and best practices
 mode: subagent
 model: zai-coding-plan/glm-5.3
-temperature: 0.3
+request:
+  body:
+    temperature: 0.3
 steps: 3
 hidden: true
-permission:
-  read: allow
-  write: deny
-  edit: deny
-  bash: deny
-  webfetch: allow
+permissions:
+  - { action: read, resource: "*", effect: allow }
+  - { action: edit, resource: "*", effect: deny }
+  - { action: shell, resource: "*", effect: deny }
+  - { action: webfetch, resource: "*", effect: allow }
 color: "#FF5733"
 ---
 ```

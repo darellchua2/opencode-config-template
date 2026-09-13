@@ -5,30 +5,26 @@ description: >-
   delegates screenshots to image-analyzer.
 mode: subagent
 steps: 30
-permission:
-  read:
-    "*": allow
-    "mcp:*": deny
-  edit:
-    "*": deny
-    "LEARNINGS/**": allow
-  glob: allow
-  grep: allow
-  bash: allow
-  webfetch: allow
-  websearch: allow
-  task:
-    "*": deny
-    explore: allow
-    general: allow
-    image-analyzer-subagent: allow
-  skill:
-    reviewer-baseline-skill: allow
-    uiux-review-skill: allow
-    frontend-design-skill: allow
-    accessibility-a11y-skill: allow
-    wireframer-skill: allow
-    continuous-learning-skill: allow
+permissions:
+  - { action: read, resource: "*", effect: allow }
+  - { action: read, resource: "mcp:*", effect: deny }
+  - { action: edit, resource: "*", effect: deny }
+  - { action: edit, resource: "LEARNINGS/**", effect: allow }
+  - { action: glob, resource: "*", effect: allow }
+  - { action: grep, resource: "*", effect: allow }
+  - { action: shell, resource: "*", effect: allow }
+  - { action: webfetch, resource: "*", effect: allow }
+  - { action: websearch, resource: "*", effect: allow }
+  - { action: subagent, resource: "*", effect: deny }
+  - { action: subagent, resource: "explore", effect: allow }
+  - { action: subagent, resource: "general", effect: allow }
+  - { action: subagent, resource: "image-analyzer-subagent", effect: allow }
+  - { action: skill, resource: "reviewer-baseline-skill", effect: allow }
+  - { action: skill, resource: "uiux-review-skill", effect: allow }
+  - { action: skill, resource: "frontend-design-skill", effect: allow }
+  - { action: skill, resource: "accessibility-a11y-skill", effect: allow }
+  - { action: skill, resource: "wireframer-skill", effect: allow }
+  - { action: skill, resource: "continuous-learning-skill", effect: allow }
 category: frontend
 ---
 
@@ -102,7 +98,7 @@ Playwright stays the capture/screenshot engine per `uiux-review-skill` §2. When
 
 Use these to **strengthen** a finding with verified runtime scores, not to replace the Playwright capture protocol or the `image-analyzer-subagent` delegation rule.
 
-**MCP dependency:** these tools require the root `permission` pattern `"chrome-devtools*": "allow"` in `opencode.json` (flipped on by `--enable-pack chrome-devtools`). No frontmatter `permission` change is required for this agent — its `read."mcp:*": deny` blocks only MCP *resource* reads, and `chrome-devtools-mcp` is tools-only (no resources), so access is gated solely by the root `permission` patterns, mirroring the `nextjs-specialist-subagent` pattern.
+**MCP dependency:** these tools require the root `permissions` rule `{ "action": "chrome-devtools*", "effect": "allow" }` in `opencode.json` (flipped on by `--enable-pack chrome-devtools`). No frontmatter `permissions` change is required for this agent — its `read` `"mcp:*"` deny rule blocks only MCP *resource* reads, and `chrome-devtools-mcp` is tools-only (no resources), so access is gated solely by the root `permissions` rules, mirroring the `nextjs-specialist-subagent` pattern.
 
 ## Screenshot Delegation Rule (Hard Constraint)
 

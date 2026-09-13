@@ -4,23 +4,21 @@ description: >-
   by file type.
 mode: subagent
 steps: 25
-permission:
-  webfetch: allow
-  websearch: allow
-  task:
-    "*": deny
-    pptx-specialist-subagent: allow
-    docx-creation-subagent: allow
-    startup-ceo-subagent: allow
-    xlsx-specialist-subagent: allow
-  skill:
-    pptx-generate-slide-skill: allow
-    pptx-generate-template-skill: allow
-    pptx-template-modifier-skill: allow
-    docx-creation-skill: allow
-    xlsx-specialist-skill: allow
-    markitdown-mcp-skill: allow
-    docling-mcp-skill: allow
+permissions:
+  - { action: webfetch, resource: "*", effect: allow }
+  - { action: websearch, resource: "*", effect: allow }
+  - { action: subagent, resource: "*", effect: deny }
+  - { action: subagent, resource: "pptx-specialist-subagent", effect: allow }
+  - { action: subagent, resource: "docx-creation-subagent", effect: allow }
+  - { action: subagent, resource: "startup-ceo-subagent", effect: allow }
+  - { action: subagent, resource: "xlsx-specialist-subagent", effect: allow }
+  - { action: skill, resource: "pptx-generate-slide-skill", effect: allow }
+  - { action: skill, resource: "pptx-generate-template-skill", effect: allow }
+  - { action: skill, resource: "pptx-template-modifier-skill", effect: allow }
+  - { action: skill, resource: "docx-creation-skill", effect: allow }
+  - { action: skill, resource: "xlsx-specialist-skill", effect: allow }
+  - { action: skill, resource: "markitdown-mcp-skill", effect: allow }
+  - { action: skill, resource: "docling-mcp-skill", effect: allow }
 category: docs
 ---
 
@@ -66,7 +64,7 @@ Activate when user mentions:
 | `.xlsx` / `.csv` | `xlsx-specialist-subagent` |
 | READ/EXTRACT text from `.docx`/`.pptx`/`.xlsx` (born-digital) | Load `markitdown-mcp-skill` → call `markitdown` MCP |
 
-> **MCP tool access is session-inherited** from the deployed config's root-level `permission` pattern (`"markitdown*": "allow"`) — do NOT add `markitdown*` to this agent's `permission` block (no precedent; decided in #262). To enable markitdown calls, run `./deploy/setup.sh --enable-pack markitdown` (installs the launcher and flips `mcp.markitdown.enabled` + `permission."markitdown*": "allow"`), then restart opencode.
+> **MCP tool access is session-inherited** from the deployed config's root `permissions` rules (`{ "action": "markitdown*", "effect": "allow" }`) — do NOT add a `markitdown*` rule to this agent's `permissions` (no precedent; decided in #262). To enable markitdown calls, run `./deploy/setup.sh --enable-pack markitdown` (installs the launcher and clears `mcp.servers.markitdown.disabled` + flips the `markitdown*` rule to `allow`), then restart opencode.
 
 ## Workflow
 

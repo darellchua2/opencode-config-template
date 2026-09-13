@@ -8,27 +8,36 @@
 //   2. Per-agent default modes via PONYTAIL_AGENT_MODE_MAP (JSON env var).
 //
 // ── Why .ts (NOT .mjs) ───────────────────────────────────────────────────────
-// OpenCode's local-plugin discovery (packages/opencode/src/config/plugin.ts,
-// verified identical at git tag v1.18.11) globs `{plugin,plugins}/*.{ts,js}`.
-// `.mjs` is NOT matched, so a `.mjs` plugin is silently never discovered — no
-// load, no error, no log line. The file MUST be `.ts` or `.js`. We use `.ts`
-// because Bun always treats `.ts` as ESM, whereas `.js` here resolves to
-// CommonJS (the config-dir package.json has no `"type": "module"`), which would
-// reject the ESM `export` syntax. See research/ponytail-load-fix.md.
+// OpenCode's local-plugin discovery globs `{plugin,plugins}/*.{ts,js}` (V1:
+// packages/opencode/src/config/plugin.ts @ v1.18.11; V2 keeps glob discovery of
+// `.opencode/plugins/`). `.mjs` is NOT matched. `.js` in the config dir resolves
+// to CommonJS (no `"type": "module"` there), which would reject ESM `export`.
+// See research/ponytail-load-fix.md.
 //
-// ── Valid hooks in OpenCode 1.18.11 ──────────────────────────────────────────
-// Confirmed against packages/plugin/src/index.ts @ v1.18.11 (Hooks interface).
-// All four hooks below are first-class members of that interface:
+// ── OpenCode V2 + V1 dual entrypoint ────────────────────────────────────────
+// https://opencode.ai/v2/docs/build/plugins/ § "Support V1": V2 reads the
+// default export's `id` + `setup(ctx)`; V1 (>= 1.18.29) calls `server()` and
+// uses the returned V1 hook map. One file serves both runtimes. Intentionally
+// NO import of "@opencode/plugin": this file deploys as a bare .ts into
+// ~/.config/opencode/plugins/ (no node_modules / package.json there), and
+// Plugin.define is documented as a typing helper — the V2 runtime contract is
+// just `id` + `setup` on the default export. V1 older than 1.18.29 expects
+// function exports and will not load this object form.
+//
+// ── V2 registrations (in setup) ──────────────────────────────────────────────
+//   - ctx.command.transform — registers the 6 /ponytail* commands; the former
+//     command.execute.before mode-switch persistence now runs inside each
+//     command's execute(), before the confirmation prompt. /ponytail [level]
+//     reads the level from prompt.text (V1 delivered it via input.arguments).
+//   - ctx.session.hook("context") — CORE: append the mode-filtered ruleset to
+//     event.system. event.agent is native on this hook, so the V1 chat.message
+//     sessionID→agent cache + session.get() fallback are V1-only machinery.
+//
+// ── V1 hooks (returned by server(), per the V1 plugin API @ 1.18.11) ────────
 //   - config(input: Config)                              — register slash commands
 //   - "chat.message"(input, output)                       — cache sessionID → agent
 //   - "experimental.chat.system.transform"(input, output) — CORE: append ruleset to system[]
 //   - "command.execute.before"(input, output)             — persist /ponytail <level> switches
-//
-// Agent-type resolution:
-//   - experimental.chat.system.transform input = { sessionID?, model }
-//   - chat.message input = { sessionID, agent?, ... }  → cache sessionID→agent
-//   - cache miss + sessionID present → client.session.get() fallback
-//   - agent unresolvable → inject (safe default; off-set only EXCLUDES known read-only agents)
 //
 // Env vars:
 //   PONYTAIL_DEFAULT_MODE   — lite|full|ultra|off  (default: full)
@@ -97,7 +106,7 @@ if (process.env.PONYTAIL_AGENT_MODE_MAP) {
 
 // ── Per-session state ───────────────────────────────────────────────────────────
 
-const sessionAgent = new Map(); // sessionID → agent (populated by chat.message)
+const sessionAgent = new Map(); // sessionID → agent (V1 path only: populated by chat.message)
 const sessionMode = new Map();  // sessionID → mode (overridden via /ponytail commands)
 
 function resolveMode(sessionID, agent) {
@@ -161,16 +170,12 @@ const COMMANDS = {
 
 const PONYTAIL_MARKER = 'PONYTAIL MODE ACTIVE';
 
-// ── Plugin ──────────────────────────────────────────────────────────────────────
+// ── V1 plugin body (returned by server()) ───────────────────────────────────────
 //
-// NAMED export (matches the documented plugin pattern). OpenCode's plugin loader
-// (packages/opencode/src/plugin/index.ts → getLegacyPlugins) iterates the module's
-// exports (Object.values(mod)), so a named export is discovered and invoked as
-// `(input, options) => Promise<Hooks>`. A default-export function also works via
-// the same path, but named is the documented form. `client` is the only context
-// field this plugin uses (PluginInput also exposes project/directory/worktree/$).
+// Verbatim port of the original V1 named-export plugin. `client` is the only
+// context field this path uses (PluginInput also exposes project/directory).
 
-export const PonytailScoped = async ({ client }: any = {}) => {
+const v1Hooks = async ({ client }: any = {}) => {
   const log = (level: string, message: string) => {
     try {
       client && client.app && client.app.log({ body: { service: 'ponytail-scoped', level, message } });
@@ -264,4 +269,95 @@ export const PonytailScoped = async ({ client }: any = {}) => {
       }
     },
   };
+};
+
+// ── Dual entrypoint: V2 setup() + V1 server() ──────────────────────────────────
+
+export default {
+  id: 'ponytail-scoped',
+
+  // ── OpenCode V2 ────────────────────────────────────────────────────────────
+  async setup(ctx: any) {
+    // V2 plugin context has no documented app.log; console is the sanctioned
+    // channel in the V2 plugin examples.
+    const log = (level: string, message: string) => {
+      try {
+        console.log(`[ponytail-scoped] ${level}: ${message}`);
+      } catch (_) {}
+    };
+
+    log('info', 'ponytail-scoped loaded — default mode: ' + PONYTAIL_DEFAULT_MODE);
+
+    // Register the 6 commands; the plugin now OWNS them, so the former
+    // command.execute.before mode-switch persistence runs inside execute(),
+    // before the same confirmation prompt the V1 template submitted. (The V1
+    // `agent: "build"` pin has no documented V2 CommandDefinition equivalent —
+    // commands run in the session's active agent.)
+    await ctx.command.transform((editor: any) => {
+      for (const [name, def] of Object.entries(COMMANDS)) {
+        editor.add({
+          name,
+          description: def.description,
+          execute: async ({ sessionID, prompt, delivery }: any = {}) => {
+            // Formerly command.execute.before: persist the mode switch.
+            // /ponytail [level]: the level arrives in prompt.text (V1 used
+            // input.arguments); normalizeMode() rejects invalid values, so a
+            // missing/garbled argument degrades to the status query.
+            let mode: string | null = null;
+            if (name === 'ponytail') {
+              const arg = String((prompt && prompt.text) || '').trim().toLowerCase();
+              if (arg) mode = normalizeMode(arg);
+            } else if (name.startsWith('ponytail-')) {
+              mode = normalizeMode(name.replace('ponytail-', ''));
+            }
+
+            if (mode && sessionID) {
+              sessionMode.set(sessionID, mode);
+              log('info', 'ponytail ' + mode + ' (session ' + sessionID + ')');
+            }
+
+            await ctx.session.prompt({ ...prompt, sessionID, text: def.template, delivery });
+          },
+        });
+      }
+    });
+
+    // Core: append the mode-filtered ruleset to the system prompt for
+    // agent-loop model requests, scoped by agent type. V2 event.system is a
+    // SystemPart[] ({ type: "text", text }), not V1's string[].
+    await ctx.session.hook('context', (event: any) => {
+      const system = event && event.system;
+      if (!system || !Array.isArray(system)) return;
+
+      const sessionID = event.sessionID;
+      // event.agent is native on the context hook — no chat.message cache or
+      // session.get() fallback needed.
+      const agent = event.agent;
+
+      const mode = resolveMode(sessionID, agent);
+      if (mode === 'off') return;
+
+      if (isInOffSet(agent)) {
+        log('debug', 'ponytail skipped: agent in off-set (' + (agent || '?') + ')');
+        return;
+      }
+
+      const instructions = getPonytailInstructions(mode);
+      if (!instructions) return;
+
+      // Idempotency / double-injection guard: skip if already injected this
+      // request (string or SystemPart form).
+      for (const part of system) {
+        const text = typeof part === 'string' ? part : part && typeof part.text === 'string' ? part.text : '';
+        if (text.includes(PONYTAIL_MARKER)) return;
+      }
+
+      system.push({ type: 'text', text: instructions });
+    });
+  },
+
+  // ── OpenCode V1 (>= 1.18.29) ───────────────────────────────────────────────
+  async server(input: any = {}) {
+    return v1Hooks(input);
+  },
 };

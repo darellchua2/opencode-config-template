@@ -23,3 +23,14 @@
 2. Check the plugin README — does it require a `command` block?
 3. Check the plugin cache: `~/.cache/opencode/packages/<plugin>@latest/` — is it installed?
 4. If all present: **fully restart opencode** (config is read at startup only, no hot-reload)
+
+## Addendum (2026-09-13, V2-native config)
+
+Config keys renamed in the V2-native conversion: `"plugin"` → `"plugins"` and
+`"command"` → `"commands"` (entry fields `template`/`description`/`agent`
+unchanged). The dual-entry shape survives the rename 1:1 — V2 normalizes V1 key
+spellings in memory, but this repo's source now ships V2-native. Re-validate the
+learning (does the goal plugin's V2 build self-register `/goal` via
+`ctx.command.transform`, making the `commands.goal` block redundant?) after the
+plugin itself ships a V2-capable release — the pinned `@0.8.1` is V1-era and
+inert under V2 until then.

@@ -1,15 +1,16 @@
 #!/usr/bin/env node
 // Apply a skill profile (lean|full) to a DEPLOYED opencode config.
 //
-// Rewrites ONLY the `permission.skill` block of the target config:
-//   lean -> { "*": "deny", ...<29 lean keys>: "allow" }   (from skill-profiles.json)
+// Rewrites ONLY the `skill` rules inside the target config's `permissions`
+// array (V2 shape — ordered {action, resource, effect} rules, last matching
+// rule wins):
+//   lean -> deny "*" + allow the lean keys (from skill-profiles.json)
 //   full -> no-op (deploy verbatim; the shipped opencode.json IS the full profile)
 //
 // Never edits the source `opencode_app/opencode.json` (single source of truth).
 // Mirrors merge-packs.mjs CLI conventions so setup.sh can call it the same way.
 
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
-import { resolve } from "node:path";
 
 function usage() {
   console.log(`Usage: node apply-skill-profile.mjs --config <path> --profiles <path> [--profile lean|full]
@@ -17,10 +18,11 @@ function usage() {
   --config    Path to the DEPLOYED config.json to patch in place.
   --profiles  Path to deploy/skill-profiles.json (lean key list).
   --profile   Profile to apply. Default: lean. "full" is a verified no-op:
-              the config keeps the shipped 87-allow allowlist verbatim.
+              the config keeps the shipped allowlist rules verbatim.
 
 Exits non-zero on: missing/unparseable config or profiles, unknown profile,
-lean keys not present in the config's shipped allowlist (guards typo'd keys).`);
+config without a V2 \`permissions\` array (redeploy the config first), or lean
+keys not present in the config's shipped allowlist (guards typo'd keys).`);
 }
 
 const args = process.argv.slice(2);
@@ -52,9 +54,23 @@ for (const p of [configPath, profilesPath]) {
 const config = JSON.parse(readFileSync(configPath, "utf8"));
 const profiles = JSON.parse(readFileSync(profilesPath, "utf8"));
 
+if (!Array.isArray(config.permissions)) {
+  console.error(
+    "apply-skill-profile: config has no `permissions` rule array (V2 shape) — redeploy the config first"
+  );
+  process.exit(1);
+}
+
+// Shipped skill allowlist = non-"*" skill rules with effect allow.
+const shippedAllows = config.permissions
+  .filter(
+    (r) =>
+      r && r.action === "skill" && r.effect === "allow" && r.resource && r.resource !== "*"
+  )
+  .map((r) => r.resource);
+
 if (profile === "full") {
-  const allows = Object.keys(config.permission?.skill ?? {}).filter((k) => k !== "*");
-  console.log(`apply-skill-profile: full — deployed verbatim (${allows.length} allows, no rewrite)`);
+  console.log(`apply-skill-profile: full — deployed verbatim (${shippedAllows.length} allows, no rewrite)`);
   process.exit(0);
 }
 
@@ -64,8 +80,8 @@ if (!Array.isArray(lean) || lean.length === 0) {
   process.exit(1);
 }
 
-const shipped = config.permission?.skill ?? {};
-const missing = lean.filter((k) => shipped[k] !== "allow");
+const shipped = new Set(shippedAllows);
+const missing = lean.filter((k) => !shipped.has(k));
 if (missing.length > 0) {
   console.error(
     `apply-skill-profile: lean keys not present in shipped allowlist (typo guard): ${missing.join(", ")}`
@@ -73,11 +89,17 @@ if (missing.length > 0) {
   process.exit(1);
 }
 
-const next = { "*": "deny" };
-for (const k of [...lean].sort()) next[k] = "allow";
-config.permission.skill = next;
+// Strip every existing skill rule, then append the lean block (deny "*" first,
+// sorted allows after). Skill checks only ever match skill rules, so appending
+// at the end preserves deny-then-exceptions ordering semantics without
+// disturbing the position of unrelated (read/shell/…) rules.
+config.permissions = config.permissions.filter((r) => !(r && r.action === "skill"));
+config.permissions.push({ action: "skill", resource: "*", effect: "deny" });
+for (const k of [...lean].sort()) {
+  config.permissions.push({ action: "skill", resource: k, effect: "allow" });
+}
 
 writeFileSync(configPath, JSON.stringify(config, null, 2) + "\n");
 console.log(
-  `apply-skill-profile: lean — deployed permission.skill rewritten to ${lean.length} allows + "*": "deny"`
+  `apply-skill-profile: lean — deployed skill rules rewritten to ${lean.length} allows + deny "*"`
 );

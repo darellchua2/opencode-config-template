@@ -4,24 +4,22 @@ description: >-
   per language standards (PEP 257, Javadoc, JSDoc, XML).
 mode: subagent
 steps: 20
-permission:
-  read:
-    "*": allow
-    "mcp:*": deny
-  edit: allow
-  glob: allow
-  grep: allow
-  bash: deny
-  webfetch: allow
-  websearch: allow
-  skill:
-    docstring-generator-skill: allow
-    coverage-readme-workflow-skill: allow
-    markitdown-mcp-skill: allow
-    ascii-diagram-creator-skill: allow
-    research-paper-generation-skill: allow
-    unslop-skill: allow
-    technical-writing-skill: allow
+permissions:
+  - { action: read, resource: "*", effect: allow }
+  - { action: read, resource: "mcp:*", effect: deny }
+  - { action: edit, resource: "*", effect: allow }
+  - { action: glob, resource: "*", effect: allow }
+  - { action: grep, resource: "*", effect: allow }
+  - { action: shell, resource: "*", effect: deny }
+  - { action: webfetch, resource: "*", effect: allow }
+  - { action: websearch, resource: "*", effect: allow }
+  - { action: skill, resource: "docstring-generator-skill", effect: allow }
+  - { action: skill, resource: "coverage-readme-workflow-skill", effect: allow }
+  - { action: skill, resource: "markitdown-mcp-skill", effect: allow }
+  - { action: skill, resource: "ascii-diagram-creator-skill", effect: allow }
+  - { action: skill, resource: "research-paper-generation-skill", effect: allow }
+  - { action: skill, resource: "unslop-skill", effect: allow }
+  - { action: skill, resource: "technical-writing-skill", effect: allow }
 category: docs
 ---
 
@@ -59,7 +57,7 @@ Coverage Documentation:
 
 Reading Source Documents:
 - For binary document extraction (PDF/DOCX/PPTX), follow the AGENTS.md → Office Document Extraction Routing rule (markitdown → docling → image-analyzer → pdf-specialist).
-- Note: `bash: deny` in this agent's permissions does NOT block MCP tool calls — MCP tool access is session-inherited from `opencode.json` root-level `permission` patterns (e.g. `"markitdown*": "allow"`), separate from bash permission.
+- Note: the `shell` (was `bash`) deny rule in this agent's permissions does NOT block MCP tool calls — MCP tool access is session-inherited from `opencode.json` root `permissions` rules (e.g. `{ "action": "markitdown*", "effect": "allow" }`), separate from shell rules.
 
 Workflow:
 1. Identify the code elements needing documentation

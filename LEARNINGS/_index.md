@@ -80,6 +80,15 @@
 - **Summary**: Task-delegate allow-list changes sync 4 surfaces (frontmatter, registry regen, README row, agent-body note); delegation step wording must respect the delegate's own permission ceiling (bash:deny → parent owns diff/lint/commit)
 - **Date**: 2026-08-27
 
+### OpenCode V2 dual-support plugin entrypoint
+
+- **Category**: pattern
+- **File**: `patterns/opencode-v2-plugin-dual-support.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: V2 migration: local plugins port to `{id, setup(ctx), server()}` (no static `@opencode/plugin` import); `mcp` needs `mcp.servers.<name>` + `disabled` inversion (V1 shape silently ignored) and project opt-ins must repeat full server defs; npm pins still V1-inert
+- **Date**: 2026-09-13
+
 ---
 
 **Storage paths:**

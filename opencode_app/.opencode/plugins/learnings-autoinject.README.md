@@ -58,17 +58,21 @@ Source: LEARNINGS/ (2 project). Refresh: /learnings-refresh
 
 ## Hooks
 
-| Hook | Role |
-|------|------|
-| `config` | Register slash commands |
-| `chat.message` | Cache `sessionID → agent` |
-| `experimental.chat.system.transform` | Core: append manifest (idempotent, off-set-gated) |
-| `command.execute.before` | Persist per-session toggles |
+Dual entrypoint (V2 `setup()` + V1 `server()` in one default export), per the
+[V2 plugin dual-support pattern](https://opencode.ai/v2/docs/build/plugins/):
+V2 loads `setup(ctx)`; V1 ≥ 1.18.29 calls `server()` and receives the legacy
+hook map. V1 < 1.18.29 expects function exports and will not load the object
+form.
+
+| V2 registration (in `setup`) | Replaces V1 hook | Role |
+|------|------|------|
+| `ctx.command.transform` | `config` + `command.execute.before` | Register the 4 `/learnings-*` commands; the toggle/refresh side effects now run inside each command's `execute()` |
+| `ctx.session.hook("context")` | `experimental.chat.system.transform` (+ `chat.message` cache) | Core: append manifest (idempotent, off-set-gated). `event.agent` is native on the context hook, so the sessionID→agent cache is V1-only |
 
 ## Compatibility
 
-- No `opencode.json` change — local plugins are glob-discovered.
-- No conflict with `opencode-superlocalmemory` (different store: markdown vs vectors; different hook: `experimental.chat.system.transform` vs `tui.prompt.append`).
+- No `opencode.json` change — local plugins are glob-discovered (V2 keeps auto-discovery of `.opencode/plugins/`).
+- No conflict with `opencode-superlocalmemory` (different store: markdown vs vectors; different hook: `ctx.session.hook("context")` here vs `tui.prompt.append` in that V1-era npm plugin — its V2 port is tracked separately).
 - Requires `LEARNINGS/` to exist in the project root; absent → skips silently.
 
 See `research/ponytail-load-fix.md` for why this file is `.ts` (not `.mjs`).

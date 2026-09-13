@@ -161,7 +161,7 @@ Agent `description` fields are loaded into the Task tool context on every sessio
 ### Heavy Agents
 Agents >200 lines inflate context when spawned via Task tool. Each line costs tokens during the subagent session.
 
-**Fix**: Split large agents into focused specialists. Use skill loading (`permission.skill`) to inject domain knowledge on demand.
+**Fix**: Split large agents into focused specialists. Use skill loading (`permissions` skill rules) to inject domain knowledge on demand.
 
 ### Redundant Components
 Multiple skills covering the same domain create confusion for agent selection and waste context.

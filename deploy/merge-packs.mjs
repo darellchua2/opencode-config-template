@@ -3,8 +3,9 @@
 //
 // Provider-pack merger. Deep-merges one or more pack partials
 // (deploy/packs/pack-<name>.json) into a target opencode.json, flipping
-// `mcp.<server>.enabled` and the root `permission` pattern key
-// (`"<ns>*": "allow"`) for the requested packs.
+// `mcp.servers.<server>.disabled` (V2 shape) and merging the root `permissions`
+// rule array (V2 shape — rules merged BY (action, resource) KEY so a pack
+// allow flips a source-config deny in place, preserving rule order).
 //
 // Companion to deploy/resolve-models.mjs. Zero external dependencies — Node
 // built-ins only (fs, path). Mirrors resolve-models.mjs conventions:
@@ -14,13 +15,22 @@
 //
 // Semantics (per PLAN.md Phase 3, as revised by the opencode-tooling review):
 //   - Deep-merge: last-wins on scalars; objects merged recursively; arrays
-//     left untouched. Sole exception: a pack's optional `tui` key (plugin
-//     packs, e.g. pack-voice.json) is stripped from the opencode.json merge
-//     and merged into a SEPARATE tui config via --tui-config, where the
-//     `plugin` array is merged BY PLUGIN NAME (entry[0]) — idempotent re-runs
-//     replace in place, other plugins are preserved.
-//   - --tui-config missing while a pack carries a `tui` key => warning +
-//     skip (Docker build path: containers have no microphone, tui.json is
+//     left untouched. THREE exceptions, all handled specially:
+//       1. a pack's `permissions` array is RULE-MERGED into the target's
+//          `permissions` array by (action, resource) key — idempotent re-runs
+//          replace in place, other rules are preserved (deepMerge would
+//          otherwise replace the array wholesale);
+//       2. a pack's optional `cli` key (plugin packs, e.g. pack-voice.json) is
+//          stripped from the opencode.json merge and merged into a SEPARATE
+//          cli config via --cli-config, where the `plugins` array is merged
+//          BY PACKAGE (string name or {package, options}) — idempotent re-runs
+//          replace in place, other plugins are preserved;
+//       3. a legacy V1 `tui` pack key is accepted as an alias for `cli`
+//          (its `plugin` tuples `[name, opts]` are normalized to
+//          `{package, options}` objects), so old user-authored packs keep
+//          working against the V2 cli.json target.
+//   - --cli-config missing while a pack carries a `cli`/`tui` key => warning +
+//     skip (Docker build path: containers have no microphone, cli.json is
 //     host-side). Never fatal.
 //   - Empty/whitespace --packs => true no-op (exit 0, no read, no write).
 //     This is the Docker `ARG OPENCODE_PACKS=""` default path. Implemented
@@ -37,7 +47,7 @@
 //     --config <opencode.json> \
 //     --packs-dir <deploy/packs> \
 //     --packs autodesk \
-//     [--tui-config <tui.json>] \
+//     [--cli-config <cli.json>] [--tui-config <cli.json> (deprecated alias)] \
 //     [--dry-run] [--verbose]
 //
 // Exit codes: 0 success/no-op, 1 bad args / unknown pack / parse error / IO.
@@ -52,7 +62,8 @@ const camel = (s) => s.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
 function parseArgsCamel(argv) {
   const out = {
     config: null,
-    tuiConfig: null,
+    cliConfig: null,
+    tuiConfig: null, // deprecated alias for --cli-config (V1 voice-flow flag)
     packsDir: null,
     packs: "",
     dryRun: false,
@@ -72,6 +83,7 @@ function parseArgsCamel(argv) {
   return out;
 }
 const O = parseArgsCamel(process.argv.slice(2));
+if (!O.cliConfig && O.tuiConfig) O.cliConfig = O.tuiConfig;
 
 // ─────────────────────────── helpers ────────────────────────────────────
 
@@ -92,7 +104,9 @@ async function readJsonMaybe(p) {
 }
 
 // Deep-merge `src` into `dst` in place. Scalars: last-wins (src overwrites).
-// Objects: recurse. Arrays: replaced wholesale (documented limitation).
+// Objects: recurse. Arrays: replaced wholesale (documented limitation — the
+// `permissions` and cli `plugins` arrays are intercepted and rule/item-merged
+// separately below).
 function deepMerge(dst, src) {
   for (const [k, v] of Object.entries(src)) {
     if (
@@ -111,19 +125,56 @@ function deepMerge(dst, src) {
   return dst;
 }
 
-// Merge plugin arrays BY PLUGIN NAME (entry[0]). Existing same-name entry is
-// replaced in place; new entries are appended. Idempotent.
+// Merge V2 permission rule arrays BY (action, resource) KEY. An existing rule
+// with the same key is replaced IN PLACE (order preserved — critical for the
+// last-matching-rule-wins semantics: a pack allow replaces the source deny at
+// the deny's position); rules with new keys are appended. Idempotent.
+function mergeRuleArray(dstArr, srcArr) {
+  for (const rule of srcArr) {
+    if (!rule || typeof rule !== "object") continue;
+    const idx = dstArr.findIndex(
+      (r) => r && typeof r === "object" && r.action === rule.action && r.resource === rule.resource
+    );
+    if (idx >= 0) dstArr[idx] = rule;
+    else dstArr.push(rule);
+  }
+  return dstArr;
+}
+
+// Plugin entry identity: a bare string (its own name), a V2
+// {package, options} object (its .package), or a legacy V1 tuple [name, opts].
+function entryName(e) {
+  if (typeof e === "string") return e;
+  if (Array.isArray(e)) return typeof e[0] === "string" ? e[0] : null;
+  if (e && typeof e === "object" && typeof e.package === "string") return e.package;
+  return null;
+}
+
+// Merge plugin arrays BY NAME (entry identity above). Existing same-name entry
+// is replaced in place; new entries are appended. Idempotent.
 function mergePluginArray(dstArr, srcArr) {
   for (const entry of srcArr) {
-    const name = Array.isArray(entry) ? entry[0] : null;
-    const idx =
-      typeof name === "string"
-        ? dstArr.findIndex((e) => Array.isArray(e) && e[0] === name)
-        : -1;
+    const name = entryName(entry);
+    const idx = name !== null ? dstArr.findIndex((e) => entryName(e) === name) : -1;
     if (idx >= 0) dstArr[idx] = entry;
     else dstArr.push(entry);
   }
   return dstArr;
+}
+
+// Normalize a legacy V1 `tui` partial to the V2 cli.json shape: `plugin`
+// tuples [name, opts] become `plugins` objects {package, options}.
+function normalizeCliPartial(raw) {
+  if (!raw || typeof raw !== "object") return raw;
+  const out = { ...raw };
+  if (Array.isArray(out.plugin)) {
+    const converted = out.plugin.map((e) =>
+      Array.isArray(e) ? { package: e[0], options: e[1] || {} } : e
+    );
+    delete out.plugin;
+    out.plugins = Array.isArray(out.plugins) ? [...converted, ...out.plugins] : converted;
+  }
+  return out;
 }
 
 function log(...a)   { console.log(...a); }
@@ -166,7 +217,7 @@ async function main() {
   if (unknown.length > 0) {
     die(
       `Unknown pack(s): ${unknown.join(", ")}\n` +
-        `Available packs in ${O.packsDir}: ${available.join(", ")}`
+      `Available packs in ${O.packsDir}: ${available.join(", ")}`
     );
   }
 
@@ -179,14 +230,16 @@ async function main() {
     die(`Could not parse config as JSON object: ${O.config}`);
   }
 
-  // snapshot for dry-run diff (only the keys packs may touch: mcp, permission)
+  // snapshot for dry-run diff (only the keys packs may touch: mcp, permissions)
   const before = JSON.stringify({
     mcp: config.mcp || {},
-    permission: config.permission || {},
+    permissions: config.permissions || [],
   });
 
-  // load + deep-merge each requested pack in order. `tui` keys are plugin-pack
-  // partials — strip them so they never leak into opencode.json (handled below).
+  // load + deep-merge each requested pack in order. `cli` (and legacy `tui`)
+  // keys are plugin-pack partials — strip them so they never leak into
+  // opencode.json (handled below). `permissions` arrays are rule-merged
+  // separately (deepMerge would replace the array wholesale).
   verbose(`Merging ${requested.length} pack(s) into ${O.config}:`);
   const merged = [];
   for (const name of requested) {
@@ -196,43 +249,49 @@ async function main() {
     if (!pack || typeof pack !== "object") {
       die(`Pack ${name} is not a JSON object: ${file}`);
     }
-    const { tui, ...mcpPack } = pack;
+    const { tui, cli, permissions: packPerms, ...mcpPack } = pack;
     deepMerge(config, mcpPack);
-    merged.push({ name, tui });
+    if (Array.isArray(packPerms)) {
+      if (!Array.isArray(config.permissions)) config.permissions = [];
+      mergeRuleArray(config.permissions, packPerms);
+    }
+    merged.push({ name, cli: normalizeCliPartial(cli || tui) });
   }
 
-  // Plugin packs: merge `tui` partials into the separate tui config. The
-  // plugin array merges by name (idempotent, preserves the user's plugins).
-  // Missing --tui-config is a warning, not an error: the Docker build path
-  // has no tui.json (host-side file, no microphone in containers).
-  let tuiChanged = false;
-  const tuiPacks = merged.filter(({ tui }) => tui && typeof tui === "object");
-  if (tuiPacks.length > 0) {
-    if (!O.tuiConfig) {
+  // Plugin packs: merge `cli` partials into the separate cli config (V2's
+  // single global terminal-client config; replaces V1's layered tui.json).
+  // The plugins array merges by package name (idempotent, preserves the
+  // user's plugins). Missing --cli-config is a warning, not an error: the
+  // Docker build path has no cli.json (host-side file, no microphone in
+  // containers).
+  let cliChanged = false;
+  const cliPacks = merged.filter(({ cli }) => cli && typeof cli === "object");
+  if (cliPacks.length > 0) {
+    if (!O.cliConfig) {
       log(
-        "warning: pack(s) carry a 'tui' key but --tui-config was not set — " +
-          "skipping plugin merge (tui.json is host-side config; not applicable in Docker)."
+        "warning: pack(s) carry a 'cli' key but --cli-config was not set — " +
+          "skipping plugin merge (cli.json is host-side config; not applicable in Docker)."
       );
     } else {
-      const tuiConfig =
-        (await readJsonMaybe(O.tuiConfig)) || {
-          $schema: "https://opencode.ai/tui.json",
+      const cliConfig =
+        (await readJsonMaybe(O.cliConfig)) || {
+          $schema: "https://opencode.ai/v2/cli.json",
         };
-      const tuiBefore = JSON.stringify(tuiConfig);
-      for (const { name, tui } of tuiPacks) {
-        verbose(`  - ${name} tui -> ${O.tuiConfig}`);
-        const { plugin, ...tuiRest } = tui;
-        deepMerge(tuiConfig, tuiRest);
-        if (Array.isArray(plugin)) {
-          if (!Array.isArray(tuiConfig.plugin)) tuiConfig.plugin = [];
-          mergePluginArray(tuiConfig.plugin, plugin);
+      const cliBefore = JSON.stringify(cliConfig);
+      for (const { name, cli } of cliPacks) {
+        verbose(`  - ${name} cli -> ${O.cliConfig}`);
+        const { plugins, ...cliRest } = cli;
+        deepMerge(cliConfig, cliRest);
+        if (Array.isArray(plugins)) {
+          if (!Array.isArray(cliConfig.plugins)) cliConfig.plugins = [];
+          mergePluginArray(cliConfig.plugins, plugins);
         }
       }
-      tuiChanged = JSON.stringify(tuiConfig) !== tuiBefore;
+      cliChanged = JSON.stringify(cliConfig) !== cliBefore;
       if (!O.dryRun) {
         await writeFile(
-          O.tuiConfig,
-          JSON.stringify(tuiConfig, null, 2) + "\n",
+          O.cliConfig,
+          JSON.stringify(cliConfig, null, 2) + "\n",
           "utf8"
         );
       }
@@ -241,7 +300,7 @@ async function main() {
 
   const after = JSON.stringify({
     mcp: config.mcp || {},
-    permission: config.permission || {},
+    permissions: config.permissions || [],
   });
 
   if (O.dryRun) {
@@ -252,15 +311,15 @@ async function main() {
     const enabling = [];
     for (const name of requested) {
       const p = await readJsonMaybe(join(O.packsDir, `pack-${name}.json`));
-      enabling.push(...Object.keys(p.mcp || {}));
+      enabling.push(...Object.keys(p.mcp?.servers || {}));
     }
     log(`  servers that would be enabled: ${enabling.join(", ")}`);
-    if (tuiPacks.length > 0) {
-      const plugins = tuiPacks.flatMap(({ tui }) =>
-        (tui.plugin || []).map((p) => (Array.isArray(p) ? p[0] : p))
+    if (cliPacks.length > 0) {
+      const plugins = cliPacks.flatMap(({ cli }) =>
+        (cli.plugins || []).map((p) => entryName(p))
       );
       log(
-        `  plugins that would be ${O.tuiConfig ? "merged into " + O.tuiConfig : "SKIPPED (no --tui-config)"}: ${plugins.join(", ")}`
+        `  plugins that would be ${O.cliConfig ? "merged into " + O.cliConfig : "SKIPPED (no --cli-config)"}: ${plugins.join(", ")}`
       );
     }
     return;
@@ -271,13 +330,13 @@ async function main() {
   log(`Merged ${requested.length} pack(s) into ${O.config}:`);
   log(`  packs: ${requested.join(", ")}`);
   log(`  changed: ${before === after ? "nothing (already merged)" : "yes"}`);
-  if (tuiPacks.length > 0) {
-    const plugins = tuiPacks.flatMap(({ tui }) =>
-      (tui.plugin || []).map((p) => (Array.isArray(p) ? p[0] : p))
+  if (cliPacks.length > 0) {
+    const plugins = cliPacks.flatMap(({ cli }) =>
+      (cli.plugins || []).map((p) => entryName(p))
     );
-    if (O.tuiConfig) {
-      log(`  tui plugins merged into ${O.tuiConfig}: ${plugins.join(", ")}`);
-      log(`  tui changed: ${tuiChanged ? "yes" : "no (already merged)"}`);
+    if (O.cliConfig) {
+      log(`  cli plugins merged into ${O.cliConfig}: ${plugins.join(", ")}`);
+      log(`  cli changed: ${cliChanged ? "yes" : "no (already merged)"}`);
     }
   }
 }

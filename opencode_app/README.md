@@ -84,10 +84,10 @@ docker compose up -d
 | `nextjs` | next-devtools (1) | `--build-arg OPENCODE_PACKS=nextjs` |
 | `chrome-devtools` | chrome-devtools (1) | `--build-arg OPENCODE_PACKS=chrome-devtools` (privacy-hardened: telemetry + CrUX OFF; needs Chrome in image) |
 
-The merge runs **after** `resolve-models.mjs` and only merges each pack's `mcp` + `permission` keys (flipping `enabled` ON and setting the root pattern `permission."<ns>*": "allow"`; the autodesk pack also carries the full server definitions since they are not in the base config) — it never turns an already-on server off, never touches the `plugin` array or `agent` block. Verify post-build:
+The merge runs **after** `resolve-models.mjs` and only merges each pack's `mcp` + `permissions` keys (clearing `disabled` and flipping the root `"<ns>*"` rule to `allow` in place; the autodesk pack also carries the full server definitions since they are not in the base config) — it never turns an already-on server off, never touches the `plugins` array or `agents` block. Verify post-build:
 
 ```bash
-docker compose run --rm opencode node -e "const c=require('/app/opencode.json');console.log(c.mcp['autodesk-revit'].enabled)"
+docker compose run --rm opencode node -e "const c=require('/app/opencode.json');console.log(c.mcp.servers['autodesk-revit'])"
 # Expected: true
 ```
 
@@ -176,7 +176,7 @@ The Dockerfile already installs LibreOffice; no additional setup needed.
 
 ## Subagent Chaining
 
-OpenCode supports subagent-to-subagent delegation via the Task tool, controlled by the `permission.task` frontmatter field in each agent `.md` file. Key points:
+OpenCode supports subagent-to-subagent delegation via the Task tool, controlled by the `permissions` subagent rules (`{ "action": "subagent", … }`) in each agent `.md` file's frontmatter. Key points:
 
 - **Task tool** (subagent spawning) and **Skill tool** (skill loading) are separate systems with separate permissions
 - Agent name = filename minus `.md` (e.g., `code-review-subagent.md` -> `code-review-subagent`)
@@ -219,15 +219,16 @@ Override by setting `PONYTAIL_SUBAGENT_OFF` to a custom regex.
 
 ### How It Works
 
-1. `chat.message` hook caches `sessionID → agent` (the agent type arrives here).
-2. `experimental.chat.system.transform` hook resolves the agent (cache, or `client.session.get()` fallback), checks the off-set regex, resolves the mode, and appends the mode-filtered ruleset to the system prompt — once per turn (idempotent).
-3. `command.execute.before` hook persists `/ponytail <level>` switches per session.
+Dual entrypoint (V2 `setup()` + V1 `server()`), so one file serves both runtimes:
 
-The vendored ruleset + adapted instruction builder live in `opencode_app/.opencode/plugins/ponytail/`. MIT attribution: `opencode_app/.opencode/plugins/ATTRIBUTION.md`. The stock `@dietrichgebert/ponytail` npm package is deliberately NOT in `opencode.json` `plugin` array (double-injection guard).
+1. `ctx.command.transform` registers the 6 `/ponytail*` commands; the mode-switch persistence (formerly `command.execute.before`) runs inside each command's `execute()`, and `/ponytail [level]` reads the level from `prompt.text`.
+2. `ctx.session.hook("context")` checks the off-set regex (using the native `event.agent` — no `chat.message` cache needed), resolves the mode, and appends the mode-filtered ruleset to `event.system` — once per request (idempotent).
+
+The vendored ruleset + adapted instruction builder live in `opencode_app/.opencode/plugins/ponytail/`. MIT attribution: `opencode_app/.opencode/plugins/ATTRIBUTION.md`. The stock `@dietrichgebert/ponytail` npm package is deliberately NOT in `opencode.json` `plugins` array (double-injection guard).
 
 ## Learnings Auto-Inject Plugin
 
-`opencode_app/.opencode/plugins/learnings-autoinject.ts` auto-injects a **compact manifest** of a project's `LEARNINGS/*.md` files into the system prompt at session start, so the model knows what learned knowledge exists without a `glob`+`read` round-trip. It injects only titles + paths + a one-line summary (~200-400 tokens); the model `read()`s full file bodies on demand. This closes the gap documented in `continuous-learning-skill` (*"OpenCode does NOT auto-scan LEARNINGS/ directories"*). Architecture mirrors `ponytail-scoped.ts` (same 4 hooks, same toggle pattern, same off-set).
+`opencode_app/.opencode/plugins/learnings-autoinject.ts` auto-injects a **compact manifest** of a project's `LEARNINGS/*.md` files into the system prompt at session start, so the model knows what learned knowledge exists without a `glob`+`read` round-trip. It injects only titles + paths + a one-line summary (~200-400 tokens); the model `read()`s full file bodies on demand. This closes the gap documented in `continuous-learning-skill` (*"OpenCode does NOT auto-scan LEARNINGS/ directories"*). Architecture mirrors `ponytail-scoped.ts` (same V2 dual entrypoint, same toggle pattern, same off-set).
 
 ### Commands
 
@@ -249,14 +250,13 @@ The vendored ruleset + adapted instruction builder live in `opencode_app/.openco
 
 ### How It Works
 
-1. `chat.message` hook caches `sessionID → agent`.
-2. `experimental.chat.system.transform` hook resolves the agent, checks the toggle + off-set, and appends the cached manifest to the system prompt — once per turn (idempotent). The manifest is globbed once per session and cached (rebuilt on `/learnings-refresh`).
-3. `command.execute.before` hook persists `/learnings-on|off|refresh` per session.
+1. `ctx.command.transform` registers the 4 `/learnings-*` commands; the toggle/refresh persistence (formerly `command.execute.before`) runs inside each command's `execute()`.
+2. `ctx.session.hook("context")` checks the toggle + off-set (using the native `event.agent` — no `chat.message` cache needed) and appends the cached manifest to `event.system` — once per request (idempotent). The manifest is globbed once per session and cached (rebuilt on `/learnings-refresh`).
 
-No `opencode.json` change required — local plugins are glob-discovered. No conflict with `opencode-superlocalmemory` (different store: markdown vs vectors; different hook: `experimental.chat.system.transform` vs `tui.prompt.append`). Reference: `opencode_app/.opencode/plugins/learnings-autoinject.README.md`.
+No `opencode.json` change required — local plugins are glob-discovered (V2 keeps auto-discovery of `.opencode/plugins/`). No conflict with `opencode-superlocalmemory` (different store: markdown vs vectors; different hook: `ctx.session.hook("context")` here vs `tui.prompt.append` in that V1-era npm plugin). Reference: `opencode_app/.opencode/plugins/learnings-autoinject.README.md`.
 
 ## Scheduler Plugin (cron jobs)
 
-[`opencode-scheduler@1.3.0`](https://github.com/different-ai/opencode-scheduler) (in `opencode.json` `plugin[]`) runs recurring agent jobs via the **OS-native scheduler** — launchd (macOS), systemd (Linux), Task Scheduler (Windows), with cron fallback. Jobs are workdir-scoped, supervised (no overlap, optional `timeoutSeconds` SIGTERM→SIGKILL), and forced non-interactive (`OPENCODE_PERMISSION` denies question prompts so headless runs never hang). Manage in natural language: *"Schedule a daily job at 9am to…"*, list/update/run-now/logs/delete.
+[`opencode-scheduler@1.3.0`](https://github.com/different-ai/opencode-scheduler) (in `opencode.json` `plugins[]`) runs recurring agent jobs via the **OS-native scheduler** — launchd (macOS), systemd (Linux), Task Scheduler (Windows), with cron fallback. Jobs are workdir-scoped, supervised (no overlap, optional `timeoutSeconds` SIGTERM→SIGKILL), and forced non-interactive (`OPENCODE_PERMISSION` denies question prompts so headless runs never hang). Manage in natural language: *"Schedule a daily job at 9am to…"*, list/update/run-now/logs/delete.
 
 **Docker caveat:** the standalone container has no systemd/launchd (and usually no cron), so scheduled jobs do not fire in-container. For the Docker deployment, schedule on the host instead (host cron/systemd timer calling `docker compose exec` / `opencode run`). User-space deploys via `setup.sh` work natively.

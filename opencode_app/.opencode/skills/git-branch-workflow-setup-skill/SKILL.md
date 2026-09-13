@@ -138,7 +138,7 @@ When the user accepts (options 1, 2, or 3), delegate execution to `repo-ops-spec
 | `ciTemplates` | string[] | Yes | Filenames of templates to deploy (from `version-bump-standard-skill` §Workflow Templates) |
 | `checklist` | reference | Yes | Point to `version-bump-standard-skill` §Onboarding Checklist — do NOT copy steps |
 
-**Delegation instruction:** Pass the payload above to `repo-ops-specialist-subagent` via the Task tool. The executor loads `version-bump-standard-skill` (execution) and `semantic-release-convention-skill` (governance) itself — they are already in its `permission.skill` allowlist.
+**Delegation instruction:** Pass the payload above to `repo-ops-specialist-subagent` via the Task tool. The executor loads `version-bump-standard-skill` (execution) and `semantic-release-convention-skill` (governance) itself — they are already in its skill allow rules.
 
 ### Failure Handling
 

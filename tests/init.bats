@@ -89,10 +89,10 @@ teardown() { rm -rf "$TMP_PROJ"; }
   grep -q "^model:" "$TMP_PROJ/.opencode/agents/code-review-subagent.md"
 }
 
-@test "generated opencode.json has scoped permission.task with *:deny FIRST + build/plan/explore/general" {
+@test "generated opencode.json has scoped subagent deny-first rules + build/plan/explore/general" {
   $INIT --project "$TMP_PROJ" --preset review --yes >/dev/null 2>&1
-  # *:deny must be present
-  python3 -c "import json; d=json.load(open('$TMP_PROJ/.opencode/opencode.json')); t=d['agent']['build']['permission']['task']; assert t.get('*')=='deny', 'task * not deny'; assert list(t.keys())[0]=='*', '* must be first'; assert set(['build','plan','explore','general']).issubset(d['agent']), 'missing builtin agent blocks'; print('ok')"
+  # subagent deny "*" must be present and FIRST among subagent rules (last-match-wins)
+  python3 -c "import json; d=json.load(open('$TMP_PROJ/.opencode/opencode.json')); sub=[r for r in d['agents']['build']['permissions'] if r['action']=='subagent']; assert sub, 'no subagent rules'; assert sub[0]['resource']=='*' and sub[0]['effect']=='deny', 'subagent * deny must be first'; assert set(['build','plan','explore','general']).issubset(d['agents']), 'missing builtin agent blocks'; print('ok')"
 }
 
 @test "--dry-run writes nothing into the project" {

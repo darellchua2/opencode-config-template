@@ -9,17 +9,36 @@
 // *discovery* step by injecting a titles+paths manifest into the system prompt
 // so the model knows what's available without spending a tool call.
 //
-// Architecture mirrors ponytail-scoped.ts byte-for-byte (same 4 hooks, same
-// toggle pattern, same env-var + slash-command controls). The model still
-// `read()`s full file bodies on demand — we inject only the index.
+// Architecture mirrors ponytail-scoped.ts (same registration set, same toggle
+// pattern, same env-var + slash-command controls). The model still `read()`s
+// full file bodies on demand — we inject only the index.
 //
 // ── Why .ts (NOT .mjs) ───────────────────────────────────────────────────────
-// OpenCode's local-plugin discovery (packages/opencode/src/config/plugin.ts,
-// verified identical at git tag v1.18.11) globs `{plugin,plugins}/*.{ts,js}`.
-// `.mjs` is NOT matched. `.ts` is robust: Bun always treats it as ESM. See
-// research/ponytail-load-fix.md.
+// OpenCode's local-plugin discovery globs `{plugin,plugins}/*.{ts,js}` (V1:
+// packages/opencode/src/config/plugin.ts @ v1.18.11; V2 keeps glob discovery of
+// `.opencode/plugins/`). `.mjs` is NOT matched. `.ts` is robust: Bun always
+// treats it as ESM. See research/ponytail-load-fix.md.
 //
-// ── Valid hooks (all first-class in the Hooks interface @ v1.18.11) ──────────
+// ── OpenCode V2 + V1 dual entrypoint ────────────────────────────────────────
+// https://opencode.ai/v2/docs/build/plugins/ § "Support V1": V2 reads the
+// default export's `id` + `setup(ctx)`; V1 (>= 1.18.29) calls `server()` and
+// uses the returned V1 hook map. One file serves both runtimes. Intentionally
+// NO import of "@opencode/plugin": this file deploys as a bare .ts into
+// ~/.config/opencode/plugins/ (no node_modules / package.json there), and
+// Plugin.define is documented as a typing helper — the V2 runtime contract is
+// just `id` + `setup` on the default export. V1 older than 1.18.29 expects
+// function exports and will not load this object form.
+//
+// ── V2 registrations (in setup) ──────────────────────────────────────────────
+//   - ctx.command.transform — registers the 4 /learnings-* commands; the former
+//     command.execute.before side effects (toggle/refresh persistence) now run
+//     inside each command's execute(), before the confirmation prompt.
+//   - ctx.session.hook("context") — CORE: append the manifest to event.system
+//     for agent-loop model requests. event.agent is native on this hook, so
+//     the V1 chat.message sessionID→agent cache + session.get() fallback are
+//     V1-only machinery (kept in server() below, unused by setup()).
+//
+// ── V1 hooks (returned by server(), per the V1 plugin API) ──────────────────
 //   - config(input)                              — register slash commands
 //   - "chat.message"(input)                      — cache sessionID → agent
 //   - "experimental.chat.system.transform"(input, output) — CORE: append manifest
@@ -84,7 +103,7 @@ const MARKER = 'LEARNINGS AUTOINJECT';
 
 // ── Per-session state ───────────────────────────────────────────────────────────
 
-const sessionAgent = new Map();       // sessionID → agent (populated by chat.message)
+const sessionAgent = new Map();       // sessionID → agent (V1 path only: populated by chat.message)
 const sessionEnabled = new Map();     // sessionID → boolean (overridden via /learnings-on|off)
 const sessionManifest = new Map();    // sessionID → string (cached manifest; rebuilt on /learnings-refresh)
 
@@ -231,13 +250,13 @@ const COMMANDS = {
   },
 };
 
-// ── Plugin ──────────────────────────────────────────────────────────────────────
+// ── V1 plugin body (returned by server()) ───────────────────────────────────────
 //
-// NAMED export (documented pattern; loader iterates Object.values(mod)).
-// Destructures { client, directory } — directory is the project root used to
-// locate <cwd>/LEARNINGS/.
+// Verbatim port of the original V1 named-export plugin. Destructures
+// { client, directory } — directory is the project root used to locate
+// <cwd>/LEARNINGS/.
 
-export const LearningsAutoinject = async ({ client, directory }: any = {}) => {
+const v1Hooks = async ({ client, directory }: any = {}) => {
   const cwd: string = directory || process.cwd();
 
   const log = (level: string, message: string) => {
@@ -328,4 +347,91 @@ export const LearningsAutoinject = async ({ client, directory }: any = {}) => {
   };
 };
 
-export default LearningsAutoinject;
+// ── Dual entrypoint: V2 setup() + V1 server() ──────────────────────────────────
+
+export default {
+  id: 'learnings-autoinject',
+
+  // ── OpenCode V2 ────────────────────────────────────────────────────────────
+  async setup(ctx: any) {
+    const cwd: string = (ctx.location && ctx.location.directory) || process.cwd();
+
+    // V2 plugin context has no documented app.log; console is the sanctioned
+    // channel in the V2 plugin examples.
+    const log = (level: string, message: string) => {
+      try {
+        console.log(`[learnings-autoinject] ${level}: ${message}`);
+      } catch (_) {}
+    };
+
+    log('info', 'learnings-autoinject loaded — default: ' + (DEFAULT_ENABLED ? 'on' : 'off'));
+
+    // Register the 4 commands; the plugin now OWNS them, so the former
+    // command.execute.before side effects run inside execute(), before the
+    // same confirmation prompt the V1 template submitted. (The V1
+    // `agent: "build"` pin has no documented V2 CommandDefinition equivalent —
+    // commands run in the session's active agent.)
+    await ctx.command.transform((editor: any) => {
+      for (const [name, def] of Object.entries(COMMANDS)) {
+        editor.add({
+          name,
+          description: def.description,
+          execute: async ({ sessionID, prompt, delivery }: any = {}) => {
+            if (sessionID) {
+              if (name === 'learnings-on') {
+                sessionEnabled.set(sessionID, true);
+                log('info', 'learnings ON (session ' + sessionID + ')');
+              } else if (name === 'learnings-off') {
+                sessionEnabled.set(sessionID, false);
+                log('info', 'learnings OFF (session ' + sessionID + ')');
+              } else if (name === 'learnings-refresh') {
+                sessionManifest.delete(sessionID);
+                log('info', 'learnings manifest invalidated (session ' + sessionID + ')');
+              }
+            }
+            await ctx.session.prompt({ ...prompt, sessionID, text: def.template, delivery });
+          },
+        });
+      }
+    });
+
+    // Core: append the cached manifest to the system prompt for agent-loop
+    // model requests, gated by toggle + off-set + idempotency. V2 event.system
+    // is a SystemPart[] ({ type: "text", text }), not V1's string[].
+    await ctx.session.hook('context', (event: any) => {
+      const system = event && event.system;
+      if (!system || !Array.isArray(system)) return;
+
+      const sessionID = event.sessionID;
+      if (sessionID && !isOn(sessionID)) return;
+
+      // event.agent is native on the context hook — no chat.message cache or
+      // session.get() fallback needed.
+      if (isInOffSet(event.agent)) {
+        log('debug', 'learnings skipped: agent in off-set (' + (event.agent || '?') + ')');
+        return;
+      }
+
+      // Idempotency: skip if already injected this request (string or part form).
+      for (const part of system) {
+        const text = typeof part === 'string' ? part : part && typeof part.text === 'string' ? part.text : '';
+        if (text.includes(MARKER)) return;
+      }
+
+      // Cache the manifest per session (rebuilt on /learnings-refresh).
+      let manifest = sessionID ? sessionManifest.get(sessionID) : undefined;
+      if (manifest === undefined) {
+        manifest = buildManifest(sessionID || '', cwd);
+        if (sessionID) sessionManifest.set(sessionID, manifest); // may be null (no LEARNINGS dir)
+      }
+      if (!manifest) return; // no LEARNINGS/ → skip silently
+
+      system.push({ type: 'text', text: manifest });
+    });
+  },
+
+  // ── OpenCode V1 (>= 1.18.29) ───────────────────────────────────────────────
+  async server(input: any = {}) {
+    return v1Hooks(input);
+  },
+};

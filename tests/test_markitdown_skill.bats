@@ -8,7 +8,7 @@
 SKILL_MD="opencode_app/.opencode/skills/markitdown-mcp-skill/SKILL.md"
 AGENTS_DIR="opencode_app/.opencode/agents"
 
-# Agents that should have markitdown-mcp-skill: allow in their permission.skill
+# Agents that should have a markitdown-mcp-skill allow rule in their permissions
 AGENTS_WITH_SKILL_GRANT=(
   "office-document-primary-agent"
   "documentation-subagent"
@@ -56,7 +56,7 @@ AGENTS_WITH_SKILL_GRANT=(
 @test "agents_have_markitdown_skill_grant" {
   for agent in "${AGENTS_WITH_SKILL_GRANT[@]}"; do
     echo "  checking $agent" >&3
-    grep -q "markitdown-mcp-skill: allow" "$AGENTS_DIR/$agent.md"
+    grep -q 'resource: "markitdown-mcp-skill", effect: allow' "$AGENTS_DIR/$agent.md"
   done
 }
 

@@ -280,32 +280,29 @@ grep -q "^description:" "skills/<skill-name>/SKILL.md" || echo "Warning: Missing
 
 ### Configuring Skill Permissions
 
-Skills can be controlled via permissions in agent configurations. Use `permission.skill` in agent frontmatter or config.json:
+Skills can be controlled via permissions in agent configurations. Use `skill` action rules in the `permissions` array, in agent frontmatter or config.json:
 
 **For custom agents (markdown frontmatter)**:
 ```yaml
 ---
 description: My agent description
 mode: subagent
-permission:
-  skill:
-    "documents-*": allow
-    "internal-*": deny
-    "experimental-*": ask
+permissions:
+  - { action: skill, resource: "documents-*", effect: allow }
+  - { action: skill, resource: "internal-*", effect: deny }
+  - { action: skill, resource: "experimental-*", effect: ask }
 ---
 ```
 
 **For built-in agents (config.json)**:
 ```json
 {
-  "agent": {
+  "agents": {
     "plan": {
-      "permission": {
-        "skill": {
-          "*": "allow",
-          "internal-*": "deny"
-        }
-      }
+      "permissions": [
+        { "action": "skill", "resource": "*", "effect": "allow" },
+        { "action": "skill", "resource": "internal-*", "effect": "deny" }
+      ]
     }
   }
 }
@@ -316,7 +313,7 @@ Permission behaviors:
 - `deny`: Skill hidden from agent, access rejected
 - `ask`: User prompted for approval before loading
 
-Note: The legacy `tools: skill: false` approach is deprecated. Use `permission.skill` instead.
+Note: The legacy `tools: skill: false` approach and the V1 `permission.skill` map are deprecated. Use `permissions` skill rules instead.
 
 ## Common Issues
 
@@ -397,7 +394,7 @@ edit filePath="PLAN.md" oldString="old text" newString="new text"
 
 ## Configuring Agent Access to Skills
 
-When creating skills, consider how agents will access them. Use `permission.skill` in agent configurations:
+When creating skills, consider how agents will access them. Use `permissions` skill rules in agent configurations:
 
 **Pattern-based Permissions**:
 
@@ -418,15 +415,13 @@ When creating skills, consider how agents will access them. Use `permission.skil
 ---
 description: Read-only exploration agent
 mode: subagent
-permission:
-  read: allow
-  write: deny
-  edit: deny
-  bash: deny
-  skill:
-    "*": deny
-    "explore-*": allow
-    "code-search": allow
+permissions:
+  - { action: read, resource: "*", effect: allow }
+  - { action: edit, resource: "*", effect: deny }
+  - { action: shell, resource: "*", effect: deny }
+  - { action: skill, resource: "*", effect: deny }
+  - { action: skill, resource: "explore-*", effect: allow }
+  - { action: skill, resource: "code-search", effect: allow }
 ---
 ```
 

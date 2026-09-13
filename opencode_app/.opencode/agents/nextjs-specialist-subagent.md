@@ -5,29 +5,26 @@ description: >-
   Routes to skills by task type.
 mode: subagent
 steps: 30
-permission:
-  read:
-    "*": allow
-    "mcp:*": deny
-  edit: allow
-  glob: allow
-  grep: allow
-  bash: deny
-  question: deny
-  webfetch: allow
-  websearch: allow
-  task:
-    "*": deny
-  skill:
-    nextjs-standard-setup-skill: allow
-    docstring-generator-skill: allow
-    nextjs-image-usage-skill: allow
-    react-hooks-antipatterns-skill: allow
-    react-render-antipatterns-skill: allow
-    nextjs-devtools-mcp-skill: allow
-    amplify-nextjs-deployment-skill: allow
-    monorepo-management-skill: allow
-    threejs-nextjs-skill: allow
+permissions:
+  - { action: read, resource: "*", effect: allow }
+  - { action: read, resource: "mcp:*", effect: deny }
+  - { action: edit, resource: "*", effect: allow }
+  - { action: glob, resource: "*", effect: allow }
+  - { action: grep, resource: "*", effect: allow }
+  - { action: shell, resource: "*", effect: deny }
+  - { action: question, resource: "*", effect: deny }
+  - { action: webfetch, resource: "*", effect: allow }
+  - { action: websearch, resource: "*", effect: allow }
+  - { action: subagent, resource: "*", effect: deny }
+  - { action: skill, resource: "nextjs-standard-setup-skill", effect: allow }
+  - { action: skill, resource: "docstring-generator-skill", effect: allow }
+  - { action: skill, resource: "nextjs-image-usage-skill", effect: allow }
+  - { action: skill, resource: "react-hooks-antipatterns-skill", effect: allow }
+  - { action: skill, resource: "react-render-antipatterns-skill", effect: allow }
+  - { action: skill, resource: "nextjs-devtools-mcp-skill", effect: allow }
+  - { action: skill, resource: "amplify-nextjs-deployment-skill", effect: allow }
+  - { action: skill, resource: "monorepo-management-skill", effect: allow }
+  - { action: skill, resource: "threejs-nextjs-skill", effect: allow }
 category: frontend
 ---
 
@@ -76,7 +73,7 @@ You are a Next.js specialist. You handle **project scaffolding**, **runtime diag
 
 **Skill:** Load `nextjs-devtools-mcp-skill`.
 
-**MCP dependency:** Mode 2 requires the `next-devtools-mcp` server configured in `opencode.json` under the `mcp` key AND the root-level `permission` pattern `"next-devtools*": "allow"`. A running Next.js dev server (`npm run dev`) is also required for live features.
+**MCP dependency:** Mode 2 requires the `next-devtools-mcp` server configured in `opencode.json` under `mcp.servers` AND the root `permissions` rule `{ "action": "next-devtools*", "effect": "allow" }`. A running Next.js dev server (`npm run dev`) is also required for live features.
 
 **If MCP unavailable:** Fall back to file-based inspection via `glob`/`grep`/`read` and `webfetch` the Next.js docs. Note this limitation in the Return Contract.
 

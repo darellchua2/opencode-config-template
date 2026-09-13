@@ -73,9 +73,9 @@ Verified against opencode.ai docs 2026-08-14. All new/edited SKILL.md and agent 
 | `metadata` | Opaque string map, zero runtime behavior. House sub-keys: `protocol`, `pattern` only |
 | `category` | Installer-registry-only (build-registry.mjs, init.mjs, setup.sh counts) — invisible to OpenCode, never delete |
 
-`permission.skill` does NOT belong in SKILL.md — gating lives in `opencode.json` or agent frontmatter only.
+`permissions` skill rules do NOT belong in SKILL.md — gating lives in `opencode.json` or agent frontmatter only.
 
-**Agents — runtime-read keys:** `description` (required), `temperature`, `steps`, `disable`, `prompt`, `model`, `permission` (NOT deprecated `tools`), `mode`, `hidden`, `color`, `top_p`. Source files ship no `model:` — tiers inject it at deploy time. `category` is installer-registry-only.
+**Agents — runtime-read keys:** `description` (required), `mode`, `model`, `steps`, `hidden`, `color`, `permissions` (ordered rule array `{action, resource, effect}`; NOT the legacy `permission` map or deprecated `tools`; actions `shell`/`subagent`/`edit`/`read`/…), `request.body` (carries `temperature`/`top_p`), `system`. Source files ship no `model:` — tiers inject it at deploy time. `category` is installer-registry-only.
 
 After ANY frontmatter change: run `node deploy/build-registry.mjs` and commit `registry.json`.
 

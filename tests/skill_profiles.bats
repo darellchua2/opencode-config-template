@@ -4,7 +4,8 @@
 #   2. lean ⊆ shipped allowlist in opencode_app/opencode.json (typo guard)
 #   3. lean count == 45
 #   4. apply-skill-profile.mjs lean rewrites a scratch deployed config to
-#      exactly 45 allows + "*": "deny"; full leaves the shipped block verbatim.
+#      exactly 45 skill allow rules + deny "*"; full leaves the shipped
+#      permissions array verbatim.
 # Note: these tests intentionally do NOT assert the shipped allowlist size
 # (count-drift tests own disk counts; allowlist size is profile-dependent).
 
@@ -38,12 +39,12 @@ lean_keys() {
     bad=$(node -e "
 const p=require('${PROJECT_ROOT}/deploy/skill-profiles.json');
 const c=require('${PROJECT_ROOT}/opencode_app/opencode.json');
-const a=Object.keys(c.permission.skill).filter(k=>k!=='*');
+const a=c.permissions.filter(r=>r.action==='skill'&&r.effect==='allow'&&r.resource!=='*').map(r=>r.resource);
 console.log(p.lean.filter(k=>!a.includes(k)).join(' '));")
     [ -z "$bad" ] || { echo "not in shipped allowlist: $bad"; return 1; }
 }
 
-@test "apply-skill-profile: lean rewrites scratch deployed config to 45 allows + * deny" {
+@test "apply-skill-profile: lean rewrites scratch deployed config to 45 allows + deny *" {
     scratch="${TEST_HOME}/opencode.json"
     cp "${PROJECT_ROOT}/opencode_app/opencode.json" "$scratch"
     run node "${PROJECT_ROOT}/deploy/apply-skill-profile.mjs" \
@@ -53,9 +54,9 @@ console.log(p.lean.filter(k=>!a.includes(k)).join(' '));")
     [ "$status" -eq 0 ]
     out=$(node -e "
 const c=require('${scratch}');
-const k=Object.keys(c.permission.skill);
-const allows=k.filter(x=>x!=='*');
-console.log(allows.length, c.permission.skill['*']==='deny' ? 'deny-ok' : 'no-deny');")
+const rules=c.permissions.filter(r=>r.action==='skill');
+const allows=rules.filter(r=>r.effect==='allow'&&r.resource!=='*');
+console.log(allows.length, rules.some(r=>r.resource==='*'&&r.effect==='deny') ? 'deny-ok' : 'no-deny');")
     echo "result: $out"
     [ "$out" = "45 deny-ok" ]
 }
@@ -63,13 +64,13 @@ console.log(allows.length, c.permission.skill['*']==='deny' ? 'deny-ok' : 'no-de
 @test "apply-skill-profile: full is a verified no-op on a fresh copy" {
     scratch="${TEST_HOME}/opencode.json"
     cp "${PROJECT_ROOT}/opencode_app/opencode.json" "$scratch"
-    before=$(node -e "const c=require('${scratch}');console.log(JSON.stringify(c.permission.skill))")
+    before=$(node -e "const c=require('${scratch}');console.log(JSON.stringify(c.permissions))")
     run node "${PROJECT_ROOT}/deploy/apply-skill-profile.mjs" \
         --config "$scratch" \
         --profiles "${PROJECT_ROOT}/deploy/skill-profiles.json" \
         --profile full
     [ "$status" -eq 0 ]
-    after=$(node -e "const c=require('${scratch}');console.log(JSON.stringify(c.permission.skill))")
+    after=$(node -e "const c=require('${scratch}');console.log(JSON.stringify(c.permissions))")
     [ "$before" = "$after" ]
 }
 

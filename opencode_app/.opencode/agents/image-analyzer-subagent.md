@@ -5,16 +5,15 @@ description: >-
 mode: subagent
 steps: 10
 
-permission:
-  read:
-    "*": allow
-    "mcp:*": deny
-  edit: deny
-  glob: allow
-  grep: allow
-  bash: allow
-  webfetch: allow
-  websearch: allow
+permissions:
+  - { action: read, resource: "*", effect: allow }
+  - { action: read, resource: "mcp:*", effect: deny }
+  - { action: edit, resource: "*", effect: deny }
+  - { action: glob, resource: "*", effect: allow }
+  - { action: grep, resource: "*", effect: allow }
+  - { action: shell, resource: "*", effect: allow }
+  - { action: webfetch, resource: "*", effect: allow }
+  - { action: websearch, resource: "*", effect: allow }
 category: meta
 ---
 
@@ -177,5 +176,5 @@ On failure (`Status: failed`) you MAY add one line of diagnostic detail. The sum
 Leaf-node utility: other agents delegate image paths/URLs and receive bounded structured analysis.
 It does NOT chain further — it perceives and returns.
 
-**Delegable by**: primary agent + subagents with `image-analyzer-subagent: allow` in their
-`permission.task`.
+**Delegable by**: primary agent + subagents with a `{ "action": "subagent", "resource": "image-analyzer-subagent", "effect": "allow" }` rule in their
+`permissions`.

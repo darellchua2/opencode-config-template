@@ -11,7 +11,7 @@ category: Configuration
 ## What this skill does
 
 - Documents the `markitdown` MCP server and its single tool `convert_to_markdown`
-- Provides `opencode.json` configuration (both `mcp` and `permission` blocks)
+- Provides `opencode.json` configuration (both `mcp` and `permissions` keys)
 - Prescribes a decision tree for choosing markitdown vs `image-analyzer-subagent` vs `pdf-specialist-skill` vs `pdftotext` vs built-in `Read`
 - Covers usage patterns (large docs, batch conversion, table post-processing)
 - Documents privacy guarantees for company-internal document handling
@@ -25,39 +25,40 @@ category: Configuration
 | -------------------------------------------------------------------- | ------------------------------------------------------- |
 | `markitdown` MCP server in `opencode.json` `mcp` block                | Required for MCP tool access                            |
 | `markitdown-local-mcp` binary on PATH                                | Installed via `./deploy/setup.sh` (pip) or baked into Docker |
-| `mcp.markitdown.enabled: true` in `opencode.json`                     | **Currently default `false`** — user must opt in (#262)  |
+| `mcp.servers.markitdown` present in `opencode.json`                   | **Currently disabled by default** — user must opt in (#262)  |
 | `permission."markitdown*": "allow"` in `opencode.json`                | **Currently default `deny`** — user must opt in (#262)   |
 
 If any requirement is unmet, MCP tool calls return connection errors. Fall back to `pdftotext`, `image-analyzer-subagent`, or built-in `Read` (see **Fallback Strategy** below).
 
-**Privacy note:** markitdown is privacy-safe for local files — the `markitdown-local-mcp` fork's `pyproject.toml` trust boundary installs only `markitdown[pdf,docx,pptx,xlsx,xls,outlook]` (no azure/speech/youtube extras), so conversion is fully local with zero phone-home network calls. Opt-in (`enabled: false` by default per #262) is a choice of minimal default footprint, not a privacy concern.
+**Privacy note:** markitdown is privacy-safe for local files — the `markitdown-local-mcp` fork's `pyproject.toml` trust boundary installs only `markitdown[pdf,docx,pptx,xlsx,xls,outlook]` (no azure/speech/youtube extras), so conversion is fully local with zero phone-home network calls. Opt-in (`disabled: true` by default per #262) is a choice of minimal default footprint, not a privacy concern.
 
 ## opencode.json Configuration
 
-The markitdown MCP server ships as opt-in (`enabled: false`) per [#262](https://github.com/darellchua2/opencode-config-template/issues/262). To enable:
+The markitdown MCP server ships as opt-in (`disabled: true`) per [#262](https://github.com/darellchua2/opencode-config-template/issues/262). To enable:
 
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
   "mcp": {
-    "markitdown": {
-      "type": "local",
-      "command": ["markitdown-local-mcp"],
-      "environment": {
-        "MARKITDOWN_ENABLE_PLUGINS": "false"
-      },
-      "enabled": true
+    "servers": {
+      "markitdown": {
+        "type": "local",
+        "command": ["markitdown-local-mcp"],
+        "environment": {
+          "MARKITDOWN_ENABLE_PLUGINS": "false"
+        }
+      }
     }
   },
-  "permission": {
-    "markitdown*": "allow"
-  }
+  "permissions": [
+    { "action": "markitdown*", "resource": "*", "effect": "allow" }
+  ]
 }
 ```
 
 **Both flips are required:**
-1. `mcp.markitdown.enabled: true` — starts the server process
-2. `permission."markitdown*": "allow"` — grants tool-calling permission. Patterns sit **directly under the `permission` root**; the legacy top-level `tools` boolean map is deprecated since opencode v1.1.1, and a nested `permission.tool` key matches nothing.
+1. `mcp.servers.markitdown` defined (not `disabled`) — starts the server process
+2. `{ "action": "markitdown*", "effect": "allow" }` — grants tool-calling permission. Rules sit in the **root `permissions` rule array** (V2 ordered `{action, resource, effect}` rules, last matching rule wins); the legacy top-level `tools` boolean map and the V1 `permission` per-tool map are dead in V2.
 
 The sanctioned path does both flips and installs the launcher in one step: `./deploy/setup.sh --enable-pack markitdown` (Linux/macOS) or `.\deploy\setup.ps1 --enable-pack markitdown` (Windows). Manual editing of the deployed config works too. Docker users get the launcher baked in at build time.
 
@@ -184,14 +185,14 @@ After markitdown conversion, if the document contains charts/diagrams referenced
 
 Three gates, all required:
 - `markitdown-local-mcp` binary on PATH (`--enable-pack markitdown` installs it)
-- `mcp.markitdown.enabled: true` in the deployed config
+- `mcp.servers.markitdown` defined (not `disabled`) in the deployed config
 - `permission."markitdown*": "allow"` (root-level pattern, string enum)
 
 Missing any one leaves the MCP unreachable or its tools denied. Verify with `opencode mcp list` (should show `markitdown` connected) and restart opencode after config edits — there is no hot-reload.
 
 ### Tool denied after upgrading from pre-#370 deploys
 
-Earlier releases carried the opt-in denies under a nested `permission.tool` key, which opencode's permission engine never read — so hand-enabled servers worked despite the "deny". Those denies now live at the `permission` root and **enforce**. If you enabled markitdown/docling/next-devtools by hand, set the matching root pattern to `"allow"` (or re-run `--enable-pack <name>`).
+Earlier releases carried the opt-in denies under a nested `permission.tool` key, which opencode's permission engine never read — so hand-enabled servers worked despite the "deny". Those denies then moved to the V1 `permission` root; in V2 they live as rules in the root `permissions` array and **enforce**. If you enabled markitdown/docling/next-devtools by hand, flip the matching rule to `"allow"` (or re-run `--enable-pack <name>`).
 
 ### `markitdown-local-mcp: command not found`
 

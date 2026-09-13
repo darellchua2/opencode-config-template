@@ -66,7 +66,7 @@ param(
     # (autodesk,markitdown,nextjs,docling,chrome-devtools). Empty = no-op.
     [string]$EnablePack = "",
     # Skill profile (GIT-333): deploy-time primary visibility. lean (default)
-    # rewrites the DEPLOYED config's permission.skill to 45 visible skills;
+    # rewrites the DEPLOYED config's skill permission rules to 45 visible skills;
     # full deploys the shipped 104-allow allowlist verbatim.
     [ValidateSet("lean", "full")]
     [string]$SkillProfile = "lean"
@@ -918,21 +918,22 @@ USAGE:
                          primary/reasoning/fast/docs/vision, e.g. vision on OpenAI)
 
   PROVIDER PACKS (deploy-time MCP toggle):
-    -EnablePack <csv>    Enable provider pack(s) — flips mcp.<server>.enabled
-                         and sets permission "<ns>*": "allow". Available packs:
+    -EnablePack <csv>    Enable provider pack(s) — clears mcp.servers.<server>.disabled
+                         and merges a permissions allow rule (action "<ns>*").
+                         Available packs:
                          autodesk, markitdown, nextjs, docling, chrome-devtools
                          (comma-separated). No-op if omitted; default OFF.
                          Example: -EnablePack autodesk,markitdown
-                         Plugin pack: voice — tui.json plugin for local
+                         Plugin pack: voice — cli.json plugin for local
                          speech-to-text (whisper.cpp; prereq install is
                          macOS/Linux only, skipped with a warning on Windows)
 
    SKILL PROFILE (deploy-time primary visibility):
      -SkillProfile <p>    lean (default) | full. lean rewrites the DEPLOYED
-                          config's permission.skill to 45 primary-visible skills
-                          + "*": "deny" (subagents unaffected — they self-scope
-                          via frontmatter allows); full deploys the shipped
-                          104-allow allowlist verbatim.
+                          config's skill permission rules to 45 primary-visible
+                          skills + deny "*" (subagents unaffected — they
+                          self-scope via frontmatter rules); full deploys the
+                          shipped 104-allow allowlist verbatim.
 
  ======================================================================
                      COMMON COMBINATION EXAMPLES
@@ -1887,10 +1888,10 @@ function Invoke-PackMerger {
     }
 
     $targetConfig = $ConfigFile
-    $targetTui = Join-Path $ConfigDir "tui.json"
+    $targetCli = Join-Path $ConfigDir "cli.json"
     if ($DryRun) {
         $targetConfig = Join-Path $DryRunPreviewDir "opencode.json"
-        $targetTui = Join-Path $DryRunPreviewDir "tui.json"
+        $targetCli = Join-Path $DryRunPreviewDir "cli.json"
         if (-not (Test-Path $targetConfig)) {
             Write-LogError "Dry-run preview config not found: $targetConfig"
             Write-LogError "The resolver must run first to stage the preview. Aborting pack merge."
@@ -1899,14 +1900,14 @@ function Invoke-PackMerger {
     }
 
     # Voice pack (issue #356) prereqs (whisper.cpp, sox) are macOS/Linux only —
-    # the plugin documents no Windows build. The tui.json plugin entry still
+    # the plugin documents no Windows build. The cli.json plugin entry still
     # merges (harmless); warn that STT prereqs need manual setup on Windows.
     if ($EnablePack -match '(^|,)voice(,|$)') {
         Write-LogWarn "Voice pack: whisper.cpp/sox prereq install is macOS/Linux only — set them up manually on Windows (see README, Voice plugin pack)."
     }
 
     Write-LogInfo "Applying provider packs: $EnablePack"
-    & node $MergePacksScript --config $targetConfig --tui-config $targetTui --packs-dir $PacksDir --packs $EnablePack
+    & node $MergePacksScript --config $targetConfig --cli-config $targetCli --packs-dir $PacksDir --packs $EnablePack
     $mergeRc = $LASTEXITCODE
     if ($mergeRc -ne 0) {
         Write-LogError "Provider-pack merge failed (exit $mergeRc)"
@@ -1926,9 +1927,9 @@ function Invoke-PackMerger {
     $global:LASTEXITCODE = 0
 }
 
-# Apply the skill profile (GIT-333): rewrites ONLY the permission.skill block
+# Apply the skill profile (GIT-333): rewrites ONLY the skill permission rules
 # of the DEPLOYED config (never the source opencode_app/opencode.json).
-# lean (default) -> 45 primary-visible skills + "*": "deny"; full -> verified
+# lean (default) -> 45 primary-visible allows + deny "*"; full -> verified
 # no-op. Mirrors Invoke-PackMerger's dry-run contract (B1).
 function Invoke-SkillProfile {
     if (-not (Test-Path $ApplySkillProfileScript)) {
@@ -2195,7 +2196,7 @@ function Install-Docling {
 
 # Copy repo-owned plugins (opencode_app/.opencode/plugins/*) into the global
 # plugins dir so opencode auto-loads them. Mirrors the skills deploy pattern.
-# These are NOT npm packages (those live in opencode.json plugin[]); they are
+# These are NOT npm packages (those live in opencode.json plugins[]); they are
 # local TS plugins auto-discovered from ~/.config/opencode/plugins/.
 
 # Install the opencode-init wrapper shim (project-scoped selective installer CLI).
@@ -2706,7 +2707,7 @@ function Show-Summary {
     $skillCount = @(Get-ChildItem $SkillsDir -Directory -ErrorAction SilentlyContinue).Count
     if ($skillCount -gt 0) {
         Write-Host "  [OK] skills: $skillCount skills deployed to $SkillsDir\" -ForegroundColor Green
-        Write-Host "  [OK] skill profile: $SkillProfile (primary-visible skills in permission.skill)" -ForegroundColor Green
+        Write-Host "  [OK] skill profile: $SkillProfile (primary-visible skills in permissions skill rules)" -ForegroundColor Green
     } else {
         Write-Host "  [X] skills: Not deployed"
     }

@@ -8,11 +8,12 @@
 //
 // The YAML frontmatter parser is intentionally minimal: it only needs to read
 // the shapes that exist in THIS repo (verified):
-//   (a) scalar:        `task: allow`  /  `edit: allow`  /  `bash: deny`
-//   (b) nested map:    `permission.task:` then indented `  "*": deny` / `  explore: allow`
-//                      `permission.skill:` then indented `  <name>: allow`
-//                      `metadata:` then indented `  audience: …` / `  workflow: …`
-//   (c) absent keys:   e.g. explorer-subagent has no `task` key at all
+//   (a) scalar:        `steps: 15`  /  `mode: subagent`
+//   (b) nested map:    `metadata:` then indented `  audience: …` / `  workflow: …`
+//                      `request:` → `  body:` → `    temperature: 0.7`
+//   (c) rule array:    `permissions:` then indented `- { action: …, resource: …, effect: … }`
+//                      flow-map list items (one line each)
+//   (d) absent keys:   e.g. explorer-subagent has no `permissions` key at all
 // Descriptions are single-line scalars or folded block scalars (`description: >-`
 // with deeper-indented continuation lines, space-joined). No YAML anchors are used.
 //
@@ -60,9 +61,11 @@ function frontmatterLines(content) {
 }
 
 // Parse the minimal YAML subset into a nested object via an indentation stack.
-// Handles arbitrary nesting depth (permission.task.* is 3 levels: permission→task→leaf).
-// Key extraction: split on the first ": " (colon-space) so quoted keys containing
-// colons (e.g. "mcp:*") survive; a line ending in ":" (no trailing value) is a map marker.
+// Handles arbitrary nesting depth (request.body.* is 3 levels: request→body→leaf)
+// plus flow-map list items (`- { k: v, k: v }`) collected into arrays under their
+// key (the V2 `permissions` rule list). Key extraction: split on the first ": "
+// (colon-space) so quoted keys containing colons (e.g. "mcp:*") survive; a line
+// ending in ":" (no trailing value) is a map marker.
 function parseFrontmatter(fmLines) {
   const root = {};
   const stack = []; // [{ depth, key }]
@@ -80,6 +83,25 @@ function parseFrontmatter(fmLines) {
     }
     if (trimmed === "" || trimmed.startsWith("#")) continue;
     const depth = Math.floor(indent / 2);
+    // flow-map list item: `- { action: …, resource: …, effect: … }` → object
+    // pushed onto the array under the innermost map-marker key.
+    const listMatch = trimmed.match(/^-\s*\{(.*)\}$/);
+    if (listMatch) {
+      while (stack.length && stack[stack.length - 1].depth >= depth) stack.pop();
+      if (stack.length === 0) continue; // list item with no container key — skip
+      let parent = root;
+      for (let i = 0; i < stack.length - 1; i++) parent = parent[stack[i].key];
+      const key = stack[stack.length - 1].key;
+      const obj = {};
+      for (const pair of listMatch[1].split(/,\s*/)) {
+        const ci2 = pair.indexOf(": ");
+        if (ci2 === -1) continue;
+        obj[unquote(pair.slice(0, ci2))] = unquote(pair.slice(ci2 + 2));
+      }
+      if (Array.isArray(parent[key])) parent[key].push(obj);
+      else parent[key] = [obj]; // map marker created {}; convert to rule array
+      continue;
+    }
     let key, val;
     const mapMatch = trimmed.match(/^([^:]+):\s*$/); // "key:" → map marker
     if (mapMatch) {
@@ -135,9 +157,14 @@ async function build() {
     const fmLines = frontmatterLines(content);
     if (!fmLines) { console.error(`warn: ${stem}: no frontmatter`); continue; }
     const fm = parseFrontmatter(fmLines);
-    const perm = fm.permission || {};
-    const requiresSkills = keysOf(perm.skill);
-    const delegatesTo = keysOf(perm.task); // empty when task is a scalar like "allow"
+    // V2 permissions rule array: derive skill/subagent allowlists from rules.
+    const perms = Array.isArray(fm.permissions) ? fm.permissions : [];
+    const requiresSkills = perms
+      .filter((r) => r && r.action === "skill" && r.effect === "allow" && r.resource && r.resource !== "*")
+      .map((r) => r.resource);
+    const delegatesTo = perms
+      .filter((r) => r && r.action === "subagent" && r.effect === "allow" && r.resource && r.resource !== "*")
+      .map((r) => r.resource);
     const category = fm.category || "uncategorized";
     if (!fm.category) console.error(`warn: ${stem}: no category (-> uncategorized)`);
     agents.push({

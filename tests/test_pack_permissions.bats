@@ -1,18 +1,18 @@
 #!/usr/bin/env bats
 
 # Tests for MCP provider pack permission keys (issue #370).
-# All MCP packs must flip permissions via ROOT-level `permission` pattern keys
-# with string enum values ("allow"), never the deprecated top-level `tools`
-# map or the inert nested `permission.tool` key (opencode permission engine
-# reads root patterns only; booleans are schema-invalid). Peer to
-# tests/test_voice_pack.bats (tui-only pack — intentionally NOT covered here).
+# All MCP packs must flip permissions via ROOT-level `permissions` rule-array
+# entries ({action: "<ns>*", resource: "*", effect: "allow"}), never the
+# deprecated top-level `tools` map or the legacy `permission` map (the V2
+# permission engine reads the ordered rule array; last matching rule wins).
+# Peer to tests/test_voice_pack.bats (cli-only pack — intentionally NOT covered here).
 
 MERGE_SCRIPT="deploy/merge-packs.mjs"
 SETUP="deploy/setup.sh"
 SETUP_PS1="deploy/setup.ps1"
 
 # pack-name:server-keys pairs (explicit enumeration — no dir glob: voice is
-# tui-only and legitimately carries no permission key)
+# cli-only and legitimately carries no permissions key)
 PACK_SERVERS="markitdown:markitdown docling:docling chrome-devtools:chrome-devtools nextjs:next-devtools autodesk:autodesk-revit,autodesk-model-data,autodesk-fusion,autodesk-help"
 
 # =============================================================================
@@ -28,21 +28,21 @@ PACK_SERVERS="markitdown:markitdown docling:docling chrome-devtools:chrome-devto
   done
 }
 
-@test "mcp_packs_use_root_permission_allow_string_enum" {
+@test "mcp_packs_use_root_permission_allow_rules" {
   for entry in $PACK_SERVERS; do
     pack="${entry%%:*}"
     node -e "
       const p = JSON.parse(require('fs').readFileSync('deploy/packs/pack-${pack}.json','utf8'));
       const keys = Object.keys(p);
       if (keys[0] !== '\$comment') { console.error('${pack}: \$comment must be first key (merge-packs stripJsonComments strips whole-line entries only)'); process.exit(1); }
-      if (p.tools !== undefined) { console.error('${pack}: top-level tools is deprecated — use root permission'); process.exit(1); }
-      if (p.permission === undefined || typeof p.permission !== 'object' || Array.isArray(p.permission)) { console.error('${pack}: root permission object required'); process.exit(1); }
-      if (p.permission.tool !== undefined) { console.error('${pack}: nested permission.tool is inert — patterns belong at the permission root'); process.exit(1); }
-      for (const [k, v] of Object.entries(p.permission)) {
-        if (!k.endsWith('*')) { console.error('${pack}: permission key ' + k + ' must be a wildcard pattern'); process.exit(1); }
-        if (v !== 'allow') { console.error('${pack}: permission ' + k + ' must be the string \"allow\" (got ' + JSON.stringify(v) + ')'); process.exit(1); }
+      if (p.tools !== undefined) { console.error('${pack}: top-level tools is deprecated — use root permissions rules'); process.exit(1); }
+      if (p.permission !== undefined) { console.error('${pack}: legacy permission map is dead in V2 — use the permissions rule array'); process.exit(1); }
+      if (!Array.isArray(p.permissions) || p.permissions.length === 0) { console.error('${pack}: root permissions rule array required'); process.exit(1); }
+      for (const r of p.permissions) {
+        if (!r.action || !r.action.endsWith('*')) { console.error('${pack}: rule action ' + r.action + ' must be a wildcard pattern'); process.exit(1); }
+        if (r.resource !== '*') { console.error('${pack}: rule resource must be \"*\"'); process.exit(1); }
+        if (r.effect !== 'allow') { console.error('${pack}: rule ' + r.action + ' must be \"allow\" (got ' + JSON.stringify(r.effect) + ')'); process.exit(1); }
       }
-      if (Object.keys(p.permission).length === 0) { console.error('${pack}: permission must not be empty'); process.exit(1); }
     "
   done
 }
@@ -55,8 +55,8 @@ PACK_SERVERS="markitdown:markitdown docling:docling chrome-devtools:chrome-devto
       const p = JSON.parse(require('fs').readFileSync('deploy/packs/pack-${pack}.json','utf8'));
       const want = '${servers}'.split(',');
       for (const s of want) {
-        if (!p.mcp || !p.mcp[s]) { console.error('${pack}: missing mcp.' + s); process.exit(1); }
-        if (p.mcp[s].enabled !== true) { console.error('${pack}: mcp.' + s + '.enabled must be true'); process.exit(1); }
+        if (!p.mcp || !p.mcp.servers || !p.mcp.servers[s]) { console.error('${pack}: missing mcp.servers.' + s); process.exit(1); }
+        if (p.mcp.servers[s].disabled !== false) { console.error('${pack}: mcp.servers.' + s + '.disabled must be false'); process.exit(1); }
       }
     "
   done
@@ -71,35 +71,44 @@ PACK_SERVERS="markitdown:markitdown docling:docling chrome-devtools:chrome-devto
   dir="$(mktemp -d)"
   cat > "$dir/opencode.json" <<'EOF'
 {
-  "mcp": { "markitdown": { "type": "local", "command": ["markitdown-local-mcp"], "enabled": false } },
-  "permission": { "markitdown*": "deny" }
+  "mcp": { "servers": { "markitdown": { "type": "local", "command": ["markitdown-local-mcp"], "disabled": true } } },
+  "permissions": [
+    { "action": "skill", "resource": "*", "effect": "deny" },
+    { "action": "markitdown*", "resource": "*", "effect": "deny" }
+  ]
 }
 EOF
   node "$MERGE_SCRIPT" --config "$dir/opencode.json" --packs-dir deploy/packs --packs markitdown >/dev/null
   node -e "
     const c = JSON.parse(require('fs').readFileSync('$dir/opencode.json','utf8'));
-    if (c.mcp.markitdown.enabled !== true) { console.error('enabled must flip to true'); process.exit(1); }
-    if (c.permission['markitdown*'] !== 'allow') { console.error('deny must flip to allow, got ' + JSON.stringify(c.permission['markitdown*'])); process.exit(1); }
-    if (c.permission.tool !== undefined) { console.error('permission.tool must never appear'); process.exit(1); }
+    if (c.mcp.servers.markitdown.disabled !== false) { console.error('disabled must flip to false'); process.exit(1); }
+    const rules = c.permissions.filter((r) => r.action === 'markitdown*');
+    if (rules.length !== 1 || rules[0].effect !== 'allow') { console.error('deny rule must flip to allow in place, got ' + JSON.stringify(rules)); process.exit(1); }
+    if (c.permission !== undefined) { console.error('legacy permission key must never appear'); process.exit(1); }
   "
   rm -rf "$dir"
 }
 
-@test "pack_merge_preserves_unrelated_permission_patterns" {
+@test "pack_merge_preserves_unrelated_permission_rules" {
   local dir
   dir="$(mktemp -d)"
   cat > "$dir/opencode.json" <<'EOF'
 {
   "mcp": {},
-  "permission": { "codegraph*": "allow", "docling*": "deny", "read": { "mcp:*": "deny" } }
+  "permissions": [
+    { "action": "codegraph*", "resource": "*", "effect": "allow" },
+    { "action": "docling*", "resource": "*", "effect": "deny" },
+    { "action": "read", "resource": "mcp:*", "effect": "deny" }
+  ]
 }
 EOF
   node "$MERGE_SCRIPT" --config "$dir/opencode.json" --packs-dir deploy/packs --packs markitdown >/dev/null
   node -e "
     const c = JSON.parse(require('fs').readFileSync('$dir/opencode.json','utf8'));
-    if (c.permission['codegraph*'] !== 'allow') { console.error('unrelated allow must survive'); process.exit(1); }
-    if (c.permission['docling*'] !== 'deny') { console.error('unrelated deny must survive'); process.exit(1); }
-    if (!c.permission.read || c.permission.read['mcp:*'] !== 'deny') { console.error('nested permission sub-blocks must survive'); process.exit(1); }
+    const find = (a, r2) => c.permissions.find((r) => r.action === a && r.resource === r2);
+    if (!find('codegraph*', '*') || find('codegraph*', '*').effect !== 'allow') { console.error('unrelated allow must survive'); process.exit(1); }
+    if (!find('docling*', '*') || find('docling*', '*').effect !== 'deny') { console.error('unrelated deny must survive'); process.exit(1); }
+    if (!find('read', 'mcp:*')) { console.error('read mcp:* rule must survive'); process.exit(1); }
   "
   rm -rf "$dir"
 }

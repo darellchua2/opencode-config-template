@@ -97,35 +97,38 @@ assert tiers.get('autoresearch-research-subagent') == 'long-context', f'must be 
 }
 
 # =============================================================================
-# Map-form edit enforcement for ml + research subagents
+# Rule-form edit enforcement for ml + research subagents (V2 permissions array)
 # =============================================================================
 
-@test "subagent_autoresearch_ml_uses_map_form_edit" {
+@test "subagent_autoresearch_ml_uses_deny_star_edit_rule" {
   agent_md="$AGENTS_DIR/autoresearch-ml-subagent.md"
   [ -f "$agent_md" ]
-  # Extract edit permission and verify it's a map (dict), not scalar "allow"
+  # Extract edit rules and verify deny-* plus path allows (not a blanket allow)
   python3 -c "
 import yaml
 d=open('$agent_md').read()
 fm=yaml.safe_load(d.split('---')[1])
-edit=fm['permission']['edit']
-assert isinstance(edit, dict), f'edit must be map form, got scalar: {edit}'
-assert edit.get('*') == 'deny', f'edit must deny * , got: {edit}'
+rules=[r for r in fm['permissions'] if r['action']=='edit']
+assert any(r['resource']=='*' and r['effect']=='deny' for r in rules), f'edit must deny * , got: {rules}'
+assert any(r['resource']=='**/train.py' and r['effect']=='allow' for r in rules), 'train.py allow must exist'
 "
 }
 
-@test "subagent_autoresearch_research_uses_map_form_edit_and_denies_bash" {
+@test "subagent_autoresearch_research_edit_rules_and_denies_shell" {
   agent_md="$AGENTS_DIR/autoresearch-research-subagent.md"
   [ -f "$agent_md" ]
   python3 -c "
 import yaml
 d=open('$agent_md').read()
 fm=yaml.safe_load(d.split('---')[1])
-p=fm['permission']
-assert isinstance(p['edit'], dict), 'edit must be map form'
-assert p.get('bash') == 'deny', f'bash must be deny, got: {p.get(\"bash\")}'
-assert p.get('webfetch') == 'allow', 'webfetch must be allow'
-assert p.get('websearch') == 'allow', 'websearch must be allow'
+p=fm['permissions']
+def has(action, resource=None, effect=None):
+    return any(r['action']==action and (resource is None or r['resource']==resource) and (effect is None or r['effect']==effect) for r in p)
+assert has('edit','*','deny'), 'edit must deny *'
+assert has('edit','**/research*.md','allow'), 'research*.md allow must exist'
+assert has('shell','*','deny'), 'shell (was bash) must be deny'
+assert has('webfetch','*','allow'), 'webfetch must be allow'
+assert has('websearch','*','allow'), 'websearch must be allow'
 "
 }
 

@@ -20,3 +20,5 @@
 - `deploy/apply-skill-profile.mjs` — deploy-time rewriter (typo-guarded, fail-closed)
 - `deploy/.AGENTS.md` — "Skill Permission Allowlist" documentation section
 - Issue #270, PR #271; Issue #333
+
+**Addendum (2026-09-13, V2-native conversion):** the `permission.skill` map is now a `permissions` rule array (`{action, resource, effect}`, last-match-wins) — the native V2 shape per the migration guide/permissions docs; the old map is only back-compat-normalized. The 105-allow full profile became 117 array rules (4 read + 7 action-glob + 106 skill); lean stays 46 skill allows (58 total rules on a default `-y` deploy). `apply-skill-profile.mjs` rewrites skill rules in the array, fail-closes if the config lacks it; `merge-packs.mjs` rule-merges by (action, resource) so pack allows still flip source denies. Agent frontmatter uses the same array form (33 files), actions renamed `bash`→`shell`, `task`→`subagent`.

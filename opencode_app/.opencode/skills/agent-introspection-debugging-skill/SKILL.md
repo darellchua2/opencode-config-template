@@ -67,7 +67,7 @@ Check the agent/skill file structure:
 - [ ] `mode` field is set (usually `subagent`)
 - [ ] `model` field is set to valid model ID
 - [ ] `steps` field is set (recommended: 10-25)
-- [ ] `permission` block exists with tool access rules
+- [ ] `permissions` array exists with tool access rules
 - [ ] No YAML syntax errors (check indentation, quoting)
 - [ ] File is valid markdown after frontmatter
 
@@ -91,13 +91,13 @@ Verify the agent can access what it needs:
 
 ### Tool Access
 For each tool the agent needs:
-- Is the tool listed in `permission` with `allow`?
+- Is the tool covered by an `allow` rule in `permissions`?
 - Is there a `deny` rule that overrides it?
 - If using `task` delegation, are target subagents allowed?
 
 ### Skill Access
 For each skill the agent loads:
-- Is the skill listed in `permission.skill` with `allow`?
+- Is the skill covered by an `allow` skill rule in `permissions`?
 - Does the skill directory exist with a valid SKILL.md?
 - Is the skill name correct (case-sensitive, hyphenated)?
 
@@ -106,7 +106,7 @@ For each skill the agent loads:
 |-------|---------|-----|
 | Missing `read: allow` | Agent can't read files | Add `read: allow` to permission block |
 | Missing `glob: allow` | Agent can't find files | Add `glob: allow` to permission block |
-| Missing `task` delegation | Agent can't spawn subagents | Add allowed subagent names to `permission.task` |
+| Missing `subagent` delegation | Agent can't spawn subagents | Add allowed subagent names to `permissions` `subagent` rules |
 | `edit: deny` but needs to edit | Agent reads but never modifies | Change to `edit: allow` |
 | `bash: deny` for build agents | Agent can't run commands | Change to `bash: allow` with caution |
 | Skill name mismatch | Agent can't load skill | Match exact skill directory name |
@@ -176,7 +176,7 @@ Generate a diagnosis report:
 
 ### Pattern: Agent Ignores Skills
 
-**Cause**: Skill not in `permission.skill` allowlist, or skill name doesn't match directory.
+**Cause**: Skill not in the `permissions` skill allow rules, or skill name doesn't match directory.
 **Fix**: Verify skill names match exactly (case-sensitive, with `-skill` suffix).
 
 ### Pattern: Agent Loops Repeatedly
@@ -230,7 +230,7 @@ Generate a diagnosis report:
 - Always include a return contract in agent .md files
 - Test new agents with a simple prompt before complex tasks
 - Keep agent descriptions under 50 words (loaded into Task tool always)
-- Use `permission.skill` to give agents access to domain knowledge
+- Use `permissions` skill rules to give agents access to domain knowledge
 
 ### Preventing Skill Issues
 - Match skill directory name exactly in YAML `name` field
